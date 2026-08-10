@@ -1,0 +1,25 @@
+name: ds-py313
+channels:
+  - conda-forge
+  - defaults
+  - https://repo.anaconda.com/pkgs/main
+  - https://repo.anaconda.com/pkgs/r
+dependencies:
+  - python=3.13
+  - ipykernel
+  - ipywidgets
+  - jupyter
+  - notebook
+  - jupyterlab
+  - matplotlib
+  - numpy
+  - openpyxl
+  - pandas
+  - pathlib
+  - plotly
+  - python-dotenv
+  - seaborn
+  - xlrd
+  - scikit-learn
+  - scipy
+  - statsmodels
