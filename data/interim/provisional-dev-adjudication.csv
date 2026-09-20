@@ -1,0 +1,12 @@
+pair_id,series_id,earlier_decision_id,later_decision_id,relation,confidence,verified_against,notes
+ES2015.p001,ES2015,ES2015a.elana.s.11,ES2015b.elana.s.11,refina,alta,transcripcion,"b acota a un solo funcion: se descartan DVD/VCR explicitamente en la evidencia"
+ES2015.p002,ES2015,ES2015c.elana.s.19,ES2015d.elana.s.15,reafirma,alta,transcripcion,"la evidencia de d es un repaso en la reunion final: 'we're using a regular chip'"
+ES2015.p003,ES2015,ES2015c.elana.s.20,ES2015d.elana.s.17,reafirma,alta,transcripcion,"mismo material; d agrega el motivo (comodidad) sin cambiar la decision"
+IS1004.p001,IS1004,IS1004a.elana.s.14,IS1004b.elana.s.13,no_relacionada,baja,transcripcion,"el objetivo del proyecto lo inyecta el escenario; dudoso que sea decision 5.2. NECESITA REGLA"
+IS1004.p002,IS1004,IS1004a.elana.s.14,IS1004b.elana.s.14,no_relacionada,alta,transcripcion,"el extremo posterior es vago ('fancy, good shape'); no ancla objeto ni contenido"
+IS1004.p003,IS1004,IS1004c.elana.s.29,IS1004d.elana.s.22,no_relacionada,alta,transcripcion,"el extremo posterior es sin_soporte: la transcripcion contradice la eliminacion"
+IS1004.p004,IS1004,IS1004c.elana.s.29,IS1004d.elana.s.12,refina,alta,transcripcion,"c introduce dos ruedas; d fija sus posiciones (volumen izquierda, canal derecha)"
+TS3009.p001,TS3009,TS3009b.vkaraisk.s.14,TS3009c.vkaraisk.s.15,no_relacionada,media,transcripcion,"objetos distintos: la decision del chip es consecuencia del LCD, no una revision de el"
+TS3009.p002,TS3009,TS3009b.vkaraisk.s.15,TS3009c.vkaraisk.s.14,no_relacionada,baja,transcripcion,"mismo objeto (botones) pero propiedad distinta: cuales vs de que material. NECESITA REGLA"
+TS3009.p003,TS3009,TS3009b.vkaraisk.s.13,TS3009c.vkaraisk.s.17,no_relacionada,alta,transcripcion,"objetos distintos; el blocker emparejo por 'buttons' y 'the team agreed'"
+TS3009.p004,TS3009,TS3009c.vkaraisk.s.20,TS3009d.vkaraisk.s.15,reemplaza,alta,transcripcion,"titanio sustituido por plastico por costo; 'we have to dump our titanium'"

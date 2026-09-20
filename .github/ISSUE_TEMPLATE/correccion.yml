@@ -1,0 +1,70 @@
+name: "Corrección"
+description: Un número o afirmación ya publicado resultó ser incorrecto.
+title: "[corrección] "
+labels:
+  - correccion
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Este proyecto ya ha tenido varias correcciones de este tipo (ver D9 en
+        [`docs/BACKLOG.md`](../../docs/BACKLOG.md), donde ~170 candidatos
+        resultaron ser 712).
+
+        **Una cifra corregida se corrige en TODOS los lugares donde aparece.**
+        CONTRIBUTING.md §7.5 (https://github.com/jasonssdev/mcd-afg/blob/main/CONTRIBUTING.md)
+        lo dice sin ambigüedad: un backlog (o una tesis) con dos respuestas
+        distintas a la misma pregunta es peor que no tener ninguna.
+        No cierres este issue hasta haber arrastrado la corrección a cada
+        archivo listado abajo.
+
+  - type: textarea
+    id: que-se-afirmo
+    attributes:
+      label: Qué se afirmó
+      description: La afirmación o cifra incorrecta, tal como está publicada hoy.
+    validations:
+      required: true
+
+  - type: textarea
+    id: donde-esta-publicado
+    attributes:
+      label: Dónde está publicado
+      description: >-
+        Lista TODOS los archivos donde aparece esta afirmación o cifra
+        (backlog, ADRs, notebooks, entregables, tesis, README, etc.). No basta
+        con el primero que encontraste.
+      placeholder: |
+        - docs/BACKLOG.md, sección P1
+        - notebooks/01-jss-viabilidad-e3.ipynb, celda de resumen
+        - docs/avances/...
+    validations:
+      required: true
+
+  - type: textarea
+    id: que-es-lo-correcto
+    attributes:
+      label: Qué es lo correcto y con qué evidencia
+      description: >-
+        La cifra o afirmación correcta, y el comando, notebook o test que la
+        respalda.
+    validations:
+      required: true
+
+  - type: textarea
+    id: como-se-detecto
+    attributes:
+      label: Cómo se detectó
+      description: Qué llevó a encontrar el error.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alcance-arrastre
+    attributes:
+      label: Alcance del arrastre
+      description: >-
+        Qué otras cifras, afirmaciones o conclusiones dependen de la corregida
+        y también deben revisarse (aunque no se corrijan en este mismo issue).
+    validations:
+      required: true

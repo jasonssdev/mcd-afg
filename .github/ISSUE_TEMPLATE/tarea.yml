@@ -1,0 +1,78 @@
+name: "Tarea"
+description: Una unidad de trabajo concreta (equivalente a un ítem P del backlog).
+title: "[tarea] "
+labels:
+  - tarea
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Usa este formulario para una unidad de trabajo concreta, del mismo tipo que
+        los ítems `P1`–`P9` de [`docs/BACKLOG.md`](../../docs/BACKLOG.md).
+
+  - type: textarea
+    id: que-hay-que-hacer
+    attributes:
+      label: Qué hay que hacer
+      description: Describe el trabajo de forma verificable, no una intención vaga.
+      placeholder: |
+        Ej.: Implementar `afg gold agreement --series <ID>` con kappa separado
+        para existencia, tipo y dirección.
+    validations:
+      required: true
+
+  - type: textarea
+    id: por-que-ahora
+    attributes:
+      label: Por qué ahora / qué desbloquea
+      description: Qué depende de que esto se complete, o por qué no puede esperar.
+    validations:
+      required: true
+
+  - type: textarea
+    id: depende-de
+    attributes:
+      label: De qué depende
+      description: >-
+        Lista los issues (por número, `#123`) o decisiones previas de los que esta
+        tarea depende. Si no depende de nada, dilo explícitamente.
+      placeholder: |
+        - Depende de #12 (debe cerrarse primero)
+        - Depende de la decisión D9 (ya tomada, ver BACKLOG.md)
+    validations:
+      required: true
+
+  - type: textarea
+    id: criterio-de-termino
+    attributes:
+      label: Criterio de término verificable
+      description: >-
+        Cómo se sabe, de forma objetiva, que esta tarea está terminada
+        (un test que pasa, un comando que produce cierto output, una cifra medida).
+    validations:
+      required: true
+
+  - type: textarea
+    id: notebook
+    attributes:
+      label: "¿Qué notebook lo respaldará?"
+      description: >-
+        CONTRIBUTING.md §7.1 (https://github.com/jasonssdev/mcd-afg/blob/main/CONTRIBUTING.md) exige que todo script que produzca un número, una decisión o
+        un entregable sea reproducible y legible desde un notebook en `notebooks/`.
+        Indica cuál (existente o nuevo, con su nombre `NN-jss-tema.ipynb`) o
+        justifica explícitamente por qué esta tarea no produce ningún número,
+        decisión ni entregable.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: prioridad
+    attributes:
+      label: Prioridad
+      options:
+        - bloqueante
+        - alta
+        - normal
+        - baja
+    validations:
+      required: true

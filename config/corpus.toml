@@ -1,0 +1,155 @@
+# AMI Meeting Corpus configuration.
+#
+# This file only declares metadata and download coordinates; it does not trigger any
+# network access by itself. See src/afg/corpus/download.py (never auto-run) and
+# src/afg/corpus/inventory.py (paso cero, thesis section 5.0).
+
+[corpus]
+name = "AMI Meeting Corpus"
+citation = "Carletta, J. et al. (2006). The AMI Meeting Corpus: A Pre-announcement. MLMI 2005, LNCS 3869, 28-39. DOI 10.1007/11677482_3"
+secondary_citation = "Carletta, J. (2007). Unleashing the killer corpus. Language Resources and Evaluation, 41(2), 181-190. DOI 10.1007/s10579-007-9040-x"
+homepage = "https://groups.inf.ed.ac.uk/ami/corpus/"
+
+[corpus.licence]
+name = "CC BY 4.0"
+# NOTE: the licence page states CC BY 4.0 but declares NO effective date (verified
+# 2026-09-20). This date is the publication date of ami_public_manual_1.6.2.zip, i.e. an
+# inference about when the current terms took effect, not something the licensor states.
+# Do not cite it as the licence date.
+archive_published = "2017-04-10"
+note = """
+Cite the licence page below, not the corpus papers, as the authority for usage terms
+(thesis section 5.0): the papers describe an earlier, more restrictive licence.
+Verified 2026-09-20: the page states CC BY 4.0 and declares NO effective date. The
+often-repeated "since April 2017" is the archive's publication date, not the licensor's
+statement -- do not present it as the licence date.
+"""
+licence_page = "https://groups.inf.ed.ac.uk/ami/corpus/license.shtml"
+
+[corpus.annotations]
+url = "https://groups.inf.ed.ac.uk/ami/AMICorpusAnnotations/ami_public_manual_1.6.2.zip"
+filename = "ami_public_manual_1.6.2.zip"
+approximate_size_mb = 22
+published_date = "2017-04-10"
+format = "NXT (NITE XML Toolkit)"
+
+# The six series that carry the Decision Discussion Segmentation layer. Historical sampling
+# frame from the proposal (thesis section 5.0); after the data audit they are the DDS
+# validation subset (decision D2). The OE1 annotation sample is [oe1].series below.
+[corpus.series]
+ids = ["ES2015", "ES2016", "IS1004", "IS1006", "IS1008", "TS3005"]
+meeting_letters = ["a", "b", "c", "d"]
+total_meetings = 24
+
+[corpus.phases]
+# PARTIALLY VERIFIED (2026-09-20). What was checked against the real corpus:
+#   * CHRONOLOGY IS CONFIRMED. `corpusResources/meetings.xml` gives `dateOnly` and
+#     `startTime` per meeting; for IS1004 the four meetings run 11h03, 12h03, 14h13, 15h34
+#     on 2004-11-23, i.e. a < b < c < d in real time. This is what the annotation direction
+#     convention and the anti-leakage rule depend on, and it holds.
+#   * THE PHASE NAMES BELOW ARE STILL UNVERIFIED. `meetings.xml` carries no phase
+#     attribute (only id/type/observation/name/date/startTime/duration/visibility), and the
+#     phase names appear nowhere in `corpusResources/` or `corpusdoc/` -- they occur only
+#     as spoken words inside the transcripts. The mapping comes from the AMI scenario
+#     design papers, not from the corpus distribution.
+# Consequence: rely on the ORDER freely; cite a paper, not the corpus, if you label a
+# meeting "conceptual design" in the thesis.
+a = "kickoff"
+b = "functional_design"
+c = "conceptual_design"
+d = "detailed_design"
+
+[corpus.experiment_a]
+# The 47 meetings carrying the Decision Discussion Segmentation layer (thesis section 5.0).
+# VERIFIED at paso cero (2026-09-20): `afg corpus inventory` against the real download at
+# data/raw/ami/ reports dds_meeting_count == 47, corpus-wide, matching this expectation
+# exactly. The on-disk annotation-layer paths are also verified: abstractive summaries at
+# `abstractive/<meeting>.abssumm.xml` (142 files) and DDS at
+# `decision/manual/<meeting>.decision.xml` (47 files -- note the nested `manual/` dir).
+# The exact list of 47 meeting ids is still NOT hard-coded here -- it is discovered by
+# globbing for the DDS annotation files, see
+# src/afg/corpus/layers.py::discover_meetings_with_layer.
+expected_count = 47
+layer = "decision_discussion_segmentation"
+
+[corpus.annotation_layers]
+# Layers consumed to build the OE1 gold set (thesis section 5.0 / section 3 OE1).
+required_for_goldset = [
+  "abstractive_summary_decisions",   # DECISIONS headers of the abstractive summary
+  "extractive_summary_links",        # links abstractive summary sentences to dialogue acts
+  "decision_discussion_segmentation",
+]
+
+[paso_cero]
+# The three things thesis section 5.0 required verifying before committing the design.
+# `afg corpus inventory` implements this check; results are in
+# reports/tables/paso_cero_inventory.csv and docs/BACKLOG.md.
+verify = [
+  "The six series (ES2015, ES2016, IS1004, IS1006, IS1008, TS3005) are complete: all four\nmeetings per series are present on disk and their annotation files parse without error.",
+  "How many distinct decisions the six series actually contain. Measured 2026-09-20: 136\ndecisions in the six DDS series; 343 in the 14 OE1 series.",
+  "How many real cross-meeting relation candidates exist. This number determines project\nviability for the E3 (evolution) question stratum (thesis section 7); see docs/BACKLOG.md\nfor the measured figures (92 candidates after blocking, provisional viability estimate).",
+]
+
+[oe1]
+# OE1 annotation sample. Frozen 2026-09-20 -- see docs/decisions/0004-adr-oe1-series-selection.md
+# for the criteria and the measured evidence. Changing this list invalidates any annotation
+# already produced under it; supersede the ADR rather than editing in place.
+#
+# Selection criteria, in order:
+#   1. HARD: summlink present on all four meetings (excludes TS3012, which has only 3).
+#   2. HARD: include all six DDS series (the validation subset, decision D2).
+#   3. Balance the recording site -- in AMI, native language is perfectly nested inside
+#      site (ES=Edinburgh, mostly native; IS=Idiap, mostly non-native; TS=TNO, no language
+#      data at all), so site is the variable that actually needs balancing.
+#   4. Within a site, prefer decision volume.
+series = [
+  # Edinburgh -- 137 decisions, 1357 cross-meeting pairs
+  "ES2002", "ES2008", "ES2014", "ES2015", "ES2016",
+  # Idiap -- 99 decisions, 716 cross-meeting pairs
+  "IS1003", "IS1004", "IS1006", "IS1008", "IS1009",
+  # TNO -- 107 decisions, 998 cross-meeting pairs
+  "TS3003", "TS3005", "TS3009", "TS3011",
+]
+total_series = 14
+total_meetings = 56
+total_decisions = 343          # abstractive DECISIONS sentences, measured
+total_cross_meeting_pairs = 3071
+
+# Development / evaluation split. Frozen 2026-09-20 -- see
+# docs/decisions/0005-adr-development-evaluation-split.md.
+#
+# This is NOT a train/test split: nothing is fitted on this data. It separates data used to
+# MAKE CHOICES from data used to REPORT RESULTS. Three things get tuned and must be tuned
+# here: C1's chunking and top-k (thesis 5.3 requires an honest, separately-tuned baseline),
+# the alignment tau grid (5.4), and the blocker operating point -- which demonstrably moves
+# the candidate count from 712 to 92 across these same series.
+#
+# ES2015 and IS1004 are the pilot series: their decisions, candidate pairs and (for IS1004d)
+# transcripts were read in full, so they are already contaminated and cost nothing to spend
+# on tuning. TS3009 joins them for site coverage and because it is low-yield (4 candidates).
+development_series = ["ES2015", "IS1004", "TS3009"]   # 77 decisions, 11 candidates
+evaluation_series = [
+  "ES2002", "ES2008", "ES2014", "ES2016",             # 4 ES
+  "IS1003", "IS1006", "IS1008", "IS1009",             # 4 IS
+  "TS3003", "TS3005", "TS3011",                       # 3 TS
+]                                                      # 266 decisions, 81 candidates
+# Any parameter tuned on development must be FROZEN before evaluation is touched, and its
+# value recorded. Development figures may illustrate method; they never enter a results table.
+
+# Double annotation, >=25% required by OE1. Fixed BEFORE annotation begins.
+# REVISED by ADR 0005: the previous list (ES2015, ES2008, IS1004, TS3005) put two control
+# series in development, but agreement must be measured on the data whose results are
+# reported. 4/11 evaluation series = 36.4%. One per site plus a second ES; ES2016 and TS3005
+# also carry DDS, so disagreements can be triangulated against an independent layer.
+# Revising was free: not a single row had been annotated.
+control_series = ["ES2008", "ES2016", "IS1003", "TS3005"]
+
+# Not to be inspected during annotation.
+held_out = [
+  "ES2003", "ES2004", "ES2005", "ES2006", "ES2007", "ES2009", "ES2010", "ES2011",
+  "ES2012", "ES2013", "IS1000", "IS1001", "IS1007", "TS3004", "TS3006", "TS3007",
+  "TS3008", "TS3010",
+]
+# Ineligible: TS3012 -- summlink on only 3 of 4 meetings, so its decisions cannot be
+# anchored to dialogue acts (fails thesis 5.2 condition 3).
+ineligible = ["TS3012"]

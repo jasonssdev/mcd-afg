@@ -1,0 +1,71 @@
+[project]
+name = "mcd-afg"
+version = "0.1.0"
+description = "Evaluation harness comparing document RAG against a persistent structured representation of organizational decisions and their cross-meeting evolution (AMI Meeting Corpus)."
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+license = "MIT"
+authors = [
+  { name = "Jason Sepúlveda", email = "jasonssdev@gmail.com" },
+  { name = "Germán Vega" },
+  { name = "Gustavo Martínez" },
+]
+keywords = ["ami-corpus", "meeting-decisions", "rag", "knowledge-graph", "local-llm"]
+dependencies = [
+  "pydantic>=2.10",
+  "pydantic-settings>=2.7",
+  "typer>=0.15",
+  "rich>=13.9",
+  "lxml>=5.3",
+  "pandas>=2.2",
+  "numpy>=2.1",
+  "scipy>=1.14",
+  "scikit-learn>=1.6",
+  "python-dotenv>=1.0",
+  "httpx>=0.28",
+  "bibtexparser>=1.4,<2",  # v2 changed the API entirely (Library/parse_string); pin to v1
+  "tqdm>=4.67",
+  "matplotlib>=3.9",
+  "seaborn>=0.13",
+]
+
+# Extras are split so that `uv sync` (no extras) stays fast for day-to-day work on the
+# harness itself. `sentence-transformers` pulls in torch, and `ollama`/`rank-bm25` are only
+# needed once the corpus and an instrument backend are actually wired up; keeping them
+# optional means the default install never pays for weights or backends nobody asked for.
+[project.optional-dependencies]
+instrument = ["openkos>=0.2.14"]      # the engine under evaluation (thesis §5.9)
+llm = ["ollama>=0.4"]                 # local generative models (§5.8)
+retrieval = ["rank-bm25>=0.2.2"]      # lexical channel of the C1 baseline
+embeddings = ["sentence-transformers>=3.3"]  # heavy; only needed for the alignment protocol
+
+[project.scripts]
+afg = "afg.cli:app"
+
+[dependency-groups]
+dev = ["pytest>=8.3", "pytest-cov>=6.0", "ruff>=0.9", "mypy>=1.14"]
+notebooks = ["jupyterlab>=4.3", "ipykernel>=6.29", "ipywidgets>=8.1"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/afg"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "SIM", "RUF"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-markers"
+
+[tool.mypy]
+python_version = "3.13"
+warn_unused_ignores = true
+disallow_untyped_defs = true
+ignore_missing_imports = true

@@ -1,0 +1,5 @@
+pair_id,earlier_decision_id,later_decision_id,earlier_text,later_text,blocker_score,relation,direction_ok,confidence,annotator,notes
+IS1004.p001,IS1004a.elana.s.14,IS1004b.elana.s.13,The project goal is to develop a new remote control.,The remote control will be for television only.,0.5,,,,,
+IS1004.p002,IS1004a.elana.s.14,IS1004b.elana.s.14,The project goal is to develop a new remote control.,"The remote control should be fancy, a good shape, and not too small or too big.",0.3333333333333333,,,,,
+IS1004.p003,IS1004c.elana.s.29,IS1004d.elana.s.22,"The remote will have a base station, a button on the base station to press, 2 scroll wheels for the channels and volume, a turbo button (possibly underneath the device), and an on/off button for the TV.",For pricing reasons they eliminate the turbo button.,0.4,,,,,
+IS1004.p004,IS1004c.elana.s.29,IS1004d.elana.s.12,"The remote will have a base station, a button on the base station to press, 2 scroll wheels for the channels and volume, a turbo button (possibly underneath the device), and an on/off button for the TV.","The volume scroll wheel will be on the left, channel scroll on the right.",0.3333333333333333,,,,,

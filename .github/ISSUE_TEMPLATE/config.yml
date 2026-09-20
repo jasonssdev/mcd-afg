@@ -1,0 +1,13 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Backlog del proyecto
+    url: https://github.com/jasonssdev/mcd-afg/blob/main/docs/BACKLOG.md
+    about: >-
+      Antes de abrir un issue, revisa si el ítem ya está listado (o ya resuelto)
+      en el backlog. Los ítems P1–P9 y las decisiones D1–D10 se están migrando
+      desde ahí.
+  - name: Convenciones del proyecto (CONTRIBUTING.md)
+    url: https://github.com/jasonssdev/mcd-afg/blob/main/CONTRIBUTING.md
+    about: >-
+      Reglas de naming, idioma, notebooks y alcance desarrollo/evaluación que
+      todo issue y PR debe respetar.

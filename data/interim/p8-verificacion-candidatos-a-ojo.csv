@@ -1,0 +1,7 @@
+id,series_id,earlier_decision_id,later_decision_id,afirmacion_piloto,veredicto,relacion_verificada,motivo
+P8-1,ES2015,ES2015c.elana.s.19,ES2015d.elana.s.15,reafirma,confirmado,reafirma,"la evidencia de d repite la decision de c sin cambiarla"
+P8-2,ES2015,ES2015c.elana.s.20,ES2015d.elana.s.17,reafirma o refina,confirmado,reafirma,"mismo material; el motivo agregado no cambia la decision"
+P8-3,ES2015,ES2015b.elana.s.13,ES2015d.elana.s.14,refina,refutado,no_relacionada,"la evidencia de 'dos colores' nunca menciona la marca; objetos distintos"
+P8-4,IS1004,IS1004b.elana.s.17,IS1004c.elana.s.28,reafirma,confirmado,reafirma,"'Thus far ... have been ruled out' es un repaso explicito. NO fue seleccionada por el blocker: falso negativo confirmado"
+P8-5,IS1004,,IS1004d.elana.s.21,existe la decision anterior?,refutado,,"no existe decision previa de doble curvatura en IS1004; la unica del corpus esta en ES2015d, otra serie"
+P8-6,IS1004,IS1004c.elana.s.29,IS1004d.elana.s.22,revierte,refutado,no_relacionada,"el resumen afirma una eliminacion que la transcripcion contradice; el boton se mantiene"

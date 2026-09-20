@@ -1,0 +1,64 @@
+name: "Entregable del curso"
+description: Un entregable que exige la universidad (informe, presentación, guion de video, etc.).
+title: "[entregable] "
+labels:
+  - entregable
+body:
+  - type: textarea
+    id: que-pide-el-curso
+    attributes:
+      label: Qué pide el curso
+      description: Cita la rúbrica o el enunciado del curso, tal como lo especifica.
+    validations:
+      required: true
+
+  - type: input
+    id: fecha-entrega
+    attributes:
+      label: Fecha de entrega
+      description: Formato AAAA-MM-DD.
+      placeholder: "2026-10-15"
+    validations:
+      required: true
+
+  - type: textarea
+    id: documentos-afectados
+    attributes:
+      label: "Documento(s) afectados"
+      description: >-
+        Dos carpetas, dos propósitos: `docs/avances/` son los documentos vivos
+        (problema, objetivos, metodología...) que se actualizan a medida que el
+        proyecto avanza; `docs/entregables/` es lo que efectivamente se entrega
+        (guiones de video, presentaciones, informes enviados), construido a partir
+        de los avances y congelado al momento de entregar.
+        Lista los archivos que este issue crea o modifica, con la convención
+        `NN-jss-nombre.md`.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: requiere-version
+    attributes:
+      label: "¿Cómo cambia la versión del documento?"
+      description: >-
+        Cada documento de `docs/avances/` lleva su propia cabecera de versión
+        y su historial de cambios. La regla, escrita en cada documento: un cambio
+        de redacción sube el decimal (1.0 -> 1.1); un cambio que altera una
+        decisión, un objetivo o una cifra sube el entero (1.x -> 2.0) y DEBE
+        declarar la evidencia que lo motivó. El historial nunca se reescribe: se
+        agrega una fila. Esto no tiene relación con `version` en `pyproject.toml`,
+        que versiona el paquete de codigo, no los entregables.
+      options:
+        - label: "Cambio menor (sube el decimal): redacción, formato, precisión sin alterar contenido"
+        - label: "Cambio mayor (sube el entero): altera una decisión, un objetivo o una cifra"
+        - label: "Documento nuevo (nace en 1.0)"
+    validations:
+      required: false
+
+  - type: textarea
+    id: criterios-evaluacion
+    attributes:
+      label: Criterios de evaluación
+      description: Cómo se evalúa este entregable (puntaje, checklist, rúbrica).
+    validations:
+      required: true

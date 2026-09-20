@@ -1,0 +1,14 @@
+section,entry_count
+section-8-1,11
+section-8-2,5
+section-8-3,8
+section-8-4,7
+section-8-5,7
+section-8-6,7
+section-8-7,4
+
+metric,value
+total_entries,49
+preprint_count,4
+missing_doi_count,20
+duplicate_doi_group_count,0

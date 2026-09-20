@@ -248,3 +248,36 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,linux,macos,python
+### mcd-afg project-specific ###
+# AMI corpus is downloaded locally, never committed (CC BY 4.0, ~22MB+ zips); keep the
+# directory tracked via .gitkeep but ignore everything else that lands inside it.
+data/raw/**
+!data/raw/.gitkeep
+!data/raw/README.md
+!data/raw/ami/.gitkeep
+data/interim/**
+!data/interim/.gitkeep
+# Small hand-adjudicated tables that notebook 01 reads; they must travel with the notebook.
+!data/interim/provisional-dev-adjudication.csv
+!data/interim/p8-verificacion-candidatos-a-ojo.csv
+data/external/**
+!data/external/.gitkeep
+
+# Bibliography PDFs are copyrighted third-party material; only refs.bib/screening/notes
+# are tracked, never the PDFs themselves.
+bibliography/pdfs/**
+!bibliography/pdfs/.gitkeep
+
+# Generated figures are reproducible from reports/tables + notebooks; do not commit binaries.
+reports/figures/*.png
+
+# OpenKOS local workspace and any local SQLite database files (retrieval indexes, caches).
+.openkos/
+*.sqlite
+*.db
+
+# uv.lock MUST be committed for reproducibility - do not add it above this line.
+
+# Course material (guidelines, rubrics, lecture transcripts, working notes): kept locally and
+# shared inside the team, never versioned. The thesis proposal lives in docs/propuesta.md.
+puc-context/

@@ -1,0 +1,65 @@
+name: "Propuesta de decisión (ADR)"
+description: Propone una decisión de arquitectura o metodología que requiere registro formal.
+title: "[decisión] "
+labels:
+  - decision
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Si esta propuesta se acepta, se registrará como
+        `docs/decisions/NNNN-adr-{nombre}.md`, siguiendo el formato de los ADRs
+        existentes en [`docs/decisions/`](../../docs/decisions/).
+
+  - type: textarea
+    id: contexto
+    attributes:
+      label: Contexto y qué fuerza la decisión
+      description: >-
+        Qué situación, hallazgo o restricción hace necesaria esta decisión ahora.
+    validations:
+      required: true
+
+  - type: textarea
+    id: opciones-consideradas
+    attributes:
+      label: Opciones consideradas
+      description: Las alternativas evaluadas, aunque sea brevemente.
+    validations:
+      required: true
+
+  - type: textarea
+    id: propuesta
+    attributes:
+      label: Propuesta
+      description: La decisión que se propone tomar.
+    validations:
+      required: true
+
+  - type: textarea
+    id: consecuencias
+    attributes:
+      label: Consecuencias
+      description: Qué cambia (código, datos, tesis, proceso) si esta propuesta se acepta.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternativas-rechazadas
+    attributes:
+      label: Alternativas rechazadas y por qué
+      description: >-
+        De las opciones consideradas arriba, cuáles se descartan explícitamente
+        y la razón concreta (no basta con "se prefirió la otra").
+    validations:
+      required: true
+
+  - type: textarea
+    id: supersede
+    attributes:
+      label: "¿Supersede algún ADR?"
+      description: >-
+        Indica el número del ADR que esta decisión reemplaza o modifica, si
+        corresponde. Si no supersede ninguno, dilo explícitamente.
+    validations:
+      required: true

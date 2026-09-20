@@ -1,0 +1,62 @@
+name: "Hallazgo"
+description: Una medición o un descubrimiento que puede cambiar una decisión tomada.
+title: "[hallazgo] "
+labels:
+  - hallazgo
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Usa este formulario para reportar algo medido sobre el corpus o el código
+        que puede afectar una decisión ya tomada (D1–D10) o un ADR.
+
+  - type: textarea
+    id: que-se-midio
+    attributes:
+      label: Qué se midió
+      description: Describe qué se observó o midió.
+    validations:
+      required: true
+
+  - type: textarea
+    id: cifra-observada
+    attributes:
+      label: Cifra observada y cómo se obtuvo
+      description: >-
+        La cifra exacta, y el comando o notebook que la produjo. Recuerda
+        CONTRIBUTING.md §7.5 (https://github.com/jasonssdev/mcd-afg/blob/main/CONTRIBUTING.md): nunca se cita un número que no se ha medido sobre los
+        datos reales.
+      placeholder: |
+        Ej.: 712/3.071 (23,2 %) — `uv run afg gold candidates --series <ID>`,
+        ver `notebooks/01-jss-viabilidad-e3.ipynb`.
+    validations:
+      required: true
+
+  - type: textarea
+    id: que-decision-afecta
+    attributes:
+      label: Qué decisión afecta
+      description: >-
+        Indica la decisión del backlog (D1–D10) o el ADR (`docs/decisions/`) que
+        este hallazgo pone en cuestión, y por qué.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reemplaza-cifra
+    attributes:
+      label: "¿Reemplaza una cifra ya publicada?"
+      description: >-
+        Si esta cifra reemplaza una ya publicada, indica dónde aparece esa cifra
+        anterior (todos los archivos: backlog, notebooks, entregables, tesis).
+        Si no reemplaza nada, dilo explícitamente.
+    validations:
+      required: true
+
+  - type: textarea
+    id: siguiente-paso
+    attributes:
+      label: Siguiente paso
+      description: Qué se propone hacer con este hallazgo.
+    validations:
+      required: true
