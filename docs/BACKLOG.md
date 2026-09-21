@@ -1,6 +1,6 @@
 # Backlog — mcd-afg
 
-Trabajo pendiente, en orden de dependencia. Última actualización: 2026-09-20.
+Trabajo pendiente, en orden de dependencia. Última actualización: 2026-09-21.
 
 > Las decisiones ya tomadas y la evidencia que las respalda están en
 > [`decisions/`](decisions/) (ADRs) y en los resultados del paso cero más abajo.
@@ -36,6 +36,7 @@ Trabajo pendiente, en orden de dependencia. Última actualización: 2026-09-20.
 | D8 | **La muestra se balancea por sitio de grabación (ES/IS/TS), no por lengua** | La lengua está perfectamente anidada en el sitio; balancear por lengua es imposible y cualquier desbalance de sitio haría que un resultado sea un artefacto de sitio |
 | D9 | **El blocker exige coeficiente ≥ 0,30 **y** `\|A∩B\| ≥ 2`** | Solo con el coeficiente selecciona 712/3.071 (23,2 %) ≈ 18 h; con el mínimo absoluto, 92 (3,0 %) ≈ 2,3 h, y el par del turbo sobrevive |
 | D10 | **Split desarrollo (3) / evaluación (11).** No es train/test: nada se entrena | Se ajustan tres cosas (C1, τ, blocker) y ninguna puede ajustarse sobre los datos cuyos resultados se reportan. ES2015 e IS1004 ya están contaminadas por el piloto |
+| D11 | **El corpus se congela en transcripciones legibles antes de anotar, en dos artefactos versionados por reunión**: `.md` para lectura e indexación, `.jsonl` con tiempos, offsets de caracteres e ids de acto de diálogo que enlazan de vuelta a `summlink` | 171 reuniones renderizadas por `afg corpus transcripts` a `data/interim/transcripts/` (ignorado por git); manifiesto de congelamiento de 171 filas con SHA-256 por artefacto en `reports/tables/transcripts_manifest.csv`; registro académico en `notebooks/02-jss-transcripciones.ipynb` (✅ en `notebooks/README.md`). La serie de notebooks se renumeró: anotación pasa a ser el notebook 03 |
 
 ---
 

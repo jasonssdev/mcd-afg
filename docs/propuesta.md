@@ -1,5 +1,22 @@
 # Evaluación experimental de la extracción automática y la representación persistente de decisiones organizacionales y su evolución entre reuniones, frente a Recuperación Aumentada (RAG)
 
+> **Aviso de lectura.** Este documento no se reescribió tras la auditoría de datos. Tres
+> partes quedaron superadas y no deben citarse tal como están:
+>
+> - **§5.0**, la muestra de OE1/Experimento B ("seis series… 24 reuniones", "90 a 100
+>   decisiones") — superada por la decisión **D1**: **14 series, 56 reuniones, 343
+>   decisiones**, medido 2026-09-20. Cifras vigentes en [`BACKLOG.md`](BACKLOG.md) y en
+>   [`decisions/0004-adr-oe1-series-selection.md`](decisions/0004-adr-oe1-series-selection.md).
+> - **§7**, el riesgo principal declarado — superado por la decisión **D9**: el cuello de
+>   botella real fue el punto de operación del bloqueador, no el volumen de enlaces entre
+>   reuniones. Ver [`BACKLOG.md`](BACKLOG.md).
+> - **§8.1**, bibliografía — "Hsueh & Moore (2007)" son dos trabajos distintos y necesitan
+>   los sufijos a/b, y el título de Cai & O'Connor (2025) está truncado; ya corregido en
+>   [`avances/04-jss-bibliografia.md`](avances/04-jss-bibliografia.md).
+>
+> La reescritura de la metodología está pendiente ([`BACKLOG.md`](BACKLOG.md), P7); este
+> aviso solo señala qué leer con reserva mientras tanto.
+
 ---
 
 ## 1. Definición del Problema

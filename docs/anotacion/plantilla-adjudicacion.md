@@ -4,10 +4,18 @@
 > `data/processed/relations/<serie>.adjudication.md`. Esta plantilla existe para que los
 > cinco salgan comparables entre sí.
 >
-> **Por qué a mano.** `build_adjudication_log()` existe en
-> `src/afg/annotation/agreement.py` y tiene pruebas en `tests/test_annotation.py`, pero
-> **nadie la invoca desde el CLI**: no hay `afg gold adjudicate`. Hasta que exista, este
-> archivo se escribe a mano (ver [`asignacion/README.md`](asignacion/README.md) §5.3).
+> **Qué es esto hoy.** `uv run afg gold adjudicate --series <ID>` existe y escribe este
+> archivo ya pre-llenado: calcula los tres kappas, encuentra los desacuerdos de la Tarea B
+> y deja una fila por cada uno con las dos etiquetas puestas. Esta plantilla es, por lo
+> tanto, en gran parte redundante con lo que el comando produce; se conserva como
+> referencia del formato, no como instrucción para escribir el archivo a mano (ver
+> [`asignacion/README.md`](asignacion/README.md) §5.3).
+>
+> **Qué sigue siendo manual.** Por cada fila de desacuerdo de la Tarea B, solo **etiqueta
+> final** y **razón** (el comando ya puso las dos etiquetas de los anotadores). La tabla de
+> desacuerdos de la Tarea A (`status`) el comando la deja completamente vacía: no hay
+> función que calcule ese eje, así que se llena leyendo los dos archivos a mano, alineados
+> por `decision_id` (ver [`asignacion/tareas-jss.md`](asignacion/tareas-jss.md) §2.4).
 >
 > **Quién lo escribe.** `jss`, que adjudica y no anota (`CONTRIBUTING.md` §1).
 >
