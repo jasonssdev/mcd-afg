@@ -87,7 +87,7 @@ dos listas que puedan desincronizarse.
 |---|---|---|
 | **git** | Control de versiones | macOS: `xcode-select --install` · Linux: `sudo apt install git` · Windows: [git-scm.com](https://git-scm.com/downloads) |
 | **uv** | Entorno, dependencias y Python | macOS/Linux: `curl -LsSf https://astral.sh/uv/install.sh \| sh` · Windows: `powershell -c "irm https://astral.sh/uv/install.ps1 \| iex"` · [Guía oficial](https://docs.astral.sh/uv/getting-started/installation/) |
-| **Cuenta de GitHub** | Fork y pull requests | [github.com](https://github.com) |
+| **Cuenta de GitHub** | Pull requests | [github.com](https://github.com) |
 
 **No hace falta instalar Python a mano.** `uv` descarga e instala la versión exacta que pide
 el proyecto (3.13, fijada en `.python-version`) la primera vez que se ejecuta `uv sync`.
@@ -100,41 +100,33 @@ git --version
 uv --version
 ```
 
-### 3.2 Fork, clon e instalación (el fork es obligatorio)
+### 3.2 Clona el repositorio e instala el entorno
 
-Nadie trabaja directamente sobre `jasonssdev/mcd-afg`. Cada integrante trabaja en **su
-propio fork** y envía cambios por pull request.
+Todo el equipo trabaja sobre el mismo repositorio, `jasonssdev/mcd-afg`. Eso es seguro:
+`main` está protegida y nadie puede escribir sobre ella directamente, ni con permiso de
+escritura de por medio — todo cambio pasa por una rama y un pull request revisado (ver §7).
 
-**1. Crea tu fork.** En [github.com/jasonssdev/mcd-afg](https://github.com/jasonssdev/mcd-afg)
-pulsa **Fork** (arriba a la derecha) y acepta los valores por defecto. Eso crea
-`github.com/<tu-usuario>/mcd-afg`.
-
-**2. Clona tu fork, no el original.**
+**1. Clona el repositorio.**
 
 ```bash
-git clone git@github.com:<tu-usuario>/mcd-afg.git
+git clone git@github.com:jasonssdev/mcd-afg.git
 cd mcd-afg
 ```
 
 Si no tienes llaves SSH configuradas, usa HTTPS:
-`git clone https://github.com/<tu-usuario>/mcd-afg.git`.
+`git clone https://github.com/jasonssdev/mcd-afg.git`.
 
-**3. Conecta el repositorio original como `upstream`** para poder traer los cambios del
-equipo:
+Tu único remoto es `origin`, y apunta al repositorio del equipo. No hace falta agregar un
+segundo remoto para traer los cambios que ya se fusionaron: con `git pull` alcanza (ver §3.6).
 
-```bash
-git remote add upstream https://github.com/jasonssdev/mcd-afg.git
-git remote -v    # debe mostrar origin (tu fork) y upstream (el original)
-```
-
-**4. Instala el entorno.** Un solo comando crea `.venv/`, instala Python 3.13 si falta, y
+**2. Instala el entorno.** Un solo comando crea `.venv/`, instala Python 3.13 si falta, y
 deja todas las dependencias de desarrollo y de notebooks:
 
 ```bash
 uv sync --group dev --group notebooks
 ```
 
-**5. Verifica que todo funciona:**
+**3. Verifica que todo funciona:**
 
 ```bash
 uv run afg --help     # el CLI del proyecto responde
@@ -186,24 +178,57 @@ anotada por ambos; el procedimiento está en el manual, §6.
 
 ### 3.6 Cómo enviar tu trabajo
 
-Siempre desde una rama de tu fork, nunca desde `main`:
+Cada aporte se hace en una **rama**: una copia paralela del historial donde se puede trabajar
+sin tocar `main` todavía. Trabajar en rama evita que un cambio a medio terminar quede
+mezclado con el de otra persona, y permite que el mantenedor revise exactamente lo que va a
+integrarse antes de que entre.
+
+Antes de crear una rama nueva, trae los cambios que el equipo ya fusionó a `main`:
 
 ```bash
-git fetch upstream
-git checkout -b data/anotacion-is1004 upstream/main   # tipo/descripcion-corta
+git checkout main                                    # vuelve a la rama main
+git pull                                              # trae los commits que ya se fusionaron
+git checkout -b data/anotacion-is1004                 # crea y cambia a una rama nueva desde main actualizado
 # ... trabajas ...
 uv run pytest -q && uv run ruff check . && uv run mypy src/afg
 git add -A && git commit -m "data(oe1): anotar Tarea A de IS1004"
-git push -u origin data/anotacion-is1004
+git push -u origin data/anotacion-is1004              # sube la rama al repositorio del equipo (origin)
 ```
 
-Luego abres el pull request desde tu fork contra `main` del repositorio original y completas
-la plantilla. Lo revisa el mantenedor antes de integrarlo. Antes de empezar un trabajo
-nuevo, actualiza tu fork:
+`origin` es el repositorio del equipo, no una copia personal. Eso es seguro: `main` está
+protegida, así que ese `push` solo puede subir la rama nueva, nunca `main`. Si `git push`
+intentara subir directo a `main`, GitHub lo rechaza — a `main` solo se llega por pull request
+revisado.
+
+**Si `git push` es rechazado** con un mensaje sobre permisos o sobre `main` protegida, es
+señal de estar intentando subir a `main` en vez de a la rama propia: confirma con `git branch
+--show-current` que la rama activa es `data/anotacion-...` y reintenta. Si el mensaje es otro
+y no queda claro, se consulta a [@jasonssdev](https://github.com/jasonssdev).
+
+**Cómo abrir el pull request.** Después del `git push`, GitHub muestra en la terminal un
+enlace y, en la página del repositorio, un botón **"Compare & pull request"**. Se pulsa ese
+botón, se completa la plantilla y se confirma. Si no aparece el botón, se va a la pestaña
+**Pull requests** del repositorio y se pulsa **New pull request**, eligiendo la rama propia
+como origen y `main` como destino.
+
+Lo revisa el mantenedor antes de integrarlo. Antes de empezar un trabajo nuevo, se actualiza
+la copia local de `main`:
 
 ```bash
-git checkout main && git fetch upstream && git merge upstream/main && git push origin main
+git checkout main
+git pull
 ```
+
+**Después de que se fusione el PR**, se borra la rama local ya mergeada; ya cumplió su
+función y mantenerla solo acumula ruido:
+
+```bash
+git branch -d data/anotacion-is1004
+```
+
+**Si `git pull` trae conflictos**, no se resuelven a ciegas: son señal de que dos cambios
+tocaron las mismas líneas. Se consulta a [@jasonssdev](https://github.com/jasonssdev) antes
+de forzar una resolución, sobre todo si el conflicto está en un CSV de anotación.
 
 ---
 
@@ -320,7 +345,7 @@ uv sync --extra embeddings    # sentence-transformers (pesado)
 
 ## 7. Cómo contribuir
 
-**Nada entra a `main` directamente.** Fork → rama → pull request, revisado por el
+**Nada entra a `main` directamente.** Rama → pull request, revisado por el
 mantenedor [@jasonssdev](https://github.com/jasonssdev) antes de integrarse — también las
 suyas propias. El flujo completo y las convenciones están en
 [`CONTRIBUTING.md`](CONTRIBUTING.md).

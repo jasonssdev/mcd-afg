@@ -360,22 +360,51 @@ devuélvela con el motivo, para que la autoría siga siendo de una sola persona.
 
 ## 9. Cómo entregas
 
-Una serie, un PR (`CONTRIBUTING.md` §2 y §3):
+Una serie, un PR (`CONTRIBUTING.md` §2 y §3). El trabajo se hace en una **rama**: una copia
+paralela del historial donde se puede anotar sin tocar `main` todavía. Trabajar en rama evita
+mezclar una serie a medio anotar con el trabajo de Gustavo o de `jss`, y permite que el
+mantenedor revise exactamente esa serie antes de que entre.
 
 ```bash
-git fetch upstream
-git checkout -b data/anotacion-ES2015 upstream/main
+git checkout main                                          # vuelve a main
+git pull                                                    # trae lo que el equipo ya fusionó
+git checkout -b data/anotacion-ES2015                       # crea la rama de esta serie
 uv run afg gold prepare --annotator gv
 # ... anotas ...
-uv run afg gold validate --annotator gv --series ES2015   # tiene que salir sin errores
+uv run afg gold validate --annotator gv --series ES2015     # tiene que salir sin errores
 git add data/processed/decisions/ES2015.decisions.gv.csv \
         data/processed/relations/ES2015.candidates.gv.csv
 git commit -m "data(anotacion): tareas A y B de ES2015 (gv)"
-git push -u origin data/anotacion-ES2015
-# abres el PR desde tu fork contra main del repositorio original
+git push -u origin data/anotacion-ES2015                    # sube la rama al repositorio del equipo
 ```
 
-- **Fork obligatorio.** Nadie clona ni escribe sobre el repositorio original.
+`origin` es el repositorio del equipo (`jasonssdev/mcd-afg`), el único remoto que hace falta.
+Esto es seguro porque `main` está protegida (`CONTRIBUTING.md` §3): con permiso de escritura
+se puede subir una rama, pero no `main` — GitHub rechaza cualquier intento de subir
+directamente ahí.
+
+**Si `git push` es rechazado**, la causa casi siempre es que la rama activa es `main` en vez
+de la rama de la serie: revisa con `git branch --show-current` y corrige antes de reintentar.
+Si el rechazo es por otra razón y no queda claro, se consulta a `jss`.
+
+**Abrir el PR desde GitHub.** Después del `git push -u origin ...`, la página del repositorio
+en GitHub muestra un botón **"Compare & pull request"**. Se pulsa, se confirma `main` como
+destino, se completa la plantilla y se abre. Si el botón no aparece, se va a la pestaña
+**Pull requests** y se pulsa **New pull request**, eligiendo la rama de la serie como origen y
+`main` como destino.
+
+**Si `git pull` trae conflictos** al actualizar `main` antes de empezar una serie nueva, no se
+resuelven a ciegas: son dos cambios sobre las mismas líneas. Se consulta a `jss` antes de
+forzar una resolución, sobre todo si el conflicto está en un CSV de anotación.
+
+Después de que se fusione el PR, se limpia la rama local ya mergeada:
+
+```bash
+git checkout main
+git pull
+git branch -d data/anotacion-ES2015
+```
+
 - **Rama `data/anotacion-<serie>`**, con el prefijo `data/` de `CONTRIBUTING.md` §7.2.
 - **Revisa el mantenedor** (`jss`), que es el CODEOWNER de `main`.
 - **Una serie por PR, no todas juntas.** Un PR por serie permite detectar deriva de criterio
@@ -418,7 +447,7 @@ dividida con sentido).
 - [ ] No hubo comparación de etiquetas ni discusión de casos concretos con `gm` antes de la adjudicación
 
 ### Entrega
-- [ ] Rama `data/anotacion-<serie>` desde `upstream/main` actualizado
+- [ ] Rama `data/anotacion-<serie>` creada desde `main` actualizado (`git pull` antes de crear la rama)
 - [ ] `uv run afg gold validate --annotator gv --series <ID>` sale sin errores
 - [ ] Un PR con **esta serie sola**
 - [ ] `uv run pytest -q` pasa

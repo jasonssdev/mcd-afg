@@ -201,7 +201,7 @@ Estas valen para `gv` y `gm` por igual, en las tres fases.
    anotación. Ver el detalle en cada documento personal.
 6. **Las etiquetas las pone una persona** (`CONTRIBUTING.md` §7.6). `machine_flags` es una
    sugerencia de triaje; `status` y `relation` no se copian de ahí nunca.
-7. **Una serie por PR.** Fork → rama `data/anotacion-<serie>` → PR contra `main`, revisado
+7. **Una serie por PR.** Rama `data/anotacion-<serie>` → PR contra `main`, revisado
    por el mantenedor (`CONTRIBUTING.md` §2 y §3). No se juntan varias series en un PR: un PR
    por serie permite detectar deriva de criterio temprano, cuando corregirla es barata.
 8. **Lo que no encaja se escribe, no se descarta en silencio.** Va a `notes` y a un issue con

@@ -20,9 +20,9 @@ y en [`README.md`](README.md) §2.
 
 ## 1. Clona e instala
 
-Sigue **"Tu primer día, paso a paso"** en [`../../../README.md`](../../../README.md) §3: fork,
-clonar tu fork, `uv sync --group dev --group notebooks`, y verificar con `uv run afg --help` y
-`uv run pytest -q`. No se repite aquí.
+Sigue **"Tu primer día, paso a paso"** en [`../../../README.md`](../../../README.md) §3:
+clonar el repositorio, `uv sync --group dev --group notebooks`, y verificar con
+`uv run afg --help` y `uv run pytest -q`. No se repite aquí.
 
 ## 2. Un comando deja todo listo
 
