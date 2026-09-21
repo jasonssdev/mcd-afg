@@ -24,6 +24,7 @@ ENV_PATH: Path = PROJECT_ROOT / ".env"
 RAW_DIR: Path = DATA_DIR / "raw"
 AMI_DIR: Path = RAW_DIR / "ami"
 INTERIM_DIR: Path = DATA_DIR / "interim"
+TRANSCRIPTS_DIR: Path = INTERIM_DIR / "transcripts"
 PROCESSED_DIR: Path = DATA_DIR / "processed"
 GOLD_DECISIONS_DIR: Path = PROCESSED_DIR / "decisions"
 GOLD_RELATIONS_DIR: Path = PROCESSED_DIR / "relations"
@@ -41,6 +42,7 @@ _WRITABLE_DIRS: tuple[Path, ...] = (
     RAW_DIR,
     AMI_DIR,
     INTERIM_DIR,
+    TRANSCRIPTS_DIR,
     PROCESSED_DIR,
     GOLD_DECISIONS_DIR,
     GOLD_RELATIONS_DIR,

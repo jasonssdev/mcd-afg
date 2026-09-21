@@ -17,7 +17,8 @@ patterns and their observed file counts.
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+import re
+from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -134,6 +135,71 @@ def get_href_targets(element: etree._Element) -> list[str]:
         if child_href and child_href not in hrefs:
             hrefs.append(child_href)
     return hrefs
+
+
+def local_name(element: etree._Element) -> str | None:
+    """Return an element's local tag name, ignoring any namespace prefix.
+
+    Returns ``None`` for a non-element node (comments, processing instructions), whose
+    ``.tag`` is a callable rather than a string -- callers iterating raw children (e.g.
+    ``for el in root``) must guard against those, since ``etree.QName`` raises on them.
+    """
+    if not isinstance(element.tag, str):
+        return None
+    return etree.QName(element.tag).localname
+
+
+_ID_TOKEN_RE = re.compile(r"id\(([^()]+)\)")
+
+
+def parse_href_ids(href: str) -> list[str]:
+    """Extract the id token(s) referenced by a NITE href, in encounter order.
+
+    VERIFIED (2026-09-21) against both href shapes documented on :func:`get_href_targets`:
+    a single-id href (``file.xml#id(x)``) yields one id; a range href
+    (``file.xml#id(a)..id(b)``) yields exactly two ids -- the range's inclusive start and
+    end. This function knows nothing about document order and never expands a range into
+    every id it covers; that is :func:`resolve_id_range`'s job, given the target file's
+    id -> document-order-index mapping.
+    """
+    fragment = href.split("#", 1)[-1] if "#" in href else href
+    return _ID_TOKEN_RE.findall(fragment)
+
+
+def href_filename(href: str) -> str:
+    """Return the filename portion of a NITE href, before the ``#``.
+
+    Needed to implement the ``dact`` filtering trap documented on
+    :func:`get_href_targets`: a dialogue act's ``da-types.xml`` href must be told apart
+    from its ``<meeting>.<speaker>.words.xml`` href before either is resolved.
+    """
+    return href.split("#", 1)[0]
+
+
+def resolve_id_range(ids: Sequence[str], index_by_id: Mapping[str, int]) -> tuple[int, int] | None:
+    """Resolve parsed href id(s) to an inclusive ``(start, end)`` index pair, given a
+    target file's document-order ``id -> index`` mapping (e.g. built while parsing a
+    ``words.xml`` file in document order, keeping every element -- including non-lexical
+    ones -- so no id's index silently shifts).
+
+    ``ids`` is what :func:`parse_href_ids` returns: one id for a single-target href, two
+    for an ``id(a)..id(b)`` range. VERIFIED (2026-09-21) against ``ami_public_manual_1.6.2``:
+    the range is INCLUSIVE of both endpoints, over document order -- not a two-element set
+    naming only the first and last member.
+
+    Returns ``None`` (never raises) when ``ids`` is empty or either endpoint is absent
+    from ``index_by_id`` (a dangling reference) -- the caller should skip that href rather
+    than guess a range from a partial match.
+    """
+    if not ids:
+        return None
+    start = index_by_id.get(ids[0])
+    if start is None:
+        return None
+    end = index_by_id.get(ids[-1])
+    if end is None:
+        return None
+    return (start, end) if start <= end else (end, start)
 
 
 def discover_annotation_files(ami_root: Path, pattern: str) -> list[Path]:

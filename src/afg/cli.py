@@ -45,6 +45,7 @@ from afg.corpus.participants import (
 from afg.corpus.participants import (
     write_csv as write_participants_csv,
 )
+from afg.corpus.render import discover_meeting_ids, render_meetings
 from afg.domain.decision import Decision
 from afg.shared.config import get_settings, load_corpus_config
 from afg.shared.logging import configure_logging, get_logger
@@ -53,6 +54,7 @@ from afg.shared.paths import (
     GOLD_DECISIONS_DIR,
     GOLD_RELATIONS_DIR,
     TABLES_DIR,
+    TRANSCRIPTS_DIR,
     ensure_dirs,
 )
 
@@ -158,6 +160,78 @@ def corpus_participants() -> None:
     render_participants_table(corpus_wide, series_participants, console)
     out_path = write_participants_csv(series_participants)
     console.print(f"Wrote {out_path}")
+
+
+_TRANSCRIPTS_SERIES_OPTION = typer.Option(
+    None, "--series", help="AMI series id to render (e.g. IS1004). Repeatable; omit for all."
+)
+_TRANSCRIPTS_OUT_OPTION = typer.Option(
+    None,
+    "--out",
+    help="Output directory for rendered transcripts (default: data/interim/transcripts).",
+)
+
+
+@corpus_app.command("transcripts")
+def corpus_transcripts(
+    series: list[str] | None = _TRANSCRIPTS_SERIES_OPTION,
+    out: Path | None = _TRANSCRIPTS_OUT_OPTION,
+    force: bool = typer.Option(
+        False, "--force/--no-force", help="Overwrite an existing non-empty output directory."
+    ),
+) -> None:
+    """Freeze rendered transcripts (.md + .jsonl) to disk, plus a tracked manifest
+    (thesis sections 5.3/5.4). Refuses to overwrite a non-empty output directory unless
+    --force is given: transcripts are meant to be frozen before human annotation starts,
+    and silently re-rendering under the annotators would invalidate their offsets."""
+    settings = get_settings()
+    ami_root = settings.ami_root or AMI_DIR
+    out_dir = out or TRANSCRIPTS_DIR
+    if not ami_root.exists():
+        console.print(
+            f"[bold red]AMI corpus not found at {ami_root}. "
+            "Run `uv run afg corpus download` first.[/bold red]"
+        )
+        raise typer.Exit(code=1)
+
+    meeting_ids = discover_meeting_ids(ami_root, series)
+    if not meeting_ids:
+        console.print(
+            f"[bold red]No meetings discovered under {ami_root}/words/"
+            f"{' for series ' + ', '.join(series) if series else ''}.[/bold red]"
+        )
+        raise typer.Exit(code=1)
+
+    if out_dir.exists() and any(out_dir.iterdir()) and not force:
+        console.print(
+            f"[bold red]{out_dir} already exists and is not empty. Transcripts are frozen "
+            "before human annotation starts; re-rendering under the annotators would "
+            "silently invalidate their char offsets. Pass --force to overwrite.[/bold red]"
+        )
+        raise typer.Exit(code=1)
+
+    # A render into the canonical transcripts directory writes the tracked manifest at
+    # TABLES_DIR (and merges into it, see write_manifest_csv). Any other --out is a
+    # scratch render and must not touch that tracked file at all -- its manifest goes
+    # next to its own output instead.
+    is_canonical_out_dir = out_dir.resolve() == TRANSCRIPTS_DIR.resolve()
+    manifest_dir = TABLES_DIR if is_canonical_out_dir else out_dir
+
+    console.print(f"Rendering {len(meeting_ids)} meeting(s)...")
+    result = render_meetings(ami_root, meeting_ids, out_dir, manifest_dir=manifest_dir)
+
+    for meeting_id in result.meeting_ids:
+        console.print(f"Wrote {out_dir / f'{meeting_id}.md'}")
+        console.print(f"Wrote {out_dir / f'{meeting_id}.jsonl'}")
+    console.print(f"Wrote {result.manifest_path}")
+
+    console.print(
+        f"[bold]{len(result.meeting_ids)} meeting(s) rendered[/bold], "
+        f"{result.total_turns} turns, {result.total_characters} characters, "
+        f"renderer {result.renderer_revision}."
+    )
+    console.print(f"Transcripts: {result.out_dir}")
+    console.print(f"Manifest:    {result.manifest_path}")
 
 
 # --- bibliography -------------------------------------------------------------------------
@@ -322,8 +396,7 @@ def gold_agreement(
         )
     else:
         console.print(
-            "  type kappa:      n/a (no pair was marked as an existing link by both "
-            "annotators)"
+            "  type kappa:      n/a (no pair was marked as an existing link by both annotators)"
         )
     console.print(
         f"  direction kappa: {result.direction_kappa:.3f} "
