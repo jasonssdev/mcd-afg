@@ -62,19 +62,28 @@ def renderer_revision() -> str:
     ``renderer`` field and the manifest's ``renderer_revision`` column), with a ``-dirty``
     suffix when the rendering code itself has uncommitted changes.
 
-    The dirty check is SCOPED to :data:`_RENDER_SOURCE_PATHS`, not the whole working tree,
-    and this is deliberate. An unscoped ``git status --porcelain`` also reports untracked
-    and unrelated files, so the manifest this function stamps would mark every subsequent
-    render ``-dirty`` merely because the previous render rewrote the manifest -- and an
-    unrelated edit under ``docs/`` would do the same. The field answers "which code
-    produced this text", so only paths that can change the text may flip it.
+    BOTH halves are SCOPED to :data:`_RENDER_SOURCE_PATHS` rather than the whole
+    repository, and this is deliberate. The field answers "which code produced this text",
+    so only paths that can change the text may move it.
+
+    * The revision is the last commit that touched those paths, not ``HEAD``. Using
+      ``HEAD`` couples the stamp to every unrelated commit -- including the commit of the
+      manifest itself, which is circular: committing the manifest moves ``HEAD``, which
+      rewrites the front matter, which changes every ``sha256_md`` in the manifest. The
+      render would never converge.
+    * The dirty flag uses a scoped ``git status``. Unscoped, it also reports untracked and
+      unrelated files, so the previous render rewriting the manifest would mark the next
+      one ``-dirty`` on its own.
+
+    Together these make a re-render over an unchanged corpus a genuine no-op: byte-identical
+    artifacts and an empty ``git diff``.
 
     Returns the literal ``"unknown"`` -- never raises -- when git is unavailable or any
     call fails; this is provenance metadata, not control flow.
     """
     try:
         rev_result = subprocess.run(
-            ["git", "rev-parse", "--short", "HEAD"],
+            ["git", "log", "-1", "--format=%h", "--", *_RENDER_SOURCE_PATHS],
             cwd=PROJECT_ROOT,
             capture_output=True,
             text=True,

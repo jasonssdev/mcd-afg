@@ -358,17 +358,34 @@ class TestRendererRevision:
 
         def _fake_run(cmd: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
             seen.append(cmd)
-            stdout = "deadbee\n" if "rev-parse" in cmd else ""
+            stdout = "deadbee\n" if "log" in cmd else ""
             return subprocess.CompletedProcess(cmd, 0, stdout=stdout, stderr="")
 
         monkeypatch.setattr("afg.corpus.render.subprocess.run", _fake_run)
         assert renderer_revision() == "deadbee"
 
-        status_cmd = next(cmd for cmd in seen if "status" in cmd)
-        assert "--" in status_cmd
-        scoped = status_cmd[status_cmd.index("--") + 1 :]
-        assert scoped, "the status call must name the paths it checks"
-        assert all(path.startswith("src/afg/") for path in scoped)
+        for verb in ("log", "status"):
+            cmd = next(c for c in seen if verb in c)
+            assert "--" in cmd, f"the {verb} call must be path-scoped"
+            scoped = cmd[cmd.index("--") + 1 :]
+            assert scoped, f"the {verb} call must name the paths it checks"
+            assert all(path.startswith("src/afg/") for path in scoped)
+
+    def test_revision_is_the_last_render_source_commit_not_head(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Stamping HEAD is circular: committing the manifest moves HEAD, which rewrites
+        the front matter, which changes every sha256_md in that same manifest."""
+        seen: list[list[str]] = []
+
+        def _fake_run(cmd: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+            seen.append(cmd)
+            return subprocess.CompletedProcess(cmd, 0, stdout="deadbee\n", stderr="")
+
+        monkeypatch.setattr("afg.corpus.render.subprocess.run", _fake_run)
+        renderer_revision()
+        assert not any("rev-parse" in cmd for cmd in seen)
+        assert any("log" in cmd for cmd in seen)
 
 
 class TestManifestLineEndings:
