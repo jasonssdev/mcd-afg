@@ -179,6 +179,24 @@ class TestLoadWordTokens:
         assert tokens[0].text == ""
         assert tokens[1].text == "Okay"
 
+    def test_unanticipated_tag_produces_no_text_but_keeps_id_slot(self, tmp_path: Path) -> None:
+        """``load_word_tokens`` branches only on ``tag == "w"``; every other tag is handled
+        correctly by construction, without needing to be named anywhere. Regression guard
+        for an enumerated non-lexical tag list going stale: ``transformerror`` occurs 30
+        times in ``data/raw/ami/words/`` and is absent from AMI's own documented
+        non-lexical tag lists."""
+        words = tmp_path / "M.A.words.xml"
+        _write_words_file(
+            words,
+            '<transformerror nite:id="M.A.words0" starttime="0.0" endtime="0.5"/>\n'
+            '<w nite:id="M.A.words1" starttime="0.5" endtime="1.0">Okay</w>',
+        )
+        tokens = load_word_tokens(words)
+        assert len(tokens) == 2
+        assert tokens[0].id == "M.A.words0"
+        assert tokens[0].text == ""
+        assert tokens[1].text == "Okay"
+
     def test_filler_words_are_kept_as_is(self, tmp_path: Path) -> None:
         words = tmp_path / "M.A.words.xml"
         _write_words_file(words, '<w nite:id="M.A.words1" starttime="0.0" endtime="1.0">uh</w>')

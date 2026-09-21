@@ -82,9 +82,15 @@ from afg.shared.logging import get_logger
 
 logger = get_logger(__name__)
 
-# Non-lexical elements verified (2026-09-21) to occupy a nite:id document-order slot in
-# words.xml files without contributing any transcript text.
-_NON_LEXICAL_TAGS = frozenset({"vocalsound", "disfmarker", "gap", "pause", "nonvocalsound"})
+# load_word_tokens (below) branches only on tag == "w"; every other tag -- named or not --
+# falls through to the same "no text, keep the id slot" case, so this module never needs
+# an enumerated list of non-lexical tag names to stay correct (see module docstring point
+# 1 for why the id slot itself must be kept). Tag names actually observed in
+# data/raw/ami/words/ (VERIFIED 2026-09-21, for documentation only): "vocalsound",
+# "disfmarker", "gap", "pause", "nonvocalsound", and "transformerror" (30 occurrences,
+# absent from every AMI documentation list of non-lexical tags encountered) -- the
+# transformerror case is exactly why branching on tag == "w" rather than enumerating
+# tag names is correct: an unanticipated tag is handled correctly by construction.
 
 
 def _parse_time(value: str | None) -> float | None:
