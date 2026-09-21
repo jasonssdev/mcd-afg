@@ -18,25 +18,24 @@ El reparto sigue dos reglas del diseño: quien adjudica los desacuerdos de la
 doble anotación no anota, y quien escribe el banco de preguntas no lo valida ni
 ejecuta los sistemas. Así cada artefacto lo revisa alguien que no lo produjo.
 
-## 2. Flujo: fork → rama → commit → push → PR
+## 2. Flujo: rama → commit → push → PR
 
 Los requisitos previos (git, uv, cuenta de GitHub) y la instalación completa
 están en [`README.md`](README.md), sección "Tu primer día, paso a paso". Resumen del flujo:
 
-1. **Fork** del repositorio a tu cuenta de GitHub (botón **Fork** en
-   [github.com/jasonssdev/mcd-afg](https://github.com/jasonssdev/mcd-afg)).
-   Es obligatorio: nadie clona ni escribe sobre el repositorio original.
-2. **Clona tu fork**, no el original:
-   `git clone git@github.com:<tu-usuario>/mcd-afg.git`
-3. Agrega el original como `upstream`:
-   `git remote add upstream https://github.com/jasonssdev/mcd-afg.git`
-4. Crea una rama a partir de `main` actualizado:
-   `git fetch upstream && git checkout -b tipo/descripcion-corta upstream/main`
-5. Haz commits pequeños y descriptivos.
-6. Sube la rama a tu fork: `git push -u origin tipo/descripcion-corta`
-7. Abre un pull request desde tu fork contra `main` del repositorio original.
+1. **Clona el repositorio** (uno solo, compartido por todo el equipo):
+   `git clone git@github.com:jasonssdev/mcd-afg.git`
+2. Trae lo que el equipo ya fusionó a `main` antes de empezar algo nuevo:
+   `git checkout main && git pull`
+3. Crea una rama a partir de `main` actualizado:
+   `git checkout -b tipo/descripcion-corta`
+4. Haz commits pequeños y descriptivos.
+5. Sube la rama al repositorio del equipo:
+   `git push -u origin tipo/descripcion-corta`
+6. Abre un pull request contra `main` desde la interfaz de GitHub.
 
-Nadie hace push directo a `main`, ni siquiera para cambios triviales.
+Nadie hace push directo a `main`, ni siquiera para cambios triviales: la
+protección de rama lo rechaza (ver §3).
 
 ### Nombres de rama
 
@@ -110,7 +109,7 @@ responsable de su contenido.
 
 ## 5. Configuración local
 
-Después de clonar tu fork:
+Después de clonar el repositorio:
 
 ```bash
 uv sync --group dev --group notebooks   # instala Python 3.13 si falta y todas las dependencias

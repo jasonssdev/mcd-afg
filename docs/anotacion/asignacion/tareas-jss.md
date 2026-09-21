@@ -328,7 +328,9 @@ Cada adjudicación es su propio PR, contra `main`, revisado por ti mismo — es 
 (`CONTRIBUTING.md` §3): la responsabilidad de lo que entra a `main` es tuya de todos modos.
 
 ```bash
-git checkout -b data/adjudicacion-ES2015 upstream/main
+git checkout main
+git pull
+git checkout -b data/adjudicacion-ES2015
 uv run afg gold adjudicate --series ES2015    # escribe el .adjudication.md pre-llenado
 uv run afg gold agreement  --series ES2015    # escribe reports/tables/ES2015.agreement.csv
 # completas etiqueta final, razón y la tabla de la Tarea A en el .adjudication.md
