@@ -282,7 +282,8 @@ uv run jupyter lab
 |---|---|---|
 | 00 | `00-jss-corpus-y-auditoria.ipynb` | Adquisición, paso cero, auditoría de datos, y qué cambió por ella |
 | 01 | `01-jss-viabilidad-e3.ipynb` | Estimación provisional de viabilidad del estrato de evolución |
-| 02 | `02-jss-anotacion-oe1.ipynb` | *(pendiente)* anotación humana y conjunto de referencia |
+| 02 | `02-jss-transcripciones.ipynb` | De AMI a transcripciones legibles y congeladas |
+| 03 | `03-jss-anotacion-oe1.ipynb` | *(pendiente)* anotación humana y conjunto de referencia |
 
 Los notebooks son el **registro académico** del proyecto y se versionan con sus salidas, para
 que un revisor pueda leerlos sin ejecutar nada. Si tocas uno, re-ejecútalo de punta a punta

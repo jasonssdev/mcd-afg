@@ -26,12 +26,13 @@ Ejemplo: `00-jss-corpus-y-auditoria.ipynb`
 |---|---|---|---|
 | 00 | `00-jss-corpus-y-auditoria.ipynb` | Adquisición del corpus, verificación estructural (paso cero), auditoría de datos §5.1, y las decisiones de diseño que la auditoría obligó a tomar | ✅ |
 | 01 | `01-jss-viabilidad-e3.ipynb` | Estimación **provisional** de la tasa de positivos del filtro y verificación de las relaciones identificadas a ojo. Decide si el estrato E3 se sostiene | ✅ |
-| 02 | `02-jss-anotacion-oe1.ipynb` | Ejecución de la anotación **humana**: acuerdo entre anotadores, kappa, adjudicación, el conjunto de referencia resultante | pendiente |
-| 03 | `03-jss-experimento-a.ipynb` | OE2 — calidad de la extracción automática contra la referencia | pendiente |
-| 04 | `04-jss-experimento-b.ipynb` | OE3/OE4 — C1 vs C2 vs C3 y atribución del error a su etapa | pendiente |
+| 02 | `02-jss-transcripciones.ipynb` | Del AMI Meeting Corpus (anotación *stand-off* NXT) a transcripciones legibles y congeladas: decisiones de render, los dos artefactos por reunión, cobertura del corpus y el manifiesto verificable | ✅ |
+| 03 | `03-jss-anotacion-oe1.ipynb` | Ejecución de la anotación **humana**: acuerdo entre anotadores, kappa, adjudicación, el conjunto de referencia resultante | pendiente |
+| 04 | `04-jss-experimento-a.ipynb` | OE2 — calidad de la extracción automática contra la referencia | pendiente |
+| 05 | `05-jss-experimento-b.ipynb` | OE3/OE4 — C1 vs C2 vs C3 y atribución del error a su etapa | pendiente |
 
-> **Por qué 01 y 02 están separados.** El 01 contiene etiquetas puestas por una máquina, con
-> fines de planificación. El 02 contendrá el conjunto de referencia real, hecho a mano.
+> **Por qué 01 y 03 están separados.** El 01 contiene etiquetas puestas por una máquina, con
+> fines de planificación. El 03 contendrá el conjunto de referencia real, hecho a mano.
 > Mezclarlos invitaría a que alguien cite las provisionales como si fueran la referencia.
 
 ## Regla de arquitectura: el notebook no calcula
