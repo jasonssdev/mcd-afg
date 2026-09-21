@@ -1,5 +1,13 @@
+# Este archivo NO es decorativo: la rama main está protegida en GitHub con
+# "require review from Code Owners", así que la asignación de abajo es lo que
+# hace que la aprobación de @jasonssdev sea obligatoria para cualquier merge.
+# Sin ella bastaría una aprobación cualquiera y dos colaboradores podrían
+# integrarse el trabajo entre ellos.
+#
 # Nada llega a main sin revisión. @jasonssdev es responsable de la integración
 # a main y revisa toda pull request que entre, incluidas las suyas propias.
 # Cualquier integrante puede revisar y comentar cualquier PR.
+#
+# Ver CONTRIBUTING.md sección 3 para el detalle de las reglas activas.
 
 * @jasonssdev
