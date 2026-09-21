@@ -43,6 +43,37 @@ class RelationType(StrEnum):
     """The pair was evaluated as a candidate but has no temporal relation."""
 
 
+class DirectionOk(StrEnum):
+    """The ``direction_ok`` column's closed value set in the Task-B annotation CSV.
+
+    Annotation-file contract, like :class:`~afg.domain.decision.AnnotationStatus`: these
+    are the two words an annotator types (manual section 4), not a boolean. ``si`` confirms
+    that the pair, as the CSV orders it, respects the direction convention
+    (``later`` acts on ``earlier``); ``no`` says the file's chronological order is wrong
+    and the annotator explains why in ``notes``.
+
+    Kept as an enum rather than a ``bool`` so ``afg gold validate`` can tell an empty cell
+    (not yet annotated) apart from a considered ``no``, and so a typo like ``yes`` or
+    ``TRUE`` is rejected instead of silently coerced.
+    """
+
+    SI = "si"
+    NO = "no"
+
+
+class Confidence(StrEnum):
+    """The ``confidence`` column's closed value set in the Task-B annotation CSV.
+
+    Annotation-file contract (manual section 4). Three ordered levels, in Spanish, because
+    that is what the annotator types. No numeric mapping is defined here: nothing consumes
+    one yet, and picking 1.0/0.66/0.33 would invent a scale the manual never claimed.
+    """
+
+    ALTA = "alta"
+    MEDIA = "media"
+    BAJA = "baja"
+
+
 class TemporalRelation(BaseModel):
     """A directed, typed link between two decisions in the same series.
 

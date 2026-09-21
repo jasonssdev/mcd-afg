@@ -1,7 +1,7 @@
-pair_id,earlier_decision_id,later_decision_id,earlier_text,later_text,blocker_score,relation,direction_ok,confidence,annotator,notes
-ES2016.p001,ES2016b.rdhillon.s.23,ES2016c.rdhillon.s.15,The remote will include a scroll action.,"The remote will feature a scroll function similar to the scroll function found on iPods.
+pair_id,earlier_decision_id,later_decision_id,earlier_sentence_id,later_sentence_id,earlier_text,later_text,blocker_score,relation,direction_ok,confidence,annotator,notes
+ES2016.p001,ES2016b.d11,ES2016c.d03,ES2016b.rdhillon.s.23,ES2016c.rdhillon.s.15,The remote will include a scroll action.,"The remote will feature a scroll function similar to the scroll function found on iPods.
 The remote will use a more expensive, advanced chip-on-print.",0.5,,,,,
-ES2016.p002,ES2016c.rdhillon.s.15,ES2016d.rdhillon.s.13,"The remote will feature a scroll function similar to the scroll function found on iPods.
+ES2016.p002,ES2016c.d03,ES2016d.d03,ES2016c.rdhillon.s.15,ES2016d.rdhillon.s.13,"The remote will feature a scroll function similar to the scroll function found on iPods.
 The remote will use a more expensive, advanced chip-on-print.",The remote will use an advanced chip-on-print.,1.0,,,,,
-ES2016.p003,ES2016c.rdhillon.s.14,ES2016d.rdhillon.s.15,The case will be made of plastic with rubber grips.,The remote case will be made of plastic.,0.75,,,,,
-ES2016.p004,ES2016c.rdhillon.s.13,ES2016d.rdhillon.s.12,The remote will use conventional batteries.,The remote will use two batteries.,0.6666666666666666,,,,,
+ES2016.p003,ES2016c.d02,ES2016d.d05,ES2016c.rdhillon.s.14,ES2016d.rdhillon.s.15,The case will be made of plastic with rubber grips.,The remote case will be made of plastic.,0.75,,,,,
+ES2016.p004,ES2016c.d01,ES2016d.d02,ES2016c.rdhillon.s.13,ES2016d.rdhillon.s.12,The remote will use conventional batteries.,The remote will use two batteries.,0.6666666666666666,,,,,

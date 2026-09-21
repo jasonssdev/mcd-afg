@@ -1,2 +1,2 @@
-pair_id,earlier_decision_id,later_decision_id,earlier_text,later_text,blocker_score,relation,direction_ok,confidence,annotator,notes
-IS1006.p001,IS1006a.rdhillon.s.15,IS1006c.rdhillon.s.14,The remote will feature a button which allows the user to return to the previous channel he was viewing.,The remote will feature an LCD screen.,0.5,,,,,
+pair_id,earlier_decision_id,later_decision_id,earlier_sentence_id,later_sentence_id,earlier_text,later_text,blocker_score,relation,direction_ok,confidence,annotator,notes
+IS1006.p001,IS1006a.d06,IS1006c.d05,IS1006a.rdhillon.s.15,IS1006c.rdhillon.s.14,The remote will feature a button which allows the user to return to the previous channel he was viewing.,The remote will feature an LCD screen.,0.5,,,,,

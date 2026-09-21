@@ -12,6 +12,10 @@ Three kinds of coverage:
 
 from __future__ import annotations
 
+import csv
+import re
+from pathlib import Path
+
 import pytest
 
 from afg.annotation.blocking import (
@@ -24,7 +28,9 @@ from afg.annotation.blocking import (
     overlap_coefficient,
     rejected_pairs,
     sample_rejected,
+    source_sentence_id,
     tokenize,
+    write_candidate_pairs_csv,
 )
 from afg.domain.decision import Decision, DecisionStatus, EvidenceSpan
 from afg.shared.config import load_corpus_config
@@ -39,9 +45,7 @@ requires_corpus = pytest.mark.skipif(
 )
 
 
-def _decision(
-    id_: str, meeting_id: str, content: str, *, series_id: str = "ES2015"
-) -> Decision:
+def _decision(id_: str, meeting_id: str, content: str, *, series_id: str = "ES2015") -> Decision:
     return Decision(
         id=id_,
         series_id=series_id,
@@ -49,7 +53,7 @@ def _decision(
         decision_object="",
         content=content,
         status=DecisionStatus.ACCEPTED,
-        evidence=EvidenceSpan(meeting_id=meeting_id, dialogue_act_ids=(id_,)),
+        evidence=EvidenceSpan(meeting_id=meeting_id, dialogue_act_ids=(f"{meeting_id}.s.{id_}",)),
     )
 
 
@@ -289,10 +293,10 @@ class TestTurboButtonRegression:
 
     def test_turbo_button_pair_survives_overlap_but_not_jaccard(self) -> None:
         decisions = decisions_from_abstractive(AMI_DIR, "IS1004")
-        by_id = {d.id: d for d in decisions}
+        by_sentence_id = {source_sentence_id(d): d for d in decisions}
 
-        earlier = by_id["IS1004c.elana.s.29"]
-        later = by_id["IS1004d.elana.s.22"]
+        earlier = by_sentence_id["IS1004c.elana.s.29"]
+        later = by_sentence_id["IS1004d.elana.s.22"]
 
         a = tokenize(earlier.content)
         b = tokenize(later.content)
@@ -305,7 +309,7 @@ class TestTurboButtonRegression:
 
         # The real assertion: at the overlap threshold of 0.30, the pair IS a candidate...
         candidates = generate_candidates(decisions, threshold=0.30)
-        candidate_ids = {(c.earlier_decision_id, c.later_decision_id) for c in candidates}
+        candidate_ids = {(c.earlier_sentence_id, c.later_sentence_id) for c in candidates}
         assert ("IS1004c.elana.s.29", "IS1004d.elana.s.22") in candidate_ids
 
         # ...but a Jaccard-based rule at a comparable 0.18 threshold would have lost it.
@@ -326,7 +330,7 @@ class TestTurboButtonRegression:
             candidates = generate_candidates(
                 decisions, threshold=threshold, min_overlap_tokens=min_overlap_tokens
             )
-            return {(c.earlier_decision_id, c.later_decision_id) for c in candidates}
+            return {(c.earlier_sentence_id, c.later_sentence_id) for c in candidates}
 
         # Survives at the new default operating point (threshold=0.30, min_overlap_tokens=2).
         assert turbo_pair in _candidate_ids(threshold=0.30, min_overlap_tokens=2)
@@ -348,9 +352,9 @@ class TestCorpusBackedCandidateCounts:
         # Pre-1.1 behaviour (min_overlap_tokens=1, i.e. no absolute constraint), retained
         # as documentation of the operating point this thesis moved away from and why.
         decisions = decisions_from_abstractive(AMI_DIR, "ES2015")
-        total_pairs = len(
-            rejected_pairs(decisions, threshold=0.30, min_overlap_tokens=1)
-        ) + len(generate_candidates(decisions, threshold=0.30, min_overlap_tokens=1))
+        total_pairs = len(rejected_pairs(decisions, threshold=0.30, min_overlap_tokens=1)) + len(
+            generate_candidates(decisions, threshold=0.30, min_overlap_tokens=1)
+        )
         candidates = generate_candidates(decisions, threshold=0.30, min_overlap_tokens=1)
 
         assert total_pairs == 311
@@ -365,9 +369,9 @@ class TestCorpusBackedCandidateCounts:
     def test_is1004_candidate_count_min_overlap_tokens_1(self) -> None:
         # Pre-1.1 behaviour (min_overlap_tokens=1), retained as documentation.
         decisions = decisions_from_abstractive(AMI_DIR, "IS1004")
-        total_pairs = len(
-            rejected_pairs(decisions, threshold=0.30, min_overlap_tokens=1)
-        ) + len(generate_candidates(decisions, threshold=0.30, min_overlap_tokens=1))
+        total_pairs = len(rejected_pairs(decisions, threshold=0.30, min_overlap_tokens=1)) + len(
+            generate_candidates(decisions, threshold=0.30, min_overlap_tokens=1)
+        )
         candidates = generate_candidates(decisions, threshold=0.30, min_overlap_tokens=1)
 
         assert total_pairs == 188
@@ -392,3 +396,78 @@ class TestCorpusBackedCandidateCounts:
             total += len(generate_candidates(decisions, threshold=0.30))
 
         assert total == 92
+
+
+class TestDecisionAndSentenceIdsAreDistinct:
+    """Issue #5: the candidate CSV used to put a SENTENCE id in a column named
+    ``earlier_decision_id``, which made a candidate row unjoinable to a decision row
+    without knowing that. Both id spaces are now carried, honestly named."""
+
+    def test_candidate_pair_carries_both_id_spaces(self) -> None:
+        earlier = _decision("d1", "ES2015a", "turbo button base station")
+        later = _decision("d2", "ES2015c", "turbo button")
+
+        [pair] = generate_candidates([earlier, later], threshold=0.30)
+
+        assert pair.earlier_decision_id == "d1"
+        assert pair.later_decision_id == "d2"
+        assert pair.earlier_sentence_id == "ES2015a.s.d1"
+        assert pair.later_sentence_id == "ES2015c.s.d2"
+
+    def test_written_csv_has_both_columns(self, tmp_path: Path) -> None:
+        earlier = _decision("d1", "ES2015a", "turbo button base station")
+        later = _decision("d2", "ES2015c", "turbo button")
+        out_path = write_candidate_pairs_csv(
+            generate_candidates([earlier, later], threshold=0.30),
+            tmp_path / "ES2015.candidates.csv",
+        )
+
+        [row] = list(csv.DictReader(out_path.open(newline="", encoding="utf-8")))
+
+        assert row["earlier_decision_id"] == "d1"
+        assert row["earlier_sentence_id"] == "ES2015a.s.d1"
+        assert row["later_decision_id"] == "d2"
+        assert row["later_sentence_id"] == "ES2015c.s.d2"
+
+
+@requires_corpus
+class TestRealDecisionIdsJoinToTheDecisionsFile:
+    """The point of issue #5: a candidate row must be joinable to a decision row."""
+
+    def test_decision_ids_match_build_gold_decisions(self) -> None:
+        from afg.annotation.goldset import build_gold_decisions
+
+        gold_rows = build_gold_decisions(AMI_DIR, "ES2015")
+        gold_by_sentence = {row.source_sentence_id: row.decision_id for row in gold_rows}
+
+        decisions = decisions_from_abstractive(AMI_DIR, "ES2015")
+
+        assert decisions
+        for decision in decisions:
+            assert decision.id == gold_by_sentence[source_sentence_id(decision)]
+
+    def test_decision_ids_look_like_decision_ids_not_sentence_ids(self) -> None:
+        decisions = decisions_from_abstractive(AMI_DIR, "ES2015")
+        assert all(re.fullmatch(r"ES2015[a-d]\.d\d{2}", d.id) for d in decisions)
+        assert all(".elana.s." in source_sentence_id(d) for d in decisions)
+
+    def test_candidate_ids_resolve_in_the_decisions_csv(self) -> None:
+        from afg.annotation.goldset import build_gold_decisions
+
+        known_ids = {row.decision_id for row in build_gold_decisions(AMI_DIR, "ES2015")}
+        candidates = generate_candidates(
+            decisions_from_abstractive(AMI_DIR, "ES2015"), threshold=0.30
+        )
+
+        assert candidates
+        for pair in candidates:
+            assert pair.earlier_decision_id in known_ids
+            assert pair.later_decision_id in known_ids
+
+    def test_sentence_to_decision_mapping_is_one_to_one_today(self) -> None:
+        """The premise the whole change rests on, asserted rather than assumed. It stops
+        holding the moment an annotator marks a row `compuesta` -- see
+        `decisions_from_abstractive`'s docstring."""
+        decisions = decisions_from_abstractive(AMI_DIR, "ES2015")
+        assert len({d.id for d in decisions}) == len(decisions)
+        assert len({source_sentence_id(d) for d in decisions}) == len(decisions)

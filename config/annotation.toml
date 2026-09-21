@@ -1,0 +1,69 @@
+# OE1 annotation assignment -- who annotates what, in which phase.
+#
+# This file is the SINGLE SOURCE OF TRUTH for the split described in prose at
+# docs/anotacion/asignacion/README.md. The prose explains *why* the split is what it is;
+# this file is what `afg gold prepare`, `afg gold validate` and `afg gold status` actually
+# read. When the two disagree, this file wins and the prose is the bug.
+#
+# Series ids must exist in config/corpus.toml [oe1].series. Initials are the ones fixed by
+# CONTRIBUTING.md section 1 and used in every annotated filename.
+
+[annotation]
+# Who resolves disagreements after each double-annotated series. Design rule
+# (CONTRIBUTING.md section 1): the adjudicator never annotates, so `jss` carries no series.
+adjudicator = "jss"
+
+# Phases are strictly sequential and shared by both annotators (asignacion/README.md
+# section 2). Phase 1 calibrates on a development series that is already contaminated by
+# the pilot, so a bad first kappa costs nothing; phase 2 is the four control series whose
+# kappas are reported. Both are double-annotated; phase 3 is single annotation, split
+# per person below.
+phase1_series = ["ES2015"]
+phase2_series = ["ES2008", "ES2016", "IS1003", "TS3005"]
+
+[annotation.recall_sample]
+# Tarea C (manual section 5): adjudicate a random sample of pairs the blocker REJECTED, to
+# put a number on what it lost. One person, one series. `seed` and `n` are the arguments
+# `afg gold recall-sample` was run with, recorded here so the sample stays reproducible.
+owner = "gv"
+series = "IS1004"
+n = 50
+seed = 42
+
+[annotation.question_bank]
+# Thesis section 5.5 / OE4. Design rule (CONTRIBUTING.md section 1): whoever writes the
+# bank does not validate it.
+author = "gm"
+validator = "gv"
+total_questions = 100
+questions_per_stratum = 25
+
+# --- people -------------------------------------------------------------------------------
+# `role = "annotator"` means the person's phase lists drive `afg gold prepare`.
+# `role = "maintainer"` means they annotate nothing; `prepare` says so instead of
+# producing an empty workspace.
+
+[[annotation.annotators]]
+initials = "gv"
+name = "Germán Vega"
+role = "annotator"
+# 120 decisions, 21 candidate pairs in phase 3. Fewer extra duties than raw counts
+# suggest: `gv` also does Tarea C and validates the >=100-question bank.
+phase3_series = ["IS1004", "IS1006", "IS1009", "TS3003", "ES2002"]
+
+[[annotation.annotators]]
+initials = "gm"
+name = "Gustavo Martínez"
+role = "annotator"
+# 83 decisions, 31 candidate pairs in phase 3 -- 37 decisions fewer than `gv` because
+# `gm` also writes the whole question bank (~5 min per question, >=100 questions). The
+# split balances total hours, not rows.
+phase3_series = ["TS3009", "TS3011", "IS1008", "ES2014"]
+
+[[annotation.annotators]]
+initials = "jss"
+name = "Jason Sepúlveda"
+role = "maintainer"
+# Adjudicates the five double-annotated series and writes their adjudication logs.
+# Annotates nothing, by design.
+phase3_series = []

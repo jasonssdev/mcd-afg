@@ -66,3 +66,13 @@ def load_corpus_config() -> dict[str, Any]:
 def load_experiments_config() -> dict[str, Any]:
     """Load ``config/experiments.toml`` (C1/C2/C3 params, models, seeds, tau grid)."""
     return _load_toml(CONFIG_DIR / "experiments.toml")
+
+
+def load_annotation_config() -> dict[str, Any]:
+    """Load ``config/annotation.toml`` (who annotates which series, in which phase).
+
+    The machine-readable form of ``docs/anotacion/asignacion/README.md``. It is the single
+    source of truth for the split: ``afg gold prepare``, ``afg gold validate`` and
+    ``afg gold status`` read this file, never the prose.
+    """
+    return _load_toml(CONFIG_DIR / "annotation.toml")

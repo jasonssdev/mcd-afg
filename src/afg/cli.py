@@ -8,9 +8,13 @@ paso cero (thesis section 5.0), and they say so instead of crashing with a stack
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import typer
 from rich.console import Console
+
+if TYPE_CHECKING:
+    from afg.annotation.workspace import AnnotationPlan, WorkspacePaths
 
 from afg.annotation.blocking import (
     BLOCKER_VERSION,
@@ -53,6 +57,8 @@ from afg.shared.paths import (
     AMI_DIR,
     GOLD_DECISIONS_DIR,
     GOLD_RELATIONS_DIR,
+    PROJECT_ROOT,
+    QUESTIONS_DIR,
     TABLES_DIR,
     TRANSCRIPTS_DIR,
     ensure_dirs,
@@ -549,6 +555,300 @@ def gold_recall_sample(
         f"blocker_version={BLOCKER_VERSION}."
     )
     console.print(f"Wrote {out_path}")
+
+
+# --- gold: per-annotator workspace (docs/anotacion/asignacion/) -----------------------------
+#
+# These five commands exist so an annotator never copies, renames, or remembers anything.
+# All the logic lives in afg.annotation.workspace; this layer only parses options, prints
+# Spanish, and picks an exit code.
+
+
+def _plan_or_exit() -> AnnotationPlan:
+    from afg.annotation.workspace import load_annotation_plan
+
+    try:
+        return load_annotation_plan()
+    except FileNotFoundError as exc:
+        console.print(f"[bold red]No se encontró config/annotation.toml. {exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+
+
+def _workspace_paths() -> WorkspacePaths:
+    from afg.annotation.workspace import WorkspacePaths
+
+    return WorkspacePaths(
+        decisions_dir=GOLD_DECISIONS_DIR,
+        relations_dir=GOLD_RELATIONS_DIR,
+        questions_dir=QUESTIONS_DIR,
+    )
+
+
+def _short(path: Path) -> str:
+    """Path relative to the repository root, so a list of 21 files stays readable."""
+    try:
+        return str(path.relative_to(PROJECT_ROOT))
+    except ValueError:
+        return str(path)
+
+
+@gold_app.command("prepare")
+def gold_prepare(
+    annotator: str = typer.Option(..., "--annotator", help="Iniciales del anotador, p. ej. gv."),
+    force: bool = typer.Option(
+        False,
+        "--force",
+        help="Regenera incluso los archivos que ya tienen anotación. DESTRUYE trabajo.",
+    ),
+) -> None:
+    """Crea los archivos que esta persona debe llenar, ya con el nombre correcto.
+
+    Columnas de máquina puestas, columnas humanas vacías, un archivo por serie asignada
+    según config/annotation.toml. Nunca sobrescribe un archivo que ya tenga anotación:
+    volver a correr este comando después de un día de trabajo es inofensivo.
+    """
+    from afg.annotation.workspace import UnknownAnnotatorError, prepare_annotator_workspace
+
+    plan = _plan_or_exit()
+    try:
+        outcome = prepare_annotator_workspace(
+            plan, annotator, paths=_workspace_paths(), force=force
+        )
+    except UnknownAnnotatorError as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+
+    if outcome.is_maintainer:
+        person = plan.annotator(annotator)
+        console.print(
+            f"[yellow]{person.name} (`{annotator}`) no anota ninguna serie: adjudica.[/yellow]\n"
+            "Por diseño, quien adjudica no anota (CONTRIBUTING.md §1). Lo que sí te toca:\n"
+            "  uv run afg gold adjudicate --series <ID>   (tras cada serie doble)"
+        )
+        return
+
+    if outcome.created:
+        console.print(f"[bold]Creados {len(outcome.created)} archivos:[/bold]")
+        for workspace_file in outcome.created:
+            console.print(f"  fase {workspace_file.phase}  {_short(workspace_file.target)}")
+    if outcome.overwritten:
+        console.print(
+            f"[bold red]Sobrescritos {len(outcome.overwritten)} archivos que TENÍAN "
+            "anotación (--force):[/bold red]"
+        )
+        for workspace_file in outcome.overwritten:
+            console.print(f"  {_short(workspace_file.target)}")
+    if outcome.skipped_annotated:
+        console.print(
+            f"[yellow]Respetados {len(outcome.skipped_annotated)} archivos que ya tienen "
+            "trabajo hecho (no se tocaron):[/yellow]"
+        )
+        for workspace_file in outcome.skipped_annotated:
+            console.print(f"  {_short(workspace_file.target)}")
+    if outcome.missing_sources:
+        console.print("[bold red]Faltan archivos base; esas series no se prepararon:[/bold red]")
+        for workspace_file in outcome.missing_sources:
+            command = (
+                "build" if workspace_file.kind.value == "decisions" else workspace_file.kind.value
+            )
+            console.print(
+                f"  {_short(workspace_file.source)}  ->  uv run afg gold {command} "
+                f"--series {workspace_file.series_id}"
+            )
+
+    if not outcome.created and not outcome.overwritten and not outcome.skipped_annotated:
+        console.print("[yellow]No se creó ningún archivo.[/yellow]")
+        raise typer.Exit(code=1)
+
+    console.print(
+        "\n[bold]Qué sigue.[/bold] Llena solo las columnas humanas; las de máquina no se "
+        "tocan (`afg gold validate` lo verifica).\n"
+        "  1. Trabaja las series en el orden en que aparecen arriba: fase 1, luego 2, luego 3.\n"
+        f"  2. Al cerrar una serie: uv run afg gold validate --annotator {annotator} "
+        "--series <ID>\n"
+        "  3. Si sale sin errores, abre el PR de esa serie (una serie por PR)."
+    )
+
+
+@gold_app.command("validate")
+def gold_validate(
+    annotator: str = typer.Option(..., "--annotator", help="Iniciales del anotador, p. ej. gv."),
+    series: str | None = typer.Option(
+        None, "--series", help="Valida solo esta serie en lugar de todas las asignadas."
+    ),
+) -> None:
+    """Verifica el trabajo de una persona antes de abrir el pull request.
+
+    Tres controles por archivo: los valores de conjunto cerrado son legales, ninguna fila
+    quedó a medio llenar, y las columnas de máquina siguen idénticas al archivo base.
+    Sale con código distinto de cero si algo falla, para que pueda bloquear un PR.
+    """
+    from afg.annotation.workspace import UnknownAnnotatorError, validate_annotator
+
+    plan = _plan_or_exit()
+    try:
+        report = validate_annotator(plan, annotator, paths=_workspace_paths(), series=series)
+    except (UnknownAnnotatorError, ValueError) as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+
+    person = plan.annotator(annotator)
+    console.print(f"[bold]{person.name} (`{annotator}`)[/bold]")
+    for progress in report.series:
+        mark = "[green]ok[/green]" if progress.ok else "[bold red]errores[/bold red]"
+        console.print(
+            f"  {progress.series_id}: {progress.decisions_filled}/"
+            f"{progress.decisions_total} decisiones, {progress.candidates_filled}/"
+            f"{progress.candidates_total} candidatos  (fase {progress.phase})  {mark}"
+        )
+
+    if report.ok:
+        console.print(
+            "\n[green]Sin errores.[/green] Recuerda que 0/N no es un error: es trabajo por hacer."
+        )
+        return
+
+    console.print(f"\n[bold red]{len(report.issues)} problema(s):[/bold red]")
+    for issue in report.issues:
+        console.print(f"  - {issue.message}")
+    raise typer.Exit(code=1)
+
+
+@gold_app.command("status")
+def gold_status() -> None:
+    """Panel de control del mantenedor: una fila por anotador y serie.
+
+    Muestra fase, avance en las dos tareas y si la serie pasa la validación, para seguir
+    al equipo sin abrir un solo archivo.
+    """
+    from rich.table import Table
+
+    from afg.annotation.workspace import validate_annotator
+
+    plan = _plan_or_exit()
+    paths = _workspace_paths()
+
+    table = Table(title="Anotación OE1 — avance por persona y serie")
+    table.add_column("Anotador")
+    table.add_column("Serie")
+    table.add_column("Fase", justify="right")
+    table.add_column("Decisiones", justify="right")
+    table.add_column("Candidatos", justify="right")
+    table.add_column("Validación")
+
+    any_row = False
+    for person in plan.annotators:
+        if not person.annotates:
+            continue
+        report = validate_annotator(plan, person.initials, paths=paths)
+        for progress in report.series:
+            any_row = True
+            if progress.ok and progress.complete:
+                verdict = "[green]completa[/green]"
+            elif progress.ok:
+                verdict = "[yellow]en curso[/yellow]"
+            elif progress.not_started:
+                verdict = "[dim]sin preparar[/dim]"
+            else:
+                verdict = f"[bold red]{len(progress.issues)} error(es)[/bold red]"
+            table.add_row(
+                person.initials,
+                progress.series_id,
+                str(progress.phase),
+                f"{progress.decisions_filled}/{progress.decisions_total}",
+                f"{progress.candidates_filled}/{progress.candidates_total}",
+                verdict,
+            )
+
+    if not any_row:
+        console.print("[yellow]No hay ninguna serie asignada en config/annotation.toml.[/yellow]")
+        raise typer.Exit(code=1)
+
+    console.print(table)
+    console.print(
+        f"Adjudica `{plan.adjudicator}`. Banco de preguntas: lo escribe "
+        f"`{plan.question_bank.author}`, lo valida `{plan.question_bank.validator}`. "
+        f"Muestra de recall (Tarea C): `{plan.recall_sample.owner}` sobre "
+        f"{plan.recall_sample.series_id}."
+    )
+
+
+@gold_app.command("adjudicate")
+def gold_adjudicate(
+    series: str = typer.Option(..., "--series", help="Serie de doble anotación, p. ej. ES2015."),
+    force: bool = typer.Option(
+        False, "--force", help="Regenera aunque el registro ya tenga resoluciones escritas."
+    ),
+) -> None:
+    """Escribe data/processed/relations/<serie>.adjudication.md ya pre-llenado.
+
+    Calcula los tres kappas, encuentra los desacuerdos y deja una fila por cada uno con
+    las dos etiquetas puestas. El humano llena solo "etiqueta final" y "razón".
+    """
+    from afg.annotation.agreement import AgreementInputError
+    from afg.annotation.workspace import write_adjudication_log
+
+    plan = _plan_or_exit()
+    try:
+        out_path = write_adjudication_log(plan, series, paths=_workspace_paths(), force=force)
+    except FileExistsError as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    except FileNotFoundError as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    except AgreementInputError as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+
+    console.print(f"Escrito {_short(out_path)}")
+    console.print(
+        "Faltan por llenar, a mano y solo por el adjudicador: la columna **etiqueta "
+        "final**, la columna **razón**, y la tabla de la Tarea A (`afg gold agreement` no "
+        "calcula ese eje).\n"
+        f"Corre también: uv run afg gold agreement --series {series}"
+    )
+
+
+@gold_app.command("questions-init")
+def gold_questions_init(
+    force: bool = typer.Option(
+        False, "--force", help="Regenera aunque el banco ya tenga preguntas escritas."
+    ),
+) -> None:
+    """Crea el banco de preguntas con 100 filas numeradas y vacías, 25 por estrato.
+
+    Quien escribe el banco llena texto en filas que ya existen: nunca inventa un id ni
+    escribe un estrato, que es lo que hacía que un estrato corto se descubriera contando
+    al final.
+    """
+    from afg.annotation.workspace import QuestionBankNotEmptyError, write_question_bank_template
+
+    plan = _plan_or_exit()
+    bank = plan.question_bank
+    out_path = _workspace_paths().question_bank
+    try:
+        write_question_bank_template(
+            out_path,
+            total=bank.total_questions,
+            per_stratum=bank.questions_per_stratum,
+            author=bank.author,
+            force=force,
+        )
+    except QuestionBankNotEmptyError as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+
+    console.print(
+        f"Escrito {_short(out_path)}: {bank.total_questions} filas, "
+        f"{bank.questions_per_stratum} por estrato (E1, E2, E3, E4)."
+    )
+    console.print(
+        f"Escribe `{bank.author}`, valida `{bank.validator}`. Llena `series_id`, `text`, "
+        "`reference_answer` y `reference_evidence`; `id` y `stratum` ya están puestos y no "
+        "se tocan. En E4 la respuesta de referencia va vacía a propósito: ese estrato mide "
+        "abstención."
+    )
 
 
 # --- experiment (OE2/OE3) ------------------------------------------------------------------

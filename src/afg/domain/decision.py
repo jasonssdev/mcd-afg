@@ -38,6 +38,42 @@ class DecisionStatus(StrEnum):
     """A stated preference or opinion that never became a commitment."""
 
 
+class AnnotationStatus(StrEnum):
+    """The ``status`` column's closed value set in the Task-A annotation CSV.
+
+    THIS IS THE ANNOTATION-FILE CONTRACT, not the domain vocabulary. These are the five
+    values the annotation manual (``docs/anotacion/manual-anotacion-oe1.md`` section 2)
+    tells an annotator to type into
+    ``data/processed/decisions/<series>.decisions.<initials>.csv``, so they are Spanish
+    and they are what ``afg gold validate`` checks a cell against. :class:`DecisionStatus`
+    is the *domain* vocabulary used once a decision has been loaded as a
+    :class:`Decision`; the two sets deliberately differ in both language and cardinality.
+
+    Mapping this enum onto :class:`DecisionStatus` is the job of whatever eventually loads
+    the annotated gold set, and it is NOT defined here. Two of these values
+    (:attr:`COMPUESTA`, :attr:`DESCARTAR`) are instructions to the annotator rather than
+    claims about a decision, one (:attr:`SIN_SOPORTE`) is a claim about the *source
+    material* rather than about the decision, and :attr:`NO_DECISION` collapses three
+    distinct :class:`DecisionStatus` members into one. Writing a mapping today would mean
+    inventing those semantics with nothing consuming them.
+    """
+
+    DECISION = "decision"
+    """Meets the three conditions of thesis section 5.2: explicit, accepted, anchored."""
+
+    NO_DECISION = "no_decision"
+    """An open proposal, question, or opinion. KEPT in the set: it measures false positives."""
+
+    COMPUESTA = "compuesta"
+    """The sentence hosts several decisions; the annotator splits it into ``-1``, ``-2`` rows."""
+
+    SIN_SOPORTE = "sin_soporte"
+    """The dialogue-act evidence does not support what the abstractive sentence claims."""
+
+    DESCARTAR = "descartar"
+    """The sentence is truncated, broken, or unintelligible."""
+
+
 class EvidenceSpan(BaseModel):
     """Pointer from a decision to the dialogue acts that support it.
 

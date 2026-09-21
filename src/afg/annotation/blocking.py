@@ -155,6 +155,13 @@ class CandidatePair(BaseModel):
     ``source`` and ``earlier_decision_id`` is ``target`` once a human assigns a relation --
     this module never assigns one, but it always orders the pair chronologically so that
     convention is unambiguous downstream.
+
+    ``*_decision_id`` and ``*_sentence_id`` are two different identifier spaces and both
+    are carried, honestly named (issue #5). ``ES2015a.d01`` is the decision id used by
+    ``<series>.decisions.csv``; ``ES2015a.elana.s.11`` is the ``nite:id`` of the
+    abstractive sentence it was derived from. Until this change the decision-id columns
+    silently held sentence ids, which made a candidate row impossible to join to a
+    decision row without knowing that.
     """
 
     model_config = ConfigDict(frozen=True)
@@ -162,12 +169,26 @@ class CandidatePair(BaseModel):
     pair_id: str
     earlier_decision_id: str
     later_decision_id: str
+    earlier_sentence_id: str
+    later_sentence_id: str
     earlier_meeting_id: str
     later_meeting_id: str
     earlier_text: str
     later_text: str
     blocker_score: float
     blocker_version: str
+
+
+def source_sentence_id(decision: Decision) -> str:
+    """The abstractive ``nite:id`` a decision was derived from.
+
+    :class:`~afg.domain.decision.Decision` has no dedicated field for provenance, so the
+    source sentence id travels as the first (and, for
+    :func:`decisions_from_abstractive`, only) entry of ``evidence.dialogue_act_ids`` --
+    the placeholder that function has always written there. ``EvidenceSpan`` enforces
+    ``min_length=1``, so this never raises.
+    """
+    return decision.evidence.dialogue_act_ids[0]
 
 
 def _decision_text(decision: Decision) -> str:
@@ -206,6 +227,7 @@ def _build_candidate_pairs(
     manual. ``id_infix`` (``"p"`` for candidates, ``"r"`` for rejected) keeps the two id
     spaces disjoint so a candidate and a rejected pair never collide.
     """
+
     def _sort_key(triple: tuple[Decision, Decision, float]) -> tuple[str, str, float]:
         earlier, later, score = triple
         return (earlier.meeting_id, later.meeting_id, -score)
@@ -221,6 +243,8 @@ def _build_candidate_pairs(
                 pair_id=pair_id,
                 earlier_decision_id=earlier.id,
                 later_decision_id=later.id,
+                earlier_sentence_id=source_sentence_id(earlier),
+                later_sentence_id=source_sentence_id(later),
                 earlier_meeting_id=earlier.meeting_id,
                 later_meeting_id=later.meeting_id,
                 earlier_text=_decision_text(earlier),
@@ -322,19 +346,38 @@ def decisions_from_abstractive(ami_root: Path, series_id: str) -> list[Decision]
     ``afg.corpus.inventory._count_abstractive_decision_sentences`` for the same, already
     verified, parsing approach) and wraps each raw sentence as a :class:`Decision`:
 
-    - ``id`` is the sentence's namespaced ``nite:id`` (e.g. ``"IS1004c.elana.s.29"``).
+    - ``id`` is the decision id, ``<meeting>.d<NN>`` (e.g. ``"IS1004c.d29"``), assigned by
+      1-based position among that meeting's DECISIONS sentences in document order -- the
+      SAME rule, over the same sentences in the same order, that
+      ``afg.annotation.goldset.build_gold_decisions`` uses for ``decision_id``. That is
+      what makes a candidate row joinable to a decision row.
     - ``decision_object`` is left empty: raw abstractive sentences are not segmented into
       object/content, that segmentation is P3's job.
     - ``content`` is the sentence's full raw text.
-    - ``evidence.dialogue_act_ids`` holds only the sentence's own id as a placeholder --
-      it is NOT a verified link to supporting dialogue acts (that link is ``summlink``,
-      P3's job too).
+    - ``evidence.dialogue_act_ids`` holds only the sentence's own ``nite:id`` as a
+      placeholder -- it is NOT a verified link to supporting dialogue acts (that link is
+      ``summlink``, P3's job too). Read it through :func:`source_sentence_id`.
+
+    THE 1:1 MAPPING HAS AN EXPIRY DATE. Today ``decision_id`` and ``source_sentence_id``
+    are in exact bijection -- one abstractive sentence, one decision -- which is the only
+    reason this function can derive a decision id at all. That bijection breaks the moment
+    an annotator marks a row ``compuesta`` (manual section 2): a sentence found to host
+    several decisions is split into ``<decision_id>-1``, ``-2``, ... child rows, and the
+    parent sentence id then maps to N decision ids. Propagating such a split into the
+    candidate pairs -- deciding which child a pair should now point at, or whether the pair
+    should fan out into N pairs -- is an OPEN PROBLEM. This function does not solve it and
+    must not be read as if it did: it regenerates candidates from the raw sentences, so
+    running it after a split silently discards the split.
 
     Candidates generated from these raw sentences are NOT the final gold input: they are
     good enough to exercise and measure the blocker (P2) now, but the real Tarea B/C input
     must be regenerated from P3's normalised decisions once ``build_gold_decisions`` lands.
     """
     decisions: list[Decision] = []
+    # Per MEETING, not per file: `build_gold_decisions` numbers a meeting's sentences from
+    # 1 across every abstractive file it finds for that meeting, and the two numberings
+    # have to agree exactly or the decision ids stop joining.
+    next_index: dict[str, int] = {}
     for layer_file in discover_layer_files(ami_root, AnnotationLayer.ABSTRACTIVE_SUMMARY):
         meeting_id = layer_file.meeting_id
         if meeting_id[:-1] != series_id:
@@ -350,9 +393,10 @@ def decisions_from_abstractive(ami_root: Path, series_id: str) -> list[Decision]
                 text = (sentence_el.text or "").strip()
                 if not sentence_id or not text:
                     continue
+                index = next_index[meeting_id] = next_index.get(meeting_id, 0) + 1
                 decisions.append(
                     Decision(
-                        id=sentence_id,
+                        id=f"{meeting_id}.d{index:02d}",
                         series_id=series_id,
                         meeting_id=meeting_id,
                         decision_object="",
@@ -364,7 +408,11 @@ def decisions_from_abstractive(ami_root: Path, series_id: str) -> list[Decision]
                         annotator=None,
                     )
                 )
-    decisions.sort(key=lambda d: d.id)
+    # Sorted by SOURCE SENTENCE id, not by decision id. This is the order the blocker has
+    # always seen, and `_build_candidate_pairs` breaks score ties by input order, so
+    # sorting on the new decision ids instead would silently renumber `pair_id`s in every
+    # already-generated candidate file for no gain.
+    decisions.sort(key=source_sentence_id)
     return decisions
 
 
@@ -374,6 +422,8 @@ _CSV_COLUMNS = (
     "pair_id",
     "earlier_decision_id",
     "later_decision_id",
+    "earlier_sentence_id",
+    "later_sentence_id",
     "earlier_text",
     "later_text",
     "blocker_score",
@@ -401,6 +451,8 @@ def write_candidate_pairs_csv(pairs: list[CandidatePair], out_path: Path) -> Pat
                     pair.pair_id,
                     pair.earlier_decision_id,
                     pair.later_decision_id,
+                    pair.earlier_sentence_id,
+                    pair.later_sentence_id,
                     pair.earlier_text,
                     pair.later_text,
                     pair.blocker_score,
