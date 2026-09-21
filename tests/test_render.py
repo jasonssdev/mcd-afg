@@ -371,6 +371,20 @@ class TestRendererRevision:
         assert all(path.startswith("src/afg/") for path in scoped)
 
 
+class TestManifestLineEndings:
+    def test_manifest_is_written_with_lf_not_crlf(self, tmp_path: Path) -> None:
+        """csv.writer defaults to CRLF; git normalizes it to LF on commit, so the file on
+        disk would never match the one checked out and every render would show a spurious
+        diff -- destroying the very reproducibility evidence the manifest provides."""
+        _build_synthetic_meeting(tmp_path)
+        result = render_meetings(
+            tmp_path, ["MEET1"], tmp_path / "out", manifest_dir=tmp_path / "tables"
+        )
+        raw = result.manifest_path.read_bytes()
+        assert b"\r\n" not in raw
+        assert raw.count(b"\n") == 2  # header + 1 row
+
+
 class TestWriteMeetingArtifacts:
     def test_force_refusal_is_a_caller_concern_not_a_write_error(self, tmp_path: Path) -> None:
         """write_meeting_artifacts always writes; --force refusal is enforced by the CLI

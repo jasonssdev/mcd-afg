@@ -343,11 +343,18 @@ class ManifestRow:
 
 def write_manifest_csv(rows: Sequence[ManifestRow], out_dir: Path = TABLES_DIR) -> Path:
     """Write the freeze manifest to ``reports/tables/transcripts_manifest.csv``, one row
-    per rendered meeting, sorted by ``meeting_id`` for a stable, diffable file."""
+    per rendered meeting, sorted by ``meeting_id`` for a stable, diffable file.
+
+    ``lineterminator="\n"`` is not cosmetic. ``csv.writer`` defaults to CRLF, which git
+    normalizes to LF on commit -- so a manifest written here would differ from the one
+    checked out, and the next render would produce a spurious diff. That would quietly
+    destroy the reproducibility evidence this file exists to provide. It also matches the
+    other tracked tables under ``reports/tables/``, which are all LF.
+    """
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / MANIFEST_CSV_NAME
     with out_path.open("w", newline="") as fh:
-        writer = csv.writer(fh)
+        writer = csv.writer(fh, lineterminator="\n")
         writer.writerow(
             [
                 "meeting_id",
