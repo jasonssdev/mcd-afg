@@ -344,6 +344,32 @@ class TestRendererRevision:
         revision = renderer_revision()
         assert revision != ""
 
+    def test_dirty_check_is_scoped_to_the_rendering_source_paths(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """A regression guard for the provenance field's meaning.
+
+        An unscoped ``git status --porcelain`` also reports untracked and unrelated files,
+        so the manifest would mark every render after the first one ``-dirty`` just because
+        the previous render rewrote the manifest. The field answers "which code produced
+        this text", so the status call must be limited to the rendering sources.
+        """
+        seen: list[list[str]] = []
+
+        def _fake_run(cmd: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+            seen.append(cmd)
+            stdout = "deadbee\n" if "rev-parse" in cmd else ""
+            return subprocess.CompletedProcess(cmd, 0, stdout=stdout, stderr="")
+
+        monkeypatch.setattr("afg.corpus.render.subprocess.run", _fake_run)
+        assert renderer_revision() == "deadbee"
+
+        status_cmd = next(cmd for cmd in seen if "status" in cmd)
+        assert "--" in status_cmd
+        scoped = status_cmd[status_cmd.index("--") + 1 :]
+        assert scoped, "the status call must name the paths it checks"
+        assert all(path.startswith("src/afg/") for path in scoped)
+
 
 class TestWriteMeetingArtifacts:
     def test_force_refusal_is_a_caller_concern_not_a_write_error(self, tmp_path: Path) -> None:

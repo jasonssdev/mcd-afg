@@ -52,11 +52,22 @@ MANIFEST_CSV_NAME = "transcripts_manifest.csv"
 
 _GIT_TIMEOUT_SECONDS = 5
 
+# Paths whose contents can change the rendered output. The ``-dirty`` flag on
+# :func:`renderer_revision` is computed over these alone -- see its docstring.
+_RENDER_SOURCE_PATHS: tuple[str, ...] = ("src/afg/corpus", "src/afg/shared/paths.py")
+
 
 def renderer_revision() -> str:
-    """Return the current git revision for provenance (the front matter's ``renderer``
-    field and the manifest's ``renderer_revision`` column), with a ``-dirty`` suffix when
-    the working tree has uncommitted changes.
+    """Return the git revision that produced a render, for provenance (the front matter's
+    ``renderer`` field and the manifest's ``renderer_revision`` column), with a ``-dirty``
+    suffix when the rendering code itself has uncommitted changes.
+
+    The dirty check is SCOPED to :data:`_RENDER_SOURCE_PATHS`, not the whole working tree,
+    and this is deliberate. An unscoped ``git status --porcelain`` also reports untracked
+    and unrelated files, so the manifest this function stamps would mark every subsequent
+    render ``-dirty`` merely because the previous render rewrote the manifest -- and an
+    unrelated edit under ``docs/`` would do the same. The field answers "which code
+    produced this text", so only paths that can change the text may flip it.
 
     Returns the literal ``"unknown"`` -- never raises -- when git is unavailable or any
     call fails; this is provenance metadata, not control flow.
@@ -77,7 +88,7 @@ def renderer_revision() -> str:
             return "unknown"
 
         status_result = subprocess.run(
-            ["git", "status", "--porcelain"],
+            ["git", "status", "--porcelain", "--", *_RENDER_SOURCE_PATHS],
             cwd=PROJECT_ROOT,
             capture_output=True,
             text=True,
