@@ -32,6 +32,10 @@ class AnnotationLayer(StrEnum):
     WORDS = "words"
     """Word-level transcription, needed to render plain transcripts for C1."""
 
+    SEGMENTS = "segments"
+    """Turn segmentation with transcriber timing, needed for chronological interleaving
+    across speakers when rendering transcripts (thesis section 5.3)."""
+
 
 # VERIFIED at paso cero (2026-09-20) against ami_public_manual_1.6.2, by globbing the
 # extracted tree. Observed file counts are recorded so a future corpus release that
@@ -46,12 +50,16 @@ class AnnotationLayer(StrEnum):
 #   *.words.xml       687 files   words/          (one file per meeting AND speaker)
 # Two patterns were wrong before this verification and silently matched nothing:
 # ".dsegs.xml" (real: ".decision.xml") and ".dialogue-acts.xml" (real: ".dialog-act.xml").
+#
+# VERIFIED at transcript-rendering fix (2026-09-21): ``*.segments.xml`` under ``segments/``
+# also has 687 files -- one per (meeting, speaker), matching ``words/`` exactly.
 _LAYER_GLOB_PATTERNS: dict[AnnotationLayer, str] = {
     AnnotationLayer.ABSTRACTIVE_SUMMARY: "*.abssumm.xml",
     AnnotationLayer.EXTRACTIVE_SUMMARY_LINKS: "*.summlink.xml",
     AnnotationLayer.DECISION_DISCUSSION_SEGMENTATION: "*.decision.xml",
     AnnotationLayer.DIALOGUE_ACTS: "*.dialog-act.xml",
     AnnotationLayer.WORDS: "*.words.xml",
+    AnnotationLayer.SEGMENTS: "*.segments.xml",
 }
 
 
