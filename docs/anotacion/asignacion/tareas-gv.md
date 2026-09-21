@@ -15,16 +15,17 @@ muestra de recall de la Tarea C, y validar el banco de preguntas que escribe Gus
 
 ```bash
 uv run afg gold prepare  --annotator gv                    # crea tus archivos, ya nombrados
-uv run afg gold validate --annotator gv --series <ID>       # antes de abrir el PR de esa serie
-uv run afg gold status                                      # cómo va todo el equipo (lectura)
+uv run afg gold validate --annotator gv                     # revisa todas tus series asignadas
+uv run afg gold status   --annotator gv                     # tu propio avance (lectura)
 ```
 
 `prepare` genera cada `<serie>.decisions.gv.csv` y `<serie>.candidates.gv.csv` con las
 columnas de máquina ya llenas y las tuyas vacías — nunca copies ni renombres un CSV a mano.
 Correrlo de nuevo no borra tu trabajo: un archivo con anotación se respeta, salvo que pases
-`--force`. `validate` es el filtro que tienes que pasar antes de cada PR: si hay un error
-sale con código distinto de cero y te dice fila y columna exactas. `status` es solo lectura;
-lo usas para ver tu propio avance sin abrir un CSV.
+`--force`. `validate` sin `--series` recorre todas tus series asignadas; agrega `--series
+<ID>` para revisar solo la serie cuyo PR vas a abrir. Si hay un error sale con código
+distinto de cero y te dice fila y columna exactas. `status --annotator gv` es solo lectura;
+te muestra tu propio avance, serie por serie, sin abrir un CSV.
 
 ---
 

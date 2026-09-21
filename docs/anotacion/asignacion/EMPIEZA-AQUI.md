@@ -45,10 +45,11 @@ cada columna están en tu documento personal, §2.
 ## 5. Valida antes de abrir el PR
 
 ```bash
-uv run afg gold validate --annotator <tus iniciales> --series <ID>
+uv run afg gold validate --annotator <tus iniciales>
 ```
 
-Tiene que salir sin errores. `0/N` no es un error: es trabajo por hacer.
+Tiene que salir sin errores. `0/N` no es un error: es trabajo por hacer. Agrega `--series
+<ID>` para revisar solo la serie cuyo PR vas a abrir.
 
 ## 6. Abre el PR
 

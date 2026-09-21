@@ -15,16 +15,17 @@ banco de preguntas de OE4: mínimo 25 preguntas por cada uno de los cuatro estra
 
 ```bash
 uv run afg gold prepare  --annotator gm                    # crea tus archivos, ya nombrados
-uv run afg gold validate --annotator gm --series <ID>       # antes de abrir el PR de esa serie
-uv run afg gold status                                      # cómo va todo el equipo (lectura)
+uv run afg gold validate --annotator gm                     # revisa todas tus series asignadas
+uv run afg gold status   --annotator gm                     # tu propio avance (lectura)
 ```
 
 `prepare` genera cada `<serie>.decisions.gm.csv` y `<serie>.candidates.gm.csv` con las
 columnas de máquina ya llenas y las tuyas vacías — nunca copies ni renombres un CSV a mano.
 Correrlo de nuevo no borra tu trabajo: un archivo con anotación se respeta, salvo que pases
-`--force`. `validate` es el filtro que tienes que pasar antes de cada PR: si hay un error
-sale con código distinto de cero y te dice fila y columna exactas. `status` es solo lectura;
-lo usas para ver tu propio avance sin abrir un CSV.
+`--force`. `validate` sin `--series` recorre todas tus series asignadas; agrega `--series
+<ID>` para revisar solo la serie cuyo PR vas a abrir. Si hay un error sale con código
+distinto de cero y te dice fila y columna exactas. `status --annotator gm` es solo lectura;
+te muestra tu propio avance, serie por serie, sin abrir un CSV.
 
 ---
 

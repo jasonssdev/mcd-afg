@@ -680,10 +680,12 @@ def gold_validate(
     """Verifica el trabajo de una persona antes de abrir el pull request.
 
     Tres controles por archivo: los valores de conjunto cerrado son legales, ninguna fila
-    quedó a medio llenar, y las columnas de máquina siguen idénticas al archivo base.
-    Sale con código distinto de cero si algo falla, para que pueda bloquear un PR.
+    quedó a medio llenar, y las columnas de máquina siguen idénticas al archivo base. Una
+    serie sin preparar no cuenta como error de contenido -- se marca `sin preparar`, no
+    `errores` -- pero de todos modos sale con código distinto de cero: no se puede abrir un
+    PR para archivos que no existen.
     """
-    from afg.annotation.workspace import UnknownAnnotatorError, validate_annotator
+    from afg.annotation.workspace import IssueKind, UnknownAnnotatorError, validate_annotator
 
     plan = _plan_or_exit()
     try:
@@ -695,7 +697,12 @@ def gold_validate(
     person = plan.annotator(annotator)
     console.print(f"[bold]{person.name} (`{annotator}`)[/bold]")
     for progress in report.series:
-        mark = "[green]ok[/green]" if progress.ok else "[bold red]errores[/bold red]"
+        if progress.ok:
+            mark = "[green]ok[/green]"
+        elif progress.not_started:
+            mark = "[dim]sin preparar[/dim]"
+        else:
+            mark = "[bold red]errores[/bold red]"
         console.print(
             f"  {progress.series_id}: {progress.decisions_filled}/"
             f"{progress.decisions_total} decisiones, {progress.candidates_filled}/"
@@ -708,25 +715,46 @@ def gold_validate(
         )
         return
 
-    console.print(f"\n[bold red]{len(report.issues)} problema(s):[/bold red]")
-    for issue in report.issues:
-        console.print(f"  - {issue.message}")
+    real_issues = [issue for issue in report.issues if issue.kind is not IssueKind.MISSING_FILE]
+    not_started = [progress for progress in report.series if progress.not_started]
+
+    if real_issues:
+        console.print(f"\n[bold red]{len(real_issues)} problema(s):[/bold red]")
+        for issue in real_issues:
+            console.print(f"  - {issue.message}")
+    if not_started:
+        console.print(
+            f"\n[dim]{len(not_started)} serie(s) sin preparar.[/dim] Ejecuta "
+            f"`uv run afg gold prepare --annotator {annotator}` para crear tus archivos."
+        )
     raise typer.Exit(code=1)
 
 
 @gold_app.command("status")
-def gold_status() -> None:
+def gold_status(
+    annotator: str | None = typer.Option(
+        None, "--annotator", help="Muestra solo las series de esta persona, p. ej. gv."
+    ),
+) -> None:
     """Panel de control del mantenedor: una fila por anotador y serie.
 
     Muestra fase, avance en las dos tareas y si la serie pasa la validación, para seguir
-    al equipo sin abrir un solo archivo.
+    al equipo sin abrir un solo archivo. Con `--annotator`, muestra solo las filas de esa
+    persona -- su propio avance, sin el resto del equipo.
     """
     from rich.table import Table
 
-    from afg.annotation.workspace import validate_annotator
+    from afg.annotation.workspace import UnknownAnnotatorError, validate_annotator
 
     plan = _plan_or_exit()
     paths = _workspace_paths()
+
+    if annotator is not None:
+        try:
+            plan.annotator(annotator)
+        except UnknownAnnotatorError as exc:
+            console.print(f"[bold red]{exc}[/bold red]")
+            raise typer.Exit(code=1) from exc
 
     table = Table(title="Anotación OE1 — avance por persona y serie")
     table.add_column("Anotador")
@@ -739,6 +767,8 @@ def gold_status() -> None:
     any_row = False
     for person in plan.annotators:
         if not person.annotates:
+            continue
+        if annotator is not None and person.initials != annotator:
             continue
         report = validate_annotator(plan, person.initials, paths=paths)
         for progress in report.series:
