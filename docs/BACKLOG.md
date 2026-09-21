@@ -27,7 +27,7 @@ Trabajo pendiente, en orden de dependencia. Última actualización: 2026-09-21.
 | # | Decisión | Evidencia |
 |---|---|---|
 | D1 | **Marco muestral: resumen abstractivo, no capa DDS.** 33 series completas / 649 decisiones, contra 6 / 136 | Medido sobre `ami_public_manual_1.6.2` |
-| D2 | **DDS pasa a subconjunto de validación** en las 6 series que tienen ambas capas | — |
+| D2 | **DDS pasa a subconjunto de validación** en las 6 series que tienen ambas capas | 29 de las 47 reuniones con DDS caen dentro de las 56 de OE1 y 18 quedan fuera. Cobertura dentro de OE1: **4/4** en ES2015, ES2016, IS1004, IS1006, IS1008 y TS3005; **3/4** en IS1003; **2/4** en ES2002. Medido sobre `data/raw/ami/decision/manual/*.decision.xml` contra `config/corpus.toml` `[oe1]` |
 | D3 | **Las etiquetas del conjunto de referencia las pone un humano.** Innegociable | Si un LLM construye OE1, C3 tiene errores de extracción por construcción y la brecha C2−C3 (todo OE4) se vuelve ruido |
 | D4 | **Se automatiza todo menos la etiqueta**: normalización, evidencia, bloqueo de candidatos, kappa, banco de preguntas | Anotar los 3.071 pares de las 14 series exhaustivamente es inviable; con bloqueo son **92** (ver D9) |
 | D5 | **El blocker usa coeficiente de solapamiento, no Jaccard** | Jaccard = 0,118 vs solapamiento = 0,400 en el par del botón turbo; Jaccard lo pierde |
@@ -252,8 +252,10 @@ deben tratarse como hipótesis, no como hallazgo.
       solo los 47 `.decision.xml`, con 288 elementos `<decision>` y **cero** punteros a
       `abssumm`. Verificado 2026-09-20 sobre `ami_public_manual_1.6.2`
 - [ ] §5.0: reescribir el párrafo de muestreo (DDS → resumen abstractivo)
-- [ ] §5.1: publicar 91/96/2 y declarar que `native_language` es la fuente, no la heurística
-- [ ] §6.3: bajar el eje de lengua a limitación; rol pasa a primario
+- [x] §5.1: publicar 91/96/2 y declarar que `native_language` es la fuente, no la heurística
+      (2026-09-21, aplicado en `propuesta.md`)
+- [x] §6.3: bajar el eje de lengua a limitación; rol pasa a primario
+      (2026-09-21, aplicado en `propuesta.md` §3 OE2, §5.1, §5.6 y §6.3)
 - [ ] §5.4: documentar coeficiente de solapamiento y la evidencia contra Jaccard
 - [ ] §7: actualizar el riesgo principal — el cuello de botella eran los flags, no el corpus
 - [ ] §9: leer Zhang & Li, *ConsistencyGate* antes de fijar la afirmación de novedad

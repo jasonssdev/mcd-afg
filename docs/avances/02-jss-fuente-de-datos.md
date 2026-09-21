@@ -103,7 +103,16 @@ Todo parámetro ajustado en desarrollo se congela antes de tocar evaluación. De
 El bloqueador exige **coeficiente de solapamiento ≥ 0,30 y `\|A∩B\| ≥ 2`** simultáneamente.
 Sólo con el coeficiente, el bloqueador seleccionaba 712 de 3.071 pares (23,2 %, ≈18 h de
 anotación); con el mínimo absoluto de tokens compartidos añadido, 92 (3,0 %, ≈2,3 h), sin
-perder el único caso de reversión confirmada que sirvió de prueba de regresión (D9).
+perder el **caso de regresión** del bloqueador: el par del botón turbo, `IS1004c` →
+`IS1004d` (D9).
+
+Ese par **no es una relación confirmada**. La verificación contra transcripción mostró que la
+reversión que el resumen abstractivo afirmaba nunca ocurrió (§5; [`../BACKLOG.md`](../BACKLOG.md)
+P8), y el caso se conserva precisamente por su forma léxica: es el par de solape más exigente
+medido en el piloto —solapamiento 0,400 frente a Jaccard 0,118 (D5)— y por eso acota el punto
+de operación por ambos lados, umbral ≤ 0,40 **y** mínimo ≤ 2. Que la relación resultara falsa
+no debilita la prueba de regresión: lo que el caso fija es la sensibilidad del bloqueador a
+una frase corta, no la existencia de un enlace.
 
 ### 4.5 Composición lingüística
 

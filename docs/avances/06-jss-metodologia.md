@@ -81,9 +81,11 @@ inatribuible:
 **El bloqueador de candidatos** —que decide qué pares de decisiones se ofrecen a anotación
 humana— se ajusta también sobre desarrollo, y es un ejemplo del mismo principio aplicado a
 una etapa previa: exige coeficiente de solapamiento ≥ 0,30 **y** al menos 2 tokens
-compartidos. Se usa solapamiento y no Jaccard porque Jaccard pierde el único caso de reversión
-confirmado en el piloto (Jaccard 0,118 frente a solapamiento 0,400 en el par del botón
-turbo); y se exige el mínimo absoluto de tokens porque el coeficiente solo, sobre las 14
+compartidos. Se usa solapamiento y no Jaccard porque Jaccard pierde el caso de regresión del
+bloqueador —el par del botón turbo, Jaccard 0,118 frente a solapamiento 0,400—, que es el par
+de solape léxico más exigente medido en el piloto y **no** una relación confirmada: la
+verificación contra transcripción mostró después que esa reversión no ocurrió (documento 02,
+§4.4); y se exige el mínimo absoluto de tokens porque el coeficiente solo, sobre las 14
 series reales, seleccionaba 712 de 3.071 pares (23,2 %, ≈18 h de anotación) en vez del 5,5 %
 que sugería el piloto — con el mínimo añadido, 92 (3,0 %, ≈2,3 h), sin perder el caso de
 prueba.
