@@ -26,6 +26,7 @@ from afg.corpus.render import (
     render_meetings,
     renderer_revision,
     sha256_of_file,
+    split_meeting_id,
     write_meeting_artifacts,
 )
 from afg.shared.paths import AMI_DIR
@@ -197,6 +198,30 @@ def _build_overlap_disagreement_meeting(ami_root: Path) -> None:
     )
 
 
+def _build_words_segments_dialogue_acts(ami_root: Path, meeting_id: str) -> None:
+    """Minimal one-word, one-speaker fixture for an arbitrary ``meeting_id`` -- used where
+    the exact transcript content does not matter and only the meeting id's shape
+    (series/letter splitting, discovery, filtering) is under test. Deliberately skips
+    ``corpusResources/meetings.xml``: role labels are not exercised here and
+    ``speaker_role_labels`` degrades to the ``nxt_agent`` letter by design."""
+    (ami_root / "words").mkdir(parents=True, exist_ok=True)
+    (ami_root / "segments").mkdir(parents=True, exist_ok=True)
+    (ami_root / "dialogueActs").mkdir(parents=True, exist_ok=True)
+
+    _write_words_file(
+        ami_root / "words" / f"{meeting_id}.A.words.xml",
+        f'<w nite:id="{meeting_id}.A.words1" starttime="0.0" endtime="0.5">Hello</w>',
+    )
+    _write_segments_file(
+        ami_root / "segments" / f"{meeting_id}.A.segments.xml",
+        [(0.0, 0.5, f"{meeting_id}.A.words.xml#id({meeting_id}.A.words1)")],
+    )
+    _write_dialogue_acts_file(
+        ami_root / "dialogueActs" / f"{meeting_id}.A.dialog-act.xml",
+        [(f"{meeting_id}.A.dialog-act.1", f"{meeting_id}.A.words.xml#id({meeting_id}.A.words1)")],
+    )
+
+
 class TestRenderMeetingArtifacts:
     def test_front_matter_round_trips_expected_keys(self, tmp_path: Path) -> None:
         _build_synthetic_meeting(tmp_path)
@@ -204,8 +229,12 @@ class TestRenderMeetingArtifacts:
         assert artifacts is not None
         fields, body = parse_front_matter(artifacts.markdown)
         assert fields["meeting_id"] == "MEET1"
-        assert fields["series"] == "MEET"
-        assert fields["letter"] == "1"
+        # "MEET1" does not match the real AMI id shape ([A-Z]{2}\d{4}[a-e]?) -- it
+        # exercises split_meeting_id's graceful-degradation path: the whole id becomes its
+        # own series and the letter is empty (see TestSplitMeetingId for the direct unit
+        # tests of that function).
+        assert fields["series"] == "MEET1"
+        assert fields["letter"] == ""
         assert fields["renderer"] == "afg.corpus.render@deadbee"
         assert fields["speakers"] == {"A": "PM", "B": "ME"}
         assert fields["turns"] == "4"
@@ -233,6 +262,19 @@ class TestRenderMeetingArtifacts:
     def test_missing_meeting_returns_none(self, tmp_path: Path) -> None:
         _build_synthetic_meeting(tmp_path)
         assert render_meeting_artifacts(tmp_path, "DOES-NOT-EXIST", revision="deadbee") is None
+
+    def test_front_matter_keeps_letter_key_empty_when_no_session_letter(
+        self, tmp_path: Path
+    ) -> None:
+        """A real AMI shape with no session letter (e.g. IB4001) still gets a ``letter:``
+        front-matter key, just with an empty value -- parsing stays uniform."""
+        _build_words_segments_dialogue_acts(tmp_path, "IB4001")
+        artifacts = render_meeting_artifacts(tmp_path, "IB4001", revision="deadbee")
+        assert artifacts is not None
+        fields, _ = parse_front_matter(artifacts.markdown)
+        assert fields["series"] == "IB4001"
+        assert fields["letter"] == ""
+        assert "letter:" in artifacts.markdown
 
 
 class TestDialogueActOverlap:
@@ -327,7 +369,60 @@ class TestDiscoverMeetingIds:
     def test_filters_by_series(self, tmp_path: Path) -> None:
         _build_synthetic_meeting(tmp_path)
         assert discover_meeting_ids(tmp_path, series_filter=["OTHER"]) == []
-        assert discover_meeting_ids(tmp_path, series_filter=["MEET"]) == ["MEET1"]
+        # "MEET1" has no session letter under the real AMI id shape, so it is its own
+        # series (see split_meeting_id) -- filtering by "MEET" (the old, wrong,
+        # meeting_id[:-1] series) must NOT match it.
+        assert discover_meeting_ids(tmp_path, series_filter=["MEET"]) == []
+        assert discover_meeting_ids(tmp_path, series_filter=["MEET1"]) == ["MEET1"]
+
+
+class TestSplitMeetingId:
+    @pytest.mark.parametrize(
+        ("meeting_id", "expected"),
+        [
+            ("ES2002a", ("ES2002", "a")),
+            ("IS1004d", ("IS1004", "d")),
+            ("EN2001a", ("EN2001", "a")),
+            ("TS3005a", ("TS3005", "a")),
+            ("IB4001", ("IB4001", "")),
+            ("IB4010", ("IB4010", "")),
+            ("IN1001", ("IN1001", "")),
+        ],
+    )
+    def test_splits_real_ami_id_shapes(self, meeting_id: str, expected: tuple[str, str]) -> None:
+        assert split_meeting_id(meeting_id) == expected
+
+    def test_malformed_id_degrades_without_raising(self) -> None:
+        assert split_meeting_id("not-a-real-meeting-id") == ("not-a-real-meeting-id", "")
+
+    def test_empty_id_degrades_without_raising(self) -> None:
+        assert split_meeting_id("") == ("", "")
+
+
+class TestIbSeriesRegression:
+    """Regression guard for the exact damage found in the committed manifest: the naive
+    ``meeting_id[:-1]``/``meeting_id[-1]`` split shredded IB4001..IB4005 into a fabricated
+    series "IB400" and merged IB4010 into that same fabricated series, because both
+    truncate to "IB400"."""
+
+    def test_ib4010_is_not_grouped_with_ib4001(self, tmp_path: Path) -> None:
+        _build_words_segments_dialogue_acts(tmp_path, "IB4001")
+        _build_words_segments_dialogue_acts(tmp_path, "IB4010")
+
+        artifacts_4001 = render_meeting_artifacts(tmp_path, "IB4001", revision="deadbee")
+        artifacts_4010 = render_meeting_artifacts(tmp_path, "IB4010", revision="deadbee")
+
+        assert artifacts_4001 is not None
+        assert artifacts_4010 is not None
+        assert artifacts_4001.series == "IB4001"
+        assert artifacts_4010.series == "IB4010"
+        assert artifacts_4001.series != artifacts_4010.series
+
+    def test_series_filter_selects_ib4001_only(self, tmp_path: Path) -> None:
+        _build_words_segments_dialogue_acts(tmp_path, "IB4001")
+        _build_words_segments_dialogue_acts(tmp_path, "IB4010")
+
+        assert discover_meeting_ids(tmp_path, series_filter=["IB4001"]) == ["IB4001"]
 
 
 class TestRendererRevision:
@@ -387,6 +482,24 @@ class TestRendererRevision:
         assert not any("rev-parse" in cmd for cmd in seen)
         assert any("log" in cmd for cmd in seen)
 
+    def test_pins_an_explicit_abbrev_length(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """core.abbrev defaults to "auto" and scales the hash length with the repository's
+        object count. Without an explicit --abbrev, the same commit would stamp a longer
+        hash once the repo crosses that threshold, changing every renderer: front-matter
+        line -- and therefore every sha256_md -- with no code or corpus change."""
+        seen: list[list[str]] = []
+
+        def _fake_run(cmd: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+            seen.append(cmd)
+            stdout = "deadbeefcafe\n" if "log" in cmd else ""
+            return subprocess.CompletedProcess(cmd, 0, stdout=stdout, stderr="")
+
+        monkeypatch.setattr("afg.corpus.render.subprocess.run", _fake_run)
+        assert renderer_revision() == "deadbeefcafe"
+
+        log_cmd = next(c for c in seen if "log" in c)
+        assert "--abbrev=12" in log_cmd
+
 
 class TestManifestLineEndings:
     def test_manifest_is_written_with_lf_not_crlf(self, tmp_path: Path) -> None:
@@ -400,6 +513,40 @@ class TestManifestLineEndings:
         raw = result.manifest_path.read_bytes()
         assert b"\r\n" not in raw
         assert raw.count(b"\n") == 2  # header + 1 row
+
+
+class TestManifestMerge:
+    """A filtered render merges into whatever manifest already exists at the target
+    location rather than replacing it wholesale -- the exact defect that let a
+    ``--series`` render silently truncate a 171-row manifest down to a handful."""
+
+    def test_second_render_of_one_meeting_preserves_the_other_meetings_row(
+        self, tmp_path: Path
+    ) -> None:
+        ami_root = tmp_path / "ami"
+        _build_synthetic_meeting(ami_root)
+        _build_words_segments_dialogue_acts(ami_root, "IB4001")
+
+        out_dir = tmp_path / "out"
+        manifest_dir = tmp_path / "reports"
+
+        first = render_meetings(ami_root, ["MEET1", "IB4001"], out_dir, manifest_dir=manifest_dir)
+        first_rows = {
+            line.split(",")[0]: line for line in first.manifest_path.read_text().splitlines()[1:]
+        }
+        assert set(first_rows) == {"MEET1", "IB4001"}
+
+        # Render ONLY IB4001 again, into the same location.
+        second = render_meetings(ami_root, ["IB4001"], out_dir, manifest_dir=manifest_dir)
+        second_rows = {
+            line.split(",")[0]: line for line in second.manifest_path.read_text().splitlines()[1:]
+        }
+
+        assert set(second_rows) == {"MEET1", "IB4001"}
+        # MEET1 was NOT rendered this time -- its row must survive verbatim, not vanish.
+        assert second_rows["MEET1"] == first_rows["MEET1"]
+        # IB4001 WAS rendered this time -- its row comes from this invocation.
+        assert "IB4001" in second_rows
 
 
 class TestWriteMeetingArtifacts:
@@ -455,6 +602,36 @@ class TestCliForceRefusal:
 
         assert result.exit_code == 0, result.output
         assert (out_dir / "MEET1.md").exists()
+
+
+class TestCliScratchManifestIsolation:
+    """A render to a non-canonical --out must not touch the tracked manifest at all
+    (Finding 2, rule 1) -- only a render into the canonical transcripts directory may
+    write reports/tables/transcripts_manifest.csv."""
+
+    def test_custom_out_does_not_touch_the_tracked_manifest(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        ami_root = tmp_path / "ami"
+        _build_synthetic_meeting(ami_root)
+
+        tracked_tables_dir = tmp_path / "reports"
+        tracked_tables_dir.mkdir()
+        tracked_manifest = tracked_tables_dir / "transcripts_manifest.csv"
+        tracked_manifest.write_text("sentinel: must stay untouched\n")
+
+        out_dir = tmp_path / "scratch"
+
+        monkeypatch.setattr(afg_cli, "AMI_DIR", ami_root)
+        monkeypatch.setattr(afg_cli, "TABLES_DIR", tracked_tables_dir)
+        runner = CliRunner()
+        result = runner.invoke(
+            afg_cli.app, ["corpus", "transcripts", "--out", str(out_dir), "--force"]
+        )
+
+        assert result.exit_code == 0, result.output
+        assert tracked_manifest.read_text() == "sentinel: must stay untouched\n"
+        assert (out_dir / "transcripts_manifest.csv").exists()
 
 
 @requires_corpus

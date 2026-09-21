@@ -210,8 +210,15 @@ def corpus_transcripts(
         )
         raise typer.Exit(code=1)
 
+    # A render into the canonical transcripts directory writes the tracked manifest at
+    # TABLES_DIR (and merges into it, see write_manifest_csv). Any other --out is a
+    # scratch render and must not touch that tracked file at all -- its manifest goes
+    # next to its own output instead.
+    is_canonical_out_dir = out_dir.resolve() == TRANSCRIPTS_DIR.resolve()
+    manifest_dir = TABLES_DIR if is_canonical_out_dir else out_dir
+
     console.print(f"Rendering {len(meeting_ids)} meeting(s)...")
-    result = render_meetings(ami_root, meeting_ids, out_dir, manifest_dir=TABLES_DIR)
+    result = render_meetings(ami_root, meeting_ids, out_dir, manifest_dir=manifest_dir)
 
     for meeting_id in result.meeting_ids:
         console.print(f"Wrote {out_dir / f'{meeting_id}.md'}")
@@ -389,8 +396,7 @@ def gold_agreement(
         )
     else:
         console.print(
-            "  type kappa:      n/a (no pair was marked as an existing link by both "
-            "annotators)"
+            "  type kappa:      n/a (no pair was marked as an existing link by both annotators)"
         )
     console.print(
         f"  direction kappa: {result.direction_kappa:.3f} "

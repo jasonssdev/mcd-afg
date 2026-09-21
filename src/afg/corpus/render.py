@@ -31,6 +31,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
+import re
 import subprocess
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
@@ -56,6 +57,45 @@ _GIT_TIMEOUT_SECONDS = 5
 # :func:`renderer_revision` is computed over these alone -- see its docstring.
 _RENDER_SOURCE_PATHS: tuple[str, ...] = ("src/afg/corpus", "src/afg/shared/paths.py")
 
+# An AMI meeting id is two uppercase letters and four digits, optionally followed by a
+# single lowercase session letter -- see :func:`split_meeting_id` for the full evidence.
+_MEETING_ID_PATTERN = re.compile(r"^(?P<series>[A-Z]{2}\d{4})(?P<letter>[a-e])?$")
+
+
+def split_meeting_id(meeting_id: str) -> tuple[str, str]:
+    """Split an AMI meeting id into its ``(series, letter)`` parts.
+
+    VERIFIED (2026-09-21) against every meeting id under ``data/raw/ami/words/`` (171
+    total). Two distinct shapes exist:
+
+    * Scenario meetings -- ``EN2001a``, ``ES2002a``, ``IS1004d``, ``TS3005a``, etc. -- are
+      two uppercase letters, four digits, and one lowercase session letter (``a``-``e``)
+      for the recording session. ``series`` is the part before the letter.
+    * ``IB4001``..``IB4005``, ``IB4010``, ``IB4011``, ``IN1001``, ``IN1002``, ``IN1005``,
+      ``IN1007``, ``IN1008``, ``IN1009``, ``IN1012``, ``IN1013``, ``IN1014``, ``IN1016`` --
+      17 meetings total -- are two uppercase letters and four digits with NO session
+      letter. These are non-scenario, one-off recordings; the corpus documents no series
+      grouping for them, so each is treated as its own series (``series == meeting_id``,
+      ``letter == ""``). This is deliberate, not a placeholder: inventing a shared series
+      for e.g. ``IB4001``..``IB4005`` (by truncating the trailing digit, as a naive
+      ``meeting_id[:-1]`` split does) actually merges ``IB4010`` into the same fabricated
+      series as ``IB4001`` because both truncate to ``"IB400"`` -- silent, wrong grouping
+      that this function does not reproduce.
+
+    An id that matches neither shape degrades gracefully -- the whole id becomes its own
+    ``series`` with an empty ``letter`` -- and logs a warning rather than raising, so one
+    oddly named file never aborts a 171-meeting run.
+    """
+    match = _MEETING_ID_PATTERN.match(meeting_id)
+    if match is None:
+        logger.warning(
+            "Meeting id %r does not match the expected AMI shape "
+            "([A-Z]{2}\\d{4}[a-e]?); treating the whole id as its own series.",
+            meeting_id,
+        )
+        return meeting_id, ""
+    return match.group("series"), match.group("letter") or ""
+
 
 def renderer_revision() -> str:
     """Return the git revision that produced a render, for provenance (the front matter's
@@ -74,6 +114,15 @@ def renderer_revision() -> str:
     * The dirty flag uses a scoped ``git status``. Unscoped, it also reports untracked and
       unrelated files, so the previous render rewriting the manifest would mark the next
       one ``-dirty`` on its own.
+    * ``--abbrev=12`` is pinned explicitly, and this is load-bearing, not cosmetic.
+      ``git log --format=%h`` without it uses ``core.abbrev``, which defaults to ``auto``
+      and SCALES the abbreviation length with the repository's object count (VERIFIED
+      2026-09-21: unset in this repo, currently yielding 7 hex characters). Once the repo
+      crosses the length threshold, the same commit stamps a longer hash than it used to --
+      e.g. ``d1c07fe`` becomes ``d1c07fe05089`` -- which changes the ``renderer:`` front
+      matter line for every meeting, which changes every ``sha256_md``, producing a full
+      manifest diff with no code or corpus change. That is exactly the non-convergence the
+      scoping above exists to prevent, so the length itself must be pinned too.
 
     Together these make a re-render over an unchanged corpus a genuine no-op: byte-identical
     artifacts and an empty ``git diff``.
@@ -83,7 +132,7 @@ def renderer_revision() -> str:
     """
     try:
         rev_result = subprocess.run(
-            ["git", "log", "-1", "--format=%h", "--", *_RENDER_SOURCE_PATHS],
+            ["git", "log", "-1", "--format=%h", "--abbrev=12", "--", *_RENDER_SOURCE_PATHS],
             cwd=PROJECT_ROOT,
             capture_output=True,
             text=True,
@@ -114,13 +163,14 @@ def renderer_revision() -> str:
 
 def discover_meeting_ids(ami_root: Path, series_filter: Sequence[str] | None = None) -> list[str]:
     """Discover every meeting id with a words-layer file under ``ami_root``, optionally
-    restricted to the given series ids (e.g. ``["IS1004"]``). Sorted for deterministic
-    processing order."""
+    restricted to the given series ids (e.g. ``["IS1004"]``, or a full non-lettered
+    meeting id like ``["IB4001"]`` -- see :func:`split_meeting_id`). Sorted for
+    deterministic processing order."""
     words_files = discover_layer_files(ami_root, AnnotationLayer.WORDS)
     meeting_ids = sorted({f.meeting_id for f in words_files})
     if series_filter:
         allowed = set(series_filter)
-        meeting_ids = [m for m in meeting_ids if m[:-1] in allowed]
+        meeting_ids = [m for m in meeting_ids if split_meeting_id(m)[0] in allowed]
     return meeting_ids
 
 
@@ -293,7 +343,7 @@ def render_meeting_artifacts(
         )
 
     body = "".join(body_parts)
-    series, letter = meeting_id[:-1], meeting_id[-1]
+    series, letter = split_meeting_id(meeting_id)
     front_matter = _build_front_matter(
         meeting_id, series, letter, speakers, len(turns), len(body), revision
     )
@@ -350,9 +400,70 @@ class ManifestRow:
     source_archive: str
 
 
+_MANIFEST_CSV_HEADER: tuple[str, ...] = (
+    "meeting_id",
+    "series",
+    "letter",
+    "speakers",
+    "turns",
+    "dialogue_acts",
+    "characters",
+    "sha256_md",
+    "sha256_jsonl",
+    "renderer_revision",
+    "source_archive",
+)
+
+
+def _read_manifest_rows(path: Path) -> dict[str, ManifestRow]:
+    """Read an existing manifest CSV (if any) back into :class:`ManifestRow` objects,
+    keyed by ``meeting_id`` -- the base a filtered render merges into (see
+    :func:`write_manifest_csv`). Returns an empty dict when ``path`` does not exist yet."""
+    if not path.exists():
+        return {}
+    rows: dict[str, ManifestRow] = {}
+    with path.open("r", newline="") as fh:
+        reader = csv.DictReader(fh)
+        for record in reader:
+            rows[record["meeting_id"]] = ManifestRow(
+                meeting_id=record["meeting_id"],
+                series=record["series"],
+                letter=record["letter"],
+                speakers=record["speakers"],
+                turns=int(record["turns"]),
+                dialogue_acts=int(record["dialogue_acts"]),
+                characters=int(record["characters"]),
+                sha256_md=record["sha256_md"],
+                sha256_jsonl=record["sha256_jsonl"],
+                renderer_revision=record["renderer_revision"],
+                source_archive=record["source_archive"],
+            )
+    return rows
+
+
 def write_manifest_csv(rows: Sequence[ManifestRow], out_dir: Path = TABLES_DIR) -> Path:
-    """Write the freeze manifest to ``reports/tables/transcripts_manifest.csv``, one row
-    per rendered meeting, sorted by ``meeting_id`` for a stable, diffable file.
+    """Write the freeze manifest to ``<out_dir>/transcripts_manifest.csv``, one row per
+    rendered meeting, sorted by ``meeting_id`` for a stable, diffable file.
+
+    MERGES rather than replaces: any manifest already at ``out_dir`` is read first, and
+    rows for meetings NOT present in ``rows`` (this invocation) are preserved verbatim from
+    that existing file; rows for meetings that ARE present in ``rows`` replace the existing
+    ones. A full corpus render therefore still produces the same complete file, while a
+    filtered render (e.g. ``--series IS1004``) updates only the rows it actually rendered
+    and leaves every other row untouched -- rewriting the whole file with only the current
+    invocation's rows would otherwise silently truncate the tracked reproducibility record
+    down to whatever subset was just rendered.
+
+    One consequence of merging is that ``renderer_revision`` can legitimately differ
+    between rows in the same file, when meetings were rendered at different revisions of
+    the rendering code. That is correct provenance -- it says exactly which code produced
+    each row -- not a defect to paper over.
+
+    Callers decide ``out_dir``: a render into the canonical transcripts directory should
+    pass the tracked ``reports/tables/`` location (this function's default) so the merge
+    above applies to the tracked record; a scratch render into a non-canonical output
+    directory should pass that same scratch directory instead, so it never reads from or
+    writes to the tracked manifest at all (see ``afg.cli.corpus_transcripts``).
 
     ``lineterminator="\n"`` is not cosmetic. ``csv.writer`` defaults to CRLF, which git
     normalizes to LF on commit -- so a manifest written here would differ from the one
@@ -362,24 +473,13 @@ def write_manifest_csv(rows: Sequence[ManifestRow], out_dir: Path = TABLES_DIR) 
     """
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / MANIFEST_CSV_NAME
+    merged = _read_manifest_rows(out_path)
+    for row in rows:
+        merged[row.meeting_id] = row
     with out_path.open("w", newline="") as fh:
         writer = csv.writer(fh, lineterminator="\n")
-        writer.writerow(
-            [
-                "meeting_id",
-                "series",
-                "letter",
-                "speakers",
-                "turns",
-                "dialogue_acts",
-                "characters",
-                "sha256_md",
-                "sha256_jsonl",
-                "renderer_revision",
-                "source_archive",
-            ]
-        )
-        for row in sorted(rows, key=lambda r: r.meeting_id):
+        writer.writerow(list(_MANIFEST_CSV_HEADER))
+        for row in sorted(merged.values(), key=lambda r: r.meeting_id):
             writer.writerow(
                 [
                     row.meeting_id,
