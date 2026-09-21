@@ -257,13 +257,18 @@ deben tratarse como hipótesis, no como hallazgo.
 - [x] §6.3: bajar el eje de lengua a limitación; rol pasa a primario
       (2026-09-21, aplicado en `propuesta.md` §3 OE2, §5.1, §5.6 y §6.3)
 - [ ] §5.4: documentar coeficiente de solapamiento y la evidencia contra Jaccard
-- [ ] §7: actualizar el riesgo principal — el cuello de botella eran los flags, no el corpus
+- [x] §7: actualizar el riesgo principal — el cuello de botella eran los flags, no el corpus
+      (2026-09-21, reescrito: E3 plausible pero no demostrado, cota inferior 17 contra el
+      mínimo de 25 preguntas)
 - [ ] §9: leer Zhang & Li, *ConsistencyGate* antes de fijar la afirmación de novedad
-- [ ] §5.0: quitar "desde abril de 2017" de la licencia (la página no declara fecha)
-- [ ] §8: aplicar las correcciones bibliográficas ya hechas en refs.bib y en el avance 04
-      (Hsueh & Moore 2007a/b, autores de Zhang & Li 2026, título completo de Cai & O'Connor
-      2025, listas de autores de Huang et al. y Bohnet et al., entrada de la página de
-      licencia)
+- [x] §5.0: quitar "desde abril de 2017" de la licencia (la página no declara fecha)
+      (2026-09-21, aplicado en `propuesta.md` §5.0)
+- [ ] §8: aplicar las correcciones bibliográficas ya hechas en refs.bib y en el avance 04.
+      **Parcial** (2026-09-21): hechos Hsueh & Moore 2007a/b —el conteo 554/37.400 es de
+      2007a, verificado contra <https://aclanthology.org/N07-1004.pdf>— y el título completo
+      de Cai & O'Connor 2025. Quedan: autores de Zhang & Li 2026, listas de autores de Huang
+      et al. y Bohnet et al., entrada de la página de licencia, y el sufijo de la cita de
+      §5.1 sobre límites de tópico (no está en 2007a; falta alcanzar el texto de 2007b)
 
 ### P10 — Reparto de roles del equipo ✅ **hecho** (2026-09-20)
 - [x] Completar la tabla de [`CONTRIBUTING.md`](../CONTRIBUTING.md) §1 con los tres
