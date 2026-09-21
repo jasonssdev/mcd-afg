@@ -32,7 +32,6 @@ across the six series and does not have this problem.
 
 from __future__ import annotations
 
-import csv
 from collections import Counter
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -52,6 +51,7 @@ from afg.corpus.nxt import (
 )
 from afg.domain.participant import NativeLanguage, NativeSpeakerStatus, Participant, SpeakerRole
 from afg.shared.config import load_corpus_config
+from afg.shared.csvio import open_csv_writer
 from afg.shared.logging import get_logger
 from afg.shared.paths import TABLES_DIR
 
@@ -433,8 +433,7 @@ def write_csv(participants: Sequence[Participant], out_dir: Path = TABLES_DIR) -
     """Write the six-target-series participant roster to ``reports/tables/participants.csv``."""
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / PARTICIPANTS_CSV_NAME
-    with out_path.open("w", newline="") as fh:
-        writer = csv.writer(fh)
+    with open_csv_writer(out_path) as writer:
         writer.writerow(
             ["series_id", "participant_id", "role", "native_language", "native_speaker_status"]
         )

@@ -1,0 +1,26 @@
+decision_id,meeting_id,source_sentence_id,sentence_text,evidence_da_count,evidence_text,status,decision_object,decision_content,annotator,notes,machine_flags
+ES2016a.d01,ES2016a,ES2016a.rdhillon.s.8,The remote will sell for 25 Euro.,1,A: It's something that we're supposed to sell for about twenty five Euros,,,,,,frase_corta
+ES2016a.d02,ES2016a,ES2016a.rdhillon.s.9,The team will not create a ball shaped remote.,1,A: so then we forget the ball .,,,,,,
+ES2016b.d01,ES2016b,ES2016b.rdhillon.s.13,The remote will only be used for televisions.,1,"A: Um the remote's only gonna be for the television ,",,,,,,frase_corta
+ES2016b.d02,ES2016b,ES2016b.rdhillon.s.14,The team will not work with teletext.,1,A: Um no teletext . Um <disfmarker>,,,,,,frase_corta
+ES2016b.d03,ES2016b,ES2016b.rdhillon.s.15,The corporate color and slogan must be incorporated into the design.,1,"A: the company wants us to incorporate the corporate colour and our slogan ,",,,,,,
+ES2016b.d04,ES2016b,ES2016b.rdhillon.s.16,The remote will be simple.,2,"A: Um we want something that's simple . | A: User interface concept , we want it to be something simple .",,,,,,frase_corta
+ES2016b.d05,ES2016b,ES2016b.rdhillon.s.17,The remote will look appealing.,1,A: We want something that looks good .,,,,,,frase_corta
+ES2016b.d06,ES2016b,ES2016b.rdhillon.s.18,The remote will be easy to find.,1,A: We want something that you can find easily . Um <disfmarker>,,,,,,frase_corta
+ES2016b.d07,ES2016b,ES2016b.rdhillon.s.19,The remote will have a minimal number of buttons.,1,A: Um <disfmarker> Minimal number of buttons .,,,,,,
+ES2016b.d08,ES2016b,ES2016b.rdhillon.s.20,The remote will be yellow with black or gray buttons.,2,"A: yellow it's nice and bright , | A: with the buttons being grey or black .",,,,,,
+ES2016b.d09,ES2016b,ES2016b.rdhillon.s.21,The corporate slogan will appear on the bottom of the remote.,1,"A: And our slogan pasted somewhere on it , on the the bottom",,,,,,
+ES2016b.d10,ES2016b,ES2016b.rdhillon.s.22,"The remote will have buttons for numbers, volume up and down, channel up and down, power, mute, and a menu.",6,"A: Uh you've got volume , up and down . | A: I guess you've got you know one through nine . For typing in your channels . | A: Channel up and down . | D: Power . | A: Um a mute . | A: A menu button , maybe .",,,,,,posible_compuesta
+ES2016b.d11,ES2016b,ES2016b.rdhillon.s.23,The remote will include a scroll action.,3,"B: Talking of which maybe a scrolling function is not not too bad . | B: Would probably be like a scrolling , little scrolling wheel like this . | A: Like a wheel on your mouse .",,,,,,
+ES2016b.d12,ES2016b,ES2016b.rdhillon.s.24,The remote will be rounded in shape such that it fits comfortably in the hand.,2,"C: I mean I'm just just thinking maybe if it was um circular um with the sort of <disfmarker> that sort of <vocalsound> <disfmarker> the sort of early idea we had , with the way that was more like that , | A: So one for the the quick zapping um and possibly one you know with just that rounded part that fits into your hand . Um <disfmarker>",,,,,,
+ES2016c.d01,ES2016c,ES2016c.rdhillon.s.13,The remote will use conventional batteries.,2,"B: So I'd say what we're stuck with really is um the basic battery . | A: <vocalsound> Energy source I think we've , I think we've decided batteries , although not exciting , are probably our best bet .",,,,,,frase_corta
+ES2016c.d02,ES2016c,ES2016c.rdhillon.s.14,The case will be made of plastic with rubber grips.,3,"A: So I guess the case would be plastic , | A: with <disfmarker> Perhaps that's not even enough rubber to qualify as being part of it . | A: It's more of a su it's more of a supplement maybe .",,,,,,
+ES2016c.d03,ES2016c,ES2016c.rdhillon.s.15,"The remote will feature a scroll function similar to the scroll function found on iPods.
+The remote will use a more expensive, advanced chip-on-print.",3,"D: So then for the scroll , are we going for the iPod type ? | C: Yeah I think so . | A: <vocalsound> Which will require a more expensive chip-on-print right ?",,,,,,
+ES2016d.d01,ES2016d,ES2016d.rdhillon.s.11,The remote will make some sort of noise based on its proximity to a television.,2,B: Which makes this thing raise hell when you remove it too far from the television . | B: Let's add one of those features and say yes . <vocalsound>,,,,,,
+ES2016d.d02,ES2016d,ES2016d.rdhillon.s.12,The remote will use two batteries.,1,B: Two .,,,,,,frase_corta
+ES2016d.d03,ES2016d,ES2016d.rdhillon.s.13,The remote will use an advanced chip-on-print.,1,"B: That's the advanced chip-on-print , yeah .",,,,,,
+ES2016d.d04,ES2016d,ES2016d.rdhillon.s.14,The remote will be double curved.,1,A: 'Kay then the case is a <disfmarker> Probably it's double curved .,,,,,,frase_corta
+ES2016d.d05,ES2016d,ES2016d.rdhillon.s.15,The remote case will be made of plastic.,2,A: Case materials are | B: Plastic .,,,,,,
+ES2016d.d06,ES2016d,ES2016d.rdhillon.s.16,The remote will come in a special color.,2,"B: That's not a special colour . | B: It's a specially ugly colour , but it's not special .",,,,,,
+ES2016d.d07,ES2016d,ES2016d.rdhillon.s.17,The remote will not use an LCD.,1,B: Right . We may not need it .,,,,,,frase_corta

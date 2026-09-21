@@ -44,6 +44,7 @@ from afg.corpus.transcripts import (
     render_meeting_transcript,
 )
 from afg.shared.config import load_corpus_config
+from afg.shared.csvio import open_csv_writer
 from afg.shared.logging import get_logger
 from afg.shared.paths import PROJECT_ROOT, TABLES_DIR
 
@@ -465,19 +466,19 @@ def write_manifest_csv(rows: Sequence[ManifestRow], out_dir: Path = TABLES_DIR) 
     directory should pass that same scratch directory instead, so it never reads from or
     writes to the tracked manifest at all (see ``afg.cli.corpus_transcripts``).
 
-    ``lineterminator="\n"`` is not cosmetic. ``csv.writer`` defaults to CRLF, which git
-    normalizes to LF on commit -- so a manifest written here would differ from the one
-    checked out, and the next render would produce a spurious diff. That would quietly
-    destroy the reproducibility evidence this file exists to provide. It also matches the
-    other tracked tables under ``reports/tables/``, which are all LF.
+    Written through :func:`afg.shared.csvio.open_csv_writer`, which forces LF line
+    endings. ``csv.writer`` defaults to CRLF, which git normalizes to LF on commit -- so a
+    manifest written any other way would differ from the one checked out, and the next
+    render would produce a spurious diff. That would quietly destroy the reproducibility
+    evidence this file exists to provide. It also matches the other tracked tables under
+    ``reports/tables/``, which are all LF.
     """
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / MANIFEST_CSV_NAME
     merged = _read_manifest_rows(out_path)
     for row in rows:
         merged[row.meeting_id] = row
-    with out_path.open("w", newline="") as fh:
-        writer = csv.writer(fh, lineterminator="\n")
+    with open_csv_writer(out_path) as writer:
         writer.writerow(list(_MANIFEST_CSV_HEADER))
         for row in sorted(merged.values(), key=lambda r: r.meeting_id):
             writer.writerow(

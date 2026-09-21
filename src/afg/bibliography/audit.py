@@ -4,7 +4,6 @@ duplicate DOIs.
 
 from __future__ import annotations
 
-import csv
 from collections import Counter
 from pathlib import Path
 
@@ -13,6 +12,7 @@ from rich.console import Console
 from rich.table import Table
 
 from afg.bibliography.library import BibEntry, load_library
+from afg.shared.csvio import open_csv_writer
 from afg.shared.logging import get_logger
 from afg.shared.paths import TABLES_DIR
 
@@ -90,8 +90,7 @@ def render_table(audit: BibliographyAudit, console: Console | None = None) -> No
 def write_csv(audit: BibliographyAudit, out_dir: Path = TABLES_DIR) -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / AUDIT_CSV_NAME
-    with out_path.open("w", newline="") as fh:
-        writer = csv.writer(fh)
+    with open_csv_writer(out_path) as writer:
         writer.writerow(["section", "entry_count"])
         for section, count in audit.entries_per_section.items():
             writer.writerow([section, count])

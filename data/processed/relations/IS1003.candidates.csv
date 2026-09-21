@@ -1,0 +1,9 @@
+pair_id,earlier_decision_id,later_decision_id,earlier_text,later_text,blocker_score,relation,direction_ok,confidence,annotator,notes
+IS1003.p001,IS1003a.rdhillon.s.5,IS1003b.rdhillon.s.9,The remote will not be too expensive.,The remote should not have too many buttons.,0.6666666666666666,,,,,
+IS1003.p002,IS1003b.rdhillon.s.9,IS1003c.rdhillon.s.15,The remote should not have too many buttons.,The remote will have LCD buttons.,0.6666666666666666,,,,,
+IS1003.p003,IS1003b.rdhillon.s.12,IS1003d.rdhillon.s.16,The corporate logo should be recognizable on the product.,The corporate logo will need to be incorporated into the product.,0.75,,,,,
+IS1003.p004,IS1003b.rdhillon.s.11,IS1003d.rdhillon.s.15,The remote will only be used for televisions.,The remote will feature only one push button.,0.6666666666666666,,,,,
+IS1003.p005,IS1003b.rdhillon.s.13,IS1003d.rdhillon.s.16,The corporate color must be featured on the product.,The corporate logo will need to be incorporated into the product.,0.4,,,,,
+IS1003.p006,IS1003c.rdhillon.s.12,IS1003d.rdhillon.s.13,The remote will use solar energy.,The remote will have one solar cell.,0.6666666666666666,,,,,
+IS1003.p007,IS1003c.rdhillon.s.14,IS1003d.rdhillon.s.11,The case of the remote will be made of wood.,The remote will be made of plastic.,0.6666666666666666,,,,,
+IS1003.p008,IS1003c.rdhillon.s.14,IS1003d.rdhillon.s.12,The case of the remote will be made of wood.,The case of the remote will be single curved.,0.5,,,,,

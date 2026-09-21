@@ -70,7 +70,6 @@ loosest pair that still brings the candidate set within budget (92 pairs, 3.0%).
 
 from __future__ import annotations
 
-import csv
 import random
 import re
 from collections.abc import Sequence
@@ -82,6 +81,7 @@ from afg.annotation.linking import chronological_candidate_pairs
 from afg.corpus.layers import AnnotationLayer, discover_layer_files
 from afg.corpus.nxt import get_attr_by_local_name, iter_elements, parse_xml
 from afg.domain.decision import Decision, DecisionStatus, EvidenceSpan
+from afg.shared.csvio import open_csv_writer
 
 # Blocker version, bumped whenever STOPWORDS, the tokenisation rule, or the default
 # operating point (threshold, min_overlap_tokens) changes. A previously generated candidate
@@ -393,8 +393,7 @@ def write_candidate_pairs_csv(pairs: list[CandidatePair], out_path: Path) -> Pat
     or Tarea C, never machine-populated here.
     """
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    with out_path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.writer(handle)
+    with open_csv_writer(out_path, encoding="utf-8") as writer:
         writer.writerow(_CSV_COLUMNS)
         for pair in pairs:
             writer.writerow(

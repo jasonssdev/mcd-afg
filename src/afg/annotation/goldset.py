@@ -40,7 +40,6 @@ regla de oro"):
 
 from __future__ import annotations
 
-import csv
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -51,6 +50,7 @@ from afg.annotation.blocking import tokenize
 from afg.corpus.layers import AnnotationLayer, discover_layer_files
 from afg.corpus.nxt import get_attr_by_local_name, get_href_targets, iter_elements, parse_xml
 from afg.domain.decision import DecisionStatus
+from afg.shared.csvio import open_csv_writer
 
 # --- Task-A row -----------------------------------------------------------------------
 
@@ -473,8 +473,7 @@ def write_gold_decisions_csv(rows: list[GoldDecisionRow], out_path: Path) -> Pat
     this in" (see the module docstring).
     """
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    with out_path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.writer(handle)
+    with open_csv_writer(out_path, encoding="utf-8") as writer:
         writer.writerow(_CSV_COLUMNS)
         for row in rows:
             writer.writerow(
