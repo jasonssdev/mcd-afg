@@ -1,5 +1,5 @@
-# Toda pull request la revisa una persona distinta de quien la abrió.
-# @jasonssdev es responsable de la integración a main; sus PRs las revisa
-# otro integrante del equipo.
+# Nada llega a main sin revisión. @jasonssdev es responsable de la integración
+# a main y revisa toda pull request que entre, incluidas las suyas propias.
+# Cualquier integrante puede revisar y comentar cualquier PR.
 
 * @jasonssdev

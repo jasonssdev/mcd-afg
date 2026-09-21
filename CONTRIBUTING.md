@@ -56,12 +56,17 @@ Ejemplo: `fix/blocker-min-overlap-tokens`.
 
 ## 3. Revisión
 
-Toda PR es revisada por una persona del equipo **distinta de quien la abrió**.
+**Nada llega a `main` sin pasar por revisión.**
 [@jasonssdev](https://github.com/jasonssdev) es el CODEOWNER responsable de la
 integración a `main` y quien hace el merge — ver
-[`.github/CODEOWNERS`](.github/CODEOWNERS). Cuando quien abre la PR es el
-propio mantenedor, otro integrante del equipo la revisa. Nada llega a `main`
-sin pasar por revisión.
+[`.github/CODEOWNERS`](.github/CODEOWNERS): revisa **toda** PR que entre a
+`main`, venga de quien venga, incluidas las suyas propias.
+
+Las PR del resto del equipo las revisa el mantenedor. Las PR del mantenedor las
+revisa él mismo, y eso es deliberado: la responsabilidad de lo que entra a `main`
+es suya de todos modos, así que exigir una firma ajena añadiría una espera sin
+añadir una mirada. Cualquier integrante puede revisar y comentar cualquier PR;
+lo que esta regla fija es quién no puede faltar, no quién sobra.
 
 ## 4. Commits
 

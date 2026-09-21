@@ -199,7 +199,7 @@ git push -u origin data/anotacion-is1004
 ```
 
 Luego abres el pull request desde tu fork contra `main` del repositorio original y completas
-la plantilla. Lo revisa una persona distinta de quien lo abrió. Antes de empezar un trabajo
+la plantilla. Lo revisa el mantenedor antes de integrarlo. Antes de empezar un trabajo
 nuevo, actualiza tu fork:
 
 ```bash
@@ -305,9 +305,9 @@ uv sync --extra embeddings    # sentence-transformers (pesado)
 
 ## 7. Cómo contribuir
 
-**Nada entra a `main` directamente.** Fork → rama → pull request, revisado por una persona
-del equipo distinta de quien la abrió, incluidas las del mantenedor
-[@jasonssdev](https://github.com/jasonssdev). El flujo completo y las convenciones están en
+**Nada entra a `main` directamente.** Fork → rama → pull request, revisado por el
+mantenedor [@jasonssdev](https://github.com/jasonssdev) antes de integrarse — también las
+suyas propias. El flujo completo y las convenciones están en
 [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 Tres convenciones que más se rompen sin querer:
