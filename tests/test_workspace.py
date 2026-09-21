@@ -86,18 +86,21 @@ _PLAN_CONFIG: dict[str, object] = {
                 "initials": "gv",
                 "name": "Germán Vega",
                 "role": "annotator",
+                "github": "Vega-German",
                 "phase3_series": ["IS1004"],
             },
             {
                 "initials": "gm",
                 "name": "Gustavo Martínez",
                 "role": "annotator",
+                "github": "gmartinezbMCD",
                 "phase3_series": ["TS3009"],
             },
             {
                 "initials": "jss",
                 "name": "Jason Sepúlveda",
                 "role": "maintainer",
+                "github": "jasonssdev",
                 "phase3_series": [],
             },
         ],
@@ -225,6 +228,42 @@ class TestLoadAnnotationPlan:
 
     def test_maintainer_has_no_assignments(self, plan: AnnotationPlan) -> None:
         assert plan.annotator("jss").assignments == ()
+
+    def test_exposes_each_annotator_github_handle(self, plan: AnnotationPlan) -> None:
+        assert plan.annotator("gv").github == "Vega-German"
+        assert plan.annotator("gm").github == "gmartinezbMCD"
+        assert plan.annotator("jss").github == "jasonssdev"
+
+    def test_shipped_config_github_handles_match_the_real_accounts(self) -> None:
+        """The three real GitHub logins in config/annotation.toml, spelled exactly as
+        GitHub shows them -- two are mixed case and must not be lowercased."""
+        real_plan = load_annotation_plan()
+        assert real_plan.annotator("gv").github == "Vega-German"
+        assert real_plan.annotator("gm").github == "gmartinezbMCD"
+        assert real_plan.annotator("jss").github == "jasonssdev"
+
+    def test_missing_github_fails_loudly(self) -> None:
+        """`github` is required like `initials`/`name`: a person without one is a config
+        bug, not someone with an empty handle to render."""
+        config = {
+            "annotation": {
+                "adjudicator": "jss",
+                "phase1_series": [],
+                "phase2_series": [],
+                "recall_sample": {"owner": "jss", "series": "ES2015", "n": 1, "seed": 1},
+                "question_bank": {
+                    "author": "jss",
+                    "validator": "jss",
+                    "total_questions": 2,
+                    "questions_per_stratum": 2,
+                },
+                "annotators": [
+                    {"initials": "jss", "name": "Jason Sepúlveda", "role": "maintainer"},
+                ],
+            }
+        }
+        with pytest.raises(KeyError, match="github"):
+            load_annotation_plan(config)
 
 
 # --- prepare ------------------------------------------------------------------------------
