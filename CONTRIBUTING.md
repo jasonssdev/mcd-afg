@@ -68,6 +68,27 @@ es suya de todos modos, así que exigir una firma ajena añadiría una espera si
 añadir una mirada. Cualquier integrante puede revisar y comentar cualquier PR;
 lo que esta regla fija es quién no puede faltar, no quién sobra.
 
+### Esto no depende de la buena voluntad de nadie
+
+La rama `main` está protegida en GitHub, así que la regla la aplica la máquina:
+
+| Regla | Efecto |
+|---|---|
+| 1 aprobación requerida | Una PR sin aprobar no se puede mergear |
+| Revisión de CODEOWNER obligatoria | No basta cualquier aprobación: tiene que ser la del mantenedor, porque [`.github/CODEOWNERS`](.github/CODEOWNERS) le asigna todo el repositorio |
+| Aprobaciones obsoletas descartadas | Si empujas un commit nuevo, la aprobación anterior caduca y hay que revisar otra vez |
+| Conversaciones resueltas | Un comentario de revisión abierto bloquea el merge |
+| Sin force push ni borrado de `main` | Sin excepciones, tampoco para el mantenedor |
+
+La protección **no** se aplica a administradores, y eso es deliberado: GitHub
+prohíbe aprobar tu propia PR, así que si le aplicara también al mantenedor
+quedaría bloqueado en su propio repositorio. En la práctica significa que el
+resto del equipo no puede integrar nada sin su aprobación, y que él integra lo
+suyo bajo su propia responsabilidad.
+
+El permiso que necesita un colaborador es **Write**. `Maintain` y `Admin`
+saltan la protección, así que no se reparten.
+
 ## 4. Commits
 
 [Conventional commits](https://www.conventionalcommits.org/), en español o en
