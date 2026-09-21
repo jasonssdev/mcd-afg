@@ -1,4 +1,4 @@
-pair_id,earlier_decision_id,later_decision_id,earlier_text,later_text,blocker_score,relation,direction_ok,confidence,annotator,notes
-ES2015.p001,ES2015a.elana.s.11,ES2015b.elana.s.11,It will be a television remote control.,The remote will be a single function design- television only.,0.6666666666666666,,,,,
-ES2015.p002,ES2015c.elana.s.19,ES2015d.elana.s.15,Regular chip will be used.,Will use a regular chip.,1.0,,,,,
-ES2015.p003,ES2015c.elana.s.20,ES2015d.elana.s.17,Case will be plastic and coated in rubber.,Will be made of plastic and rubber (rubber on remote for comfort).,0.5,,,,,
+pair_id,earlier_decision_id,later_decision_id,earlier_sentence_id,later_sentence_id,earlier_text,later_text,blocker_score,relation,direction_ok,confidence,annotator,notes
+ES2015.p001,ES2015a.d01,ES2015b.d01,ES2015a.elana.s.11,ES2015b.elana.s.11,It will be a television remote control.,The remote will be a single function design- television only.,0.6666666666666666,,,,,
+ES2015.p002,ES2015c.d06,ES2015d.d04,ES2015c.elana.s.19,ES2015d.elana.s.15,Regular chip will be used.,Will use a regular chip.,1.0,,,,,
+ES2015.p003,ES2015c.d07,ES2015d.d06,ES2015c.elana.s.20,ES2015d.elana.s.17,Case will be plastic and coated in rubber.,Will be made of plastic and rubber (rubber on remote for comfort).,0.5,,,,,

@@ -111,6 +111,8 @@ def _write_blocking_csv(out_dir: Path) -> Path:
         pair_id="ES2015.p001",
         earlier_decision_id="ES2015a.d01",
         later_decision_id="ES2015b.d01",
+        earlier_sentence_id="ES2015a.elana.s.1",
+        later_sentence_id="ES2015b.elana.s.1",
         earlier_meeting_id="ES2015a",
         later_meeting_id="ES2015b",
         earlier_text="use titanium",

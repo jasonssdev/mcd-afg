@@ -1,7 +1,7 @@
-pair_id,earlier_decision_id,later_decision_id,earlier_text,later_text,blocker_score,relation,direction_ok,confidence,annotator,notes
-TS3003.p001,TS3003b.rdhillon.s.13,TS3003c.rdhillon.s.10,The remote will have a docking station.,The remote will use a conventional battery and a docking station which recharges the battery.,1.0,,,,,
-TS3003.p002,TS3003b.rdhillon.s.13,TS3003c.rdhillon.s.9,The remote will have a docking station.,The remote will have a docking station.,1.0,,,,,
-TS3003.p003,TS3003b.rdhillon.s.15,TS3003d.vkaraisk.s.19,The remote will feature a small LCD screen.,"An LCD screen will be providing functional information, and context tips when using the scrollwheel.",0.4,,,,,
-TS3003.p004,TS3003b.rdhillon.s.18,TS3003d.vkaraisk.s.16,The remote will be made to accommodate different languages.,These would be made of rubber in a colour different from that of the case.,0.4,,,,,
-TS3003.p005,TS3003c.rdhillon.s.14,TS3003d.vkaraisk.s.14,The case will be single curved.,The case will be plastic and will be made in single-curve form.,0.6666666666666666,,,,,
-TS3003.p006,TS3003c.rdhillon.s.13,TS3003d.vkaraisk.s.14,The case covers will be available in wood or plastic.,The case will be plastic and will be made in single-curve form.,0.4,,,,,
+pair_id,earlier_decision_id,later_decision_id,earlier_sentence_id,later_sentence_id,earlier_text,later_text,blocker_score,relation,direction_ok,confidence,annotator,notes
+TS3003.p001,TS3003b.d06,TS3003c.d02,TS3003b.rdhillon.s.13,TS3003c.rdhillon.s.10,The remote will have a docking station.,The remote will use a conventional battery and a docking station which recharges the battery.,1.0,,,,,
+TS3003.p002,TS3003b.d06,TS3003c.d01,TS3003b.rdhillon.s.13,TS3003c.rdhillon.s.9,The remote will have a docking station.,The remote will have a docking station.,1.0,,,,,
+TS3003.p003,TS3003b.d08,TS3003d.d07,TS3003b.rdhillon.s.15,TS3003d.vkaraisk.s.19,The remote will feature a small LCD screen.,"An LCD screen will be providing functional information, and context tips when using the scrollwheel.",0.4,,,,,
+TS3003.p004,TS3003b.d11,TS3003d.d04,TS3003b.rdhillon.s.18,TS3003d.vkaraisk.s.16,The remote will be made to accommodate different languages.,These would be made of rubber in a colour different from that of the case.,0.4,,,,,
+TS3003.p005,TS3003c.d06,TS3003d.d02,TS3003c.rdhillon.s.14,TS3003d.vkaraisk.s.14,The case will be single curved.,The case will be plastic and will be made in single-curve form.,0.6666666666666666,,,,,
+TS3003.p006,TS3003c.d05,TS3003d.d02,TS3003c.rdhillon.s.13,TS3003d.vkaraisk.s.14,The case covers will be available in wood or plastic.,The case will be plastic and will be made in single-curve form.,0.4,,,,,

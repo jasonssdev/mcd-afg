@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from afg.annotation.blocking import decisions_from_abstractive
+from afg.annotation.blocking import decisions_from_abstractive, source_sentence_id
 from afg.audit.decisions import site_prefix
 from afg.corpus.layers import AnnotationLayer, discover_layer_files
 from afg.corpus.nxt import find_by_local_name, get_attr, iter_elements, parse_xml
@@ -119,14 +119,16 @@ def anchoring_rates(ami_root: Path = AMI_DIR, series: Sequence[str] = ()) -> pd.
 
     for series_id in series:
         decisions = decisions_from_abstractive(ami_root, series_id)
-        decision_ids = {d.id for d in decisions}
-        evidence = _decision_evidence_map(ami_root, series_id, decision_ids)
+        # Keyed by ABSTRACTIVE SENTENCE id: that is what `summlink` points at. A decision
+        # id (`IS1004c.d29`) is this project's own invention and appears nowhere in AMI.
+        sentence_ids = {source_sentence_id(d) for d in decisions}
+        evidence = _decision_evidence_map(ami_root, series_id, sentence_ids)
 
         by_meeting: dict[str, int] = Counter()
         anchored_by_meeting: dict[str, int] = Counter()
         for decision in decisions:
             by_meeting[decision.meeting_id] += 1
-            if evidence.get(decision.id):
+            if evidence.get(source_sentence_id(decision)):
                 anchored_by_meeting[decision.meeting_id] += 1
 
         for meeting_id in sorted(by_meeting):
@@ -144,7 +146,7 @@ def anchoring_rates(ami_root: Path = AMI_DIR, series: Sequence[str] = ()) -> pd.
             )
 
         series_n = len(decisions)
-        series_anchored = sum(1 for d in decisions if evidence.get(d.id))
+        series_anchored = sum(1 for d in decisions if evidence.get(source_sentence_id(d)))
         rows.append(
             {
                 "scope": "series",
@@ -201,12 +203,12 @@ def role_authorship(ami_root: Path = AMI_DIR, series: Sequence[str] = ()) -> pd.
 
     for series_id in series:
         decisions = decisions_from_abstractive(ami_root, series_id)
-        decision_ids = {d.id for d in decisions}
-        evidence = _decision_evidence_map(ami_root, series_id, decision_ids)
+        sentence_ids = {source_sentence_id(d) for d in decisions}
+        evidence = _decision_evidence_map(ami_root, series_id, sentence_ids)
         site = site_prefix(series_id)
 
         for decision in decisions:
-            for dialogue_act_id in evidence.get(decision.id, []):
+            for dialogue_act_id in evidence.get(source_sentence_id(decision), []):
                 agent = _dialogue_act_speaker_letter(dialogue_act_id)
                 role = role_lookup.get((decision.meeting_id, agent)) if agent else None
                 if role:

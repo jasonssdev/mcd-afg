@@ -11,6 +11,22 @@
 Anotar las Tareas A y B en diez series (260 decisiones y 61 pares candidatos), adjudicar la
 muestra de recall de la Tarea C, y validar el banco de preguntas que escribe Gustavo.
 
+## Tu día a día en tres comandos
+
+```bash
+uv run afg gold prepare  --annotator gv                    # crea tus archivos, ya nombrados
+uv run afg gold validate --annotator gv                     # revisa todas tus series asignadas
+uv run afg gold status   --annotator gv                     # tu propio avance (lectura)
+```
+
+`prepare` genera cada `<serie>.decisions.gv.csv` y `<serie>.candidates.gv.csv` con las
+columnas de máquina ya llenas y las tuyas vacías — nunca copies ni renombres un CSV a mano.
+Correrlo de nuevo no borra tu trabajo: un archivo con anotación se respeta, salvo que pases
+`--force`. `validate` sin `--series` recorre todas tus series asignadas; agrega `--series
+<ID>` para revisar solo la serie cuyo PR vas a abrir. Si hay un error sale con código
+distinto de cero y te dice fila y columna exactas. `status --annotator gv` es solo lectura;
+te muestra tu propio avance, serie por serie, sin abrir un CSV.
+
 ---
 
 ## 1. Tus series, en orden
@@ -63,19 +79,18 @@ validación del banco.
 
 ## 2. Qué archivo tocas y qué columnas llenas
 
-### Tarea A — `data/processed/decisions/<serie>.decisions.csv`
+### Tarea A — `data/processed/decisions/<serie>.decisions.gv.csv`
 
-**Nunca edites ese archivo.** Es el insumo limpio. Haz una copia con tus iniciales y trabaja
-sobre ella:
+**Nunca edites `<serie>.decisions.csv`.** Es el insumo limpio que genera `afg gold build`. Tu
+copia ya existe con el nombre correcto y las columnas de máquina llenas en cuanto corres:
 
 ```bash
-cp data/processed/decisions/ES2015.decisions.csv \
-   data/processed/decisions/ES2015.decisions.gv.csv
+uv run afg gold prepare --annotator gv
 ```
 
-El patrón `<serie>.decisions.<iniciales>.csv` es una **convención nueva**, fijada en
-[`README.md`](README.md) §5.1 como espejo del `<serie>.candidates.<iniciales>.csv` que el
-manual ya definía para la Tarea B. Úsalo también en Fase 3, aunque anotes solo tú.
+El patrón `<serie>.decisions.<iniciales>.csv` es el que fija [`README.md`](README.md) §5.1,
+espejo del `<serie>.candidates.<iniciales>.csv` que el manual ya definía para la Tarea B.
+`prepare` lo aplica también en Fase 3, aunque anotes solo tú.
 
 | Columna | Quién | Regla |
 |---|---|---|
@@ -89,7 +104,7 @@ manual ya definía para la Tarea B. Úsalo también en Fase 3, aunque anotes sol
 | **`status`** | **tú** | Valor del conjunto cerrado, ver abajo |
 | **`decision_object`** | **tú** | Qué se decide |
 | **`decision_content`** | **tú** | Qué se decidió al respecto |
-| **`annotator`** | **tú** | `gv` |
+| **`annotator`** | **tú** | `gv`, ya puesto por `prepare` |
 | **`notes`** | **tú** | Solo si algo no es obvio; obligatorio en `sin_soporte` |
 
 **Valores permitidos de `status`:**
@@ -98,31 +113,32 @@ manual ya definía para la Tarea B. Úsalo también en Fase 3, aunque anotes sol
 decision | no_decision | compuesta | sin_soporte | descartar
 ```
 
-> Verificado: este conjunto está definido **solo en el manual §2**. No existe hoy en el
-> código ningún `enum` que lo valide — `src/afg/domain/decision.py::DecisionStatus`
-> (`accepted`, `open_proposal`, `open_question`, `opinion`) es el vocabulario del modelo de
-> dominio, no el de esta columna. Nada te va a avisar si escribes mal un valor: cópialos
-> literalmente de aquí.
+> Verificado: este conjunto lo define el manual §2 y hoy también lo valida el código —
+> `src/afg/domain/decision.py::AnnotationStatus` es el `enum` que usa `afg gold validate`
+> para rechazar un valor fuera de estos cinco. No es lo mismo que
+> `DecisionStatus` (`accepted`, `open_proposal`, `open_question`, `opinion`), que es el
+> vocabulario del modelo de dominio, no el de esta columna. Aun así, cópialos literalmente:
+> `validate` te avisa si te equivocas, pero solo al correrlo.
 >
 > Los valores de `machine_flags` que sí produce el código son `sin_evidencia`,
 > `posible_compuesta` y `frase_corta` (`src/afg/annotation/goldset.py::machine_flags_for`).
 > `posible_compuesta` **no** es un `status`: es una sugerencia de que mires la fila.
 
-### Tarea B — `data/processed/relations/<serie>.candidates.csv`
+### Tarea B — `data/processed/relations/<serie>.candidates.gv.csv`
 
-Misma regla: copia con tus iniciales,
-`data/processed/relations/ES2015.candidates.gv.csv`.
+Misma regla: la crea `afg gold prepare --annotator gv`, no una copia manual.
 
 | Columna | Quién | Regla |
 |---|---|---|
 | `pair_id` | máquina | **No tocar** |
-| `earlier_decision_id` / `later_decision_id` | máquina | **No tocar** |
+| `earlier_decision_id` / `later_decision_id` | máquina | **No tocar.** El id de la decisión, siempre en orden cronológico |
+| `earlier_sentence_id` / `later_sentence_id` | máquina | **No tocar.** El id de la frase de origen en el corpus AMI |
 | `earlier_text` / `later_text` | máquina | **No tocar** |
 | `blocker_score` | máquina | **No tocar** |
 | **`relation`** | **tú** | Valor del conjunto cerrado, ver abajo |
 | **`direction_ok`** | **tú** | `si` / `no` |
 | **`confidence`** | **tú** | `alta` / `media` / `baja` |
-| **`annotator`** | **tú** | `gv` |
+| **`annotator`** | **tú** | `gv`, ya puesto por `prepare` |
 | **`notes`** | **tú** | Obligatorio si `direction_ok = no` |
 
 **Valores permitidos:**
@@ -134,15 +150,16 @@ confidence    : alta | media | baja
 ```
 
 > Verificado: los seis valores de `relation` son literalmente los de
-> `src/afg/domain/relation.py::RelationType`. `direction_ok` y `confidence` vienen del
-> manual §4 y son los valores que usan las pruebas de acuerdo
-> (`tests/test_agreement.py`). `direction_ok` se compara en minúsculas
+> `src/afg/domain/relation.py::RelationType`, y los tres conjuntos (`relation`,
+> `direction_ok`, `confidence`) son `enum`s que `afg gold validate` compara celda a celda
+> (`src/afg/annotation/workspace.py`). `direction_ok` se compara en minúsculas
 > (`agreement.py`), así que escribe `si`, sin tilde y sin mayúscula.
 
 > `no_relacionada` no es un valor vacío: significa *"el bloqueador se equivocó, aquí no hay
 > relación"*, y el cálculo de acuerdo lo trata exactamente así
 > (`agreement.py`, `_NO_RELATION_LABEL`). Una celda vacía y un `no_relacionada` no son lo
-> mismo. Llena las 61 filas.
+> mismo. Llena las 61 filas; `afg gold validate` marca como "a medio llenar" cualquier fila
+> donde `relation`, `direction_ok` y `confidence` no estén las tres puestas.
 
 ---
 
@@ -213,7 +230,8 @@ documento que todo el equipo lee, es decir, contaminarla para siempre.
 
 ### 6.1 Tarea A — fila `ES2015b.d01`
 
-**Antes** (lo que te entrega la máquina, verbatim de `ES2015.decisions.csv`):
+**Antes** (lo que deja `uv run afg gold prepare --annotator gv` en tu
+`ES2015.decisions.gv.csv`; `annotator` ya viene puesto, el resto de lo tuyo está vacío):
 
 ```
 decision_id        : ES2015b.d01
@@ -234,7 +252,7 @@ machine_flags      :
 status             :
 decision_object    :
 decision_content   :
-annotator          :
+annotator          : gv
 notes              :
 ```
 
@@ -257,19 +275,21 @@ decisión desde tres ángulos, no tres decisiones distintas.
 
 ### 6.2 Tarea B — par `ES2015.p001`
 
-**Antes** (verbatim de `ES2015.candidates.csv`):
+**Antes** (lo que deja `prepare` en tu `ES2015.candidates.gv.csv`):
 
 ```
 pair_id             : ES2015.p001
-earlier_decision_id : ES2015a.elana.s.11
-later_decision_id   : ES2015b.elana.s.11
+earlier_decision_id : ES2015a.d01
+later_decision_id   : ES2015b.d01
+earlier_sentence_id : ES2015a.elana.s.11
+later_sentence_id   : ES2015b.elana.s.11
 earlier_text        : It will be a television remote control.
 later_text          : The remote will be a single function design- television only.
 blocker_score       : 0.6666666666666666
 relation            :
 direction_ok        :
 confidence          :
-annotator           :
+annotator           : gv
 notes               :
 ```
 
@@ -297,11 +317,13 @@ convención (la posterior actúa sobre la anterior).
 
 **Archivo:** `data/processed/relations/IS1004.recall-sample.csv` — **ya está generado**, con
 50 pares que el bloqueador **rechazó** (verificado: 50 filas, con la semilla ya registrada).
-No lo regeneres: volver a correr el comando lo sobrescribe.
+No lo regeneres: volver a correr `afg gold recall-sample` lo sobrescribe.
 
-Trabaja sobre tu copia, `IS1004.recall-sample.gv.csv`. Mismas columnas y **mismas reglas que
-la Tarea B**: mismo conjunto cerrado de `relation`, mismo `direction_ok`, misma
-`confidence`.
+`uv run afg gold prepare --annotator gv` crea tu copia,
+`IS1004.recall-sample.gv.csv`, junto con el resto de tus archivos. Mismas columnas y
+**mismas reglas que la Tarea B**: mismo conjunto cerrado de `relation`, mismo `direction_ok`,
+misma `confidence`. `afg gold validate --annotator gv --series IS1004` la revisa con las
+mismas reglas de Tarea B.
 
 **Qué mide.** Cada par que resulte **distinto de `no_relacionada`** es un **falso negativo
 del bloqueador**: una relación real que el filtro tiró. Sin esta muestra el bloqueador es una
@@ -339,7 +361,9 @@ Una serie, un PR (`CONTRIBUTING.md` §2 y §3):
 ```bash
 git fetch upstream
 git checkout -b data/anotacion-ES2015 upstream/main
+uv run afg gold prepare --annotator gv
 # ... anotas ...
+uv run afg gold validate --annotator gv --series ES2015   # tiene que salir sin errores
 git add data/processed/decisions/ES2015.decisions.gv.csv \
         data/processed/relations/ES2015.candidates.gv.csv
 git commit -m "data(anotacion): tareas A y B de ES2015 (gv)"
@@ -360,6 +384,11 @@ git push -u origin data/anotacion-ES2015
 ## 10. Checklist de cierre de serie
 
 Marca solo lo verificado. Es el checklist del manual §7, con lo que este reparto agrega.
+`uv run afg gold validate --annotator gv --series <ID>` ya cubre por ti los conjuntos
+cerrados, las filas a medio llenar y que ninguna columna de máquina se haya tocado — no
+hace falta revisarlos a ojo antes de correrlo, pero el checklist los deja explícitos porque
+`validate` no juzga criterio (`sin_soporte` justificado, orden cronológico, `compuesta`
+dividida con sentido).
 
 ### Tarea A
 - [ ] El trabajo se hizo sobre `<serie>.decisions.gv.csv`; `<serie>.decisions.csv` quedó intacto
@@ -386,6 +415,7 @@ Marca solo lo verificado. Es el checklist del manual §7, con lo que este repart
 
 ### Entrega
 - [ ] Rama `data/anotacion-<serie>` desde `upstream/main` actualizado
+- [ ] `uv run afg gold validate --annotator gv --series <ID>` sale sin errores
 - [ ] Un PR con **esta serie sola**
 - [ ] `uv run pytest -q` pasa
 - [ ] Lo que no encajó quedó en `notes` y, si hace falta, en un issue "Hallazgo"

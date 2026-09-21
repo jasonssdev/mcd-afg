@@ -1,7 +1,19 @@
 # Asignación del trabajo de anotación — OE1
 
-> **Qué es este documento.** El plan maestro del reparto: quién anota qué serie, en qué
-> orden, cuándo se adjudica y qué limitaciones conocidas tiene hoy la herramienta.
+> **Qué es este documento.** La explicación en prosa del reparto: por qué las fases van en
+> ese orden, por qué la calibración cae en ES2015, por qué se adjudica serie por serie y no
+> al final. Es el razonamiento; no es donde se lee el estado.
+>
+> **Quién manda en el reparto concreto.** [`config/annotation.toml`](../../../config/annotation.toml)
+> es la **única fuente de verdad** de quién anota qué serie, en qué fase, quién adjudica,
+> quién escribe y valida el banco de preguntas, y quién hace la Tarea C. Es lo que leen
+> `afg gold prepare`, `afg gold validate` y `afg gold status`. Si algo de este documento
+> parece contradecir el archivo, gana el archivo y este documento tiene un error.
+>
+> **Dónde se ve el estado en vivo.** `uv run afg gold status` — no este documento, que es
+> prosa y no se actualiza sola. Las cifras de §1 y §2 son una fotografía verificada contra
+> `config/corpus.toml` y `config/annotation.toml`, útil para leer, no para programar contra
+> ella.
 >
 > **Qué NO es.** No define qué cuenta como decisión ni qué significa cada relación. Eso vive
 > en [`../annotation-guidelines.md`](../annotation-guidelines.md) y en
@@ -11,6 +23,9 @@
 > **Idioma.** Español, como el resto de `docs/anotacion/` y por la misma razón declarada en
 > [`../../../notebooks/README.md`](../../../notebooks/README.md): los lectores son el equipo
 > y quienes revisan la tesis.
+>
+> **Si nunca has abierto este repositorio:** empieza por
+> [`EMPIEZA-AQUI.md`](EMPIEZA-AQUI.md), no por aquí.
 
 ## Documentos personales
 
@@ -144,9 +159,14 @@ propio procedimiento de anotación: cuanto más tarde se detecta, más caro sale
 
 **Qué produce cada sesión de adjudicación:**
 
-1. La salida de `uv run afg gold agreement --series <ID>` (los tres kappas).
-2. Un archivo `data/processed/relations/<serie>.adjudication.md`, escrito por `jss` a partir
-   de [`../plantilla-adjudicacion.md`](../plantilla-adjudicacion.md).
+1. `uv run afg gold adjudicate --series <ID>` escribe
+   `data/processed/relations/<serie>.adjudication.md`, ya con los tres kappas, la fecha, los
+   dos anotadores y una fila por cada desacuerdo de la Tarea B con ambas etiquetas puestas.
+   `jss` solo llena **etiqueta final** y **razón** de cada fila, más la tabla de la Tarea A
+   (ver §5.3).
+2. `uv run afg gold agreement --series <ID>` escribe además
+   `reports/tables/<serie>.agreement.csv`, la tabla de los tres kappas como artefacto aparte
+   — `adjudicate` calcula los mismos números para el `.md`, pero no escribe este CSV.
 3. Si el desacuerdo revela un vacío de la guía: una corrección explícita de
    `annotation-guidelines.md` o del manual, en su propio PR, **antes** de seguir.
 
@@ -179,67 +199,73 @@ Estas valen para `gv` y `gm` por igual, en las tres fases.
 
 ---
 
-## 5. Tres limitaciones conocidas de la herramienta
+## 5. Qué automatiza la herramienta hoy, y qué sigue siendo manual
 
-No están escondidas porque afectan al procedimiento, y el procedimiento tiene que
-compensarlas a mano.
+Dos limitaciones que este mismo documento documentaba ya están resueltas en el código; se
+dejan registradas igual, para que quede claro qué cambió y cuándo. La tercera sigue en pie,
+verificada de nuevo al escribir esto.
 
-### 5.1 La Tarea A de doble anotación no tenía convención de nombre — se fija aquí
+### 5.1 Resuelto: nombrar los archivos ya no es trabajo manual
 
-El manual (§6) solo define el patrón de la Tarea B:
-`<serie>.candidates.<iniciales>.csv`. Para la Tarea A no existía nombre.
-
-**Convención nueva, a partir de este documento:**
+Antes no existía convención de nombre para la Tarea A y cada quien copiaba y renombraba a
+mano — tres oportunidades de escribirlo mal por archivo. Hoy `uv run afg gold prepare
+--annotator <iniciales>` crea directamente:
 
 ```
 data/processed/decisions/<serie>.decisions.<iniciales>.csv
+data/processed/relations/<serie>.candidates.<iniciales>.csv
 ```
 
-Patrón espejo del de la Tarea B, mismas iniciales de `CONTRIBUTING.md` §1 (`gv`, `gm`). El
-archivo sin iniciales (`<serie>.decisions.csv`) queda como el insumo limpio generado por
-`afg gold build` y **no se edita nunca**: cada persona parte de una copia con su sufijo.
+con las iniciales de `CONTRIBUTING.md` §1 (`gv`, `gm`), en Fase 3 también aunque solo anote
+una persona. Nadie copia ni renombra un CSV a mano; el archivo sin iniciales
+(`<serie>.decisions.csv`, `<serie>.candidates.csv`) es el insumo limpio que generan
+`afg gold build` y `afg gold candidates`, y **no se edita nunca** — `afg gold validate` lo
+verifica columna por columna.
 
-En Fase 3, donde solo anota una persona, se usa igualmente el sufijo
-(`IS1006.decisions.gv.csv`), para que el nombre diga siempre quién puso las etiquetas.
+### 5.2 Sigue siendo manual: el acuerdo de la Tarea A
 
-### 5.2 `afg gold agreement` no calcula el kappa de la Tarea A
+Verificado de nuevo en `src/afg/annotation/agreement.py`: `compute_series_agreement` deriva
+sus tres ejes —existencia, tipo, dirección— exclusivamente de las columnas `relation` y
+`direction_ok` de `<serie>.candidates.*.csv`. No hay ninguna función equivalente para la
+columna `status` de la Tarea A, y `afg gold adjudicate` (§5.3) llama a la misma función:
+tampoco calcula ese eje.
 
-El comando busca únicamente pares candidatos:
+**Consecuencia operativa, sin cambios:** en las series de doble anotación, la Tarea A se
+adjudica **leyendo los dos archivos a mano**, fila por fila, comparando `status` alineado por
+`decision_id` (detalle del procedimiento en
+[`tareas-jss.md`](tareas-jss.md) §2.4). `afg gold adjudicate` deja la tabla de la Tarea A
+dentro del `.adjudication.md` generado, vacía y con esta misma explicación escrita adentro —
+no por descuido, porque no hay nada que calcular todavía.
 
-```python
-pattern = f"{series}.candidates.*.csv"
-paths = sorted(GOLD_RELATIONS_DIR.glob(pattern))
+### 5.3 Resuelto: el registro de adjudicación ya no se escribe a mano
+
+`build_adjudication_log()` existía en `src/afg/annotation/agreement.py`, con tests, pero
+nadie la invocaba desde el CLI. Hoy sí:
+
+```bash
+uv run afg gold adjudicate --series <ID>
 ```
 
-(`src/afg/cli.py`, comando `gold agreement`). Es decir: los tres kappas que calcula
-—existencia, tipo y dirección— son **todos de la Tarea B**. **El acuerdo sobre `status` de
-la Tarea A no lo calcula el CLI hoy.**
-
-**Consecuencia operativa:** en las series de doble anotación, la Tarea A se adjudica
-**leyendo los dos archivos a mano**, fila por fila, comparando la columna `status`. `jss`
-registra los desacuerdos en el mismo `.adjudication.md`, en su propia tabla. Cuando exista el
-comando, se recalculará sobre los archivos ya guardados —por eso la convención de §5.1
-importa: los archivos tienen que estar ahí y con el nombre correcto.
-
-### 5.3 No existe comando que escriba `<serie>.adjudication.md`
-
-La función `build_adjudication_log()` existe en `src/afg/annotation/agreement.py` y tiene
-tests (`tests/test_annotation.py`), pero **nadie la invoca desde el CLI**: no hay
-`afg gold adjudicate`. El archivo de adjudicación se escribe hoy **a mano**.
-
-Para que los cinco archivos salgan comparables entre sí, se escriben desde la plantilla:
-[`../plantilla-adjudicacion.md`](../plantilla-adjudicacion.md).
+Escribe `data/processed/relations/<serie>.adjudication.md` con la fecha, los dos anotadores,
+el adjudicador, los tres kappas y una fila por cada desacuerdo de la Tarea B —relación y
+dirección— con las dos etiquetas ya puestas. El humano llena exactamente dos celdas por fila,
+**etiqueta final** y **razón**, más la tabla de la Tarea A que §5.2 explica por qué queda
+vacía. Se niega a regenerar un archivo que ya tenga resoluciones escritas a mano, salvo
+`--force`.
 
 ---
 
 ## 6. Artefactos que produce este plan
 
+Las tres primeras filas las crea `afg gold prepare` (columnas humanas vacías); las llena la
+persona; `afg gold validate` verifica el resultado.
+
 | Archivo | Quién | Cuándo |
 |---|---|---|
 | `data/processed/decisions/<serie>.decisions.<iniciales>.csv` | `gv`, `gm` | Tarea A de cada serie |
 | `data/processed/relations/<serie>.candidates.<iniciales>.csv` | `gv`, `gm` | Tarea B de cada serie |
-| `data/processed/relations/IS1004.recall-sample.csv` (adjudicado) | `gv` | Tarea C |
-| `data/processed/relations/<serie>.adjudication.md` | `jss` | Tras cada serie doble |
+| `data/processed/relations/IS1004.recall-sample.<iniciales>.csv` (adjudicado) | `gv` | Tarea C |
+| `data/processed/relations/<serie>.adjudication.md` | `afg gold adjudicate` escribe, `jss` completa | Tras cada serie doble |
 | `reports/tables/<serie>.agreement.csv` | `afg gold agreement` | Tras cada serie doble |
-| `data/processed/questions/banco-preguntas.csv` | `gm` escribe, `gv` valida | Banco de preguntas |
+| `data/processed/questions/banco-preguntas.csv` | `afg gold questions-init` crea, `gm` escribe, `gv` valida | Banco de preguntas |
 | `notebooks/03-jss-anotacion-oe1.ipynb` | `jss` | Al cerrar OE1 |

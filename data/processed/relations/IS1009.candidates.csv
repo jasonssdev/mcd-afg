@@ -1,2 +1,2 @@
-pair_id,earlier_decision_id,later_decision_id,earlier_text,later_text,blocker_score,relation,direction_ok,confidence,annotator,notes
-IS1009.p001,IS1009c.elana.s.17,IS1009d.elana.s.18,They will have the industrial engineer do more research on the cost of voice recognition before deciding whether to include that function.,"In their cost evaluation they got 8.20, not factoring in the voice recognition feature.",0.375,,,,,
+pair_id,earlier_decision_id,later_decision_id,earlier_sentence_id,later_sentence_id,earlier_text,later_text,blocker_score,relation,direction_ok,confidence,annotator,notes
+IS1009.p001,IS1009c.d03,IS1009d.d08,IS1009c.elana.s.17,IS1009d.elana.s.18,They will have the industrial engineer do more research on the cost of voice recognition before deciding whether to include that function.,"In their cost evaluation they got 8.20, not factoring in the voice recognition feature.",0.375,,,,,

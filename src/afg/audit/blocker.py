@@ -20,7 +20,11 @@ from afg.shared.paths import AMI_DIR
 TURBO_BUTTON_PAIR: tuple[str, str] = ("IS1004c.elana.s.29", "IS1004d.elana.s.22")
 """The one hand-verified reversal pair (``afg.annotation.blocking`` module docstring),
 used here as the recall control: a grid cell that loses this pair has tightened the
-blocker past the point where it still catches a known true positive."""
+blocker past the point where it still catches a known true positive.
+
+Identified by ABSTRACTIVE SENTENCE id, not decision id. The pilot verified this pair by
+reading those two sentences, so the sentence id is the stable anchor; decision ids are
+derived from sentence position and would silently follow a renumbering."""
 
 
 def _load_decisions(ami_root: Path, series: Sequence[str]) -> list[Decision]:
@@ -52,7 +56,7 @@ def blocker_sensitivity(
             candidates = generate_candidates(
                 decisions, threshold=threshold, min_overlap_tokens=min_overlap
             )
-            candidate_ids = {(c.earlier_decision_id, c.later_decision_id) for c in candidates}
+            candidate_ids = {(c.earlier_sentence_id, c.later_sentence_id) for c in candidates}
             rows.append(
                 {
                     "threshold": threshold,
