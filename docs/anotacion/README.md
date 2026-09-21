@@ -6,11 +6,12 @@ leer el código.
 
 | Documento | Qué es | Cuándo leerlo |
 |---|---|---|
+| [`asignacion/EMPIEZA-AQUI.md`](asignacion/EMPIEZA-AQUI.md) | Una página: clona, instala, `prepare`, llena, `validate`, PR | Si nunca has abierto este repositorio |
 | Este README | Quién hace qué, en qué orden, con qué archivos y cuánto toma | Primero |
 | [`annotation-guidelines.md`](annotation-guidelines.md) | Qué cuenta como decisión y qué significa cada una de las seis relaciones | Antes de anotar la primera fila |
 | [`manual-anotacion-oe1.md`](manual-anotacion-oe1.md) | El manual operativo: qué archivo abres, qué columna llenas, qué escribes, con un ejemplo real resuelto de punta a punta | Con el CSV abierto al lado |
-| [`asignacion/`](asignacion/) | El reparto concreto: qué serie le toca a cada persona, en qué orden, cuándo se adjudica y qué limitaciones tiene hoy la herramienta | Antes de abrir tu primera serie |
-| [`plantilla-adjudicacion.md`](plantilla-adjudicacion.md) | La plantilla de `<serie>.adjudication.md`, que hoy se escribe a mano | Al cerrar una serie de doble anotación |
+| [`asignacion/`](asignacion/) | El reparto concreto: qué serie le toca a cada persona, en qué orden, cuándo se adjudica. `config/annotation.toml` es la fuente de verdad; `afg gold status` muestra el avance en vivo | Antes de abrir tu primera serie |
+| [`plantilla-adjudicacion.md`](plantilla-adjudicacion.md) | La plantilla original de `<serie>.adjudication.md`, de cuando se escribía a mano. `uv run afg gold adjudicate --series <ID>` lo escribe hoy por ti | Referencia, si quieres ver el formato sin correr el comando |
 
 ## Quién hace qué
 

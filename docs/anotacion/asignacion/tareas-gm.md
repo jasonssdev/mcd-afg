@@ -11,6 +11,21 @@
 Anotar las Tareas A y B en nueve series (223 decisiones y 71 pares candidatos) y escribir el
 banco de preguntas de OE4: mínimo 25 preguntas por cada uno de los cuatro estratos.
 
+## Tu día a día en tres comandos
+
+```bash
+uv run afg gold prepare  --annotator gm                    # crea tus archivos, ya nombrados
+uv run afg gold validate --annotator gm --series <ID>       # antes de abrir el PR de esa serie
+uv run afg gold status                                      # cómo va todo el equipo (lectura)
+```
+
+`prepare` genera cada `<serie>.decisions.gm.csv` y `<serie>.candidates.gm.csv` con las
+columnas de máquina ya llenas y las tuyas vacías — nunca copies ni renombres un CSV a mano.
+Correrlo de nuevo no borra tu trabajo: un archivo con anotación se respeta, salvo que pases
+`--force`. `validate` es el filtro que tienes que pasar antes de cada PR: si hay un error
+sale con código distinto de cero y te dice fila y columna exactas. `status` es solo lectura;
+lo usas para ver tu propio avance sin abrir un CSV.
+
 ---
 
 ## 1. Tus series, en orden
@@ -67,19 +82,18 @@ trabajo fino.
 
 ## 2. Qué archivo tocas y qué columnas llenas
 
-### Tarea A — `data/processed/decisions/<serie>.decisions.csv`
+### Tarea A — `data/processed/decisions/<serie>.decisions.gm.csv`
 
-**Nunca edites ese archivo.** Es el insumo limpio. Haz una copia con tus iniciales y trabaja
-sobre ella:
+**Nunca edites `<serie>.decisions.csv`.** Es el insumo limpio que genera `afg gold build`. Tu
+copia ya existe con el nombre correcto y las columnas de máquina llenas en cuanto corres:
 
 ```bash
-cp data/processed/decisions/ES2015.decisions.csv \
-   data/processed/decisions/ES2015.decisions.gm.csv
+uv run afg gold prepare --annotator gm
 ```
 
-El patrón `<serie>.decisions.<iniciales>.csv` es una **convención nueva**, fijada en
-[`README.md`](README.md) §5.1 como espejo del `<serie>.candidates.<iniciales>.csv` que el
-manual ya definía para la Tarea B. Úsalo también en Fase 3, aunque anotes solo tú.
+El patrón `<serie>.decisions.<iniciales>.csv` es el que fija [`README.md`](README.md) §5.1,
+espejo del `<serie>.candidates.<iniciales>.csv` que el manual ya definía para la Tarea B.
+`prepare` lo aplica también en Fase 3, aunque anotes solo tú.
 
 | Columna | Quién | Regla |
 |---|---|---|
@@ -93,7 +107,7 @@ manual ya definía para la Tarea B. Úsalo también en Fase 3, aunque anotes sol
 | **`status`** | **tú** | Valor del conjunto cerrado, ver abajo |
 | **`decision_object`** | **tú** | Qué se decide |
 | **`decision_content`** | **tú** | Qué se decidió al respecto |
-| **`annotator`** | **tú** | `gm` |
+| **`annotator`** | **tú** | `gm`, ya puesto por `prepare` |
 | **`notes`** | **tú** | Solo si algo no es obvio; obligatorio en `sin_soporte` |
 
 **Valores permitidos de `status`:**
@@ -102,31 +116,32 @@ manual ya definía para la Tarea B. Úsalo también en Fase 3, aunque anotes sol
 decision | no_decision | compuesta | sin_soporte | descartar
 ```
 
-> Verificado: este conjunto está definido **solo en el manual §2**. No existe hoy en el
-> código ningún `enum` que lo valide — `src/afg/domain/decision.py::DecisionStatus`
-> (`accepted`, `open_proposal`, `open_question`, `opinion`) es el vocabulario del modelo de
-> dominio, no el de esta columna. Nada te va a avisar si escribes mal un valor: cópialos
-> literalmente de aquí.
+> Verificado: este conjunto lo define el manual §2 y hoy también lo valida el código —
+> `src/afg/domain/decision.py::AnnotationStatus` es el `enum` que usa `afg gold validate`
+> para rechazar un valor fuera de estos cinco. No es lo mismo que
+> `DecisionStatus` (`accepted`, `open_proposal`, `open_question`, `opinion`), que es el
+> vocabulario del modelo de dominio, no el de esta columna. Aun así, cópialos literalmente:
+> `validate` te avisa si te equivocas, pero solo al correrlo.
 >
 > Los valores de `machine_flags` que sí produce el código son `sin_evidencia`,
 > `posible_compuesta` y `frase_corta` (`src/afg/annotation/goldset.py::machine_flags_for`).
 > `posible_compuesta` **no** es un `status`: es una sugerencia de que mires la fila.
 
-### Tarea B — `data/processed/relations/<serie>.candidates.csv`
+### Tarea B — `data/processed/relations/<serie>.candidates.gm.csv`
 
-Misma regla: copia con tus iniciales,
-`data/processed/relations/ES2015.candidates.gm.csv`.
+Misma regla: la crea `afg gold prepare --annotator gm`, no una copia manual.
 
 | Columna | Quién | Regla |
 |---|---|---|
 | `pair_id` | máquina | **No tocar** |
-| `earlier_decision_id` / `later_decision_id` | máquina | **No tocar** |
+| `earlier_decision_id` / `later_decision_id` | máquina | **No tocar.** El id de la decisión, siempre en orden cronológico |
+| `earlier_sentence_id` / `later_sentence_id` | máquina | **No tocar.** El id de la frase de origen en el corpus AMI |
 | `earlier_text` / `later_text` | máquina | **No tocar** |
 | `blocker_score` | máquina | **No tocar** |
 | **`relation`** | **tú** | Valor del conjunto cerrado, ver abajo |
 | **`direction_ok`** | **tú** | `si` / `no` |
 | **`confidence`** | **tú** | `alta` / `media` / `baja` |
-| **`annotator`** | **tú** | `gm` |
+| **`annotator`** | **tú** | `gm`, ya puesto por `prepare` |
 | **`notes`** | **tú** | Obligatorio si `direction_ok = no` |
 
 **Valores permitidos:**
@@ -138,15 +153,16 @@ confidence    : alta | media | baja
 ```
 
 > Verificado: los seis valores de `relation` son literalmente los de
-> `src/afg/domain/relation.py::RelationType`. `direction_ok` y `confidence` vienen del
-> manual §4 y son los valores que usan las pruebas de acuerdo
-> (`tests/test_agreement.py`). `direction_ok` se compara en minúsculas
+> `src/afg/domain/relation.py::RelationType`, y los tres conjuntos (`relation`,
+> `direction_ok`, `confidence`) son `enum`s que `afg gold validate` compara celda a celda
+> (`src/afg/annotation/workspace.py`). `direction_ok` se compara en minúsculas
 > (`agreement.py`), así que escribe `si`, sin tilde y sin mayúscula.
 >
 > `no_relacionada` no es un valor vacío: significa *"el bloqueador se equivocó, aquí no hay
 > relación"*, y el cálculo de acuerdo lo trata exactamente así
 > (`agreement.py`, `_NO_RELATION_LABEL`). Una celda vacía y un `no_relacionada` no son lo
-> mismo. Llena las 71 filas.
+> mismo. Llena las 71 filas; `afg gold validate` marca como "a medio llenar" cualquier fila
+> donde `relation`, `direction_ok` y `confidence` no estén las tres puestas.
 
 ---
 
@@ -217,7 +233,8 @@ documento que todo el equipo lee, es decir, contaminarla para siempre.
 
 ### 6.1 Tarea A — fila `ES2015c.d08`, una `compuesta`
 
-**Antes** (lo que te entrega la máquina, verbatim de `ES2015.decisions.csv`):
+**Antes** (lo que deja `uv run afg gold prepare --annotator gm` en tu
+`ES2015.decisions.gm.csv`; `annotator` ya viene puesto, el resto de lo tuyo está vacío):
 
 ```
 decision_id        : ES2015c.d08
@@ -232,7 +249,7 @@ machine_flags      : posible_compuesta
 status             :
 decision_object    :
 decision_content   :
-annotator          :
+annotator          : gm
 notes              :
 ```
 
@@ -269,19 +286,21 @@ son una sola decisión, y filas sin bandera que son tres.
 
 ### 6.2 Tarea B — par `ES2015.p002`
 
-**Antes** (verbatim de `ES2015.candidates.csv`):
+**Antes** (lo que deja `prepare` en tu `ES2015.candidates.gm.csv`):
 
 ```
 pair_id             : ES2015.p002
-earlier_decision_id : ES2015c.elana.s.19
-later_decision_id   : ES2015d.elana.s.15
+earlier_decision_id : ES2015c.d06
+later_decision_id   : ES2015d.d04
+earlier_sentence_id : ES2015c.elana.s.19
+later_sentence_id   : ES2015d.elana.s.15
 earlier_text        : Regular chip will be used.
 later_text          : Will use a regular chip.
 blocker_score       : 1.0
 relation            :
 direction_ok        :
 confidence          :
-annotator           :
+annotator           : gm
 notes               :
 ```
 
@@ -331,21 +350,36 @@ Los valores de `stratum` son literalmente los de
 
 ### El archivo
 
-Plantilla con la cabecera y un ejemplo por estrato:
+`data/processed/questions/banco-preguntas.csv` ya está creado — el mantenedor corrió:
+
+```bash
+uv run afg gold questions-init
+```
+
+100 filas numeradas `q001`..`q100`, 25 por cada uno de los cuatro estratos en el orden de la
+tabla de arriba, con `stratum` y `author = gm` ya puestos. Tú **nunca inventas un `id` ni
+escribes un `stratum`**: escribes texto dentro de una fila que ya existe. Si el banco llegara
+a necesitar regenerarse, `questions-init` se niega a hacerlo mientras haya preguntas escritas,
+salvo `--force` — que destruye el banco, igual que `prepare --force` en las Tareas A y B.
+
+Hay además un ejemplo de referencia, uno por estrato, en
 [`../../../data/processed/questions/_plantilla-banco-preguntas.csv`](../../../data/processed/questions/_plantilla-banco-preguntas.csv).
-El banco real va en `data/processed/questions/banco-preguntas.csv`.
+**Su `id` lleva prefijo de serie** (`ES2015.q001`); el banco real que genera `questions-init`
+no lo lleva (`q001`..`q100`, sin serie) porque la serie es tu elección por pregunta, no algo
+que se sepa de antemano. Úsala solo para ver el estilo de una pregunta bien construida, no
+como plantilla de formato de `id`.
 
 Las columnas salen del modelo `src/afg/domain/question.py::Question`, una por campo:
 
 | Columna | Qué es |
 |---|---|
-| `id` | Identificador estable, `<serie>.q001` |
-| `series_id` | Serie de la que sale la pregunta |
-| `stratum` | Uno de los cuatro valores de arriba, literal |
-| `text` | La pregunta, en español |
-| `reference_answer` | La respuesta derivada de la evidencia. **Vacía en E4**: el modelo la declara `None` para ese estrato, porque ahí la referencia *es la ausencia de respuesta* |
-| `reference_evidence` | Los actos de diálogo que la respaldan. Formato `reunion:da_id;da_id`, y `\|` entre reuniones cuando la evidencia abarca más de una. **Vacía en E4** |
-| `author` | `gm` |
+| `id` | `q001`..`q100`, ya puesto por `questions-init`. **No tocar** |
+| `series_id` | La serie de la que sale la pregunta. **La llenas tú**, es tu elección por pregunta |
+| `stratum` | Uno de los cuatro valores de arriba, ya puesto por `questions-init`. **No tocar** |
+| `text` | La pregunta, en español. **La llenas tú** |
+| `reference_answer` | La respuesta derivada de la evidencia. **La llenas tú**, y queda **vacía en E4**: el modelo la declara `None` para ese estrato, porque ahí la referencia *es la ausencia de respuesta* |
+| `reference_evidence` | Los actos de diálogo que la respaldan. **La llenas tú**. Formato `reunion:da_id;da_id`, y `\|` entre reuniones cuando la evidencia abarca más de una. **Vacía en E4** |
+| `author` | `gm`, ya puesto por `questions-init` |
 | `validated_by` | **Lo llena Germán.** Tú lo dejas vacío |
 
 ### Las tres reglas que más se rompen
@@ -382,7 +416,9 @@ Una serie, un PR (`CONTRIBUTING.md` §2 y §3):
 ```bash
 git fetch upstream
 git checkout -b data/anotacion-ES2015 upstream/main
+uv run afg gold prepare --annotator gm
 # ... anotas ...
+uv run afg gold validate --annotator gm --series ES2015   # tiene que salir sin errores
 git add data/processed/decisions/ES2015.decisions.gm.csv \
         data/processed/relations/ES2015.candidates.gm.csv
 git commit -m "data(anotacion): tareas A y B de ES2015 (gm)"
@@ -404,6 +440,11 @@ git push -u origin data/anotacion-ES2015
 ## 9. Checklist de cierre de serie
 
 Marca solo lo verificado. Es el checklist del manual §7, con lo que este reparto agrega.
+`uv run afg gold validate --annotator gm --series <ID>` ya cubre por ti los conjuntos
+cerrados, las filas a medio llenar y que ninguna columna de máquina se haya tocado — no
+hace falta revisarlos a ojo antes de correrlo, pero el checklist los deja explícitos porque
+`validate` no juzga criterio (`sin_soporte` justificado, orden cronológico, `compuesta`
+dividida con sentido).
 
 ### Tarea A
 - [ ] El trabajo se hizo sobre `<serie>.decisions.gm.csv`; `<serie>.decisions.csv` quedó intacto
@@ -437,6 +478,7 @@ Marca solo lo verificado. Es el checklist del manual §7, con lo que este repart
 
 ### Entrega
 - [ ] Rama `data/anotacion-<serie>` desde `upstream/main` actualizado
+- [ ] `uv run afg gold validate --annotator gm --series <ID>` sale sin errores
 - [ ] Un PR con **esta serie sola**
 - [ ] `uv run pytest -q` pasa
 - [ ] Lo que no encajó quedó en `notes` y, si hace falta, en un issue "Hallazgo"
