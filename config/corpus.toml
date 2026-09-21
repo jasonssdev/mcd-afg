@@ -60,7 +60,15 @@ c = "conceptual_design"
 d = "detailed_design"
 
 [corpus.experiment_a]
-# The 47 meetings carrying the Decision Discussion Segmentation layer (thesis section 5.0).
+# NOT the Experiment A sample. This is a corpus-inventory expectation: the number of meetings
+# in the whole corpus that carry the Decision Discussion Segmentation layer. Experiment A is
+# sampled on the OE1 reference set (14 series, 56 meetings, 343 decisions -- see `[oe1]` and
+# thesis section 5.0), because OE2 measures extraction quality against an annotated reference
+# set and 18 of these 47 meetings fall outside it. The DDS layer is an independent VALIDATION
+# subset (decision D2 in docs/BACKLOG.md): 29 of the 47 fall inside OE1 -- 4/4 for ES2015,
+# ES2016, IS1004, IS1006, IS1008 and TS3005, 3/4 for IS1003, 2/4 for ES2002 -- which gives a
+# second, independent annotation of those conversations to compare the reference set against.
+# The count below stays 47 because it remains true of the corpus, whatever Experiment A samples.
 # VERIFIED at paso cero (2026-09-20): `afg corpus inventory` against the real download at
 # data/raw/ami/ reports dds_meeting_count == 47, corpus-wide, matching this expectation
 # exactly. The on-disk annotation-layer paths are also verified: abstractive summaries at

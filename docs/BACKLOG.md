@@ -27,7 +27,7 @@ Trabajo pendiente, en orden de dependencia. Última actualización: 2026-09-21.
 | # | Decisión | Evidencia |
 |---|---|---|
 | D1 | **Marco muestral: resumen abstractivo, no capa DDS.** 33 series completas / 649 decisiones, contra 6 / 136 | Medido sobre `ami_public_manual_1.6.2` |
-| D2 | **DDS pasa a subconjunto de validación** en las 6 series que tienen ambas capas | — |
+| D2 | **DDS pasa a subconjunto de validación** en las 6 series que tienen ambas capas | 29 de las 47 reuniones con DDS caen dentro de las 56 de OE1 y 18 quedan fuera. Cobertura dentro de OE1: **4/4** en ES2015, ES2016, IS1004, IS1006, IS1008 y TS3005; **3/4** en IS1003; **2/4** en ES2002. Medido sobre `data/raw/ami/decision/manual/*.decision.xml` contra `config/corpus.toml` `[oe1]` |
 | D3 | **Las etiquetas del conjunto de referencia las pone un humano.** Innegociable | Si un LLM construye OE1, C3 tiene errores de extracción por construcción y la brecha C2−C3 (todo OE4) se vuelve ruido |
 | D4 | **Se automatiza todo menos la etiqueta**: normalización, evidencia, bloqueo de candidatos, kappa, banco de preguntas | Anotar los 3.071 pares de las 14 series exhaustivamente es inviable; con bloqueo son **92** (ver D9) |
 | D5 | **El blocker usa coeficiente de solapamiento, no Jaccard** | Jaccard = 0,118 vs solapamiento = 0,400 en el par del botón turbo; Jaccard lo pierde |
