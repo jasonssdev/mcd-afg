@@ -92,11 +92,11 @@ Gracias por ver el video.
 | Cifra | Dónde se verifica |
 |---|---|
 | 14 series, 56 reuniones, 343 decisiones, 3.071 pares, 92 candidatos | `docs/avances/02-jss-fuente-de-datos.md` §4.4; `config/corpus.toml` `[oe1]` |
-| 33 series / 649 vs 6 series / 136 (marco muestral) | `docs/avances/02-jss-fuente-de-datos.md` §4.1; `docs/BACKLOG.md` D1 |
+| 33 series / 649 vs 6 series / 136 (marco muestral) | `docs/avances/02-jss-fuente-de-datos.md` §4.1; `docs/decisions/README.md` D1 |
 | 92,4 % de decisiones con evidencia | `docs/avances/02-jss-fuente-de-datos.md` §4.7; `notebooks/00-jss-corpus-y-auditoria.ipynb` |
-| 170 → 712 → 92 (bloqueador) | `docs/BACKLOG.md` D9 y P2 |
+| 170 → 712 → 92 (bloqueador) | `docs/decisions/README.md` D9 |
 | Caso del botón turbo | `docs/anotacion/manual-anotacion-oe1.md` §3 |
-| Viabilidad de E3: 45,5 % (5/11), IC 95 % [21,3 – 72,0 %] | `notebooks/01-jss-viabilidad-e3.ipynb`; `docs/BACKLOG.md` P9 |
+| Viabilidad de E3: 45,5 % (5/11), IC 95 % [21,3 – 72,0 %] | `notebooks/01-jss-viabilidad-e3.ipynb` |
 | 3 series de desarrollo / 11 de evaluación | `docs/decisions/0005-adr-development-evaluation-split.md` |
 | Roles de anotación y banco de preguntas | `CONTRIBUTING.md` §1 |
 | Plan por curso AFG1 / AFG2 / AFG3 | `README.md`, sección "Plan por curso"; `docs/avances/03-jss-objetivos.md` |

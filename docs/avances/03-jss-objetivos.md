@@ -125,14 +125,14 @@ principal (documento 05, principio de responsabilidad).
 
 Extensiones si hay tiempo: segunda escala de modelo (H3), validación humana ampliada.
 
-> Esta tabla está sincronizada con `README.md` (sección "Plan por curso") y con
-> `docs/BACKLOG.md`. Si cambia, se actualiza en los tres lugares.
+> La versión canónica de esta tabla está en `README.md` (sección "Plan por curso"). Si
+> cambia, se actualiza en ambos lugares.
 
 **Punto de decisión en AFG2.** Al cierre de la semana 3 de AFG2, el adaptador de OpenKOS
 debe correr de punta a punta sobre las tres series de desarrollo (extracción, persistencia y
 consulta). Si no lo hace, OE3 se reduce a comparar **C1 contra C3** (el valor de la
 representación sin errores de extracción) y OE4 se pospone a AFG3 o se declara fuera de
-alcance. La decisión se toma en esa fecha y se registra en el backlog, no se descubre en la
+alcance. La decisión se toma en esa fecha y se registra en `docs/decisions/`, no se descubre en la
 semana 7.
 
 | Objetivo | Mínimo comprometido | Extensión |
@@ -177,7 +177,7 @@ vale la pena anotar, y no son el conjunto de referencia de OE1.
 |---|---|
 | OE2 ya no exige estratificación obligatoria por condición nativo/no-nativo de inglés | La lengua materna está anidada en el sitio de grabación y el bloque TS carece de dato de lengua (documento 02, §4.5; documento 05, §2) — decisión D7 |
 | La base de OE1 pasó de 6 series / 136 decisiones a 14 series / 343 decisiones | Marco muestral revisado (documento 02, §4.1) — decisión D1 |
-| La viabilidad de E3 se declara explícitamente provisional, con intervalo de confianza | Adjudicación de desarrollo (11 candidatos), no de evaluación — `docs/BACKLOG.md` P9 |
+| La viabilidad de E3 se declara explícitamente provisional, con intervalo de confianza | Adjudicación de desarrollo (11 candidatos), no de evaluación — `notebooks/01-jss-viabilidad-e3.ipynb` |
 | La segunda escala de modelo pasa de compromiso a extensión | Costo de cómputo local y prioridad del mínimo viable por curso |
 
 ---
@@ -188,7 +188,7 @@ vale la pena anotar, y no son el conjunto de referencia de OE1.
 |---|---|
 | Objetivo general y OE1–OE4 | [`../propuesta.md`](../propuesta.md) §2–§3 |
 | Hipótesis H1–H4 y plan ante resultado negativo | [`../propuesta.md`](../propuesta.md) §4 |
-| Cambio de estratificación de OE2 (D7) | [`../BACKLOG.md`](../BACKLOG.md) |
+| Cambio de estratificación de OE2 (D7) | [`../decisions/README.md`](../decisions/README.md) |
 | 343 decisiones, 92 candidatos | [`../../config/corpus.toml`](../../config/corpus.toml), sección `[oe1]` |
-| Viabilidad de E3: 45,5 % (5/11), IC [21,3 % – 72,0 %], proyección ~37 [17–58] | [`../../notebooks/01-jss-viabilidad-e3.ipynb`](../../notebooks/01-jss-viabilidad-e3.ipynb); [`../BACKLOG.md`](../BACKLOG.md) P9 |
+| Viabilidad de E3: 45,5 % (5/11), IC [21,3 % – 72,0 %], proyección ~37 [17–58] | [`../../notebooks/01-jss-viabilidad-e3.ipynb`](../../notebooks/01-jss-viabilidad-e3.ipynb) |
 | Plan por curso | README.md, sección Plan por curso; programa del curso (objetivos de AFG1, AFG2, AFG3) |

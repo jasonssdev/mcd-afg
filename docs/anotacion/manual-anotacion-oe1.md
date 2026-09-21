@@ -42,7 +42,7 @@ decides **qué dice**.
 ## 1. Preparación (comandos, no trabajo manual)
 
 > **Estado de implementación (2026-09-20).** Todos los comandos que usa este manual están
-> implementados y con tests (`docs/BACKLOG.md`, P4).
+> implementados y con tests (ver `README.md`, sección "Comandos del proyecto").
 
 | Comando | Para qué |
 |---|---|
@@ -240,7 +240,7 @@ iniciales. **Nunca edites `IS1004.candidates.csv`** (el archivo sin iniciales): 
 insumo limpio que genera `afg gold candidates`, igual que en la Tarea A.
 **Ritmo esperado:** ~1–2 minutos por par.
 **Volumen esperado:** 92 pares en las 14 series (3,0 % de los 3.071 pares entre reuniones; ver
-`docs/BACKLOG.md`, decisión D9). La cifra de 5,5 % del piloto no era generalizable.
+`docs/decisions/README.md`, decisión D9). La cifra de 5,5 % del piloto no era generalizable.
 
 ### Columnas
 

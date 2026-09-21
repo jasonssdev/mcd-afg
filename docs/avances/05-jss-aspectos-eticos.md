@@ -127,6 +127,6 @@ publican agregados por categoría, **nunca por individuo**.
 | Los tres principios tratados en profundidad: transparencia, justicia y equidad, responsabilidad | [`../propuesta.md`](../propuesta.md) §6.2–§6.4 |
 | Tasa de soporte de evidencia 92,4 % (317/343) | [`../../notebooks/00-jss-corpus-y-auditoria.ipynb`](../../notebooks/00-jss-corpus-y-auditoria.ipynb) |
 | Autoría por rol, PM 47,0 % (44 %–50 % por sitio) | [`../../notebooks/00-jss-corpus-y-auditoria.ipynb`](../../notebooks/00-jss-corpus-y-auditoria.ipynb) |
-| Anidamiento lengua/sitio; eje de lengua baja a limitación | [`../BACKLOG.md`](../BACKLOG.md), decisión D7 |
+| Anidamiento lengua/sitio; eje de lengua baja a limitación | [`../decisions/README.md`](../decisions/README.md), decisión D7 |
 | NIST AI RMF 1.0, funciones Measure y Manage | `bibliography/refs.bib` `tabassi2023airmf` |
 | Corpus público, CC BY 4.0 | [`../../config/corpus.toml`](../../config/corpus.toml) |
