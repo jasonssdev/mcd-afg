@@ -73,7 +73,9 @@ auditoría de datos lo obligó; todas están registradas con su evidencia en
 El reparto sigue dos reglas del diseño: quien adjudica los desacuerdos de la doble anotación
 no anota, y quien escribe el banco de preguntas no lo valida ni ejecuta los sistemas. Así cada
 artefacto lo revisa alguien que no lo produjo. Las iniciales identifican al autor de cada
-notebook y documento (`03-jss-objetivos.md`, por ejemplo).
+notebook y documento (`03-jss-objetivos.md`, por ejemplo). Los usuarios de GitHub de cada
+persona están en [`CONTRIBUTING.md` §1](CONTRIBUTING.md#1-quién-es-quién), para no mantener
+dos listas que puedan desincronizarse.
 
 ---
 
@@ -136,7 +138,7 @@ uv sync --group dev --group notebooks
 
 ```bash
 uv run afg --help     # el CLI del proyecto responde
-uv run pytest -q      # los tests pasan (257)
+uv run pytest -q      # los tests pasan (436 al momento de escribir esto; el número real crece)
 ```
 
 ### 3.3 Descarga el corpus
@@ -167,20 +169,17 @@ Unas dos horas de lectura bastan para entender el proyecto. En este orden:
 
 ### 3.5 Tu primer trabajo real
 
-**Si anotas (Germán, Gustavo):**
+**Si anotas (Germán, Gustavo):** un solo comando deja todo listo para empezar:
 
-1. Lee [`docs/anotacion/annotation-guidelines.md`](docs/anotacion/annotation-guidelines.md):
-   qué cuenta como decisión y qué significa cada relación.
-2. Abre [`docs/anotacion/manual-anotacion-oe1.md`](docs/anotacion/manual-anotacion-oe1.md) y
-   sigue el ejemplo del botón turbo (§3) con el CSV de la serie IS1004 abierto al lado.
-   IS1004 es una serie de **desarrollo**: sirve para practicar y sus etiquetas no se reportan.
-3. Genera tu archivo de trabajo y anota la Tarea A de esa serie:
-   ```bash
-   uv run afg gold build --series IS1004
-   # abre data/processed/decisions/IS1004.decisions.csv y llena las columnas humanas
-   ```
-4. Abre tu primera pull request con el CSV (ver 3.6). Es la forma de calibrar criterios entre
-   los dos anotadores antes de tocar las series que sí se reportan.
+```bash
+uv run afg gold setup --annotator <tus iniciales>
+```
+
+Descarga el corpus (si no lo tienes), genera las 171 transcripciones y prepara tus archivos
+de trabajo ya nombrados; nunca borra anotación existente. Termina diciéndote exactamente qué
+archivo abrir primero. Sigue desde ahí
+[`docs/anotacion/asignacion/EMPIEZA-AQUI.md`](docs/anotacion/asignacion/EMPIEZA-AQUI.md): qué
+leer antes de anotar, qué columnas llenar, cómo validar tu trabajo y cómo abrir el PR.
 
 **Si eres el adjudicador (Jason):** tu trabajo empieza cuando exista una serie de control
 anotada por ambos; el procedimiento está en el manual, §6.
@@ -227,7 +226,7 @@ git checkout main && git fetch upstream && git merge upstream/main && git push o
 | `data/` | `raw/` (corpus, ignorado por git), `interim/`, `processed/` (los CSV de anotación) | Anotadores escriben en `processed/` |
 | `reports/` | Tablas y figuras generadas por el código | Se regeneran; no se editan a mano |
 | `src/afg/` | El código: ingesta del corpus, conjunto de referencia, bloqueo de candidatos, kappa, alineamiento, métricas | Quien programe. Toda cifra del proyecto sale de aquí |
-| `tests/` | 257 tests que fijan las cifras medidas como regresiones | Corren antes de cada PR |
+| `tests/` | Tests que fijan las cifras medidas como regresiones (436 al momento de escribir esto; corre `uv run pytest -q` para el número vigente) | Corren antes de cada PR |
 
 **Qué revisar en una pull request ajena.** Que los tests pasen; que ninguna cifra se calcule
 en un notebook o documento en vez de en `src/afg/`; que las etiquetas del conjunto de
@@ -262,14 +261,28 @@ Todo pasa por un solo CLI, `afg`. No hay scripts sueltos.
 uv run afg corpus download          # descarga las anotaciones de AMI
 uv run afg corpus inventory         # paso cero: qué contiene el corpus
 uv run afg corpus participants      # composición lingüística y por rol
+uv run afg corpus transcripts       # congela las transcripciones (.md + .jsonl) y su manifiesto
 
-uv run afg gold build --series IS1004          # archivo de trabajo de la Tarea A
-uv run afg gold candidates --series IS1004     # pares candidatos a adjudicar (Tarea B)
+uv run afg gold setup --annotator <iniciales>      # de un clon nuevo a "abre este archivo y empieza" (ver 3.5)
+uv run afg gold build --series IS1004              # archivo de trabajo de la Tarea A
+uv run afg gold prepare --annotator <iniciales>    # crea tus archivos de trabajo (gold setup ya lo hace por ti)
+uv run afg gold candidates --series IS1004         # pares candidatos a adjudicar (Tarea B)
 uv run afg gold recall-sample --series IS1004 --n 50 --seed 42   # Tarea C
 uv run afg gold evidence --meeting IS1004d --term turbo          # busca evidencia en la transcripción
-uv run afg gold agreement --series IS1004      # kappa: existencia / tipo / dirección (Tarea D)
+uv run afg gold agreement --series IS1004          # kappa: existencia / tipo / dirección (Tarea D)
+uv run afg gold validate --annotator <iniciales>   # verifica tu trabajo antes de abrir el PR
+uv run afg gold status                             # panel del mantenedor: una fila por anotador y serie
+uv run afg gold adjudicate --series ES2015         # pre-llena la adjudicación de una serie de doble anotación
+uv run afg gold questions-init                     # crea el banco de 100 preguntas, vacío, 25 por estrato
+uv run afg gold link                               # sin implementar: sale con código 2 y explica qué falta
 
-uv run afg biblio audit             # cobertura de la bibliografía
+uv run afg biblio audit             # cobertura de la bibliografía por sección
+uv run afg biblio stats             # conteos por sección y preprint/revisado
+
+uv run afg report                   # regenera reports/tables/*.csv con lo que haya disponible
+
+uv run afg experiment a             # sin implementar: sale con código 2 (requiere el extractor y el conjunto de referencia)
+uv run afg experiment b             # sin implementar: sale con código 2 (requiere las tres condiciones y el banco de preguntas)
 ```
 
 ### Notebooks
@@ -284,6 +297,8 @@ uv run jupyter lab
 | 01 | `01-jss-viabilidad-e3.ipynb` | Estimación provisional de viabilidad del estrato de evolución |
 | 02 | `02-jss-transcripciones.ipynb` | De AMI a transcripciones legibles y congeladas |
 | 03 | `03-jss-anotacion-oe1.ipynb` | *(pendiente)* anotación humana y conjunto de referencia |
+| 04 | `04-jss-experimento-a.ipynb` | *(pendiente)* OE2 — calidad de la extracción automática |
+| 05 | `05-jss-experimento-b.ipynb` | *(pendiente)* OE3/OE4 — C1 vs C2 vs C3 y atribución del error |
 
 Los notebooks son el **registro académico** del proyecto y se versionan con sus salidas, para
 que un revisor pueda leerlos sin ejecutar nada. Si tocas uno, re-ejecútalo de punta a punta

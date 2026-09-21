@@ -281,3 +281,7 @@ reports/figures/*.png
 # Course material (guidelines, rubrics, lecture transcripts, working notes): kept locally and
 # shared inside the team, never versioned. The thesis proposal lives in docs/propuesta.md.
 puc-context/
+
+# Documentos de seguimiento del asistente: son andamiaje de trabajo, no parte del
+# proyecto. Lo que queda como registro es el commit y el pull request.
+odd/

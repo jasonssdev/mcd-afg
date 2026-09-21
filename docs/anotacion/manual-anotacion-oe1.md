@@ -61,14 +61,24 @@ uv run afg gold build      --series IS1004   # -> data/processed/decisions/IS100
 uv run afg gold candidates --series IS1004   # -> data/processed/relations/IS1004.candidates.csv
 ```
 
-El segundo comando **exige** que el primero esté adjudicado: los candidatos se generan sobre
-las decisiones normalizadas, no sobre las frases crudas.
+El segundo comando **no depende** de que el primero esté adjudicado: hoy los candidatos se
+generan sobre las frases crudas del resumen abstractivo
+(`afg.annotation.blocking.decisions_from_abstractive`), no sobre las decisiones ya
+normalizadas de la Tarea A. Es un comportamiento provisional —lo dice también
+`uv run afg gold candidates --help`— hasta que exista la normalización real de la Tarea A
+como fuente. Por eso el ejemplo trabajado de la sección 4 usa como extremo posterior
+`IS1004d.d12`, una fila que la Tarea A termina marcando `sin_soporte`: el par se genera
+igual, y descartarlo es trabajo de la adjudicación humana, no del comando.
 
 ---
 
 ## 2. Tarea A — Normalizar decisiones
 
-**Archivo que abres:** `data/processed/decisions/IS1004.decisions.csv`
+**Archivo que abres:** `data/processed/decisions/IS1004.decisions.gv.csv` — tu copia, con
+tus iniciales. **Nunca edites `IS1004.decisions.csv`** (el archivo sin iniciales): es el
+insumo limpio que genera `afg gold build`. Si anotas ahí, `afg gold prepare` no lo detecta
+—solo mira si tu propio `<serie>.decisions.<iniciales>.csv` ya tiene anotación— y genera tu
+copia con las columnas humanas vacías: el trabajo desaparece sin ningún error en pantalla.
 **Herramienta:** cualquier editor de hojas de cálculo, o el editor de texto que prefieras.
 **Ritmo esperado:** ~30 segundos por fila.
 
@@ -82,6 +92,7 @@ las decisiones normalizadas, no sobre las frases crudas.
 | `sentence_text` | máquina | La frase del resumen abstractivo, literal |
 | `evidence_da_count` | máquina | Cuántos actos de diálogo la respaldan |
 | `evidence_text` | máquina | La transcripción de esos actos |
+| `machine_flags` | máquina | Sugerencia de triaje (no un veredicto): `sin_evidencia`, `posible_compuesta`, `frase_corta`, separadas por `;` |
 | **`status`** | **tú** | Ver tabla abajo |
 | **`decision_object`** | **tú** | Qué se decide |
 | **`decision_content`** | **tú** | Qué se decidió al respecto |
@@ -224,7 +235,9 @@ Un error ahí no se mide: se convierte en la vara con la que mides todo lo demá
 
 ## 4. Tarea B — Adjudicar pares candidatos
 
-**Archivo:** `data/processed/relations/IS1004.candidates.csv`
+**Archivo:** `data/processed/relations/IS1004.candidates.gv.csv` — tu copia, con tus
+iniciales. **Nunca edites `IS1004.candidates.csv`** (el archivo sin iniciales): es el
+insumo limpio que genera `afg gold candidates`, igual que en la Tarea A.
 **Ritmo esperado:** ~1–2 minutos por par.
 **Volumen esperado:** 92 pares en las 14 series (3,0 % de los 3.071 pares entre reuniones; ver
 `docs/BACKLOG.md`, decisión D9). La cifra de 5,5 % del piloto no era generalizable.
@@ -235,6 +248,7 @@ Un error ahí no se mide: se convierte en la vara con la que mides todo lo demá
 |---|---|---|
 | `pair_id` | máquina | Identificador del par |
 | `earlier_decision_id` / `later_decision_id` | máquina | Siempre en orden cronológico |
+| `earlier_sentence_id` / `later_sentence_id` | máquina | El id de la frase de origen en el corpus AMI |
 | `earlier_text` / `later_text` | máquina | Objeto y contenido de cada una |
 | `blocker_score` | máquina | Coeficiente de solapamiento que lo seleccionó |
 | **`relation`** | **tú** | Del conjunto cerrado |

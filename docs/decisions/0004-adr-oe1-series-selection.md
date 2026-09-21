@@ -87,9 +87,13 @@ Fijadas ahora, antes de la anotación, como exige OE1:
 > **Revisado por el ADR 0005.** La lista vigente es ES2008, ES2016, IS1003, TS3005; ver
 > [`0005-adr-development-evaluation-split.md`](0005-adr-development-evaluation-split.md).
 
-**ES2015, ES2008, IS1004, TS3005** — 4 de 14 series (28,6 %), 115 de 343 decisiones
-(33,5 %), una por sitio más la serie ES más grande. Tres de las cuatro también llevan DDS,
-así que los desacuerdos pueden triangularse contra una capa de anotación independiente.
+> **Registro histórico — lista original de este ADR, superada por el ADR 0005.** Se
+> conserva sin editar porque un ADR documenta el historial; no es la lista vigente y no debe
+> leerse como tal.
+>
+> **ES2015, ES2008, IS1004, TS3005** — 4 de 14 series (28,6 %), 115 de 343 decisiones
+> (33,5 %), una por sitio más la serie ES más grande. Tres de las cuatro también llevan DDS,
+> así que los desacuerdos pueden triangularse contra una capa de anotación independiente.
 
 Ambas anotadoras trabajan sobre copias limpias; el kappa de Cohen se reporta por separado
 para existencia del enlace, tipo de relación y **dirección** (hipótesis H3 de la tesis).

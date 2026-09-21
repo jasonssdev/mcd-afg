@@ -156,8 +156,12 @@ reproducible y legible desde un notebook en [`notebooks/`](notebooks/). Código
 sin notebook no es un registro: nadie en la universidad va a leer
 `src/afg/audit/evidence.py` para saber cuántas decisiones tiene el corpus. Una
 celda de notebook que calcula algo es una fuente de verdad paralela sin test —
-en este proyecto una extrapolación fuera del paquete dio ~170 candidatos donde
-la cifra real era 92 (ver `docs/BACKLOG.md`, decisión D9).
+en este proyecto una extrapolación hecha fuera del paquete estimó ~170
+candidatos; correr la función real sobre las 14 series dio 712 (solo con el
+coeficiente de solapamiento); y esa cifra solo bajó a la final de 92 después
+de una decisión de diseño, exigir además `|A∩B| >= 2` (ver `docs/BACKLOG.md`,
+decisión D9). Correr el código real no bastaba: llegar a 92 exigió además
+decidir el filtro.
 
 | Capa | Contiene | Regla |
 |---|---|---|

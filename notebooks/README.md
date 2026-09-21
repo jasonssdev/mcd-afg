@@ -4,9 +4,11 @@ Los notebooks son el **registro académico paso a paso** del proyecto: lo que se
 se midió y, sobre todo, **por qué se decidió lo que se decidió**. Están escritos para que un
 revisor de la universidad pueda seguir el razonamiento sin leer el código fuente.
 
-> Excepción de idioma declarada: estos notebooks van en **español**, igual que
-> `docs/anotacion/manual-anotacion-oe1.md`, porque sus lectores son el equipo y los revisores
-> de una tesis en español. El código, la configuración y el resto de `docs/` siguen en inglés.
+> Idioma: estos notebooks van en **español**, porque sus lectores son el equipo y los
+> revisores de una tesis en español. La regla completa de idioma por tipo de artefacto está en
+> [`CONTRIBUTING.md` §7.4](../CONTRIBUTING.md#74-idioma): en resumen, todo lo que lee una
+> persona (README, CONTRIBUTING, `docs/` completo, notebooks) va en español; solo el código,
+> los identificadores y los comentarios de `config/` van en inglés.
 
 ## Convención de nombres
 
