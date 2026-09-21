@@ -9,6 +9,8 @@ leer el código.
 | Este README | Quién hace qué, en qué orden, con qué archivos y cuánto toma | Primero |
 | [`annotation-guidelines.md`](annotation-guidelines.md) | Qué cuenta como decisión y qué significa cada una de las seis relaciones | Antes de anotar la primera fila |
 | [`manual-anotacion-oe1.md`](manual-anotacion-oe1.md) | El manual operativo: qué archivo abres, qué columna llenas, qué escribes, con un ejemplo real resuelto de punta a punta | Con el CSV abierto al lado |
+| [`asignacion/`](asignacion/) | El reparto concreto: qué serie le toca a cada persona, en qué orden, cuándo se adjudica y qué limitaciones tiene hoy la herramienta | Antes de abrir tu primera serie |
+| [`plantilla-adjudicacion.md`](plantilla-adjudicacion.md) | La plantilla de `<serie>.adjudication.md`, que hoy se escribe a mano | Al cerrar una serie de doble anotación |
 
 ## Quién hace qué
 
@@ -21,6 +23,12 @@ leer el código.
 Las dos personas que anotan lo hacen **de forma independiente**: nadie ve las etiquetas de
 la otra antes de la sesión de adjudicación. Quien adjudica no anota, para que las etiquetas
 finales no queden sesgadas hacia uno de los dos anotadores.
+
+El reparto serie por serie, con las cifras de cada una y el orden de ejecución, está en
+[`asignacion/README.md`](asignacion/README.md), y cada persona tiene su propio documento:
+[`asignacion/tareas-gv.md`](asignacion/tareas-gv.md),
+[`asignacion/tareas-gm.md`](asignacion/tareas-gm.md) y
+[`asignacion/tareas-jss.md`](asignacion/tareas-jss.md).
 
 ## La regla que no se negocia
 
@@ -78,8 +86,9 @@ mira una reunión posterior para etiquetar una anterior.
 
 - Los CSV anotados se suben por pull request, como cualquier otro cambio
   ([`../../CONTRIBUTING.md`](../../CONTRIBUTING.md) §2). La revisión la hace otra persona.
-- El checklist de cierre por serie está en el manual, §7. Una serie no está terminada hasta
-  que todo el checklist está marcado.
+- El checklist de cierre por serie está en el manual, §7, y ampliado en el documento
+  personal de cada quien dentro de [`asignacion/`](asignacion/). Una serie no está terminada
+  hasta que todo el checklist está marcado.
 - El acuerdo entre anotadores se reporta **tal como salga**. Un kappa bajo no es un fracaso:
   es lo que OE1 se propuso medir.
 
