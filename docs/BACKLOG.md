@@ -252,8 +252,10 @@ deben tratarse como hipótesis, no como hallazgo.
       solo los 47 `.decision.xml`, con 288 elementos `<decision>` y **cero** punteros a
       `abssumm`. Verificado 2026-09-20 sobre `ami_public_manual_1.6.2`
 - [ ] §5.0: reescribir el párrafo de muestreo (DDS → resumen abstractivo)
-- [ ] §5.1: publicar 91/96/2 y declarar que `native_language` es la fuente, no la heurística
-- [ ] §6.3: bajar el eje de lengua a limitación; rol pasa a primario
+- [x] §5.1: publicar 91/96/2 y declarar que `native_language` es la fuente, no la heurística
+      (2026-09-21, aplicado en `propuesta.md`)
+- [x] §6.3: bajar el eje de lengua a limitación; rol pasa a primario
+      (2026-09-21, aplicado en `propuesta.md` §3 OE2, §5.1, §5.6 y §6.3)
 - [ ] §5.4: documentar coeficiente de solapamiento y la evidencia contra Jaccard
 - [ ] §7: actualizar el riesgo principal — el cuello de botella eran los flags, no el corpus
 - [ ] §9: leer Zhang & Li, *ConsistencyGate* antes de fijar la afirmación de novedad

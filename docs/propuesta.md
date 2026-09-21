@@ -1,25 +1,5 @@
 # Evaluación experimental de la extracción automática y la representación persistente de decisiones organizacionales y su evolución entre reuniones, frente a Recuperación Aumentada (RAG)
 
-> **Aviso de lectura.** Las tres partes que esta nota señalaba como superadas —la muestra de
-> **§5.0**, el riesgo principal de **§7** y las entradas de **§8.1**— fueron reescritas contra
-> la evidencia medida y ya no lo están. Quedan dos puntos que el cuerpo del documento aún no
-> incorpora y que deben leerse con reserva:
->
-> - **El eje de lengua materna** (§3 OE2, §5.1 y §6.3) sigue declarado como estratificación
->   obligatoria y como el eje "más relevante". Las decisiones **D7** y **D8** lo bajan a
->   **limitación reportada** y hacen del **sitio de grabación** la variable que se balancea:
->   en AMI la lengua materna está perfectamente anidada en el sitio y el bloque TS no tiene
->   ningún participante registrado en `participants.xml`. Además, §5.1 afirma que "no existe
->   cifra publicada" y que se computará: **ya está computada** — 91 nativos / 96 no nativos /
->   2 desconocidos sobre 189 participantes. Ver [`BACKLOG.md`](BACKLOG.md), P7.
-> - **§1.4 cita "Hsueh & Moore (2007)"** sin sufijo, mientras que §8.1 ya distingue **2007a**
->   y **2007b**. Falta determinar cuál de los dos trabajos aporta el conteo de 554 de 37.400
->   actos y añadir el sufijo correspondiente.
->
-> El resto de la reescritura pendiente está listado en [`BACKLOG.md`](BACKLOG.md), P7.
-
----
-
 ## 1. Definición del Problema
 
 ### 1.1 El fenómeno
@@ -50,7 +30,7 @@ La literatura establecida mide exhaustivamente la exactitud de la extracción en
 
 Un obstáculo previo, y poco reconocido, es que **"decisión" no es todavía un objetivo de anotación estable**. La evidencia publicada es contundente:
 
-- Hsueh & Moore (2007) anotaron actos de diálogo relacionados con decisiones en AMI: **554 de 37.400 actos, un 1,4%** del total.
+- Hsueh & Moore (2007a) anotaron actos de diálogo relacionados con decisiones en AMI: **554 de 37.400 actos, un 1,4%** del total.
 - Fernández et al. (2008) desarrollaron un esquema independiente sobre **las mismas 17 reuniones**, con acuerdo interno razonable (kappa 0,63–0,73 entre sus propios anotadores).
 - Al comparar ambos conjuntos de anotaciones sobre datos idénticos, Fernández et al. reportan **kappa negativo y sólo 12,22% de solapamiento**.
 
@@ -105,7 +85,7 @@ Cuantificar la capacidad de modelos de lenguaje de ejecución local para extraer
 
 - **Nivel decisión:** precisión, cobertura y F1, bajo un protocolo de alineamiento declarado explícitamente (§5.4).
 - **Nivel relación temporal:** exactitud de la etiqueta y, reportada por separado, **exactitud de la dirección** — si el sistema identifica correctamente cuál decisión revisa a cuál, o invierte el sentido.
-- **Estratificación obligatoria** por rol del hablante y por condición de hablante nativo/no nativo de inglés (§6.3).
+- **Estratificación obligatoria por rol del hablante** (§6.3). El eje nativo/no nativo de inglés **ya no es estratificación obligatoria**: baja a limitación declarada, porque la lengua materna está perfectamente anidada en el sitio de grabación (decisiones **D7** y **D8**; §5.1 y §6.3).
 
 ### OE3 — Medir la utilidad funcional en tres condiciones (Experimento B)
 
@@ -175,7 +155,7 @@ Los compromisos declarados no cambian, porque siguen siendo los correctos: todos
 
 - **Sesgo de dominio:** todas las reuniones del escenario tratan el mismo producto. La generalización a otros dominios organizacionales no es evaluable con este corpus y no se afirmará.
 - **Habla actuada:** los participantes representan roles asignados en un escenario controlado. Las decisiones son reales en cuanto actos conversacionales, pero las consecuencias organizacionales son simuladas.
-- **Composición lingüística:** el corpus incluye deliberadamente una alta proporción de hablantes no nativos de inglés. **No existe cifra publicada.** Es computable: el tercer carácter del identificador de participante codifica la lengua materna (E/D/O) y el archivo de recursos del corpus contiene el detalle. Se computará y se reportará como derivación propia — un aporte menor pero genuino, ya que ningún artículo la publica.
+- **Composición lingüística:** el corpus incluye deliberadamente una alta proporción de hablantes no nativos de inglés, y la cifra **ya está medida**: **189 participantes — 91 nativos de inglés, 96 no nativos y 2 desconocidos**. Ningún artículo del corpus la publica, de modo que se reporta como derivación propia. La fuente es el atributo `native_language` del archivo de recursos del corpus, no la heurística del tercer carácter del identificador de participante que esta propuesta suponía: esa heurística acierta en 187 de 189 casos, pero fabrica un valor para toda la serie TS3005, cuyos participantes no figuran en el archivo. Medido en el paso cero (`notebooks/00-jss-corpus-y-auditoria.ipynb`; avance 02, §4.5). Lo medido, además, cambia el uso del dato: la lengua materna está **perfectamente anidada en el sitio de grabación**, de modo que la composición lingüística es una **limitación declarada** del corpus y no un eje de estratificación (**D7**, **D8**; §6.3).
 - **Fuga de información:** la anotación de relaciones temporales se realiza **en orden cronológico dentro de cada serie**, sin acceso a reuniones posteriores al momento de anotar cada decisión. Análogamente, la extracción automática procesa las reuniones en orden y no puede consultar reuniones futuras.
 - **Segmentación por tópico como proxy:** se descarta. Hsueh & Moore reportan que los límites de discusión decisoria coinciden con límites de tópico **menos de la mitad de las veces**.
 
@@ -227,7 +207,7 @@ Mínimo 25 preguntas por estrato, construidas por una persona distinta de quien 
 
 ### 5.6 Métricas
 
-**Extracción (OE2).** Precisión, cobertura y F1 a nivel decisión bajo §5.4. Para relaciones temporales, se reportan por separado: existencia del enlace, tipo de relación y **dirección**. Estratificado por rol y por condición nativo/no nativo.
+**Extracción (OE2).** Precisión, cobertura y F1 a nivel decisión bajo §5.4. Para relaciones temporales, se reportan por separado: existencia del enlace, tipo de relación y **dirección**. Estratificado por **rol del hablante**; el eje nativo/no nativo no se estratifica y se reporta como limitación (§6.3).
 
 **Respuesta (OE3).** Corrección respecto de la referencia; **tasa de soporte de evidencia** (proporción de afirmaciones atribuibles a una fuente identificada); **tasa de citación correcta** (la fuente citada respalda efectivamente la afirmación — distinta de la anterior, y la que detecta el modo de falla más peligroso: respuesta correcta con cita que no la sustenta); y **corrección del rechazo** sobre E4.
 
@@ -287,12 +267,12 @@ Se operacionaliza como una propiedad medible, no como una aspiración: **toda de
 
 ### 6.3 Justicia y equidad
 
-Medición proactiva de desempeño desigual en la extracción, sobre dos ejes:
+Medición proactiva de desempeño desigual en la extracción. El **análisis primario es el rol del hablante**; la condición nativo / no nativo baja a **limitación declarada** (decisión **D7**).
 
-- **Rol del hablante** (Project Manager, Marketing Expert, User Interface Designer, Industrial Designer). Un sistema que extrae mejor las decisiones enunciadas por quien preside la reunión amplifica la jerarquía existente en el registro organizacional.
-- **Condición de hablante nativo / no nativo de inglés.** Este eje es el más relevante: tiene análogo directo en atributos protegidos en contextos reales, es computable desde los identificadores de participante, y el corpus fue construido con alta proporción de hablantes no nativos precisamente por su dificultad de reconocimiento. Una diferencia sistemática de cobertura en este eje sería un hallazgo de valor propio.
+- **Rol del hablante** (Project Manager, Marketing Expert, User Interface Designer, Industrial Designer). Es el eje primario, y su tasa base está medida: el PM concentra el 47,0 % de los actos de decisión atribuidos, proporción que se mantiene entre 44 % y 50 % en cada sitio por separado, lo que indica que es estructural y no un artefacto de la muestra. La pregunta que se reporta no es si la cobertura del PM es alta —el 47 % refleja el corpus—, sino **si el sistema lo favorece más de lo que ya lo favorece el material fuente**: cobertura del sistema por rol contra la proporción base del corpus. Un sistema que extrae mejor las decisiones enunciadas por quien preside la reunión amplifica la jerarquía existente en el registro organizacional.
+- **Condición de hablante nativo / no nativo de inglés — limitación declarada, no estratificación.** El eje conserva su interés: tiene análogo directo en atributos protegidos en contextos reales, y el corpus fue construido con alta proporción de hablantes no nativos precisamente por su dificultad de reconocimiento. Pero en AMI no es estratificable, y la razón no es de tamaño muestral: la lengua materna está **perfectamente anidada en el sitio de grabación** —Edinburgh casi todo nativo, Idiap mayoritariamente no nativo, y el bloque TNO sin un solo participante registrado en `participants.xml`—, de modo que cualquier diferencia atribuida a la lengua sería indistinguible de un efecto de sitio (**D7**, **D8**). Por eso la muestra se balancea por sitio (§5.0) y la composición lingüística se reporta como propiedad del corpus (§5.1). Declarar esta incapacidad medida es en sí mismo información: vale más que una estratificación que en realidad mide otra cosa y la disfraza de lengua.
 
-Ambos ejes se reportan aunque no se detecte diferencia; un resultado nulo con potencia declarada también es información.
+El eje de rol se reporta aunque no se detecte diferencia; un resultado nulo con potencia declarada también es información.
 
 ### 6.4 Responsabilidad
 
