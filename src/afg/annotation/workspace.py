@@ -81,6 +81,7 @@ __all__ = [
     "load_annotation_plan",
     "prepare_annotator_workspace",
     "question_bank_is_empty",
+    "series_has_annotated_work",
     "validate_annotator",
     "write_adjudication_log",
     "write_question_bank_template",
@@ -398,6 +399,41 @@ def file_contains_annotation(path: Path, kind: TaskKind) -> bool:
     _, rows = _read_rows(path)
     columns = [c for c in _human_columns_for(kind) if c != _IDENTITY_COLUMN]
     return any(row.get(column, "").strip() for row in rows for column in columns)
+
+
+def series_has_annotated_work(
+    series_id: str, *, paths: WorkspacePaths | None = None
+) -> tuple[Path, ...]:
+    """Every derived per-annotator file for ``series_id``, across Task A and Task B, that
+    already holds human annotation.
+
+    Guards ``afg gold build`` and ``afg gold candidates``, which regenerate the machine-
+    generated base file (``<series>.<kind>.csv``) from scratch by re-reading the AMI
+    abstractive summary. The base itself never carries annotation -- annotators work on
+    their own ``<series>.<kind>.<initials>.csv`` copy -- so this checks those derived files
+    instead, the same files :func:`file_contains_annotation` already knows how to inspect.
+
+    A non-empty result means regenerating the base would, silently:
+
+    1. Discard any ``compuesta`` split already recorded in a derived file (manual de
+       anotacion section 2) -- one summary sentence found to host several decisions, split
+       into child rows, rebuilt from the original sentence the moment the base regenerates.
+    2. Desynchronise that file's machine columns from the new base. ``afg gold validate``
+       compares every machine column cell-for-cell against the base, so this would make
+       every annotator's file fail validation for drift, through no fault of theirs.
+
+    Returns an empty tuple, never an error, when ``series_id`` has no derived files at all
+    -- the normal state before anyone has run ``afg gold prepare`` for it.
+    """
+    paths = paths or WorkspacePaths()
+    found: list[Path] = []
+    for kind in (TaskKind.DECISIONS, TaskKind.CANDIDATES):
+        directory = paths.directory_for(kind)
+        pattern = f"{series_id}.{kind.value}.*.csv"
+        for candidate in sorted(directory.glob(pattern)):
+            if file_contains_annotation(candidate, kind):
+                found.append(candidate)
+    return tuple(found)
 
 
 # --- prepare --------------------------------------------------------------------------------
