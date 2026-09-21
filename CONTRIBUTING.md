@@ -8,11 +8,11 @@ desarrollo/evaluación).
 
 ## 1. Quién es quién
 
-| Iniciales | Nombre | Rol en el proyecto |
-|---|---|---|
-| `jss` | Jason Sepúlveda S. | Mantenedor del repositorio; instrumento OpenKOS; adjudica los desacuerdos de la doble anotación de OE1 |
-| `gv` | Germán Vega | Anotador OE1 (Tareas A a D); valida el banco de preguntas |
-| `gm` | Gustavo Martínez | Anotador OE1 (Tareas A a D); escribe el banco de preguntas |
+| Iniciales | Nombre | GitHub | Rol en el proyecto |
+|---|---|---|---|
+| `jss` | Jason Sepúlveda S. | [`jasonssdev`](https://github.com/jasonssdev) | Mantenedor del repositorio; instrumento OpenKOS; adjudica los desacuerdos de la doble anotación de OE1 |
+| `gv` | Germán Vega | [`Vega-German`](https://github.com/Vega-German) | Anotador OE1 (Tareas A a D); valida el banco de preguntas |
+| `gm` | Gustavo Martínez | [`gmartinezbMCD`](https://github.com/gmartinezbMCD) | Anotador OE1 (Tareas A a D); escribe el banco de preguntas |
 
 El reparto sigue dos reglas del diseño: quien adjudica los desacuerdos de la
 doble anotación no anota, y quien escribe el banco de preguntas no lo valida ni

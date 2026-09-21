@@ -996,7 +996,7 @@ def gold_status(
             else:
                 verdict = f"[bold red]{len(progress.issues)} error(es)[/bold red]"
             table.add_row(
-                person.initials,
+                f"{person.initials} ({person.github})",
                 progress.series_id,
                 str(progress.phase),
                 f"{progress.decisions_filled}/{progress.decisions_total}",

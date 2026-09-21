@@ -82,18 +82,21 @@ _PLAN_CONFIG: dict[str, object] = {
                 "initials": "gv",
                 "name": "Germán Vega",
                 "role": "annotator",
+                "github": "Vega-German",
                 "phase3_series": ["ES3"],
             },
             {
                 "initials": "gm",
                 "name": "Gustavo Martínez",
                 "role": "annotator",
+                "github": "gmartinezbMCD",
                 "phase3_series": ["ES2"],
             },
             {
                 "initials": "jss",
                 "name": "Jason Sepúlveda",
                 "role": "maintainer",
+                "github": "jasonssdev",
                 "phase3_series": [],
             },
         ],
@@ -282,6 +285,17 @@ class TestGoldStatusFilter:
         assert "gv" in result.output
         assert "gm" in result.output
         assert "ES2" in result.output
+
+    def test_status_shows_the_github_handle_next_to_the_initials(
+        self, plan: AnnotationPlan, paths: WorkspacePaths, sources: WorkspacePaths
+    ) -> None:
+        prepare_annotator_workspace(plan, "gv", paths=sources)
+
+        runner = CliRunner()
+        result = runner.invoke(afg_cli.app, ["gold", "status", "--annotator", "gv"])
+
+        assert result.exit_code == 0, result.output
+        assert "gv (Vega-German)" in result.output
 
     def test_unknown_initials_fails_like_the_other_commands(
         self, plan: AnnotationPlan, paths: WorkspacePaths

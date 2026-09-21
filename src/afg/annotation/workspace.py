@@ -182,6 +182,7 @@ class Annotator:
     initials: str
     name: str
     role: str
+    github: str
     phase1_series: tuple[str, ...]
     phase2_series: tuple[str, ...]
     phase3_series: tuple[str, ...]
@@ -282,6 +283,7 @@ def load_annotation_plan(raw: Mapping[str, Any] | None = None) -> AnnotationPlan
                 initials=entry["initials"],
                 name=entry["name"],
                 role=role,
+                github=entry["github"],
                 phase1_series=phase1 if annotates else (),
                 phase2_series=phase2 if annotates else (),
                 phase3_series=tuple(entry.get("phase3_series", ())),

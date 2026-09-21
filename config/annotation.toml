@@ -47,6 +47,9 @@ questions_per_stratum = 25
 initials = "gv"
 name = "Germán Vega"
 role = "annotator"
+# GitHub login (sin `@`), para asignar issues/pull requests y mostrar el handle en
+# `afg gold status`.
+github = "Vega-German"
 # 120 decisions, 21 candidate pairs in phase 3. Fewer extra duties than raw counts
 # suggest: `gv` also does Tarea C and validates the >=100-question bank.
 phase3_series = ["IS1004", "IS1006", "IS1009", "TS3003", "ES2002"]
@@ -55,6 +58,9 @@ phase3_series = ["IS1004", "IS1006", "IS1009", "TS3003", "ES2002"]
 initials = "gm"
 name = "Gustavo Martínez"
 role = "annotator"
+# GitHub login (sin `@`), para asignar issues/pull requests y mostrar el handle en
+# `afg gold status`.
+github = "gmartinezbMCD"
 # 83 decisions, 31 candidate pairs in phase 3 -- 37 decisions fewer than `gv` because
 # `gm` also writes the whole question bank (~5 min per question, >=100 questions). The
 # split balances total hours, not rows.
@@ -64,6 +70,9 @@ phase3_series = ["TS3009", "TS3011", "IS1008", "ES2014"]
 initials = "jss"
 name = "Jason Sepúlveda"
 role = "maintainer"
+# GitHub login (sin `@`), para asignar issues/pull requests y mostrar el handle en
+# `afg gold status`.
+github = "jasonssdev"
 # Adjudicates the five double-annotated series and writes their adjudication logs.
 # Annotates nothing, by design.
 phase3_series = []

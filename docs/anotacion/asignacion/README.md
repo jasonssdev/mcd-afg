@@ -29,11 +29,11 @@
 
 ## Documentos personales
 
-| Persona | Rol | Documento |
-|---|---|---|
-| Germán Vega (`gv`) | Anotador; valida el banco de preguntas; Tarea C | [`tareas-gv.md`](tareas-gv.md) |
-| Gustavo Martínez (`gm`) | Anotador; escribe el banco de preguntas | [`tareas-gm.md`](tareas-gm.md) |
-| Jason Sepúlveda (`jss`) | Mantenedor; adjudica; no anota | [`tareas-jss.md`](tareas-jss.md) |
+| Persona | Rol | GitHub | Documento |
+|---|---|---|---|
+| Germán Vega (`gv`) | Anotador; valida el banco de preguntas; Tarea C | [`Vega-German`](https://github.com/Vega-German) | [`tareas-gv.md`](tareas-gv.md) |
+| Gustavo Martínez (`gm`) | Anotador; escribe el banco de preguntas | [`gmartinezbMCD`](https://github.com/gmartinezbMCD) | [`tareas-gm.md`](tareas-gm.md) |
+| Jason Sepúlveda (`jss`) | Mantenedor; adjudica; no anota | [`jasonssdev`](https://github.com/jasonssdev) | [`tareas-jss.md`](tareas-jss.md) |
 
 El reparto respeta las dos reglas del diseño (`CONTRIBUTING.md` §1): quien adjudica no
 anota, y quien escribe el banco de preguntas no lo valida.
