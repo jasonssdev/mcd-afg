@@ -12,10 +12,15 @@ decide algo, y se deja quieto.
   propio**, numerado `NNNN-adr-{nombre}.md`, con contexto, decisión y consecuencias. La
   secuencia de cuatro dígitos hace que el directorio se ordene en el orden en que se
   tomaron.
-- **Entrada D** — una decisión de **diseño o de método** que no cambia la arquitectura pero
-  sí cambia una cifra, un criterio o un procedimiento. Es **una fila** de la tabla de abajo,
-  con su evidencia al lado. No lleva archivo propio: su razonamiento largo, cuando existe,
-  está en un notebook o en un ADR.
+- **Entrada D** — una decisión de **diseño o de método** que cambia una cifra, un criterio o
+  un procedimiento. Es **una fila** de la tabla de abajo, con su evidencia al lado. No lleva
+  archivo propio: su razonamiento largo, cuando existe, está en un notebook o en un ADR.
+
+Los dos alcances no se excluyen. Una decisión que cambia una cifra **y además** tiene
+consecuencia arquitectónica lleva las dos cosas: su ADR, donde vive el razonamiento completo,
+y su fila D, que la deja en su sitio dentro de la secuencia. Cuando eso pasa, **el ADR es el
+canónico** y la fila es su entrada de índice. Es el caso de **D10** y el
+[ADR 0005](0005-adr-development-evaluation-split.md).
 
 ## La regla que impide que esto se pudra: es append-only
 
@@ -39,10 +44,14 @@ estados, ni casillas, ni cifras que un comando produzca. Lo que está pendiente 
 | [0004](0004-adr-oe1-series-selection.md) | Selección de las **14 series** de OE1 sobre el marco de resúmenes abstractivos, balanceadas por sitio de grabación; TS3012 inelegible por `summlink` incompleto |
 | [0005](0005-adr-development-evaluation-split.md) | División **desarrollo (3) / evaluación (11)** y revisión de las cuatro series de control. Reemplaza parte del 0004 |
 
-> **Duplicación conocida, sin resolver.** La decisión **D10** y el **ADR 0005** registran la
-> misma decisión —el split desarrollo / evaluación— en dos sitios. Conviene consolidarla en
-> uno solo; no se hace aquí, porque consolidar un registro append-only exige decidir cuál de
-> los dos es el canónico y dejar el otro apuntando a él.
+> **El ADR 0005 es el registro canónico del split desarrollo / evaluación.** La fila **D10**
+> dice lo mismo en una línea, y eso es deliberado: es su entrada de índice, no una segunda
+> versión. Ante cualquier discrepancia entre las dos, manda el ADR, que es el que lleva el
+> contexto, las alternativas rechazadas y las consecuencias.
+>
+> No se borra ni se reescribe D10, porque este registro es append-only y la tabla de abajo es
+> donde se lee la secuencia completa de decisiones en el orden en que se tomaron: quitarle
+> una fila dejaría un hueco justo donde está el hecho.
 
 ## Decisiones tomadas (no reabrir sin evidencia nueva)
 
