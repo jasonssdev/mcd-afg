@@ -106,8 +106,14 @@ serie de evaluación, y se vuelve a calibrar.
 
 ### Fase 2 — Series de control (ambos anotadores)
 
-Las cuatro de `control_series`: **ES2008, ES2016, IS1003, TS3005** (111 decisiones y 37
-pares candidatos entre las cuatro). Ambas personas anotan las cuatro, por separado.
+Las cuatro de `control_series`, **en este orden: ES2016 → IS1003 → TS3005 → ES2008**
+(111 decisiones y 37 pares candidatos entre las cuatro). Ambas personas anotan las cuatro,
+por separado.
+
+El orden no es alfabético ni arbitrario: sube de menor a mayor volumen de candidatos
+(4 → 8 → 11 → 14), para que la primera serie de control sea la más barata y la más cara
+quede para cuando la guía ya se domina. `config/annotation.toml` guarda `phase2_series` en
+ese mismo orden, y `afg gold setup` lo imprime así.
 
 **Una serie a la vez, con adjudicación después de cada una** — ver §3.
 
@@ -147,9 +153,9 @@ reparto equilibra horas totales, no filas.
 
 > **Después de cada serie de doble anotación, no al final.**
 
-Es decir: se cierra ES2015, se adjudica ES2015, y solo entonces empieza ES2008. Se cierra
-ES2008, se adjudica ES2008, y solo entonces empieza ES2016. Y así con las cinco series de
-doble anotación (ES2015 + las cuatro de control).
+Es decir: se cierra ES2015, se adjudica ES2015, y solo entonces empieza ES2016. Se cierra
+ES2016, se adjudica ES2016, y solo entonces empieza IS1003. Y así con las cinco series de
+doble anotación, en orden: **ES2015 → ES2016 → IS1003 → TS3005 → ES2008**.
 
 **La razón.** Un malentendido sistemático de la guía —dos personas que interpretan `refina`
 de forma distinta, o que discrepan sobre cuándo una frase es `compuesta`— no se manifiesta

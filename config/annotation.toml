@@ -18,8 +18,15 @@ adjudicator = "jss"
 # the pilot, so a bad first kappa costs nothing; phase 2 is the four control series whose
 # kappas are reported. Both are double-annotated; phase 3 is single annotation, split
 # per person below.
+#
+# EVERY series list in this file is in EXECUTION order, not alphabetical. `afg gold setup`
+# prints them in this order and the annotator works down that list, so the order is an
+# instruction, not a formatting choice. Phase 2 climbs 4 -> 8 -> 11 -> 14 candidate pairs:
+# the annotator meets the cheapest control series first and the costliest last. Sorting
+# these lists alphabetically hands them ES2008, the heaviest, on day one -- which is why
+# tests/test_workspace.py pins the order by volume rather than by name.
 phase1_series = ["ES2015"]
-phase2_series = ["ES2008", "ES2016", "IS1003", "TS3005"]
+phase2_series = ["ES2016", "IS1003", "TS3005", "ES2008"]
 
 [annotation.recall_sample]
 # Tarea C (manual section 5): adjudicate a random sample of pairs the blocker REJECTED, to

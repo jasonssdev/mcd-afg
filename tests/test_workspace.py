@@ -201,13 +201,30 @@ class TestLoadAnnotationPlan:
         gv = real_plan.annotator("gv")
         gm = real_plan.annotator("gm")
         assert gv.phase1_series == ("ES2015",)
-        assert gv.phase2_series == ("ES2008", "ES2016", "IS1003", "TS3005")
+        assert gv.phase2_series == ("ES2016", "IS1003", "TS3005", "ES2008")
         assert gv.phase3_series == ("IS1004", "IS1006", "IS1009", "TS3003", "ES2002")
         assert gm.phase3_series == ("TS3009", "TS3011", "IS1008", "ES2014")
         assert real_plan.recall_sample.owner == "gv"
         assert real_plan.recall_sample.series_id == "IS1004"
         assert real_plan.question_bank.author == "gm"
         assert real_plan.question_bank.validator == "gv"
+
+    def test_phase2_is_ordered_by_ascending_candidate_volume(self) -> None:
+        """Phase 2 is a list in EXECUTION order, not an alphabetical set.
+
+        ``SeriesAssignment`` promises execution order, and `afg gold setup` prints the
+        series in exactly this order, so whoever reads that output starts with the series
+        listed first. The control series climb 4 -> 8 -> 11 -> 14 candidate pairs, so the
+        annotator calibrates on the cheapest series and carries the costly one last. Sorting
+        this list alphabetically silently hands them ES2008 -- the heaviest -- on day one.
+        """
+        real_plan = load_annotation_plan()
+        candidate_pairs = {"ES2016": 4, "IS1003": 8, "TS3005": 11, "ES2008": 14}
+        volumes = [candidate_pairs[s] for s in real_plan.phase2_series]
+        assert volumes == sorted(volumes), (
+            f"phase2_series debe ir de menor a mayor volumen de candidatos, "
+            f"y va {list(real_plan.phase2_series)} ({volumes})"
+        )
 
     def test_every_series_is_covered_exactly_once_across_the_team(self) -> None:
         real_plan = load_annotation_plan()
