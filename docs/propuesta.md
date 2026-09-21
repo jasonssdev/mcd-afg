@@ -1,21 +1,22 @@
 # Evaluación experimental de la extracción automática y la representación persistente de decisiones organizacionales y su evolución entre reuniones, frente a Recuperación Aumentada (RAG)
 
-> **Aviso de lectura.** Este documento no se reescribió tras la auditoría de datos. Tres
-> partes quedaron superadas y no deben citarse tal como están:
+> **Aviso de lectura.** Las tres partes que esta nota señalaba como superadas —la muestra de
+> **§5.0**, el riesgo principal de **§7** y las entradas de **§8.1**— fueron reescritas contra
+> la evidencia medida y ya no lo están. Quedan dos puntos que el cuerpo del documento aún no
+> incorpora y que deben leerse con reserva:
 >
-> - **§5.0**, la muestra de OE1/Experimento B ("seis series… 24 reuniones", "90 a 100
->   decisiones") — superada por la decisión **D1**: **14 series, 56 reuniones, 343
->   decisiones**, medido 2026-09-20. Cifras vigentes en [`BACKLOG.md`](BACKLOG.md) y en
->   [`decisions/0004-adr-oe1-series-selection.md`](decisions/0004-adr-oe1-series-selection.md).
-> - **§7**, el riesgo principal declarado — superado por la decisión **D9**: el cuello de
->   botella real fue el punto de operación del bloqueador, no el volumen de enlaces entre
->   reuniones. Ver [`BACKLOG.md`](BACKLOG.md).
-> - **§8.1**, bibliografía — "Hsueh & Moore (2007)" son dos trabajos distintos y necesitan
->   los sufijos a/b, y el título de Cai & O'Connor (2025) está truncado; ya corregido en
->   [`avances/04-jss-bibliografia.md`](avances/04-jss-bibliografia.md).
+> - **El eje de lengua materna** (§3 OE2, §5.1 y §6.3) sigue declarado como estratificación
+>   obligatoria y como el eje "más relevante". Las decisiones **D7** y **D8** lo bajan a
+>   **limitación reportada** y hacen del **sitio de grabación** la variable que se balancea:
+>   en AMI la lengua materna está perfectamente anidada en el sitio y el bloque TS no tiene
+>   ningún participante registrado en `participants.xml`. Además, §5.1 afirma que "no existe
+>   cifra publicada" y que se computará: **ya está computada** — 91 nativos / 96 no nativos /
+>   2 desconocidos sobre 189 participantes. Ver [`BACKLOG.md`](BACKLOG.md), P7.
+> - **§1.4 cita "Hsueh & Moore (2007)"** sin sufijo, mientras que §8.1 ya distingue **2007a**
+>   y **2007b**. Falta determinar cuál de los dos trabajos aporta el conteo de 554 de 37.400
+>   actos y añadir el sufijo correspondiente.
 >
-> La reescritura de la metodología está pendiente ([`BACKLOG.md`](BACKLOG.md), P7); este
-> aviso solo señala qué leer con reserva mientras tanto.
+> El resto de la reescritura pendiente está listado en [`BACKLOG.md`](BACKLOG.md), P7.
 
 ---
 
@@ -148,16 +149,27 @@ Se declaran antes de la ejecución para evitar reinterpretación posterior de lo
 
 ### 5.0 Selección del corpus y verificación previa
 
-**Corpus:** AMI Meeting Corpus (Carletta et al., 2006; Carletta, 2007). ~100 horas, en torno a 170 reuniones, de las cuales aproximadamente dos tercios corresponden al escenario de diseño de un control remoto de televisión, organizado en **series de cuatro reuniones con los mismos cuatro participantes** (*Project kick-off*, *Functional design*, *Conceptual design*, *Detailed design*). Licencia **CC BY 4.0** desde abril de 2017 — nótese que los artículos originales describen una licencia anterior, más restrictiva; debe citarse la página de licencia vigente, no los artículos.
+**Corpus:** AMI Meeting Corpus (Carletta et al., 2006; Carletta, 2007). ~100 horas, en torno a 170 reuniones, de las cuales aproximadamente dos tercios corresponden al escenario de diseño de un control remoto de televisión, organizado en **series de cuatro reuniones con los mismos cuatro participantes** (*Project kick-off*, *Functional design*, *Conceptual design*, *Detailed design*). Licencia **CC BY 4.0**. La página de licencia declara esos términos pero **no declara fecha de entrada en vigor** (verificado el 2026-09-20); abril de 2017 es la fecha de publicación del paquete de anotaciones `ami_public_manual_1.6.2.zip`, de modo que la fecha a menudo repetida es una inferencia sobre cuándo empezaron a regir los términos, no una afirmación del licenciante, y no debe presentarse como fecha de la licencia. Debe citarse la página de licencia vigente, no los artículos originales, que describen una licencia anterior, más restrictiva.
 
 **Muestra, en dos niveles:**
 
-- **Experimento A (extracción):** las **47 reuniones** que cuentan con la capa *Decision Discussion Segmentation*. No requieren series completas.
-- **Experimento B y OE1 (evolución):** las **series de cuatro reuniones cuyos cuatro miembros tienen anotación de decisiones**. Según el inventario de anotación publicado, son seis: **ES2015, ES2016, IS1004, IS1006, IS1008, TS3005** — 24 reuniones.
+- **Experimento A (extracción):** las **47 reuniones** que cuentan con la capa *Decision Discussion Segmentation* (DDS). No requieren series completas. El conteo se verificó en el paso cero por descubrimiento directo de los archivos de anotación, no por el inventario publicado.
+- **Experimento B y OE1 (evolución):** **14 series completas — 56 reuniones y 343 frases de decisión.** No son las 6 series que llevan la capa DDS, sino una selección hecha sobre el marco muestral del resumen abstractivo, que es el que el paso cero obligó a adoptar (ver más abajo). El criterio de selección, la evidencia que lo respalda y las alternativas descartadas están en [ADR 0004](decisions/0004-adr-oe1-series-selection.md): `summlink` presente en las cuatro reuniones de la serie —sin él una decisión no puede anclarse a evidencia y falla la condición 3 de §5.2—, inclusión obligatoria de las 6 series DDS como subconjunto de validación, balance por sitio de grabación (5 ES / 5 IS / 4 TS) y, dentro de cada sitio, volumen de decisiones. La lista queda congelada en `config/corpus.toml`, sección `[oe1]`; cambiarla invalidaría cualquier anotación producida bajo ella.
 
-**Paso cero, antes de comprometer el diseño:** descargar las anotaciones manuales y **verificar empíricamente** (a) que las seis series están completas y sus archivos son legibles, (b) cuántas decisiones distintas contienen, y (c) **cuántos enlaces entre reuniones existen realmente**. Este último número es el que determina la viabilidad del proyecto: si las series contienen del orden de veinte relaciones temporales en total, el diseño debe ampliarse antes de ejecutarse, no después.
+**Partición desarrollo / evaluación.** Tres cosas se ajustan en este diseño —los parámetros de segmentación y recuperación de C1 (§5.3), la grilla del umbral τ de alineamiento (§5.4) y el punto de operación del bloqueador de candidatos— y ninguna puede ajustarse sobre los datos cuyos resultados se reportan. De ahí la partición fijada en el [ADR 0005](decisions/0005-adr-development-evaluation-split.md): **desarrollo, ES2015, IS1004 y TS3009 — 77 decisiones y 11 pares candidatos**; **evaluación, las otras 11 series — 266 decisiones y 81 pares candidatos**. No es una partición de entrenamiento y prueba: nada se entrena aquí; separa los datos usados para *elegir* de los usados para *reportar*. Las cifras de desarrollo pueden ilustrar el método, nunca entrar en una tabla de resultados.
 
-**Potencia estadística — declarada, no omitida.** Con ~4 segmentos decisorios por reunión (proporción derivable de Hsueh & Moore), 24 reuniones producen del orden de **90 a 100 decisiones** y un número de enlaces cruzados menor y desconocido a priori. Esto es suficiente para estimaciones con intervalos de confianza reportados y para pruebas pareadas por pregunta, e **insuficiente para afirmaciones de significancia sobre diferencias pequeñas**. Todos los resultados se reportarán con intervalos de confianza por *bootstrap*, y ninguna conclusión se apoyará en diferencias que caigan dentro de ellos.
+**Paso cero — ejecutado el 2026-09-20, antes de comprometer el diseño.** Se descargaron las anotaciones manuales y se verificaron empíricamente las tres cosas que el diseño daba por supuestas. No fue un trámite: su resultado cambió el marco muestral.
+
+- **(a) Completitud y legibilidad.** Las capas se inventariaron por conteo directo de archivos: 142 resúmenes abstractivos, 137 `summlink`, 47 DDS, 556 de actos de diálogo y 687 de palabras. Las 6 series DDS están completas y sus archivos parsean sin error.
+- **(b) Cuántas decisiones distintas contienen.** Aquí el paso cero modificó el diseño. El marco muestral previsto —la capa DDS— ofrece **6 series completas y 136 decisiones**; el marco alternativo —los encabezados `DECISIONS` del resumen abstractivo— ofrece **33 series completas y 649 decisiones**. Se adoptó el segundo (decisión **D1**) y la capa DDS pasa a **subconjunto de validación** en las series que llevan ambas (**D2**). De ese marco ampliado salen las 14 series de la muestra.
+- **(c) Cuántos enlaces entre reuniones existen realmente.** Es el número que determina la viabilidad del proyecto y el único de los tres que **sigue sin medirse directamente**. Lo medido es su cota superior y el trabajo de adjudicación que implica: las 14 series contienen **3.071 pares de decisiones entre reuniones**, de los cuales el bloqueador de candidatos selecciona **92 (3,0 %)**. Cuántos de esos 92 son relaciones reales es lo que la anotación humana de OE1 debe establecer; la estimación provisional disponible se discute a continuación y sus consecuencias, en §7.
+
+**Potencia estadística — declarada, no omitida.** La muestra medida no hace simplemente más fuerte el argumento anterior: **desplaza la restricción vinculante**, y por eso conviene separar los dos niveles.
+
+- **Nivel decisión (OE2, Experimento A).** La base es de **343 frases de decisión medidas**, 266 de ellas en evaluación — no la estimación previa de entre 90 y 100 decisiones, derivada de ~4 segmentos decisorios por reunión sobre la muestra anterior de 24. Es una base materialmente mayor y deja de ser el factor limitante: sostiene estimaciones con intervalos de confianza reportados y pruebas pareadas por pregunta.
+- **Nivel relación (OE3 / estrato E3, Experimento B).** La restricción no es el número de decisiones sino el de **relaciones reales entre reuniones**, y ese número **todavía no está establecido**. La única estimación disponible procede de adjudicar contra transcripción los **11 pares candidatos de desarrollo**: tasa de positivos **45,5 % (5/11), IC 95 % de Wilson [21,3 % – 72,0 %]**, que extrapolada a los 81 candidatos de evaluación da **≈ 37 relaciones reales, IC [17 – 58]**. Esa estimación es **provisional y no es conjunto de referencia**: las etiquetas las puso un procedimiento automático, no un anotador, y n = 11 es demasiado pequeño para cerrar el intervalo. Sirve para decidir si vale la pena invertir las horas de anotación, no para reportar un resultado.
+
+Los compromisos declarados no cambian, porque siguen siendo los correctos: todos los resultados se reportarán con intervalos de confianza por *bootstrap*; ninguna conclusión se apoyará en diferencias que caigan dentro de ellos; y no se harán **afirmaciones de significancia sobre diferencias pequeñas**.
 
 ### 5.1 Auditoría de datos y riesgos declarados
 
@@ -310,7 +322,15 @@ Declarados por adelantado para acotar las conclusiones defendibles.
 - **Robustez ante error de reconocimiento automático del habla.** Se trabaja sobre transcripciones manuales. La degradación bajo ASR es una extensión natural, no parte de este trabajo.
 - **Afirmaciones de significancia sobre diferencias pequeñas**, por la limitación de potencia declarada en §5.0.
 
-**Riesgo principal del proyecto y su mitigación.** Que el número de enlaces temporales en las seis series resulte demasiado bajo para sostener el estrato E3. Mitigación: el paso cero de §5.0 lo determina **antes** de comprometer el diseño; si el conteo es insuficiente, se amplía la muestra a series con anotación parcial, anotando manualmente las reuniones faltantes, o se reformula E3 como análisis de casos con reporte cualitativo. Esta decisión se toma en la primera fase, no al final.
+**Riesgo principal del proyecto y su mitigación.** Que el número de **relaciones reales entre reuniones** no alcance para sostener el estrato E3. El riesgo ya no se formula sobre las 6 series de la versión anterior de esta propuesta, porque la muestra cambió (§5.0); la evidencia disponible lo vuelve además más estrecho y mejor documentado. E3 exige **un mínimo de 25 preguntas** (§5.5). La estimación provisional de §5.0 da **≈ 37 relaciones reales en las 11 series de evaluación, con IC 95 % [17 – 58]**: **el valor central deja holgura; la cota inferior no alcanza el mínimo.** E3 es por tanto **plausible pero no establecido**, y con n = 11 pares adjudicados eso es exactamente todo lo que puede afirmarse.
+
+**Mitigación en curso.** Estrechar el intervalo adjudicando una serie completa de **evaluación** contra transcripción. Es trabajo humano de anotación, no una repetición del cómputo: el intervalo es ancho porque hay pocos pares adjudicados, no porque el procedimiento sea inestable. Sólo se ha adjudicado desarrollo, porque leer el contenido de evaluación antes de anotarlo lo contamina.
+
+**Alternativas si la adjudicación confirma la cota inferior.** Siguen siendo válidas las dos ya previstas: ampliar la muestra a las 18 series de reserva —que quedaron deliberadamente sin inspeccionar para esto—, anotando manualmente lo que falte; o reformular E3 como análisis de casos con reporte cualitativo. La decisión se toma en la primera fase, no al final.
+
+> **Punto de decisión abierto.** Las dos alternativas no son equivalentes y la evidencia disponible no elige entre ellas. **(a) Ampliar la muestra** conserva el contraste cuantitativo con el que se pone a prueba H1, pero suma horas de anotación humana a un presupuesto ya comprometido (≈ 10–12 h para OE1) y obliga a declarar que el tamaño muestral se fijó después de ver un resultado parcial. **(b) Reformular E3 como análisis de casos** no añade horas y es defendible como aporte descriptivo —el vacío de §1.6 se cubre igual, porque el conjunto de referencia existe con independencia del resultado experimental—, pero deja H1 sin prueba cuantitativa en el único estrato diseñado para probarla. Debe resolverse cuando la adjudicación de la serie de evaluación entregue el intervalo estrechado, y no antes.
+
+**Una restricción relacionada, y no menor.** El punto de operación del bloqueador de candidatos fue una decisión de diseño con costo medido (decisión **D9**), no un detalle de implementación: exigiendo sólo coeficiente de solapamiento ≥ 0,30, selecciona **712 de 3.071 pares (23,2 %)**, del orden de **18 horas** de adjudicación humana; añadiendo el mínimo absoluto `|A∩B| ≥ 2`, **92 (3,0 %)**, del orden de **2,3 horas**. Ese punto de operación **acota por arriba** las relaciones que la anotación puede llegar a encontrar, de modo que su cobertura no es un supuesto sino algo que debe medirse: la muestra de pares rechazados prevista en el plan de anotación existe exactamente para eso.
 
 ---
 
@@ -323,8 +343,8 @@ Declarados por adelantado para acotar las conclusiones defendibles.
 - Carletta, J., Ashby, S., Bourban, S., Flynn, M., Guillemot, M., Hain, T., Kadlec, J., Karaiskos, V., Kraaij, W., Kronenthal, M., Lathoud, G., Lincoln, M., Lisowska, A., McCowan, I., Post, W., Reidsma, D., & Wellner, P. (2006). The AMI Meeting Corpus: A Pre-announcement. En *Machine Learning for Multimodal Interaction (MLMI 2005)*, LNCS 3869, 28–39. Springer. DOI 10.1007/11677482_3
 - Carletta, J. (2007). Unleashing the killer corpus: experiences in creating the multi-everything AMI Meeting Corpus. *Language Resources and Evaluation*, 41(2), 181–190. DOI 10.1007/s10579-007-9040-x — *autoría individual; revista, no LREC*
 - Renals, S., Hain, T., & Bourlard, H. (2007). Recognition and Understanding of Meetings: The AMI and AMIDA Projects. *IEEE ASRU 2007*.
-- Hsueh, P.-Y., & Moore, J. D. (2007). What Decisions Have You Made?: Automatic Decision Detection in Meeting Conversations. *NAACL-HLT 2007*, 25–32. ACL Anthology N07-1004.
-- Hsueh, P.-Y., & Moore, J. D. (2007). Automatic Decision Detection in Meeting Speech. *MLMI 2007*, LNCS 4892, 168–179. Springer. DOI 10.1007/978-3-540-78155-4_15 — *Springer fecha el volumen en 2008; son dos artículos distintos, no confundir con el anterior*
+- Hsueh, P.-Y., & Moore, J. D. (2007a). What Decisions Have You Made?: Automatic Decision Detection in Meeting Conversations. *NAACL-HLT 2007*, 25–32. ACL Anthology N07-1004.
+- Hsueh, P.-Y., & Moore, J. D. (2007b). Automatic Decision Detection in Meeting Speech. *MLMI 2007*, LNCS 4892, 168–179. Springer. DOI 10.1007/978-3-540-78155-4_15 — *Springer fecha el volumen en 2008; son dos artículos distintos, no confundir con el anterior*
 - Fernández, R., Frampton, M., Ehlen, P., Purver, M., & Peters, S. (2008). Modelling and Detecting Decisions in Multi-party Dialogue. *Proc. 9th SIGdial Workshop on Discourse and Dialogue*, 156–163. ACL Anthology W08-0125.
 - Bui, T. H., Frampton, M., Dowding, J., & Peters, S. (2009). Extracting Decisions from Multi-Party Dialogue Using Directed Graphical Models and Semantic Similarity. *Proc. SIGDIAL 2009*, 235–243. ACL Anthology W09-3934.
 - Murray, G., Kleinbauer, T., Poller, P., Becker, T., Renals, S., & Kilgour, J. (2009). Extrinsic Summarization Evaluation: A Decision Audit Task. *ACM Transactions on Speech and Language Processing*, 6(2).
@@ -347,7 +367,7 @@ Declarados por adelantado para acotar las conclusiones defendibles.
 - Mihindukulasooriya, N., Tiwari, S., Enguix, C. F., & Lata, K. (2023). Text2KGBench: A Benchmark for Ontology-Driven Knowledge Graph Generation from Text. *ISWC 2023*, LNCS, 247–265. DOI 10.1007/978-3-031-47243-5_14
 - Zhu, Y., Wang, X., Chen, J., Qiao, S., Ou, Y., Yao, Y., Deng, S., Chen, H., & Zhang, N. (2024). LLMs for knowledge graph construction and reasoning: recent capabilities and future opportunities. *World Wide Web*, 27(5), art. 58. DOI 10.1007/s11280-024-01297-w
 - Jarnac, L., Chabot, Y., & Couceiro, M. (2025). Uncertainty Management in the Construction of Knowledge Graphs: A Survey. *Transactions on Graph Data and Knowledge*, 3(1), 3:1–3:48. DOI 10.4230/TGDK.3.1.3
-- Cai, E., & O'Connor, B. (2025). Understanding the Effect of Knowledge Graph Extraction Error on Downstream Graph Analyses. arXiv:2506.12367 — **preprint sin revisión por pares**
+- Cai, E., & O'Connor, B. (2025). Understanding the Effect of Knowledge Graph Extraction Error on Downstream Graph Analyses: A Case Study on Affiliation Graphs. arXiv:2506.12367 — **preprint sin revisión por pares**
 - Zhang, Y., & Li, S. (2026). ConsistencyGate: Preventing Memory Contamination in LLM Agents via Self-Consistency Admission Control. arXiv:2607.22962 — **preprint sin revisión por pares; ver nota en §9**
 
 ### 8.4 Alucinación, atribución y evaluación
