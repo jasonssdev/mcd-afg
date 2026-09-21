@@ -27,7 +27,6 @@ VERIFIED at paso cero (2026-09-20), by hand, against the extracted corpus at
 
 from __future__ import annotations
 
-import csv
 from pathlib import Path
 
 from pydantic import BaseModel, Field
@@ -37,6 +36,7 @@ from rich.table import Table
 from afg.corpus.layers import AnnotationLayer, discover_layer_files, discover_meetings_with_layer
 from afg.corpus.nxt import NxtParseError, iter_elements, parse_xml
 from afg.shared.config import load_corpus_config
+from afg.shared.csvio import open_csv_writer
 from afg.shared.logging import get_logger
 from afg.shared.paths import TABLES_DIR
 
@@ -398,8 +398,7 @@ def write_csv(inventory: CorpusInventory, out_dir: Path = TABLES_DIR) -> Path:
     """Write the per-meeting inventory to ``reports/tables/paso_cero_inventory.csv``."""
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / INVENTORY_CSV_NAME
-    with out_path.open("w", newline="") as fh:
-        writer = csv.writer(fh)
+    with open_csv_writer(out_path) as writer:
         writer.writerow(
             [
                 "series_id",

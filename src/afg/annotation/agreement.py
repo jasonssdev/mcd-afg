@@ -16,6 +16,7 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict, Field
 
 from afg.evaluation.metrics import cohen_kappa
+from afg.shared.csvio import open_csv_writer
 
 # Manual de anotacion section 6 (Tarea D): the closed relation-type label set includes
 # "no_relacionada", which means "the blocker was wrong, there is no link" -- a pair with
@@ -249,8 +250,7 @@ def write_agreement_csv(result: SeriesAgreementResult, out_path: Path) -> Path:
     One row per axis, never a combined row -- see :class:`SeriesAgreementResult`.
     """
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    with out_path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.writer(handle)
+    with open_csv_writer(out_path, encoding="utf-8") as writer:
         writer.writerow(_AGREEMENT_CSV_COLUMNS)
         writer.writerow(
             [

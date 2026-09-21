@@ -1,0 +1,24 @@
+# Normaliza los finales de linea a LF para los artefactos de texto de este repositorio.
+#
+# Las tablas anotadas bajo data/processed/ las van a editar a mano dos personas en Excel
+# o LibreOffice, posiblemente en Windows: esas herramientas escriben CRLF sin importar lo
+# que haga nuestro codigo. Sin esta normalizacion, cada pull request de cada anotador
+# mostraria el archivo COMPLETO como modificado (todas las lineas) solo por el final de
+# linea, aunque el contenido real cambiado sea una sola celda.
+#
+# Regla general primero (git detecta texto y normaliza a LF), reglas especificas despues
+# para que ganen sobre la general -- git resuelve por la ULTIMA coincidencia del archivo,
+# asi que el orden es deliberado: lo generico va arriba, lo especifico abajo.
+* text=auto eol=lf
+
+*.csv text eol=lf
+*.md text eol=lf
+*.py text eol=lf
+*.toml text eol=lf
+*.json text eol=lf
+*.ipynb text eol=lf
+
+# Binarios explicitos: nunca deben pasar por normalizacion de texto.
+*.png binary
+*.zip binary
+*.pdf binary
