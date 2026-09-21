@@ -54,7 +54,7 @@ Los cuatro objetivos específicos, en una línea cada uno:
 La propuesta completa está en [`docs/propuesta.md`](docs/propuesta.md); es la referencia del
 proyecto y se cita por sección. Varias decisiones posteriores la contradicen porque la
 auditoría de datos lo obligó; todas están registradas con su evidencia en
-[`docs/BACKLOG.md`](docs/BACKLOG.md).
+[`docs/decisions/README.md`](docs/decisions/README.md).
 
 > **Este repositorio no es el motor.** El motor de compilación es
 > [OpenKOS](https://github.com/jasonssdev/openkos), desarrollado aparte. Aquí vive el
@@ -163,7 +163,7 @@ Unas dos horas de lectura bastan para entender el proyecto. En este orden:
 | 2 | [`docs/propuesta.md`](docs/propuesta.md), secciones 1 a 4 | El problema, los objetivos y las hipótesis, tal como se propusieron | 30 min |
 | 3 | [`docs/avances/01-jss-problema.md`](docs/avances/01-jss-problema.md) y [`03-jss-objetivos.md`](docs/avances/03-jss-objetivos.md) | La versión vigente de problema y objetivos, con lo que cambió y por qué | 20 min |
 | 4 | [`notebooks/00-jss-corpus-y-auditoria.ipynb`](notebooks/00-jss-corpus-y-auditoria.ipynb), solo leer | Qué se midió en el corpus y qué decisiones obligó a tomar. Se lee en GitHub con sus salidas; no hace falta ejecutarlo | 30 min |
-| 5 | [`docs/BACKLOG.md`](docs/BACKLOG.md), sección "Decisiones ya tomadas" | Las diez decisiones que no se reabren sin evidencia nueva | 10 min |
+| 5 | [`docs/decisions/README.md`](docs/decisions/README.md), sección "Decisiones tomadas" | Las decisiones que no se reabren sin evidencia nueva | 10 min |
 | 6 | [`docs/anotacion/README.md`](docs/anotacion/README.md) | Qué hace cada persona en la anotación y con qué archivos | 15 min |
 | 7 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Cómo se envía el trabajo y las convenciones del repositorio | 15 min |
 
@@ -213,13 +213,12 @@ git checkout main && git fetch upstream && git merge upstream/main && git push o
 |---|---|---|
 | `README.md` | Esta guía | Todos, el primer día |
 | `CONTRIBUTING.md` | Flujo de trabajo, roles, convenciones (nombres, idioma, cifras, etiquetas humanas) | Todos, antes de la primera PR |
-| `docs/propuesta.md` | La propuesta de tesis completa. Se cita por sección (§1.4, §5.4). No se edita: sus revisiones pendientes están en el backlog | Todos, para entender el diseño original |
+| `docs/propuesta.md` | La propuesta de tesis completa. Se cita por sección (§1.4, §5.4). No se edita: sus revisiones pendientes se siguen en el issue #20 | Todos, para entender el diseño original |
 | `docs/avances/` | Los seis documentos vivos: problema, fuente de datos, objetivos, bibliografía, ética, metodología. Cada uno con versión e historial | Todos. Son la versión vigente del proyecto y de aquí salen las entregas |
 | `docs/entregables/` | Lo que se entregó al curso, congelado tal como se envió: guiones de video, informe de la semana 4 | Quien prepara una entrega; se agrega, no se edita |
 | `docs/anotacion/` | **El trabajo humano**: quién anota qué, el manual paso a paso de los CSV, la definición del constructo | Anotadores y adjudicador |
 | `docs/protocols/` | El protocolo de alineamiento entre decisiones extraídas y de referencia (máquina) | Quien trabaje en OE2 |
-| `docs/decisions/` | Registros de decisiones de arquitectura (ADR): por qué el repositorio es como es | Quien quiera saber por qué algo se hizo así |
-| `docs/BACKLOG.md` | Decisiones tomadas con su evidencia, resultados del paso cero, y lo pendiente por prioridad | Todos, cada semana |
+| `docs/decisions/` | El registro de decisiones: los ADR de arquitectura y la tabla D1–D11 de decisiones de método con su evidencia. Append-only | Quien quiera saber por qué algo se hizo así |
 | `notebooks/` | El registro académico: qué se hizo, qué se midió y por qué se decidió. Versionados con sus salidas | Todos; se leen en GitHub sin ejecutar |
 | `bibliography/` | `refs.bib` (49 referencias verificadas), criterios de inclusión, tabla de cribado y notas por referencia | Quien cite algo |
 | `config/` | Parámetros versionados: series elegidas, partición desarrollo/evaluación, modelos, umbrales | Se lee; se cambia solo con un ADR |
@@ -246,8 +245,8 @@ La AFG se cursa en tres cursos de ocho semanas cada uno:
 | **AFG3** | OE4, análisis de errores, intervalos bootstrap, conclusiones | OE4 |
 
 **Extensiones si hay tiempo:** segunda escala de modelo (H3), validación humana ampliada.
-Esta tabla está sincronizada con `docs/BACKLOG.md` y `docs/avances/03-jss-objetivos.md`; si
-cambia, se actualiza en los tres lugares. El punto de decisión de AFG2 y el mínimo por
+Esta tabla es la versión canónica; `docs/avances/03-jss-objetivos.md` la repite y se
+actualiza junto con ella. El punto de decisión de AFG2 y el mínimo por
 objetivo están en [`docs/avances/03-jss-objetivos.md`](docs/avances/03-jss-objetivos.md),
 sección "Alcance por curso".
 
@@ -351,7 +350,7 @@ Falta la anotación humana, y con ella todo lo demás.
 | **OE3** | Comparación C1 / C2 / C3 | No empezado | AFG2 |
 | **OE4** | Atribución del error a su etapa de origen | Código listo; nada que correr | AFG3 |
 
-Lo pendiente, por prioridad, está en [`docs/BACKLOG.md`](docs/BACKLOG.md).
+Lo pendiente, por prioridad, está en los **issues de GitHub**.
 
 ---
 

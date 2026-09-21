@@ -65,9 +65,10 @@ d = "detailed_design"
 # sampled on the OE1 reference set (14 series, 56 meetings, 343 decisions -- see `[oe1]` and
 # thesis section 5.0), because OE2 measures extraction quality against an annotated reference
 # set and 18 of these 47 meetings fall outside it. The DDS layer is an independent VALIDATION
-# subset (decision D2 in docs/BACKLOG.md): 29 of the 47 fall inside OE1 -- 4/4 for ES2015,
-# ES2016, IS1004, IS1006, IS1008 and TS3005, 3/4 for IS1003, 2/4 for ES2002 -- which gives a
-# second, independent annotation of those conversations to compare the reference set against.
+# subset (decision D2 in docs/decisions/README.md): 29 of the 47 fall inside OE1 -- 4/4 for
+# ES2015, ES2016, IS1004, IS1006, IS1008 and TS3005, 3/4 for IS1003, 2/4 for ES2002 -- which
+# gives a second, independent annotation of those conversations to compare the reference set
+# against.
 # The count below stays 47 because it remains true of the corpus, whatever Experiment A samples.
 # VERIFIED at paso cero (2026-09-20): `afg corpus inventory` against the real download at
 # data/raw/ami/ reports dds_meeting_count == 47, corpus-wide, matching this expectation
@@ -91,11 +92,13 @@ required_for_goldset = [
 [paso_cero]
 # The three things thesis section 5.0 required verifying before committing the design.
 # `afg corpus inventory` implements this check; results are in
-# reports/tables/paso_cero_inventory.csv and docs/BACKLOG.md.
+# reports/tables/paso_cero_inventory.csv.
+# The decision log lives at docs/decisions/README.md (it replaced docs/BACKLOG.md,
+# retired 2026-09-21); the measured figures are produced by `uv run afg corpus inventory`.
 verify = [
   "The six series (ES2015, ES2016, IS1004, IS1006, IS1008, TS3005) are complete: all four\nmeetings per series are present on disk and their annotation files parse without error.",
   "How many distinct decisions the six series actually contain. Measured 2026-09-20: 136\ndecisions in the six DDS series; 343 in the 14 OE1 series.",
-  "How many real cross-meeting relation candidates exist. This number determines project\nviability for the E3 (evolution) question stratum (thesis section 7); see docs/BACKLOG.md\nfor the measured figures (92 candidates after blocking, provisional viability estimate).",
+  "How many real cross-meeting relation candidates exist. This number determines project\nviability for the E3 (evolution) question stratum (thesis section 7); run `afg corpus inventory`\nfor the measured figures (92 candidates after blocking, provisional viability estimate).",
 ]
 
 [oe1]

@@ -25,8 +25,8 @@ registrado y verificado:
 | Fuente | Qué aporta |
 |---|---|
 | [`../../notebooks/`](../../notebooks/) | Las cifras y los gráficos, ya ejecutados |
-| [`../BACKLOG.md`](../BACKLOG.md) | Las decisiones tomadas y su evidencia |
-| [`../decisions/`](../decisions/) | El razonamiento largo de cada decisión |
+| [`../decisions/README.md`](../decisions/README.md) | Las decisiones tomadas y su evidencia |
+| [`../decisions/`](../decisions/) | El razonamiento largo de cada decisión, en los ADR |
 | La plataforma del curso | La rúbrica y el formato de cada entrega |
 
 **Ninguna cifra se calcula aquí.** Si aparece un número, tiene que existir en un notebook que

@@ -104,5 +104,5 @@ query-focused summarization* (arXiv:2404.16130) [Preprint, sin revisión por par
 |---|---|
 | Hsueh & Moore, 1,4 % de actos anotados como decisión | [`../propuesta.md`](../propuesta.md) §1.4; `bibliography/refs.bib` `hsueh2007whatdecisions` |
 | Fernández et al., kappa negativo y 12,22 % de solapamiento | [`../propuesta.md`](../propuesta.md) §1.4; `bibliography/refs.bib` `fernandez2008modelling` |
-| `decisionlink`: 47 archivos, 288 elementos, cero punteros a resúmenes | [`../BACKLOG.md`](../BACKLOG.md), sección P7 |
+| `decisionlink`: 47 archivos, 288 elementos, cero punteros a resúmenes | Documentación de `ami_public_manual_1.6.2` (`corpusdoc/annot_decisionlink.html`, `AMI-metadata.xml`, `resource.xml`) y conteo directo sobre `decision/manual/`, verificado el 2026-09-20 |
 | Formulación del problema | [`../propuesta.md`](../propuesta.md) §1.5 (reformulada) |

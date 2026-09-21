@@ -228,8 +228,9 @@ Qué mirar para decidir:
 - **Si la segunda muestra fuera de otra serie**, deja de estimar lo mismo: IS1004 es
   desarrollo, y muestrear una serie de evaluación para esto significa leer contenido de
   evaluación. Tendría que justificarse y registrarse.
-- Cualquiera que sea la decisión, se escribe: en `docs/BACKLOG.md` si cambia una cifra
-  publicada, o en un ADR si cambia el procedimiento.
+- Cualquiera que sea la decisión, se escribe: como entrada nueva en
+  `docs/decisions/README.md` si cambia una cifra publicada, o como ADR si cambia el
+  procedimiento.
 
 ---
 

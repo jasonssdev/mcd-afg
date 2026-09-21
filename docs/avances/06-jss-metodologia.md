@@ -37,7 +37,8 @@ de respuesta, soporte de evidencia, citación correcta, corrección del rechazo,
 amortizado (§7).
 
 **Umbrales operativos provisionales.** Se fijan ahora para que el paso 1 sea cuantitativo;
-se revisan en AFG2 con los primeros datos y cualquier cambio se registra en el backlog.
+se revisan en AFG2 con los primeros datos y cualquier cambio se registra en
+`docs/decisions/`.
 
 | Qué | Umbral | Qué pasa si no se cumple |
 |---|---|---|
@@ -172,7 +173,7 @@ desde `src/afg/` a través de un notebook, no entra en la tesis.
 |---|---|
 | Las 8 secciones y el diseño experimental completo | [`../propuesta.md`](../propuesta.md) §5 |
 | Cronología verificada vía `startTime` | [`../../config/corpus.toml`](../../config/corpus.toml), sección `[corpus.phases]` |
-| Bloqueador: coeficiente ≥0,30 y `\|A∩B\|≥2`; 712 vs 92 | [`../BACKLOG.md`](../BACKLOG.md), decisiones D5 y D9 |
+| Bloqueador: coeficiente ≥0,30 y `\|A∩B\|≥2`; 712 vs 92 | [`../decisions/README.md`](../decisions/README.md), decisiones D5 y D9 |
 | Piloto: 3/6 casos confirmados; botón turbo falso | [`../anotacion/manual-anotacion-oe1.md`](../anotacion/manual-anotacion-oe1.md) §3; [`../../notebooks/01-jss-viabilidad-e3.ipynb`](../../notebooks/01-jss-viabilidad-e3.ipynb) |
-| Viabilidad de E3 (provisional): 45,5 % [21,3–72,0 %], proyección ~37 [17–58] | [`../../notebooks/01-jss-viabilidad-e3.ipynb`](../../notebooks/01-jss-viabilidad-e3.ipynb); [`../BACKLOG.md`](../BACKLOG.md) P9 |
+| Viabilidad de E3 (provisional): 45,5 % [21,3–72,0 %], proyección ~37 [17–58] | [`../../notebooks/01-jss-viabilidad-e3.ipynb`](../../notebooks/01-jss-viabilidad-e3.ipynb) |
 | Regla "todo número reproducible desde `src/afg/`" | [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md) §7.1 |

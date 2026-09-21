@@ -98,7 +98,8 @@ inglés — el que prefieras, pero sé consistente dentro de un mismo PR.
 tipo(alcance opcional): descripción breve en modo imperativo
 ```
 
-Ejemplos: `fix(blocker): exigir |A∩B| >= 2`, `docs: actualizar BACKLOG con D9`.
+Ejemplos: `fix(blocker): exigir |A∩B| >= 2`, `docs: registrar D9 en el registro de
+decisiones`.
 
 ### Autoría
 
@@ -159,15 +160,15 @@ celda de notebook que calcula algo es una fuente de verdad paralela sin test —
 en este proyecto una extrapolación hecha fuera del paquete estimó ~170
 candidatos; correr la función real sobre las 14 series dio 712 (solo con el
 coeficiente de solapamiento); y esa cifra solo bajó a la final de 92 después
-de una decisión de diseño, exigir además `|A∩B| >= 2` (ver `docs/BACKLOG.md`,
-decisión D9). Correr el código real no bastaba: llegar a 92 exigió además
+de una decisión de diseño, exigir además `|A∩B| >= 2` (ver
+`docs/decisions/README.md`, decisión D9). Correr el código real no bastaba: llegar a 92 exigió además
 decidir el filtro.
 
 | Capa | Contiene | Regla |
 |---|---|---|
 | `src/afg/` | Todo el cómputo | Con test. Fuente única de verdad para cada cifra |
 | `notebooks/` | La narrativa | Importa, llama, grafica, explica. **No define lógica** |
-| `docs/` | Decisiones y protocolos | ADRs, backlog, manual de anotación |
+| `docs/` | Decisiones y protocolos | ADRs, registro de decisiones, manual de anotación |
 
 Después de implementar algo en `src/afg/`, revisa si la serie de notebooks
 sigue contando la historia completa. Si no, el trabajo no está terminado.
@@ -224,7 +225,7 @@ configuración. Las etiquetas de anotación (`introduce`, `reafirma`, `refina`,
 `revierte`, `reemplaza`, `no_relacionada`) se mantienen en español dentro del
 código: son el conjunto de etiquetas que define la tesis. La propuesta
 (`docs/propuesta.md`) es el texto original y no se edita; sus revisiones
-pendientes se anotan en `docs/BACKLOG.md` (P7).
+pendientes se siguen en el issue #20.
 
 ### 7.5 Cifras
 
@@ -232,7 +233,7 @@ pendientes se anotan en `docs/BACKLOG.md` (P7).
   extrapolar desde una muestra pequeña sin decirlo y sin reportar un
   intervalo.
 - La verdad medida vive en **tests**, no hardcodeada en código de producción.
-- Cuando una cifra se corrige, se corrige **en todas partes** — un backlog con
+- Cuando una cifra se corrige, se corrige **en todas partes** — un registro con
   dos respuestas a la misma pregunta es peor que ninguno.
 
 ### 7.6 Las etiquetas del conjunto de referencia las pone un humano
@@ -285,9 +286,9 @@ evaluación**.
   cifra** y actualizar cada lugar (§7.5).
 - Una PR que agrega o cambia cómputo debe decir **qué notebook lo cubre**
   (§7.1).
-- El backlog de tareas vive en **issues de GitHub**;
-  [`docs/BACKLOG.md`](docs/BACKLOG.md) es el registro de decisiones tomadas y
-  su evidencia, no una lista de tareas.
+- El trabajo pendiente vive en **issues de GitHub**;
+  [`docs/decisions/README.md`](docs/decisions/README.md) es el registro de
+  decisiones tomadas y su evidencia, no una lista de tareas, y es *append-only*.
 - **`docs/avances/` cambia; `docs/entregables/` se congela.** Los documentos
   vivos (problema, objetivos, metodología...) se versionan y actualizan a
   medida que el proyecto avanza. Lo que efectivamente se entrega —guiones de

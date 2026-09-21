@@ -58,7 +58,8 @@ preserva comparabilidad con la literatura.
 
 ### 4.1 Marco muestral
 
-Se midieron dos marcos posibles y se eligió el primero (decisión D1 del backlog): **33 series
+Se midieron dos marcos posibles y se eligió el primero (decisión D1 del registro de
+decisiones): **33 series
 completas** con resumen abstractivo en sus cuatro reuniones (649 decisiones), frente a sólo
 **6 series** con la capa DDS completa (136 decisiones). La capa DDS no se descarta: pasa a
 **subconjunto de validación** dentro de las series que la tienen (D2). De las 33, **32**
@@ -107,8 +108,9 @@ perder el **caso de regresión** del bloqueador: el par del botón turbo, `IS100
 `IS1004d` (D9).
 
 Ese par **no es una relación confirmada**. La verificación contra transcripción mostró que la
-reversión que el resumen abstractivo afirmaba nunca ocurrió (§5; [`../BACKLOG.md`](../BACKLOG.md)
-P8), y el caso se conserva precisamente por su forma léxica: es el par de solape más exigente
+reversión que el resumen abstractivo afirmaba nunca ocurrió (§5;
+[`../../notebooks/01-jss-viabilidad-e3.ipynb`](../../notebooks/01-jss-viabilidad-e3.ipynb)),
+y el caso se conserva precisamente por su forma léxica: es el par de solape más exigente
 medido en el piloto —solapamiento 0,400 frente a Jaccard 0,118 (D5)— y por eso acota el punto
 de operación por ambos lados, umbral ≤ 0,40 **y** mínimo ≤ 2. Que la relación resultara falsa
 no debilita la prueba de regresión: lo que el caso fija es la sensibilidad del bloqueador a
@@ -196,14 +198,14 @@ cita, y confirma con más fuerza la decisión de no usarlo.
 |---|---|
 | Licencia CC BY 4.0 (verificada en la página oficial el 20-09-2026), tamaño del paquete | [`../../config/corpus.toml`](../../config/corpus.toml) |
 | Capas: 142/137/47/556/687/54 archivos | [`../../notebooks/00-jss-corpus-y-auditoria.ipynb`](../../notebooks/00-jss-corpus-y-auditoria.ipynb) |
-| Marco muestral 33/649 vs 6/136; D1, D2 | [`../BACKLOG.md`](../BACKLOG.md) |
+| Marco muestral 33/649 vs 6/136; D1, D2 | [`../decisions/README.md`](../decisions/README.md) |
 | Selección de 14 series, criterio de balance por sitio | [`../decisions/0004-adr-oe1-series-selection.md`](../decisions/0004-adr-oe1-series-selection.md) |
 | Split desarrollo/evaluación, control de doble anotación | [`../decisions/0005-adr-development-evaluation-split.md`](../decisions/0005-adr-development-evaluation-split.md) |
-| Los cuatro N (56, 343, 3.071, 92) | [`../../config/corpus.toml`](../../config/corpus.toml), sección `[oe1]`; [`../BACKLOG.md`](../BACKLOG.md) |
+| Los cuatro N (56, 343, 3.071, 92) | [`../../config/corpus.toml`](../../config/corpus.toml), sección `[oe1]`; [`../README.md`](../README.md), sección "Los cuatro N" |
 | 91/96/2 participantes; anidamiento lengua/sitio; TS sin `participants.xml` | [`../../notebooks/00-jss-corpus-y-auditoria.ipynb`](../../notebooks/00-jss-corpus-y-auditoria.ipynb) |
 | Autoría por rol (PM 47,0 % etc.) | [`../../notebooks/00-jss-corpus-y-auditoria.ipynb`](../../notebooks/00-jss-corpus-y-auditoria.ipynb) |
 | Anclaje a evidencia 317/343 (92,4 %) | [`../../notebooks/00-jss-corpus-y-auditoria.ipynb`](../../notebooks/00-jss-corpus-y-auditoria.ipynb) |
 | Proxy de tópico: 9,0 % / 16,5 % | [`../../notebooks/00-jss-corpus-y-auditoria.ipynb`](../../notebooks/00-jss-corpus-y-auditoria.ipynb) |
-| Bloqueador: 712/3.071 con sólo coeficiente, 92 con mínimo absoluto | [`../BACKLOG.md`](../BACKLOG.md) P2; decisión D9 |
+| Bloqueador: 712/3.071 con sólo coeficiente, 92 con mínimo absoluto | [`../decisions/README.md`](../decisions/README.md), decisión D9 |
 | Botón turbo: falso positivo del resumen abstractivo | [`../anotacion/manual-anotacion-oe1.md`](../anotacion/manual-anotacion-oe1.md) §3 |
-| Caso IS1004b → IS1004c no seleccionado por el bloqueador | [`../BACKLOG.md`](../BACKLOG.md) P8; [`../../notebooks/01-jss-viabilidad-e3.ipynb`](../../notebooks/01-jss-viabilidad-e3.ipynb) |
+| Caso IS1004b → IS1004c no seleccionado por el bloqueador | [`../../notebooks/01-jss-viabilidad-e3.ipynb`](../../notebooks/01-jss-viabilidad-e3.ipynb) |
