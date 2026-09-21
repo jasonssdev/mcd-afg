@@ -93,11 +93,7 @@ def main(log_level: str = typer.Option("INFO", help="Logging level.")) -> None:
 # --- corpus -----------------------------------------------------------------------------
 
 
-@corpus_app.command("download")
-def corpus_download(
-    yes: bool = typer.Option(False, "--yes", help="Skip the confirmation prompt."),
-) -> None:
-    """Fetch and extract the AMI manual annotations (CC BY 4.0). Prints the licence first."""
+def _print_corpus_licence() -> None:
     cfg = load_corpus_config()
     licence = cfg["corpus"]["licence"]
     console.print(
@@ -111,6 +107,16 @@ def corpus_download(
         f"[bold]Approximate size:[/bold] {cfg['corpus']['annotations']['approximate_size_mb']} MB"
     )
 
+
+def _confirm_and_download_corpus(yes: bool) -> None:
+    """Print the licence, ask for confirmation unless ``yes``, then download.
+
+    Shared by ``corpus download`` and ``gold setup`` so the licence text and the
+    confirmation are asked in exactly one place. Exits the process (code 1) on decline or
+    on download failure.
+    """
+    _print_corpus_licence()
+
     if not yes and not typer.confirm("Proceed with download?"):
         console.print("Aborted.")
         raise typer.Exit(code=1)
@@ -122,6 +128,14 @@ def corpus_download(
         raise typer.Exit(code=1) from exc
 
     console.print(f"Downloaded {result.bytes_downloaded} bytes, extracted to {result.extracted_to}")
+
+
+@corpus_app.command("download")
+def corpus_download(
+    yes: bool = typer.Option(False, "--yes", help="Skip the confirmation prompt."),
+) -> None:
+    """Fetch and extract the AMI manual annotations (CC BY 4.0). Prints the licence first."""
+    _confirm_and_download_corpus(yes)
 
 
 @corpus_app.command("inventory")
@@ -617,9 +631,10 @@ def gold_recall_sample(
 
 # --- gold: per-annotator workspace (docs/anotacion/asignacion/) -----------------------------
 #
-# These five commands exist so an annotator never copies, renames, or remembers anything.
-# All the logic lives in afg.annotation.workspace; this layer only parses options, prints
-# Spanish, and picks an exit code.
+# These six commands exist so an annotator never copies, renames, or remembers anything.
+# All the logic lives in afg.annotation.workspace (and, for `setup`, its sibling module
+# afg.annotation.setup); this layer only parses options, prints Spanish, and picks an exit
+# code.
 
 
 def _plan_or_exit() -> AnnotationPlan:
@@ -648,6 +663,147 @@ def _short(path: Path) -> str:
         return str(path.relative_to(PROJECT_ROOT))
     except ValueError:
         return str(path)
+
+
+@gold_app.command("setup")
+def gold_setup(
+    annotator: str = typer.Option(..., "--annotator", help="Iniciales del anotador, p. ej. gv."),
+    yes: bool = typer.Option(
+        False, "--yes", help="Salta la confirmación de la licencia del corpus (paso 1)."
+    ),
+) -> None:
+    """De un clon nuevo a "abre este archivo y empieza", en un solo comando.
+
+    Corre, en orden, saltando lo que ya esté hecho: descarga el corpus AMI (pide
+    confirmación explícita de la licencia CC BY 4.0 y del tamaño de la descarga, salvo
+    que pases --yes), genera las 171 transcripciones, y prepara tu espacio de trabajo --
+    nunca con --force, así que jamás borra anotación ya hecha. Termina diciendo
+    exactamente qué archivo abrir primero.
+    """
+    from afg.annotation.setup import CorpusDownloadDeclinedError, run_setup
+    from afg.annotation.workspace import TaskKind, UnknownAnnotatorError
+
+    plan = _plan_or_exit()
+
+    def confirm_corpus_download() -> bool:
+        _print_corpus_licence()
+        if yes:
+            return True
+        return typer.confirm("Proceed with download?")
+
+    try:
+        outcome = run_setup(
+            plan,
+            annotator,
+            paths=_workspace_paths(),
+            ami_root=AMI_DIR,
+            transcripts_dir=TRANSCRIPTS_DIR,
+            manifest_dir=TABLES_DIR,
+            confirm_corpus_download=confirm_corpus_download,
+            download=download_annotations,
+            render=render_meetings,
+            discover=discover_meeting_ids,
+        )
+    except UnknownAnnotatorError as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    except CorpusDownloadDeclinedError as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    except DownloadError as exc:
+        console.print(f"[bold red]Download failed:[/bold red] {exc}")
+        raise typer.Exit(code=1) from exc
+
+    # --- 1/3 corpus ---
+    if outcome.corpus_already_present:
+        console.print(f"[green]1/3 El corpus ya está en {_short(AMI_DIR)}: se salta.[/green]")
+    else:
+        result = outcome.corpus_download
+        assert result is not None  # not present -> confirmed -> downloaded, or we'd have raised
+        console.print(
+            f"[bold]1/3 Corpus descargado[/bold]: {result.bytes_downloaded} bytes en "
+            f"{_short(result.extracted_to)}."
+        )
+
+    # --- 2/3 transcripts ---
+    if outcome.transcripts_already_rendered:
+        console.print(
+            f"[green]2/3 Las transcripciones ya están en {_short(TRANSCRIPTS_DIR)}: "
+            "se salta.[/green]"
+        )
+    else:
+        render_result = outcome.transcripts_render
+        assert render_result is not None
+        console.print(
+            f"[bold]2/3 {len(render_result.meeting_ids)} transcripción(es) generadas[/bold] "
+            f"en {_short(TRANSCRIPTS_DIR)}."
+        )
+
+    # --- 3/3 workspace ---
+    prep = outcome.prepare
+    if outcome.is_maintainer:
+        person = plan.annotator(annotator)
+        console.print(
+            f"[yellow]3/3 {person.name} (`{annotator}`) no anota ninguna serie: "
+            "adjudica.[/yellow]\n"
+            "Por diseño, quien adjudica no anota (CONTRIBUTING.md §1). Lo que sí te toca:\n"
+            "  uv run afg gold status\n"
+            "  uv run afg gold adjudicate --series <ID>   (tras cada serie doble)"
+        )
+        return
+
+    if prep.created:
+        console.print(f"[bold]3/3 Creados {len(prep.created)} archivo(s):[/bold]")
+        for workspace_file in prep.created:
+            console.print(f"  fase {workspace_file.phase}  {_short(workspace_file.target)}")
+    if prep.skipped_annotated:
+        console.print(
+            f"[yellow]3/3 Respetados {len(prep.skipped_annotated)} archivo(s) que ya "
+            "tienen trabajo hecho (no se tocaron):[/yellow]"
+        )
+        for workspace_file in prep.skipped_annotated:
+            console.print(f"  {_short(workspace_file.target)}")
+    if prep.missing_sources:
+        console.print(
+            "[bold red]3/3 Faltan archivos base; esas series no se prepararon:[/bold red]"
+        )
+        for workspace_file in prep.missing_sources:
+            command = (
+                "build" if workspace_file.kind.value == "decisions" else workspace_file.kind.value
+            )
+            console.print(
+                f"  {_short(workspace_file.source)}  ->  uv run afg gold {command} "
+                f"--series {workspace_file.series_id}"
+            )
+
+    if not prep.created and not prep.skipped_annotated:
+        console.print("[bold red]No se creó ningún archivo.[/bold red]")
+        raise typer.Exit(code=1)
+
+    first = outcome.first_file
+    if first is None:
+        console.print(
+            f"[bold red]{annotator} no tiene ninguna serie asignada en "
+            "config/annotation.toml.[/bold red]"
+        )
+        raise typer.Exit(code=1)
+
+    partner = (
+        _short(_workspace_paths().target(TaskKind.CANDIDATES, first.series_id, annotator))
+        if first.kind is TaskKind.DECISIONS
+        else _short(_workspace_paths().target(TaskKind.DECISIONS, first.series_id, annotator))
+    )
+    console.print(
+        "\n[bold]Qué hacer ahora.[/bold]\n"
+        f"  1. Lee la transcripción de la serie {first.series_id} (fase {first.phase}, tu "
+        f"primera) en {_short(TRANSCRIPTS_DIR)}/{first.series_id}*.md antes de llenar una "
+        "sola fila -- anotar solo desde el resumen es el error que más cuesta corregir.\n"
+        f"  2. Abre {_short(first.target)} y llena las columnas humanas (luego {partner} "
+        "para la Tarea B de la misma serie).\n"
+        f"  3. Cuando cierres esa serie: uv run afg gold validate --annotator {annotator} "
+        f"--series {first.series_id}\n"
+        "  4. Sin errores -> abre el PR de esa serie (una serie por PR)."
+    )
 
 
 @gold_app.command("prepare")

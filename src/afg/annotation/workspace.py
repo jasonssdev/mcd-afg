@@ -78,6 +78,7 @@ __all__ = [
     "WorkspaceFile",
     "WorkspacePaths",
     "adjudication_has_resolutions",
+    "expected_files",
     "load_annotation_plan",
     "prepare_annotator_workspace",
     "question_bank_is_empty",
@@ -451,14 +452,19 @@ class PrepareOutcome:
     missing_sources: tuple[WorkspaceFile, ...]
 
 
-def _expected_files(
+def expected_files(
     plan: AnnotationPlan, annotator: Annotator, paths: WorkspacePaths
 ) -> list[WorkspaceFile]:
-    """Every file this person must fill, in execution order.
+    """Every file this person must fill, in execution order: phase 1 before phase 2 before
+    phase 3, and within one series Task A (decisions) before Task B (candidates).
 
     Both Task A and Task B files carry the initials in every phase, including phase 3
     where only one person annotates: the filename should always answer "who labelled
     this", and a name whose shape depends on the phase is a name somebody will get wrong.
+
+    Public because :func:`afg.annotation.setup.run_setup` reuses this exact order to name
+    the first file an annotator should open -- computing it a second, slightly different
+    way would be a second place for that order to drift from ``prepare``'s.
     """
     files: list[WorkspaceFile] = []
     for assignment in annotator.assignments:
@@ -522,7 +528,7 @@ def prepare_annotator_workspace(
     overwritten: list[WorkspaceFile] = []
     missing: list[WorkspaceFile] = []
 
-    for workspace_file in _expected_files(plan, annotator, paths):
+    for workspace_file in expected_files(plan, annotator, paths):
         if not workspace_file.source.exists():
             missing.append(workspace_file)
             continue

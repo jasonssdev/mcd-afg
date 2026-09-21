@@ -240,7 +240,7 @@ def _count_dds_segments_and_flags(path: Path) -> tuple[int, int, int, list[str]]
     return segment_count, external_count, recap_count, []
 
 
-def _corpus_is_present(ami_root: Path) -> bool:
+def corpus_is_present(ami_root: Path) -> bool:
     """Whether ``ami_root`` holds a real download, not just the tracked scaffold dir.
 
     ``data/raw/ami/`` ships a ``.gitkeep`` placeholder so the directory exists in a fresh
@@ -263,7 +263,7 @@ def build_inventory(ami_root: Path) -> CorpusInventory:
         CorpusNotDownloadedError: if ``ami_root`` does not exist, or exists but holds
             nothing beyond the tracked ``.gitkeep`` placeholder.
     """
-    if not _corpus_is_present(ami_root):
+    if not corpus_is_present(ami_root):
         raise CorpusNotDownloadedError(ami_root)
 
     cfg = load_corpus_config()

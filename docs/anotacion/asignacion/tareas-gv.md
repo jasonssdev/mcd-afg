@@ -14,18 +14,22 @@ muestra de recall de la Tarea C, y validar el banco de preguntas que escribe Gus
 ## Tu día a día en tres comandos
 
 ```bash
-uv run afg gold prepare  --annotator gv                    # crea tus archivos, ya nombrados
-uv run afg gold validate --annotator gv                     # revisa todas tus series asignadas
+uv run afg gold setup    --annotator gv                    # una vez: deja todo listo
+uv run afg gold validate --annotator gv --series <ID>       # al cerrar cada serie
 uv run afg gold status   --annotator gv                     # tu propio avance (lectura)
 ```
 
-`prepare` genera cada `<serie>.decisions.gv.csv` y `<serie>.candidates.gv.csv` con las
-columnas de máquina ya llenas y las tuyas vacías — nunca copies ni renombres un CSV a mano.
-Correrlo de nuevo no borra tu trabajo: un archivo con anotación se respeta, salvo que pases
-`--force`. `validate` sin `--series` recorre todas tus series asignadas; agrega `--series
-<ID>` para revisar solo la serie cuyo PR vas a abrir. Si hay un error sale con código
-distinto de cero y te dice fila y columna exactas. `status --annotator gv` es solo lectura;
-te muestra tu propio avance, serie por serie, sin abrir un CSV.
+`setup` se corre **una sola vez**: descarga el corpus (con confirmación de la licencia),
+genera las transcripciones y crea cada `<serie>.decisions.gv.csv` y
+`<serie>.candidates.gv.csv` con las columnas de máquina ya llenas y las tuyas vacías —
+nunca copies ni renombres un CSV a mano. Termina diciéndote exactamente qué archivo abrir
+primero. Si vuelves a correrlo, salta lo que ya esté hecho y nunca borra tu trabajo: un
+archivo con anotación se respeta. Si alguna vez necesitas recrear un archivo puntual
+(por ejemplo porque su base cambió), sigue disponible `afg gold prepare --annotator gv`.
+`validate` con `--series <ID>` revisa solo la serie cuyo PR vas a abrir; sin `--series`
+recorre todas tus series asignadas. Si hay un error sale con código distinto de cero y te
+dice fila y columna exactas. `status --annotator gv` es solo lectura; te muestra tu propio
+avance, serie por serie, sin abrir un CSV.
 
 ---
 
