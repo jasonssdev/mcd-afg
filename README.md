@@ -138,7 +138,7 @@ uv sync --group dev --group notebooks
 
 ```bash
 uv run afg --help     # el CLI del proyecto responde
-uv run pytest -q      # los tests pasan (437 al momento de escribir esto; el número real crece)
+uv run pytest -q      # los tests pasan (438 al momento de escribir esto; el número real crece)
 ```
 
 ### 3.3 Descarga el corpus
@@ -225,7 +225,7 @@ git checkout main && git fetch upstream && git merge upstream/main && git push o
 | `data/` | `raw/` (corpus, ignorado por git), `interim/`, `processed/` (los CSV de anotación) | Anotadores escriben en `processed/` |
 | `reports/` | Tablas y figuras generadas por el código | Se regeneran; no se editan a mano |
 | `src/afg/` | El código: ingesta del corpus, conjunto de referencia, bloqueo de candidatos, kappa, alineamiento, métricas | Quien programe. Toda cifra del proyecto sale de aquí |
-| `tests/` | Tests que fijan las cifras medidas como regresiones (437 al momento de escribir esto; corre `uv run pytest -q` para el número vigente) | Corren antes de cada PR |
+| `tests/` | Tests que fijan las cifras medidas como regresiones (438 al momento de escribir esto; corre `uv run pytest -q` para el número vigente) | Corren antes de cada PR |
 
 **Qué revisar en una pull request ajena.** Que los tests pasen; que ninguna cifra se calcule
 en un notebook o documento en vez de en `src/afg/`; que las etiquetas del conjunto de
