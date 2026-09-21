@@ -365,9 +365,19 @@ def decisions_from_abstractive(ami_root: Path, series_id: str) -> list[Decision]
     several decisions is split into ``<decision_id>-1``, ``-2``, ... child rows, and the
     parent sentence id then maps to N decision ids. Propagating such a split into the
     candidate pairs -- deciding which child a pair should now point at, or whether the pair
-    should fan out into N pairs -- is an OPEN PROBLEM. This function does not solve it and
-    must not be read as if it did: it regenerates candidates from the raw sentences, so
-    running it after a split silently discards the split.
+    should fan out into N pairs -- remains unsolved: this function still regenerates
+    candidates from the raw sentences and has no idea how to reconcile them with a split
+    that already exists.
+
+    What is no longer true is that running it after a split loses that work silently. The
+    CLI caller, ``afg gold candidates``, refuses to write this function's output at all
+    once any ``<series_id>.decisions.<iniciales>.csv`` or
+    ``<series_id>.candidates.<iniciales>.csv`` already holds annotation
+    (:func:`afg.annotation.workspace.series_has_annotated_work`): an existing ``compuesta``
+    split, and every annotator's machine columns that ``afg gold validate`` compares
+    against the regenerated base, now survive by default. Only ``--force`` discards them.
+    The reconciliation problem above is still open -- ``--force`` does not solve it, it
+    just turns losing the split into an explicit, named choice instead of an accidental one.
 
     Candidates generated from these raw sentences are NOT the final gold input: they are
     good enough to exercise and measure the blocker (P2) now, but the real Tarea B/C input

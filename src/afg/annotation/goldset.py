@@ -415,6 +415,15 @@ def build_gold_decisions(ami_root: Path, series_id: str) -> list[GoldDecisionRow
     (:func:`_looks_compound`, :func:`_looks_short`) and ``sin_evidencia``, all of which are
     hints for a human triage pass, never a substitute for it.
 
+    Always rebuilds from the raw corpus and knows nothing about any annotation already in
+    progress for ``series_id`` -- that guard lives one layer up. The CLI caller, ``afg
+    gold build``, refuses to write this function's output at all once any
+    ``<series_id>.decisions.<iniciales>.csv`` or ``<series_id>.candidates.<iniciales>.csv``
+    already holds annotation (:func:`afg.annotation.workspace.series_has_annotated_work`),
+    because overwriting the base out from under a filled-in copy would desynchronise that
+    copy's machine columns from the new base -- exactly what ``afg gold validate`` compares
+    cell-for-cell. Only ``--force`` bypasses it.
+
     Returns an empty list (never raises) when the corpus or the series is missing or has
     no DECISIONS sentences -- callers (the CLI) are responsible for turning that into an
     actionable error message.

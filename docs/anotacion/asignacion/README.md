@@ -80,8 +80,12 @@ uv run afg gold build      --series <ID>   # -> data/processed/decisions/<ID>.de
 uv run afg gold candidates --series <ID>   # -> data/processed/relations/<ID>.candidates.csv
 ```
 
-No hay nada que hacer en esta fase. Nadie vuelve a correr estos comandos sobre una serie ya
-anotada: regenerarla borra el trabajo humano.
+No hay nada que hacer en esta fase. Si alguien vuelve a correr estos comandos sobre una
+serie que ya tiene archivos de anotador con trabajo cargado, `afg gold build` y `afg gold
+candidates` se niegan a regenerar la base: perder la división de una fila `compuesta` o
+desalinear las columnas de máquina que `afg gold validate` compara contra la base rompería
+la anotación de todo el mundo, no solo la de quien la cargó. Solo `--force` regenera, y
+avisa qué archivos quedan desalineados.
 
 ### Fase 1 — Calibración sobre ES2015 (ambos anotadores)
 

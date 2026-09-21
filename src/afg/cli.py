@@ -271,9 +271,53 @@ def biblio_stats() -> None:
 # --- gold (OE1) ---------------------------------------------------------------------------
 
 
+def _refuse_or_warn_if_series_annotated(series: str, *, force: bool) -> None:
+    """Shared guard for ``afg gold build`` and ``afg gold candidates``.
+
+    Both commands regenerate a base file (``<series>.decisions.csv`` /
+    ``<series>.candidates.csv``) from scratch from the AMI abstractive summary. Refuses
+    when any derived per-annotator file for ``series`` already holds annotation, unless
+    ``force`` -- naming the files found and what regenerating would lose. With ``force``,
+    still warns: the named files will fail ``afg gold validate`` until they are prepared
+    again.
+    """
+    from afg.annotation.workspace import series_has_annotated_work
+
+    annotated = series_has_annotated_work(series, paths=_workspace_paths())
+    if not annotated:
+        return
+
+    names = ", ".join(_short(path) for path in annotated)
+    if not force:
+        console.print(
+            f"[bold red]La serie {series} ya tiene anotación cargada en los siguientes "
+            f"archivos derivados: {names}.[/bold red]\n"
+            "[bold red]No se regenera la base.[/bold red] Hacerlo ahora mismo:\n"
+            "  - borraría en silencio cualquier fila `compuesta` que ya se haya dividido "
+            "en filas hijas (manual de anotación sección 2), y\n"
+            "  - desalinearía las columnas de máquina de esos archivos frente a la base "
+            "nueva, lo que hace que `afg gold validate` reporte error para todo el mundo, "
+            "no solo para quien anotó.\n"
+            "Usa --force solo si de verdad quieres perder eso."
+        )
+        raise typer.Exit(code=1)
+
+    console.print(
+        f"[yellow]--force: regenerando con anotación cargada en: {names}. Esos archivos "
+        "quedarán desalineados frente a la base nueva hasta que se vuelvan a preparar "
+        "(`uv run afg gold prepare --force`).[/yellow]"
+    )
+
+
 @gold_app.command("build")
 def gold_build(
     series: str = typer.Option(..., "--series", help="AMI series id, e.g. IS1004."),
+    force: bool = typer.Option(
+        False,
+        "--force",
+        help="Regenera aunque haya anotación cargada en los archivos derivados de la serie. "
+        "Desalinea `afg gold validate` para todo el mundo.",
+    ),
 ) -> None:
     """Build the Task-A working file for a series (manual de anotacion secciones 2, 3).
 
@@ -281,9 +325,13 @@ def gold_build(
     working file for a human annotator, not a finished gold set. ``machine_flags`` are
     triage hints only, never a verdict -- ``status``, ``decision_object``,
     ``decision_content``, ``annotator``, and ``notes`` are always written empty and must be
-    filled in by a human (see ``afg.annotation.goldset`` module docstring).
+    filled in by a human (see ``afg.annotation.goldset`` module docstring). Refuses to run
+    at all if a derived ``<series>.decisions.<iniciales>.csv`` or
+    ``<series>.candidates.<iniciales>.csv`` already holds annotation, unless ``--force``.
     """
     from afg.annotation.goldset import build_gold_decisions, write_gold_decisions_csv
+
+    _refuse_or_warn_if_series_annotated(series, force=force)
 
     settings = get_settings()
     ami_root = settings.ami_root or AMI_DIR
@@ -493,13 +541,23 @@ def gold_candidates(
         "--min-overlap",
         help="Minimum absolute shared-token count (|A & B|), alongside --threshold.",
     ),
+    force: bool = typer.Option(
+        False,
+        "--force",
+        help="Regenera aunque haya anotación cargada en los archivos derivados de la serie. "
+        "Desalinea `afg gold validate` para todo el mundo.",
+    ),
 ) -> None:
     """Generate cross-meeting candidate decision pairs for human adjudication (Tarea B).
 
     Provisional: candidates are built from raw abstractive DECISIONS sentences
     (``afg.annotation.blocking.decisions_from_abstractive``), not yet P3's normalised gold
-    decisions. Writes ``data/processed/relations/<series>.candidates.csv``.
+    decisions. Writes ``data/processed/relations/<series>.candidates.csv``. Refuses to run
+    at all if a derived ``<series>.decisions.<iniciales>.csv`` or
+    ``<series>.candidates.<iniciales>.csv`` already holds annotation, unless ``--force``.
     """
+    _refuse_or_warn_if_series_annotated(series, force=force)
+
     settings = get_settings()
     ami_root = settings.ami_root or AMI_DIR
     decisions = _decisions_for_series_or_exit(ami_root, series)

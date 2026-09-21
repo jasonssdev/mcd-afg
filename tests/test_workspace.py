@@ -27,6 +27,7 @@ from afg.annotation.workspace import (
     load_annotation_plan,
     prepare_annotator_workspace,
     question_bank_is_empty,
+    series_has_annotated_work,
     validate_annotator,
     write_adjudication_log,
     write_question_bank_template,
@@ -357,6 +358,76 @@ class TestPrepare:
     def test_unknown_annotator_raises(self, plan: AnnotationPlan, sources: WorkspacePaths) -> None:
         with pytest.raises(UnknownAnnotatorError):
             prepare_annotator_workspace(plan, "xx", paths=sources)
+
+
+# --- series_has_annotated_work -----------------------------------------------------------
+
+
+class TestSeriesHasAnnotatedWork:
+    def test_no_derived_files_at_all_is_empty(
+        self, plan: AnnotationPlan, sources: WorkspacePaths
+    ) -> None:
+        """Nobody ran `prepare` yet: only the base files exist, no derived ones."""
+        assert series_has_annotated_work("ES2015", paths=sources) == ()
+
+    def test_untouched_derived_files_are_empty(
+        self, plan: AnnotationPlan, sources: WorkspacePaths
+    ) -> None:
+        """The normal state right after `prepare`: derived files exist but hold no work."""
+        prepare_annotator_workspace(plan, "gv", paths=sources)
+        prepare_annotator_workspace(plan, "gm", paths=sources)
+
+        assert series_has_annotated_work("ES2015", paths=sources) == ()
+
+    def test_finds_annotated_decisions_file(
+        self, plan: AnnotationPlan, sources: WorkspacePaths
+    ) -> None:
+        prepare_annotator_workspace(plan, "gv", paths=sources)
+        target = sources.decisions_dir / "ES2015.decisions.gv.csv"
+        rows = list(csv.DictReader(target.open(newline="", encoding="utf-8")))
+        rows[0]["status"] = AnnotationStatus.DECISION.value
+        _write_csv(target, _DECISION_COLUMNS, rows)
+
+        found = series_has_annotated_work("ES2015", paths=sources)
+
+        assert target in found
+
+    def test_finds_annotated_candidates_file(
+        self, plan: AnnotationPlan, sources: WorkspacePaths
+    ) -> None:
+        prepare_annotator_workspace(plan, "gv", paths=sources)
+        target = sources.relations_dir / "ES2015.candidates.gv.csv"
+        rows = list(csv.DictReader(target.open(newline="", encoding="utf-8")))
+        rows[0]["relation"] = RelationType.REFINA.value
+        _write_csv(target, _CANDIDATE_COLUMNS, rows)
+
+        found = series_has_annotated_work("ES2015", paths=sources)
+
+        assert target in found
+
+    def test_only_reports_the_series_asked_about(
+        self, plan: AnnotationPlan, sources: WorkspacePaths
+    ) -> None:
+        prepare_annotator_workspace(plan, "gv", paths=sources)
+        target = sources.decisions_dir / "ES2008.decisions.gv.csv"
+        rows = list(csv.DictReader(target.open(newline="", encoding="utf-8")))
+        rows[0]["status"] = AnnotationStatus.DECISION.value
+        _write_csv(target, _DECISION_COLUMNS, rows)
+
+        assert series_has_annotated_work("ES2015", paths=sources) == ()
+        assert series_has_annotated_work("ES2008", paths=sources) != ()
+
+    def test_ignores_recall_sample_files(
+        self, plan: AnnotationPlan, sources: WorkspacePaths
+    ) -> None:
+        """Recall-sample derived files are a different command's concern (Tarea C)."""
+        prepare_annotator_workspace(plan, "gv", paths=sources)
+        target = sources.relations_dir / "IS1004.recall-sample.gv.csv"
+        rows = list(csv.DictReader(target.open(newline="", encoding="utf-8")))
+        rows[0]["relation"] = RelationType.REFINA.value
+        _write_csv(target, _CANDIDATE_COLUMNS, rows)
+
+        assert series_has_annotated_work("IS1004", paths=sources) == ()
 
 
 # --- validate -----------------------------------------------------------------------------
