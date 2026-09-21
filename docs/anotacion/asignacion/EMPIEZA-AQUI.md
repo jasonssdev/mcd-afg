@@ -3,6 +3,21 @@
 Para quien nunca ha abierto este repositorio y le toca anotar. Una página; si necesitas más
 detalle, cada paso enlaza adonde está.
 
+## 0. Seis palabras que se usan sin avisar
+
+| Palabra | Qué es |
+|---|---|
+| **Reunión** | Una sesión grabada del corpus AMI. Su id lleva sufijo de letra: `ES2015a`, `ES2015b`… |
+| **Serie** | Las **cuatro reuniones** consecutivas de un mismo proyecto ficticio, de `a` a `d`. `ES2015` es la serie; `ES2015a` es su primera reunión. Se anota siempre en ese orden, y nunca se lee una reunión posterior para juzgar una anterior |
+| **Par candidato** | Dos decisiones de **reuniones distintas** que podrían estar relacionadas. No las propone una persona: las propone el bloqueador |
+| **Bloqueador** | El filtro que evita anotar los 3.071 pares posibles. En su punto de operación actual deja **92**, que son los que se adjudican a mano |
+| **Adjudicación** | Cuando dos personas anotan la misma serie y discrepan, `jss` resuelve cada desacuerdo y deja el resultado por escrito. No la hace quien anotó |
+| **Kappa** | La medida de cuánto coincidieron esas dos anotaciones antes de adjudicar. Es el número que sostiene la confiabilidad de OE1: se reporta salga como salga |
+
+El trabajo va en tres **fases** —calibración, control, individual— y no se solapan: no se
+empieza una sin cerrar la anterior. Cuál te toca y en qué orden está en tu documento personal
+y en [`README.md`](README.md) §2.
+
 ## 1. Clona e instala
 
 Sigue **"Tu primer día, paso a paso"** en [`../../../README.md`](../../../README.md) §3: fork,
