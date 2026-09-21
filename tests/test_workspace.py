@@ -24,6 +24,7 @@ from afg.annotation.workspace import (
     UnknownAnnotatorError,
     WorkspacePaths,
     adjudication_has_resolutions,
+    expected_files,
     load_annotation_plan,
     prepare_annotator_workspace,
     question_bank_is_empty,
@@ -186,6 +187,30 @@ def sources(paths: WorkspacePaths) -> WorkspacePaths:
     return paths
 
 
+def _candidate_pair_count(series_id: str) -> int:
+    """Row count of the shipped ``<series>.candidates.csv``, data rows only.
+
+    Reads the file that already ships in the repo (``git ls-files`` confirms every OE1
+    series has one under ``data/processed/relations/``) and counts lines with
+    :mod:`csv`, never touching a text column. ADR 0005 (``docs/decisions/
+    0005-adr-development-evaluation-split.md``) forbids reading or asserting on the
+    CONTENT of an evaluation-set series' pairs; a row count is not content -- it is
+    already public in ``docs/anotacion/asignacion/README.md`` §1 and ``config/
+    corpus.toml`` -- and this function never opens a cell beyond ``csv.reader``'s raw
+    row iteration.
+    """
+    path = WorkspacePaths().relations_dir / f"{series_id}.candidates.csv"
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Falta {path}: no se puede contar los pares candidatos de la serie "
+            f"{series_id!r}. ¿Se añadió o renombró una serie de fase 2 sin generar su "
+            "CSV de candidatos?"
+        )
+    with path.open(newline="", encoding="utf-8") as handle:
+        row_count = sum(1 for _ in csv.reader(handle))
+    return row_count - 1  # exclude the header row
+
+
 # --- the plan ---------------------------------------------------------------------------
 
 
@@ -201,13 +226,56 @@ class TestLoadAnnotationPlan:
         gv = real_plan.annotator("gv")
         gm = real_plan.annotator("gm")
         assert gv.phase1_series == ("ES2015",)
-        assert gv.phase2_series == ("ES2008", "ES2016", "IS1003", "TS3005")
+        assert gv.phase2_series == ("ES2016", "IS1003", "TS3005", "ES2008")
         assert gv.phase3_series == ("IS1004", "IS1006", "IS1009", "TS3003", "ES2002")
         assert gm.phase3_series == ("TS3009", "TS3011", "IS1008", "ES2014")
         assert real_plan.recall_sample.owner == "gv"
         assert real_plan.recall_sample.series_id == "IS1004"
         assert real_plan.question_bank.author == "gm"
         assert real_plan.question_bank.validator == "gv"
+
+    def test_phase2_is_ordered_by_ascending_candidate_volume(self) -> None:
+        """Phase 2 is a list in EXECUTION order, not an alphabetical set.
+
+        ``SeriesAssignment`` promises execution order, and `afg gold setup` prints the
+        series in exactly this order, so whoever reads that output starts with the series
+        listed first. The control series' candidate-pair counts climb from lightest to
+        heaviest (derived below from the shipped CSVs, never hand-copied), so the
+        annotator calibrates on the cheapest series and carries the costly one last.
+        Sorting this list alphabetically would silently hand them ES2008 -- the
+        heaviest -- on day one.
+        """
+        real_plan = load_annotation_plan()
+        volumes = [_candidate_pair_count(s) for s in real_plan.phase2_series]
+        assert volumes == sorted(volumes), (
+            f"phase2_series debe ir de menor a mayor volumen de candidatos, "
+            f"y va {list(real_plan.phase2_series)} ({volumes})"
+        )
+
+    def test_phase2_order_reaches_expected_files(self, tmp_path: Path) -> None:
+        """The gap between the parsed plan and what the annotator actually opens.
+
+        The test above only proves ``phase2_series`` itself is ordered. It says nothing
+        about whether that order survives past the plan: :func:`expected_files` is the
+        function ``afg.annotation.setup.run_setup`` walks to name ``first_file`` -- the
+        exact file `afg gold setup` tells the annotator to open next (see both
+        docstrings) -- so THIS is the boundary the argument actually depends on.
+        """
+        real_plan = load_annotation_plan()
+        gv = real_plan.annotator("gv")
+        paths = WorkspacePaths(
+            decisions_dir=tmp_path / "decisions",
+            relations_dir=tmp_path / "relations",
+            questions_dir=tmp_path / "questions",
+        )
+
+        files = expected_files(real_plan, gv, paths)
+
+        phase2_in_file_order = tuple(dict.fromkeys(f.series_id for f in files if f.phase == 2))
+        assert phase2_in_file_order == gv.phase2_series, (
+            "expected_files() reordered phase 2 relative to phase2_series -- the file "
+            "`afg gold setup` names first would no longer be the cheapest control series"
+        )
 
     def test_every_series_is_covered_exactly_once_across_the_team(self) -> None:
         real_plan = load_annotation_plan()
