@@ -50,6 +50,12 @@ class Question(BaseModel):
         default=None, description="Person who wrote the question (must differ from the validator)."
     )
     validated_by: str | None = Field(default=None)
+    validation_notes: str | None = Field(
+        default=None,
+        description="Reason the validator writes when returning a question that did not "
+        "pass, instead of correcting it. The author clears it when re-submitting the "
+        "corrected question.",
+    )
 
 
 class Answer(BaseModel):

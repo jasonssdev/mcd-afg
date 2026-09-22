@@ -6,6 +6,7 @@ import pytest
 
 from afg.annotation.goldset import classify_decision_status
 from afg.domain.decision import Decision, DecisionStatus, EvidenceSpan
+from afg.domain.question import Question, QuestionStratum
 from afg.domain.relation import RelationType, TemporalRelation
 
 
@@ -74,6 +75,23 @@ class TestDecision:
 
         assert accepted.is_decision is True
         assert proposal.is_decision is False
+
+
+class TestQuestion:
+    def test_validation_notes_defaults_to_none_and_accepts_a_reason(self) -> None:
+        unreviewed = Question(
+            id="q001",
+            series_id="ES2015",
+            stratum=QuestionStratum.E1_POINT_FACT,
+            text="Que precio de venta se fijo?",
+            author="gm",
+        )
+        returned = unreviewed.model_copy(
+            update={"validation_notes": "La respuesta no se deriva de la evidencia citada."}
+        )
+
+        assert unreviewed.validation_notes is None
+        assert returned.validation_notes == "La respuesta no se deriva de la evidencia citada."
 
 
 class TestClassifyDecisionStatus:

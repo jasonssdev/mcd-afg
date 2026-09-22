@@ -386,6 +386,7 @@ Las columnas salen del modelo `src/afg/domain/question.py::Question`, una por ca
 | `reference_evidence` | Los actos de diálogo que la respaldan. **La llenas tú**. Formato `reunion:da_id;da_id`, y `\|` entre reuniones cuando la evidencia abarca más de una. **Vacía en E4** |
 | `author` | `gm`, ya puesto por `questions-init` |
 | `validated_by` | **Lo llena Germán.** Tú lo dejas vacío |
+| `validation_notes` | **Lo llena Germán** cuando devuelve una pregunta que no pasó, con el motivo. **Tú lo borras** al reentregar la pregunta corregida — la tabla completa de los cuatro estados está en `tareas-gv.md` §8 |
 
 ### Las tres reglas que más se rompen
 

@@ -16,6 +16,7 @@ from pathlib import Path
 import pytest
 
 from afg.annotation.workspace import (
+    _QUESTION_COLUMNS,
     ADJUDICATION_UNRESOLVED,
     AnnotationPlan,
     IssueKind,
@@ -965,6 +966,23 @@ class TestQuestionBank:
         assert all(row["reference_answer"] == "" for row in rows)
         assert all(row["author"] == "gm" for row in rows)
         assert all(row["validated_by"] == "" for row in rows)
+        assert all(row["validation_notes"] == "" for row in rows)
+
+    def test_validation_notes_column_follows_validated_by(self) -> None:
+        assert "validation_notes" in _QUESTION_COLUMNS
+        position = _QUESTION_COLUMNS.index("validated_by")
+        assert _QUESTION_COLUMNS[position + 1] == "validation_notes"
+
+    def test_bank_with_only_a_validation_note_is_not_empty(self, paths: WorkspacePaths) -> None:
+        out_path = write_question_bank_template(paths.questions_dir / "banco-preguntas.csv")
+        rows = list(csv.DictReader(out_path.open(newline="", encoding="utf-8")))
+        rows[0]["validation_notes"] = "La E4 sí tiene respuesta en el material citado."
+        with out_path.open("w", newline="", encoding="utf-8") as handle:
+            writer = csv.DictWriter(handle, fieldnames=list(rows[0]), lineterminator="\n")
+            writer.writeheader()
+            writer.writerows(rows)
+
+        assert not question_bank_is_empty(out_path)
 
     def test_columns_match_the_shipped_template(self, paths: WorkspacePaths) -> None:
         template = Path("data/processed/questions/_plantilla-banco-preguntas.csv")

@@ -153,6 +153,7 @@ _QUESTION_COLUMNS = (
     "reference_evidence",
     "author",
     "validated_by",
+    "validation_notes",
 )
 
 # The one human column `prepare` fills in, and the one it therefore ignores when deciding
@@ -1251,12 +1252,23 @@ def question_bank_is_empty(path: Path) -> bool:
     """Whether the bank holds no written question yet.
 
     ``id``, ``stratum`` and ``author`` are machine-written, so only the columns a human
-    types -- question text, reference answer, evidence, validation -- count as content.
+    types -- question text, reference answer, evidence, validation, and a validator's
+    return reason -- count as content. ``validation_notes`` counts even on its own: a
+    question returned to the author with a reason and no ``validated_by`` yet is human
+    content, and treating it as empty would let ``questions-init`` overwrite it without
+    ``--force``.
     """
     if not path.exists():
         return True
     _, rows = _read_rows(path)
-    human = ("text", "reference_answer", "reference_evidence", "validated_by", "series_id")
+    human = (
+        "text",
+        "reference_answer",
+        "reference_evidence",
+        "validated_by",
+        "validation_notes",
+        "series_id",
+    )
     return not any(row.get(column, "").strip() for row in rows for column in human)
 
 
@@ -1313,6 +1325,7 @@ def write_question_bank_template(
                     "reference_evidence": "",
                     "author": author,
                     "validated_by": "",
+                    "validation_notes": "",
                 }
             )
     return _write_rows(out_path, _QUESTION_COLUMNS, rows)
