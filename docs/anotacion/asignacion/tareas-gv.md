@@ -354,7 +354,22 @@ Qué revisas en cada pregunta:
   porque un sistema que la contesta bien queda penalizado por acertar.
 
 Rellenas la columna `validated_by` con `gv`. Si una pregunta no pasa, no la corrijas tú:
-devuélvela con el motivo, para que la autoría siga siendo de una sola persona.
+devuélvela con el motivo, para que la autoría siga siendo de una sola persona. El motivo se
+escribe en la columna `validation_notes` (justo después de `validated_by` en
+`banco-preguntas.csv`), y `validated_by` se deja vacío: una pregunta devuelta todavía no
+está validada, solo tiene una observación pendiente.
+
+`validated_by` y `validation_notes` combinadas dicen en qué estado está cada pregunta:
+
+| `validated_by` | `validation_notes` | Significa |
+|---|---|---|
+| vacío | vacío | Sin revisar todavía |
+| `gv` | vacío | Aprobada |
+| vacío | con texto | Devuelta a Gustavo; el texto es el motivo |
+| `gv` | con texto | Aprobada con una observación menor |
+
+Gustavo reescribe la pregunta devuelta y borra `validation_notes` al reentregarla — la
+autoría de la corrección sigue siendo suya, nunca tuya.
 
 ---
 
