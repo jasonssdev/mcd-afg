@@ -50,8 +50,8 @@ saber qué sabíamos cuando lo entregamos.
 | Video de avance #2 (semana 3) | [`01-jss-guion-video-semana3.md`](01-jss-guion-video-semana3.md) | Enviado; congelado. Falta registrar la fecha exacta |
 | Presentación formal del problema (semana 4) | [`02-jss-informe-semana4.md`](02-jss-informe-semana4.md) | Enviado; congelado. Falta registrar la fecha exacta |
 | Video de avance #3 (semana 7): propuesta metodológica + datos disponibles | [`03-jss-guion-video-semana7.md`](03-jss-guion-video-semana7.md) | Guion listo; falta grabar y registrar la fecha de envío |
+| Presentación final (semana 8) | [`04-jss-guion-video-semana8.md`](04-jss-guion-video-semana8.md) | Guion listo; falta grabar, publicar en el foro y registrar la fecha de envío |
 
-Pendiente inmediato: el guion de la **presentación final** (semana 8), con las cuatro secciones
-que exige la rúbrica: contextualización y problema, al menos dos trabajos relacionados,
-propuesta metodológica por fases, y alcances éticos con partes involucradas. Se construye
-desde los avances 01, 04, 06 y 05.
+Pendiente inmediato: grabar la presentación final, publicar el enlace sin restricciones de
+acceso en el foro de revisión entre equipos, revisar al equipo asignado con comentarios
+cualitativos, y llenar el formulario de evaluación cuantitativa.
