@@ -9,7 +9,7 @@ informes enviados, y cualquier documento que salga del repositorio hacia la univ
 |---|---|---|
 | **Qué es** | El contenido del proyecto | Lo que se envía |
 | **Cambia** | Sí, a medida que el proyecto avanza | No: se congela al entregar |
-| **Versionado** | Cabecera de versión + historial de cambios | Fecha de entrega fija |
+| **Versionado** | Cabecera de versión + historial de cambios | Cabecera de versión + historial de cambios, más la fecha de envío |
 | **Ejemplos** | Problema, objetivos, metodología | Guion de video, presentación, informe |
 
 Un entregable **se construye a partir de los avances**, no al revés. Si al preparar una
@@ -39,8 +39,20 @@ Las iniciales de cada autor están en la tabla de
 para cuándo, por ejemplo `01-jss-guion-video-semana8.md`.
 
 Cada entregable debería abrir declarando: **a qué entrega corresponde, en qué fecha se envió,
-y de qué versión de los avances se construyó.** Eso último es lo que permite, meses después,
+en qué versión está y de qué versión de los avances se construyó.** Eso último es lo que permite, meses después,
 saber qué sabíamos cuando lo entregamos.
+
+## Versiones
+
+Cada entregable lleva una fila **Versión** en su cabecera y una sección **Historial de
+versiones**, con la misma regla que los avances: un cambio de redacción sube el decimal
+(1.0 → 1.1); un cambio que altera una cifra, un objetivo o una decisión sube el entero
+(1.x → 2.0). El historial nunca se reescribe: se agrega una fila.
+
+Antes del envío, un entregable puede cambiar y cada cambio sube su versión. Después del
+envío queda congelado: solo se admiten correcciones de ruta en enlaces que dejaron de
+existir, sin tocar la prosa, y también suben el decimal. Así la versión dice, de un vistazo,
+si lo que está en el repositorio es exactamente lo que se entregó.
 
 ## Estado
 
@@ -50,8 +62,8 @@ saber qué sabíamos cuando lo entregamos.
 | Video de avance #2 (semana 3) | [`01-jss-guion-video-semana3.md`](01-jss-guion-video-semana3.md) | Enviado; congelado. Falta registrar la fecha exacta |
 | Presentación formal del problema (semana 4) | [`02-jss-informe-semana4.md`](02-jss-informe-semana4.md) | Enviado; congelado. Falta registrar la fecha exacta |
 | Video de avance #3 (semana 7): propuesta metodológica + datos disponibles | [`03-jss-guion-video-semana7.md`](03-jss-guion-video-semana7.md) | Guion listo; falta grabar y registrar la fecha de envío |
+| Presentación final (semana 8) | [`04-jss-guion-video-semana8.md`](04-jss-guion-video-semana8.md) | Guion listo; falta grabar, publicar en el foro y registrar la fecha de envío |
 
-Pendiente inmediato: el guion de la **presentación final** (semana 8), con las cuatro secciones
-que exige la rúbrica: contextualización y problema, al menos dos trabajos relacionados,
-propuesta metodológica por fases, y alcances éticos con partes involucradas. Se construye
-desde los avances 01, 04, 06 y 05.
+Pendiente inmediato: grabar la presentación final, publicar el enlace sin restricciones de
+acceso en el foro de revisión entre equipos, revisar al equipo asignado con comentarios
+cualitativos, y llenar el formulario de evaluación cuantitativa.
