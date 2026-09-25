@@ -4,10 +4,17 @@
 |---|---|
 | **Entrega** | Presentación final de AFG1 (semana 8) |
 | **Fecha de envío** | (por completar al subir el video) |
+| **Versión** | 1.0 |
 | **Construido desde** | `docs/avances/01-jss-problema.md` v1.1 · `docs/avances/04-jss-bibliografia.md` v1.1 · `docs/avances/06-jss-metodologia.md` v1.2 · `docs/avances/05-jss-aspectos-eticos.md` v1.2 · `docs/avances/03-jss-objetivos.md` v2.1 |
 | **Duración objetivo** | 9:15 (máximo permitido: 10:00) |
 | **Formato** | Tres presentadores en cuatro bloques consecutivos, en este orden: Jason, Germán, Gustavo, Jason |
 | **Extensión hablada** | 1.342 palabras: 265 + 315 + 347 + 415. A 145 palabras por minuto son 9:15; a 140, 9:35 |
+
+## Historial de versiones
+
+| Versión | Fecha | Cambio | Motivo |
+|---|---|---|---|
+| 1.0 | 2026-09-22 | Versión inicial del guion. | Preparación de la presentación final. |
 
 ## Qué pide el curso y dónde se cubre
 

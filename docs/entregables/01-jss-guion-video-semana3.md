@@ -2,8 +2,15 @@
 |---|---|
 | **Entrega** | Video de avance #2 (semana 3), AFG1 |
 | **Fecha de envío** | Semana 3 del curso (fecha exacta por completar) |
+| **Versión** | 1.0 |
 | **Construido desde** | Versión previa de la propuesta, anterior a la auditoría de datos |
 | **Estado** | Congelado tal como se envió. **No se edita.** |
+
+## Historial de versiones
+
+| Versión | Fecha | Cambio | Motivo |
+|---|---|---|---|
+| 1.0 | 2026-09-20 | Incorporación al repositorio del guion tal como se envió. | Registro del entregable. |
 
 > **Aviso de lectura.** Refleja el diseño de la semana 3. La versión vigente de problema,
 > objetivos y metodología está en `docs/avances/`.
