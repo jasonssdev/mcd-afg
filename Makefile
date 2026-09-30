@@ -1,4 +1,4 @@
-.PHONY: help setup setup-full lint fmt typecheck test check corpus inventory biblio lab clean
+.PHONY: help setup setup-full setup-deck skill-assets skill-link deck-render lint fmt typecheck test check corpus inventory biblio lab clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
@@ -8,6 +8,24 @@ setup: ## Install dev + notebook dependency groups
 
 setup-full: ## Install every optional dependency group and extra
 	uv sync --all-extras --group dev --group notebooks
+
+setup-deck: ## Install dev + deck groups (python-pptx, python-docx) and check for LibreOffice
+	uv sync --group dev --group deck
+	@command -v soffice >/dev/null 2>&1 \
+		&& echo "LibreOffice found: $$(command -v soffice)" \
+		|| echo "Warning: LibreOffice (soffice) not found. Rendering decks for visual review needs it; see README section 6."
+
+skill-assets: ## Install the deck-uc assets from the locally synced shared folder
+	uv run afg skills sync-assets deck-uc
+
+skill-link: ## Link deck-uc into a tool's skills folder: make skill-link DEST=<folder>
+	@test -n "$(DEST)" || { echo "Usage: make skill-link DEST=<folder>"; exit 2; }
+	uv run afg skills link deck-uc "$(DEST)"
+
+deck-render: ## Render a PPTX/DOCX to PDF for visual review: make deck-render FILE=<path> [OUT=<dir>]
+	@test -n "$(FILE)" || { echo "Usage: make deck-render FILE=<path> [OUT=<dir>]"; exit 2; }
+	@command -v soffice >/dev/null 2>&1 || { echo "LibreOffice (soffice) not found; see README section 6."; exit 1; }
+	soffice --headless --convert-to pdf --outdir "$(or $(OUT),$(dir $(FILE)))" "$(FILE)"
 
 lint: ## Ruff check (no fixes applied)
 	uv run ruff check .
