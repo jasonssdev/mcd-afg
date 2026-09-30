@@ -4,7 +4,7 @@
 |---|---|
 | **Entrega** | Presentación final de AFG1 (semana 8) |
 | **Fecha de envío** | (por completar al subir el video) |
-| **Versión** | 1.0 |
+| **Versión** | 1.1 |
 | **Construido desde** | `docs/avances/01-jss-problema.md` v1.1 · `docs/avances/04-jss-bibliografia.md` v1.1 · `docs/avances/06-jss-metodologia.md` v1.2 · `docs/avances/05-jss-aspectos-eticos.md` v1.2 · `docs/avances/03-jss-objetivos.md` v2.1 |
 | **Duración objetivo** | 9:15 (máximo permitido: 10:00) |
 | **Formato** | Tres presentadores en cuatro bloques consecutivos, en este orden: Jason, Germán, Gustavo, Jason |
@@ -15,6 +15,7 @@
 | Versión | Fecha | Cambio | Motivo |
 |---|---|---|---|
 | 1.0 | 2026-09-22 | Versión inicial del guion. | Preparación de la presentación final. |
+| 1.1 | 2026-09-30 | Se retira del bloque de justicia y equidad la limitación sobre el eje de hablante nativo o no nativo. | Mejorar la fluidez del discurso. |
 
 ## Qué pide el curso y dónde se cubre
 
@@ -104,7 +105,7 @@ El marco es el **NIST AI Risk Management Framework 1.0** (Tabassi, 2023). Tratam
 
 **Transparencia.** Toda decisión extraída debe mostrar el fragmento de transcripción que la respalda, y una respuesta sin fuente cuenta como falla aunque sea correcta. Un caso real de nuestros datos explica por qué: el resumen oficial de una reunión de AMI afirma que el equipo eliminó un botón del control remoto; fuimos a la transcripción y el botón se mantuvo. Un sistema que copiara ese resumen respondería con seguridad algo falso, y sin la evidencia al lado nadie podría notarlo.
 
-**Justicia y equidad.** En estas reuniones quien dirige el proyecto concentra el **47,0 %** de los actos de decisión. Eso viene del material, no del sistema. El riesgo es amplificarlo: si se pregunta qué decidió el equipo sobre el material de la carcasa y solo se recupera lo que dijo quien preside, el diseñador industrial que propuso la idea desaparece del registro. Por eso no reportamos si el sistema lo recupera bien, sino si lo favorece **más de lo que ya lo favorece la fuente**. El eje de hablante nativo o no nativo queda como limitación declarada: la lengua materna está confundida con el lugar de grabación y aquí no se pueden separar.
+**Justicia y equidad.** En estas reuniones quien dirige el proyecto concentra el **47,0 %** de los actos de decisión. Eso viene del material, no del sistema. El riesgo es amplificarlo: si se pregunta qué decidió el equipo sobre el material de la carcasa y solo se recupera lo que dijo quien preside, el diseñador industrial que propuso la idea desaparece del registro. Por eso no reportamos si el sistema lo recupera bien, sino si lo favorece **más de lo que ya lo favorece la fuente**.
 
 **Responsabilidad.** Un error en una base persistente se escribe una vez y se lee muchas veces. Si la base registra mal una decisión y nadie la corrige, meses después deja de parecer un error y pasa a ser la premisa de una decisión nueva. No lo dejamos como advertencia: la fase 4 mide qué proporción de las respuestas equivocadas viene de errores grabados en la base.
 
