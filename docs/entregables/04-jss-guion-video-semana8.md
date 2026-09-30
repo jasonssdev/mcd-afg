@@ -3,8 +3,8 @@
 | | |
 |---|---|
 | **Entrega** | Presentación final de AFG1 (semana 8) |
-| **Fecha de envío** | (por completar al subir el video) |
-| **Versión** | 1.1 |
+| **Fecha de envío** | 2026-09-28 |
+| **Versión** | 1.2 |
 | **Construido desde** | `docs/avances/01-jss-problema.md` v1.1 · `docs/avances/04-jss-bibliografia.md` v1.1 · `docs/avances/06-jss-metodologia.md` v1.2 · `docs/avances/05-jss-aspectos-eticos.md` v1.2 · `docs/avances/03-jss-objetivos.md` v2.1 |
 | **Duración objetivo** | 9:15 (máximo permitido: 10:00) |
 | **Formato** | Tres presentadores en cuatro bloques consecutivos, en este orden: Jason, Germán, Gustavo, Jason |
@@ -16,6 +16,7 @@
 |---|---|---|---|
 | 1.0 | 2026-09-22 | Versión inicial del guion. | Preparación de la presentación final. |
 | 1.1 | 2026-09-30 | Se retira del bloque de justicia y equidad la limitación sobre el eje de hablante nativo o no nativo. | Mejorar la fluidez del discurso. |
+| 1.2 | 2026-09-30 | Registro de la fecha de envío; la prosa no cambia. | Presentación final y video enviados el 2026-09-28. |
 
 ## Qué pide el curso y dónde se cubre
 
