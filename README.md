@@ -247,6 +247,7 @@ de forzar una resolución, sobre todo si el conflicto está en un CSV de anotaci
 | `notebooks/` | El registro académico: qué se hizo, qué se midió y por qué se decidió. Versionados con sus salidas | Todos; se leen en GitHub sin ejecutar |
 | `bibliography/` | `refs.bib` (49 referencias verificadas), criterios de inclusión, tabla de cribado y notas por referencia | Quien cite algo |
 | `config/` | Parámetros versionados: series elegidas, partición desarrollo/evaluación, modelos, umbrales | Se lee; se cambia solo con un ADR |
+| `.agents/skills/` | Skills del proyecto en formato abierto SKILL.md (hoy, `deck-uc`: presentaciones y documentos con la identidad UC). Se versionan los textos y la lista de hashes; los archivos institucionales de `assets/` no (ver sección 9) | Quien produzca presentaciones o documentos con identidad UC |
 | `data/` | `raw/` (corpus, ignorado por git), `interim/`, `processed/` (los CSV de anotación) | Anotadores escriben en `processed/` |
 | `reports/` | Tablas y figuras generadas por el código | Se regeneran; no se editan a mano |
 | `src/afg/` | El código: ingesta del corpus, conjunto de referencia, bloqueo de candidatos, kappa, alineamiento, métricas | Quien programe. Toda cifra del proyecto sale de aquí |
@@ -300,6 +301,10 @@ uv run afg gold adjudicate --series ES2015         # pre-llena la adjudicación 
 uv run afg gold questions-init                     # crea el banco de 100 preguntas, vacío, 25 por estrato
 uv run afg gold link                               # sin implementar: sale con código 2 y explica qué falta
 
+uv run afg skills sync-assets deck-uc   # copia los assets UC desde la carpeta compartida y verifica su SHA-256
+uv run afg skills verify deck-uc        # comprueba los assets ya instalados
+uv run afg skills link deck-uc <carpeta>  # enlaza la skill en la carpeta que use una herramienta
+
 uv run afg biblio audit             # cobertura de la bibliografía por sección
 uv run afg biblio stats             # conteos por sección y preprint/revisado
 
@@ -339,7 +344,31 @@ uv sync --extra retrieval     # rank-bm25, canal léxico de C1
 uv sync --extra embeddings    # sentence-transformers (pesado)
 ```
 
-`.env.example` está vacío a propósito; se completa cuando alguna condición lo necesite.
+Además, `uv sync --group deck` instala `python-pptx` y `python-docx`, que la skill `deck-uc`
+necesita para generar archivos PowerPoint y Word (`make setup-deck` instala este grupo junto
+con `dev`).
+
+`.env.example` solo declara `AFG_SKILL_ASSETS_DIR`, la ruta de la carpeta compartida con los
+assets de la skill (ver más abajo); el resto se completa cuando alguna condición lo necesite.
+
+### Skill `deck-uc` y sus assets
+
+La skill `deck-uc` vive en `.agents/skills/deck-uc/`. Sus textos están versionados, pero el
+manual de marca y las plantillas UC no se distribuyen con el repositorio (ver sección 9). Para
+instalarlos en el equipo local:
+
+1. Solicitar acceso a la carpeta compartida restringida del equipo.
+2. Sincronizarla localmente con el cliente de escritorio del servicio de almacenamiento.
+3. Declarar en `.env` la ruta de la carpeta sincronizada: `AFG_SKILL_ASSETS_DIR=<ruta>`. Los
+   archivos de la skill se buscan en `<ruta>/deck-uc/` o, si esa subcarpeta no existe,
+   directamente en `<ruta>/`.
+4. Ejecutar `make skill-assets`. El comando verifica la existencia y el SHA-256 de cada archivo
+   listado en `assets.sha256` antes de copiar, y falla con un mensaje explícito si falta la
+   ruta, falta un archivo o un hash no coincide. Es idempotente; `uv run afg skills verify
+   deck-uc` repite la comprobación sobre lo ya instalado.
+5. Si una herramienta busca skills en otra carpeta, ejecutar `make skill-link DEST=<carpeta>`.
+   Crea un enlace simbólico relativo y agrega esa carpeta a `.git/info/exclude`, de modo que
+   ningún nombre de carpeta específico de una herramienta queda versionado.
 
 ---
 
@@ -386,5 +415,10 @@ El **AMI Meeting Corpus** es público y se usa bajo
 los términos de uso. El corpus se referencia con Carletta et al. (2006) y Carletta (2007). Los
 identificadores de participante se conservan anonimizados; no se intenta reidentificación, y
 los resultados por hablante se reportan agregados por categoría, nunca por individuo.
+
+El material institucional de la UC (manual de marca, plantillas de PowerPoint y de Word) no es
+del equipo y no se redistribuye en este repositorio, que es público: se obtiene de la carpeta
+compartida restringida del equipo y se instala localmente con `make skill-assets` (ver la
+sección 6). Los archivos instalados quedan fuera de git.
 
 El código de este repositorio está bajo licencia MIT ([`LICENSE`](LICENSE)).

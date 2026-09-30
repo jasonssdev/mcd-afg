@@ -1,0 +1,18 @@
+version: 1.0.0
+SKILL.md
+references/storytelling.md
+references/brand-uc.md
+references/premium-art-direction.md
+references/visual-design.md
+references/template-uc.md
+references/norma-visual-uc.md
+references/caracterizacion.md
+references/video-reel.md
+references/word-editorial.md
+assets/template-uc.pptx
+assets/reference-premium-design.pptx
+assets/reference-video-reel.pptx
+assets/word-uc-corporativa.docx
+assets/word-uc-unidad.docx
+assets/word-uc-sin-texto.docx
+assets/manual-marca-uc.pdf

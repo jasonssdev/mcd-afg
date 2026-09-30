@@ -22,3 +22,5 @@
 *.png binary
 *.zip binary
 *.pdf binary
+*.pptx binary
+*.docx binary

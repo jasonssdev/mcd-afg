@@ -19,6 +19,7 @@ DATA_DIR: Path = PROJECT_ROOT / "data"
 REPORTS_DIR: Path = PROJECT_ROOT / "reports"
 DOCS_DIR: Path = PROJECT_ROOT / "docs"
 ENV_PATH: Path = PROJECT_ROOT / ".env"
+SKILLS_DIR: Path = PROJECT_ROOT / ".agents" / "skills"
 
 # --- data/ ---------------------------------------------------------------------------
 RAW_DIR: Path = DATA_DIR / "raw"

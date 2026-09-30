@@ -8,7 +8,7 @@ paso cero (thesis section 5.0), and they say so instead of crashing with a stack
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated
 
 import typer
 from rich.console import Console
@@ -59,10 +59,12 @@ from afg.shared.paths import (
     GOLD_RELATIONS_DIR,
     PROJECT_ROOT,
     QUESTIONS_DIR,
+    SKILLS_DIR,
     TABLES_DIR,
     TRANSCRIPTS_DIR,
     ensure_dirs,
 )
+from afg.shared.skills import SkillAssetsError, link_skill, sync_assets, verify_installed
 
 console = Console()
 logger = get_logger(__name__)
@@ -77,17 +79,78 @@ corpus_app = typer.Typer(help="AMI corpus download and paso-cero inventory (thes
 biblio_app = typer.Typer(help="Bibliography coverage and stats (bibliography/refs.bib).")
 gold_app = typer.Typer(help="OE1: build the gold decision/relation set (thesis section 3).")
 experiment_app = typer.Typer(help="OE2/OE3: run Experiment A / Experiment B (thesis section 3).")
+skills_app = typer.Typer(help="Install, verify and link skills under .agents/skills/.")
 
 app.add_typer(corpus_app, name="corpus")
 app.add_typer(biblio_app, name="biblio")
 app.add_typer(gold_app, name="gold")
 app.add_typer(experiment_app, name="experiment")
+app.add_typer(skills_app, name="skills")
 
 
 @app.callback()
 def main(log_level: str = typer.Option("INFO", help="Logging level.")) -> None:
     configure_logging(log_level)
     ensure_dirs()
+
+
+# --- skills -----------------------------------------------------------------------------
+
+
+@skills_app.command("sync-assets")
+def skills_sync_assets(
+    skill: Annotated[str, typer.Argument(help="Skill name, e.g. deck-uc.")],
+    source: Annotated[
+        Path | None,
+        typer.Option(
+            "--source",
+            help="Synced shared folder. Defaults to AFG_SKILL_ASSETS_DIR. Files are read "
+            "from <source>/<skill>/ if that folder exists, else directly from <source>/.",
+        ),
+    ] = None,
+) -> None:
+    """Copy a skill's non-versioned assets after verifying their SHA-256."""
+    origin = source or get_settings().skill_assets_dir
+    if origin is None:
+        console.print(
+            "[red]No source folder.[/red] Set AFG_SKILL_ASSETS_DIR in .env to the locally "
+            "synced shared folder, or pass --source."
+        )
+        raise typer.Exit(code=1)
+    try:
+        copied = sync_assets(skill, origin, SKILLS_DIR)
+    except SkillAssetsError as error:
+        console.print(f"[red]{error}[/red]", markup=True, highlight=False)
+        raise typer.Exit(code=1) from error
+    if copied:
+        console.print(f"Installed {len(copied)} asset(s) for '{skill}': {', '.join(copied)}")
+    else:
+        console.print(f"Assets for '{skill}' were already up to date.")
+
+
+@skills_app.command("verify")
+def skills_verify(skill: Annotated[str, typer.Argument(help="Skill name, e.g. deck-uc.")]) -> None:
+    """Check the installed assets of a skill against its checksum list."""
+    try:
+        verify_installed(skill, SKILLS_DIR)
+    except SkillAssetsError as error:
+        console.print(f"[red]{error}[/red]", markup=True, highlight=False)
+        raise typer.Exit(code=1) from error
+    console.print(f"Assets for '{skill}' are complete and match their checksums.")
+
+
+@skills_app.command("link")
+def skills_link(
+    skill: Annotated[str, typer.Argument(help="Skill name, e.g. deck-uc.")],
+    dest_dir: Annotated[Path, typer.Argument(help="Directory a tool reads skills from.")],
+) -> None:
+    """Symlink a skill into another directory, keeping that directory out of git."""
+    try:
+        link = link_skill(skill, dest_dir, SKILLS_DIR, PROJECT_ROOT)
+    except SkillAssetsError as error:
+        console.print(f"[red]{error}[/red]", markup=True, highlight=False)
+        raise typer.Exit(code=1) from error
+    console.print(f"Linked {link} -> {link.readlink()}")
 
 
 # --- corpus -----------------------------------------------------------------------------

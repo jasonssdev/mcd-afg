@@ -1,4 +1,4 @@
-.PHONY: help setup setup-full lint fmt typecheck test check corpus inventory biblio lab clean
+.PHONY: help setup setup-full setup-deck skill-assets skill-link lint fmt typecheck test check corpus inventory biblio lab clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
@@ -8,6 +8,16 @@ setup: ## Install dev + notebook dependency groups
 
 setup-full: ## Install every optional dependency group and extra
 	uv sync --all-extras --group dev --group notebooks
+
+setup-deck: ## Install dev + deck groups (python-pptx, python-docx)
+	uv sync --group dev --group deck
+
+skill-assets: ## Install the deck-uc assets from the locally synced shared folder
+	uv run afg skills sync-assets deck-uc
+
+skill-link: ## Link deck-uc into a tool's skills folder: make skill-link DEST=<folder>
+	@test -n "$(DEST)" || { echo "Usage: make skill-link DEST=<folder>"; exit 2; }
+	uv run afg skills link deck-uc "$(DEST)"
 
 lint: ## Ruff check (no fixes applied)
 	uv run ruff check .

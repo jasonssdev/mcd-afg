@@ -38,6 +38,10 @@ class Settings(BaseSettings):
     judge_model: str = Field(default="")
     embedding_model: str = Field(default="bge-m3")
     openkos_workspace: str | None = Field(default=None)
+    skill_assets_dir: Path | None = Field(
+        default=None,
+        description="Locally synced shared folder holding the non-versioned skill assets.",
+    )
     seed: int = Field(default=42)
     log_level: str = Field(default="INFO")
 
