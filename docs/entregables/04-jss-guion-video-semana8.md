@@ -15,7 +15,7 @@
 | Versión | Fecha | Cambio | Motivo |
 |---|---|---|---|
 | 1.0 | 2026-09-22 | Versión inicial del guion. | Preparación de la presentación final. |
-| 1.1 | 2026-09-30 | Se retira del bloque de justicia y equidad la limitación sobre el eje de hablante nativo o no nativo. | Ajuste menor del bloque ético. |
+| 1.1 | 2026-09-30 | Se retira del bloque de justicia y equidad la limitación sobre el eje de hablante nativo o no nativo. | Mejorar la fluidez del discurso. |
 
 ## Qué pide el curso y dónde se cubre
 
