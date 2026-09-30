@@ -62,7 +62,7 @@ si lo que está en el repositorio es exactamente lo que se entregó.
 | Video de avance #2 (semana 3) | [`01-jss-guion-video-semana3.md`](01-jss-guion-video-semana3.md) | Enviado; congelado. Falta registrar la fecha exacta |
 | Presentación formal del problema (semana 4) | [`02-jss-informe-semana4.md`](02-jss-informe-semana4.md) | Enviado; congelado. Falta registrar la fecha exacta |
 | Video de avance #3 (semana 7): propuesta metodológica + datos disponibles | [`03-jss-guion-video-semana7.md`](03-jss-guion-video-semana7.md) | Guion listo; falta grabar y registrar la fecha de envío |
-| Presentación final (semana 8) | [`04-jss-guion-video-semana8.md`](04-jss-guion-video-semana8.md) | Guion listo; falta grabar, publicar en el foro y registrar la fecha de envío |
+| Presentación final (semana 8) | [`04-jss-guion-video-semana8.md`](04-jss-guion-video-semana8.md) | Enviado el 2026-09-28; congelado |
 
 Pendiente inmediato: grabar la presentación final, publicar el enlace sin restricciones de
 acceso en el foro de revisión entre equipos, revisar al equipo asignado con comentarios
