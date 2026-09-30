@@ -198,6 +198,9 @@ Puntuar 0–2:
 
 Ninguna dimensión puede quedar en 0. Umbral normal: **13/16**. Slides/páginas/escenas hero, resumen, argumento central y cierre: **14/16**. Si falla: `REVISE`, corregir y volver a auditar. Sólo entregar en `APPROVED`.
 
+### Renderizado
+Para renderizar PPTX o DOCX usar LibreOffice en modo headless: `make deck-render FILE=<ruta>` desde la raíz del repositorio, o `soffice --headless --convert-to pdf --outdir <carpeta> <archivo>`. Inspeccionar el PDF resultante página por página. Si `soffice` no está disponible, declararlo y pedir a la persona que revise el archivo visualmente; no afirmar que la auditoría visual se hizo.
+
 ### E. Gate específico por modo
 - PRESENTATION: inspeccionar deck completo y cada slide renderizada; verificar notas completas.
 - VIDEO_REEL: verificar timing total, cues, sincronía, continuidad, safe areas y legibilidad al tamaño final.

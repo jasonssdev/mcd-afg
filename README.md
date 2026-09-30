@@ -366,7 +366,14 @@ instalarlos en el equipo local:
    listado en `assets.sha256` antes de copiar, y falla con un mensaje explícito si falta la
    ruta, falta un archivo o un hash no coincide. Es idempotente; `uv run afg skills verify
    deck-uc` repite la comprobación sobre lo ya instalado.
-5. Si una herramienta busca skills en otra carpeta, ejecutar `make skill-link DEST=<carpeta>`.
+5. Instalar LibreOffice, requisito del sistema para la revisión visual. `python-pptx` y
+   `python-docx` escriben los archivos, pero no los dibujan; LibreOffice los convierte a PDF
+   desde la terminal para detectar textos desbordados, solapes y fuentes sustituidas antes de
+   entregar. Se instala con `brew install --cask libreoffice` en macOS, `sudo apt install
+   libreoffice` en Debian o Ubuntu, y desde libreoffice.org en Windows, cuidando que `soffice`
+   quede en el `PATH`. `make setup-deck` avisa si no lo encuentra, y `make deck-render
+   FILE=<ruta>` genera el PDF junto al archivo original.
+6. Si una herramienta busca skills en otra carpeta, ejecutar `make skill-link DEST=<carpeta>`.
    Crea un enlace simbólico relativo y agrega esa carpeta a `.git/info/exclude`, de modo que
    ningún nombre de carpeta específico de una herramienta queda versionado.
 
