@@ -1,8 +1,8 @@
 | | |
 |---|---|
 | **Entrega** | Presentación formal del problema (semana 4, AFG1), máximo dos planas |
-| **Fecha de envío** | Semana 4 del curso (fecha exacta por completar) |
-| **Versión** | 1.0 |
+| **Fecha de envío** | 2026-09-28 |
+| **Versión** | 1.1 |
 | **Construido desde** | Versión previa de la propuesta, anterior a la auditoría de datos |
 | **Estado** | Congelado tal como se envió. **No se edita.** |
 
@@ -11,6 +11,7 @@
 | Versión | Fecha | Cambio | Motivo |
 |---|---|---|---|
 | 1.0 | 2026-09-20 | Incorporación al repositorio del informe tal como se envió. | Registro del entregable. |
+| 1.1 | 2026-09-30 | Registro de la fecha de envío; el contenido no cambia. | Entregable enviado el 2026-09-28. |
 
 > **Aviso de lectura.** Este documento refleja el diseño de la semana 4. Desde entonces el
 > proyecto cambió: se agregó la condición C3 (base construida desde anotación humana), el

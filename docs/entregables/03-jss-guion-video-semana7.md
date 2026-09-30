@@ -3,8 +3,8 @@
 | | |
 |---|---|
 | **Entrega** | Video de avance #3: propuesta metodológica + descripción inicial de datos disponibles (semana 7, AFG1) |
-| **Fecha de envío** | (por completar al subir el video) |
-| **Versión** | 1.1 |
+| **Fecha de envío** | 2026-09-28 |
+| **Versión** | 1.2 |
 | **Construido desde** | `docs/avances/02-jss-fuente-de-datos.md` v1.1 · `docs/avances/06-jss-metodologia.md` v1.1 · `docs/avances/03-jss-objetivos.md` v2.0 |
 | **Duración objetivo** | 5:00 (máximo permitido) |
 | **Formato** | Tres presentadores, bloques consecutivos, en este orden: Jason, Germán, Gustavo |
@@ -16,6 +16,7 @@
 |---|---|---|---|
 | 1.0 | 2026-09-20 | Versión inicial del guion. | Preparación del video de avance #3. |
 | 1.1 | 2026-09-21 | Corrección de rutas en la tabla de evidencia (`docs/BACKLOG.md` → `docs/decisions/README.md`); la prosa no cambia. | Retiro de `docs/BACKLOG.md`: los enlaces quedaban muertos. |
+| 1.2 | 2026-09-30 | Registro de la fecha de envío; el contenido no cambia. | Entregable enviado el 2026-09-28. |
 
 ## Qué pide el curso y dónde se cubre
 
