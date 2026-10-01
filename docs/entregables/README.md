@@ -54,6 +54,12 @@ envío queda congelado: solo se admiten correcciones de ruta en enlaces que deja
 existir, sin tocar la prosa, y también suben el decimal. Así la versión dice, de un vistazo,
 si lo que está en el repositorio es exactamente lo que se entregó.
 
+Si después de la entrega conviene volver a escribir un entregable, por ejemplo porque la
+retroalimentación mostró que no se entendió, no se edita el archivo congelado: se crea uno
+nuevo con el sufijo `-v2` (`04-jss-guion-video-semana8-v2.md`), que declara en su cabecera que
+no fue enviado y de qué versión de los avances se construyó. Esa versión de estudio es la base
+de las próximas presentaciones; la entregada sigue siendo el registro de lo que se envió.
+
 ## Estado
 
 | Entregable | Archivo | Estado |
@@ -63,7 +69,8 @@ si lo que está en el repositorio es exactamente lo que se entregó.
 | Presentación formal del problema (semana 4) | [`02-jss-informe-semana4.md`](02-jss-informe-semana4.md) | Enviado el 2026-09-28; congelado |
 | Video de avance #3 (semana 7): propuesta metodológica + datos disponibles | [`03-jss-guion-video-semana7.md`](03-jss-guion-video-semana7.md) | Enviado el 2026-09-28; congelado |
 | Presentación final (semana 8) | [`04-jss-guion-video-semana8.md`](04-jss-guion-video-semana8.md) | Enviado el 2026-09-28; congelado |
+| Presentación final (semana 8), versión de estudio | [`04-jss-guion-video-semana8-v2.md`](04-jss-guion-video-semana8-v2.md) | Versión de estudio posterior a la entrega; no enviada |
 
-Pendiente inmediato: grabar la presentación final, publicar el enlace sin restricciones de
-acceso en el foro de revisión entre equipos, revisar al equipo asignado con comentarios
-cualitativos, y llenar el formulario de evaluación cuantitativa.
+Todos los entregables de AFG1 se enviaron el 2026-09-28. La versión de estudio del guion de
+la semana 8 recoge la retroalimentación de la revisión entre equipos y es el punto de partida
+de las presentaciones de los cursos siguientes.
