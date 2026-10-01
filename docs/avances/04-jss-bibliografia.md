@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 04 — Bibliografía |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.1 |
-| **Fecha** | 2026-09-20 |
+| **Versión** | 1.2 |
+| **Fecha** | 2026-10-01 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -14,10 +14,29 @@
 |---|---|---|---|
 | 1.0 | 2026-09-20 | Versión inicial. Bibliografía APA 7 para AFG1. | Primera entrega del curso. |
 | 1.1 | 2026-09-20 | Correcciones de autores, títulos y sufijos a/b; entrada de la licencia AMI en refs.bib. | Verificación contra la API de arXiv y DOI, 2026-09-20. |
+| 1.2 | 2026-10-01 | Se agrega una guía de lectura al inicio y, en cada sección temática, un párrafo que explica en lenguaje llano para qué sirve ese grupo de fuentes en el proyecto. Las entradas bibliográficas no cambian: ni una letra. | Retroalimentación de la revisión entre equipos de la semana 8: el problema y la metodología no se entendían, menos aún para una audiencia no técnica. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
 > la evidencia que lo motivó**. El historial nunca se reescribe: se agrega una fila.
+
+## Cómo leer esta bibliografía
+
+Una bibliografía de tesis suele leerse como una lista de nombres. Esta se puede leer de
+otra manera: como el mapa de las conversaciones en que el proyecto participa. Cada sección
+temática reúne los trabajos que responden a una misma pregunta, y empieza con un párrafo que
+dice, sin tecnicismos, cuál es esa pregunta y qué aporta el grupo al proyecto. Quien quiera
+entender por qué el proyecto está planteado como está, puede leer solo esos párrafos. Quien
+necesite verificar una cita, encontrará debajo la entrada completa.
+
+Las secciones siguen el orden del argumento del proyecto: primero los datos y los intentos
+anteriores de detectar decisiones en reuniones (sección 1); después la técnica de la que el
+proyecto parte y quiere superar, la recuperación aumentada (sección 2); luego lo que se
+sabe sobre extraer información con modelos de lenguaje y sobre los errores que eso
+introduce (sección 3); cómo se evalúa si una respuesta es correcta y tiene fuente (sección
+4); cómo se representa que el conocimiento cambia con el tiempo (sección 5); qué entiende
+la literatura de gestión por memoria organizacional (sección 6); y, por último, los marcos
+para registrar de dónde viene cada dato y para gestionar riesgos (sección 7).
 
 ## Nota de estilo y verificación
 
@@ -57,6 +76,17 @@ CC BY 4.0. Sustituye el régimen descrito en Carletta et al. (2006) y Carletta (
 > los artículos; afirmar una fecha no verificada sería el mismo error en otra dirección.
 
 ## 1. Corpus y detección de decisiones en reuniones
+
+*Para qué sirve este grupo.* Aquí están los datos y quienes ya intentaron lo mismo. Las
+entradas de Carletta y Renals describen el corpus AMI: cómo se grabaron las reuniones y qué
+marcas se agregaron a mano. Hsueh y Moore, Fernández et al. y Bui et al. son los equipos que
+intentaron detectar decisiones automáticamente sobre ese corpus hace más de quince años; el
+documento 01 cuenta que dos de ellos, trabajando sobre las mismas reuniones, no se pusieron
+de acuerdo en qué era una decisión. Murray et al. es el antecedente más cercano: pusieron a
+personas a reconstruir la historia de una decisión leyendo una serie completa de reuniones,
+y demostraron que la tarea es real y difícil, aunque no dejaron datos reutilizables. QMSum y
+el survey de Rennard et al. muestran dónde está hoy el resumen automático de reuniones, que
+es la alternativa más común a lo que este proyecto propone.
 
 Carletta, J. (2007). Unleashing the killer corpus: Experiences in creating the
 multi-everything AMI Meeting Corpus. *Language Resources and Evaluation*, *41*(2), 181–190.
@@ -101,6 +131,16 @@ summarization: A survey. *Transactions of the Association for Computational Ling
 
 ## 2. Recuperación aumentada y estructuración
 
+*Para qué sirve este grupo.* La recuperación aumentada, RAG, es la técnica que busca en los
+documentos los fragmentos parecidos a una pregunta y redacta una respuesta con ellos; es la
+condición C1 del experimento, la práctica actual contra la que se compara todo. Lewis et
+al. la definen. GraphRAG y LightRAG son la familia de soluciones más cercana a la propuesta:
+construir primero un índice estructurado y consultar después; el documento 01 explica que
+sus evaluaciones comparan sistemas completos y no permiten saber cuánto aporta la
+estructura por sí sola. RAGAs y ARES son marcos para evaluar sistemas RAG; definen métricas
+del mismo tipo que las que el documento 03 usa en OE3, como si la respuesta se apoya en los
+fragmentos recuperados.
+
 Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N., Küttler, H., Lewis,
 M., Yih, W., Rocktäschel, T., Riedel, S., & Kiela, D. (2020). Retrieval-augmented generation
 for knowledge-intensive NLP tasks. En *Advances in Neural Information Processing Systems 33*
@@ -126,6 +166,16 @@ framework for retrieval-augmented generation systems. En *Proceedings of NAACL-H
 (pp. 338–354). Association for Computational Linguistics. https://doi.org/10.18653/v1/2024.naacl-long.20
 
 ## 3. Extracción de información y construcción de bases de conocimiento con LLM
+
+*Para qué sirve este grupo.* La condición C2 se construye con un modelo de lenguaje que lee
+transcripciones y escribe una base de decisiones. Este grupo reúne lo que se sabe sobre esa
+operación: qué tan bien extraen información estructurada los modelos (Dagdelen, Wadhwa, Xu),
+cómo se construyen grafos de conocimiento con ellos y cómo se mide el resultado
+(Text2KGBench, Zhu et al.), y, sobre todo, qué pasa con los errores. Jarnac et al. revisan
+cómo manejar la incertidumbre de lo extraído; Cai y O'Connor muestran que un error de
+extracción se propaga a todo lo que se calcula después sobre el grafo; y ConsistencyGate
+nombra el mismo modo de falla que este proyecto mide en OE4: la memoria que se contamina
+con lo que la máquina anotó mal.
 
 Dagdelen, J., Dunn, A., Lee, S., Walker, N., Rosen, A. S., Ceder, G., Persson, K. A., & Jain,
 A. (2024). Structured information extraction from scientific text with large language
@@ -165,6 +215,18 @@ afirmación de novedad final de la tesis (documento 01, §4).
 
 ## 4. Alucinación, atribución y evaluación
 
+*Para qué sirve este grupo.* Para medir si una respuesta es correcta y tiene fuente hace
+falta vocabulario y método. "Alucinación" es el nombre que recibe una respuesta que suena
+plausible pero no está respaldada por los datos; Ji et al. y Huang et al. la clasifican, y de
+Ji et al. se toma la distinción entre inventar algo que contradice la fuente y agregar algo
+que la fuente no dice. "Atribución" es que la respuesta señale el pasaje que la respalda;
+Rashkin et al. y Bohnet et al. definen cómo medirla, y es la base de la regla del documento
+05 según la cual una respuesta sin fuente cuenta como falla. Las tres últimas entradas
+tratan sobre usar un modelo de lenguaje como juez de otro: Zheng et al. muestran que puede
+funcionar, y Wang et al. y Panickssery et al. muestran sus sesgos, en particular que un
+modelo tiende a favorecer sus propias respuestas. Por eso el juez del proyecto pertenece a
+otra familia de modelos y se valida con personas.
+
 Ji, Z., Lee, N., Frieske, R., Yu, T., Su, D., Xu, Y., Ishii, E., Bang, Y., Madotto, A., &
 Fung, P. (2023). Survey of hallucination in natural language generation. *ACM Computing
 Surveys*, *55*(12), Artículo 248. https://doi.org/10.1145/3571730 — fuente de la distinción
@@ -202,6 +264,17 @@ own generations. En *Advances in Neural Information Processing Systems 37 (NeurI
 
 ## 5. Temporalidad del conocimiento
 
+*Para qué sirve este grupo.* El centro del proyecto es que una decisión cambia con el
+tiempo, y un sistema tiene que saber cuál versión está vigente. Las primeras cinco entradas
+(StreamingQA, FreshLLMs, RealTime QA, Chen et al., Dhingra et al.) estudian cómo los
+modelos de lenguaje responden preguntas cuya respuesta cambia según la fecha, y qué ocurre
+cuando la información con que cuentan quedó atrás; la hipótesis H4 del documento 03 se
+apoya en esa literatura. Cai et al. revisan los grafos de conocimiento temporales, donde cada
+hecho lleva su intervalo de validez. Kulkarni y Michels aportan la distinción, tomada de las
+bases de datos, entre el tiempo en que algo fue cierto y el tiempo en que se registró; el
+proyecto la usa para representar que una decisión se tomó en una reunión y se revirtió en
+otra.
+
 Liska, A., Kocisky, T., Gribovskaya, E., Terzi, T., Sezener, E., Agrawal, D., de Masson
 d'Autume, C., Scholtes, T., Zaheer, M., Young, S., Molloy, R., Lazaridou, A., & Blunsom, P.
 (2022). StreamingQA: A benchmark for adaptation to new knowledge over time in question
@@ -237,6 +310,17 @@ tiempo de transacción, usado aquí para el modelo de relación temporal.
 
 ## 6. Memoria organizacional y racionalidad de diseño
 
+*Para qué sirve este grupo.* El problema que el proyecto aborda no es nuevo: la gestión
+lleva décadas preguntándose cómo una organización recuerda lo que decidió y por qué. Walsh y
+Ungson, Stein, y Klammer y Gueldenberg son la literatura de memoria organizacional, incluido
+cómo se olvida. Las entradas de racionalidad de diseño (Kunz y Rittel, Buckingham Shum y
+Hammond, Grudin) son los intentos, desde los años setenta, de registrar las decisiones de
+diseño con sus alternativas y argumentos; su pregunta central, visible en el título de
+Buckingham Shum y Hammond, es cuánto cuesta registrar y cuánto se gana con ello, y es la
+misma pregunta que lleva a este proyecto a intentar extraer las decisiones de las
+transcripciones en lugar de pedir que alguien las escriba. Zhou et al. es el intento más reciente de hacerlo con
+modelos de lenguaje.
+
 Walsh, J. P., & Ungson, G. R. (1991). Organizational memory. *Academy of Management Review*,
 *16*(1), 57–91. https://doi.org/10.5465/amr.1991.4278992
 
@@ -265,6 +349,14 @@ generating design rationale for software architecture decisions. *ACM Transactio
 Software Engineering and Methodology*, *35*(8), 1–38. https://doi.org/10.1145/3785010
 
 ## 7. Procedencia y marcos de riesgo
+
+*Para qué sirve este grupo.* Procedencia es el registro de dónde viene cada dato: de qué
+reunión, de qué pasaje, por qué proceso. PROV-O es el estándar del W3C para expresarlo, y
+Singh et al. proponen aplicar la misma idea a las decisiones que toman sistemas
+automatizados, para poder rendir cuentas de ellas. El marco de riesgos del NIST es el que
+el documento 05 usa para organizar los aspectos éticos. La especificación OKF describe el
+formato en que el instrumento OpenKOS guarda la base de decisiones de C2; se cita como
+borrador porque lo es.
 
 Lebo, T., Sahoo, S., & McGuinness, D. (Eds.). (2013). *PROV-O: The PROV ontology* (W3C
 Recommendation, 30 de abril de 2013). World Wide Web Consortium.
