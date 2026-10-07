@@ -668,12 +668,30 @@ def gold_recall_sample(
         "--min-overlap",
         help="Minimum absolute shared-token count (|A & B|), alongside --threshold.",
     ),
+    force: bool = typer.Option(
+        False,
+        "--force",
+        help="Overwrite an existing sample. Invalidates any annotation made on it.",
+    ),
 ) -> None:
     """Sample rejected pairs for the blocker recall check (Tarea C).
 
     Provisional: sampled from raw abstractive DECISIONS sentences, same caveat as
     ``afg gold candidates``. Writes ``data/processed/relations/<series>.recall-sample.csv``.
+
+    Refuses to overwrite an existing sample unless ``--force`` is given: the sample is
+    drawn once with a fixed seed, and one regenerated after seeing results is no longer
+    a valid estimate (docs/anotacion/asignacion/tareas-jss.md section 5).
     """
+    out_path = GOLD_RELATIONS_DIR / f"{series}.recall-sample.csv"
+    if out_path.exists() and not force:
+        console.print(
+            f"[bold red]{out_path} ya existe y no se sobrescribe.[/bold red] La muestra de "
+            "recall se genera una sola vez; regenerarla invalida la Tarea C. Si de verdad "
+            "hay que reemplazarla, lo decide quien adjudica y se corre con --force."
+        )
+        raise typer.Exit(code=1)
+
     settings = get_settings()
     ami_root = settings.ami_root or AMI_DIR
     decisions = _decisions_for_series_or_exit(ami_root, series)
@@ -681,7 +699,6 @@ def gold_recall_sample(
     sample = sample_rejected(
         decisions, n=n, seed=seed, threshold=threshold, min_overlap_tokens=min_overlap
     )
-    out_path = GOLD_RELATIONS_DIR / f"{series}.recall-sample.csv"
     write_candidate_pairs_csv(sample, out_path)
 
     console.print(
