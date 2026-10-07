@@ -326,7 +326,7 @@ Declarados por adelantado para acotar las conclusiones defendibles.
 
 - Carletta, J., Ashby, S., Bourban, S., Flynn, M., Guillemot, M., Hain, T., Kadlec, J., Karaiskos, V., Kraaij, W., Kronenthal, M., Lathoud, G., Lincoln, M., Lisowska, A., McCowan, I., Post, W., Reidsma, D., & Wellner, P. (2006). The AMI Meeting Corpus: A Pre-announcement. En *Machine Learning for Multimodal Interaction (MLMI 2005)*, LNCS 3869, 28–39. Springer. DOI 10.1007/11677482_3
 - Carletta, J. (2007). Unleashing the killer corpus: experiences in creating the multi-everything AMI Meeting Corpus. *Language Resources and Evaluation*, 41(2), 181–190. DOI 10.1007/s10579-007-9040-x — *autoría individual; revista, no LREC*
-- AMI Meeting Corpus. (s.f.). *Licence* [Página web]. University of Edinburgh. Recuperado el 20 de septiembre de 2026, de https://groups.inf.ed.ac.uk/ami/corpus/license.shtml — *declara CC BY 4.0 sin fecha de entrada en vigor (§5.0)*
+- AMI Meeting Corpus. (s.f.). *Licence* [Página web]. University of Edinburgh. Recuperado el 20 de septiembre de 2026, de <https://groups.inf.ed.ac.uk/ami/corpus/license.shtml> — *declara CC BY 4.0 sin fecha de entrada en vigor (§5.0)*
 - Renals, S., Hain, T., & Bourlard, H. (2007). Recognition and Understanding of Meetings: The AMI and AMIDA Projects. *IEEE ASRU 2007*.
 - Hsueh, P.-Y., & Moore, J. D. (2007a). What Decisions Have You Made?: Automatic Decision Detection in Meeting Conversations. *NAACL-HLT 2007*, 25–32. ACL Anthology N07-1004.
 - Hsueh, P.-Y., & Moore, J. D. (2007b). Automatic Decision Detection in Meeting Speech. *MLMI 2007*, LNCS 4892, 168–179. Springer. DOI 10.1007/978-3-540-78155-4_15 — *Springer fecha el volumen en 2008; son dos artículos distintos, no confundir con el anterior*
