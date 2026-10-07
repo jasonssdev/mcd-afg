@@ -7,17 +7,19 @@
 # condition can silently drift from it.
 
 [shared_budget]
-generative_model = "qwen3:8b"        # placeholder; fix and publish the exact version before Experiment A/B (5.8)
+generative_model = "qwen3:8b"        # the model `openkos query` answers with (ADR 0006); pin the exact tag before Experiment A/B (5.8)
 generative_model_large = "qwen3:32b" # second scale point (H3); an extension, not a committed run -- see docs/avances/03-jss-objetivos.md
 embedding_model = "bge-m3"
-context_window_tokens = 8192
-seed = 42
-temperature = 0.1
+context_window_tokens = 12288        # openkos num_ctx default (ADR 0006)
+max_generation_tokens = 8192         # openkos num_predict default (ADR 0006)
+seed = 42                            # openkos leaves seed unset by default: set it in every workspace's openkos.yaml
+temperature = 0.1                    # same: openkos leaves temperature unset by default
 top_p = 0.9
 runs_per_config = 3                  # thesis section 5.8: minimum 3 runs, report mean + dispersion
 
 [retrieval]
-top_k = 8
+answer_limit = 5                     # blocks sent to the answer prompt; openkos query --limit default (ADR 0006)
+rrf_k = 60                           # reciprocal rank fusion constant, as in openkos retrieval/fusion.py
 hybrid_lexical_weight = 0.5          # RRF fusion weight, lexical channel (BM25)
 hybrid_dense_weight = 0.5            # RRF fusion weight, dense channel (bge-m3 / sqlite-vec)
 
