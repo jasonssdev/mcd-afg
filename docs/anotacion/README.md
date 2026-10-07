@@ -67,8 +67,8 @@ uv run afg gold status   --annotator <iniciales>                 # tu avance (so
 
 **Los archivos base ya están generados y no se regeneran.** Los comandos siguientes los
 corrió quien mantiene el repositorio en la Fase 0, y se listan solo como referencia. Volver a
-correrlos sobrescribe el insumo: `recall-sample`, en particular, reemplaza la muestra de
-recall con semilla fija, y una muestra regenerada deja de ser válida.
+correrlos sobrescribe el insumo. La excepción es `recall-sample`, que se niega a reemplazar una
+muestra existente salvo con `--force`, porque una muestra regenerada deja de ser válida.
 
 ```bash
 uv run afg gold build --series IS1004        # -> data/processed/decisions/IS1004.decisions.csv (base de la Tarea A)

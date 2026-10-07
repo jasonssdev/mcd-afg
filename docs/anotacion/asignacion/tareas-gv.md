@@ -321,7 +321,8 @@ convención (la posterior actúa sobre la anterior).
 
 **Archivo:** `data/processed/relations/IS1004.recall-sample.csv` — **ya está generado**, con
 50 pares que el bloqueador **rechazó** (verificado: 50 filas, con la semilla ya registrada).
-No lo regeneres: volver a correr `afg gold recall-sample` lo sobrescribe.
+No lo regeneres: `afg gold recall-sample` se niega a sobrescribir una muestra que ya existe,
+y forzarlo con `--force` es decisión de `jss`, no tuya.
 
 `uv run afg gold prepare --annotator gv` crea tu copia,
 `IS1004.recall-sample.gv.csv`, junto con el resto de tus archivos. Mismas columnas y
