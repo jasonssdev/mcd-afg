@@ -384,14 +384,14 @@ mantenedor revise exactamente esa serie antes de que entre.
 ```bash
 git checkout main                                          # vuelve a main
 git pull                                                    # trae lo que el equipo ya fusionó
-git checkout -b data/anotacion-ES2015                       # crea la rama de esta serie
+git checkout -b data/anotacion-ES2015-gv                    # crea la rama de esta serie
 uv run afg gold prepare --annotator gv
 # ... anotas ...
 uv run afg gold validate --annotator gv --series ES2015     # tiene que salir sin errores
 git add data/processed/decisions/ES2015.decisions.gv.csv \
         data/processed/relations/ES2015.candidates.gv.csv
 git commit -m "data(anotacion): tareas A y B de ES2015 (gv)"
-git push -u origin data/anotacion-ES2015                    # sube la rama al repositorio del equipo
+git push -u origin data/anotacion-ES2015-gv                 # sube la rama al repositorio del equipo
 ```
 
 `origin` es el repositorio del equipo (`jasonssdev/mcd-afg`), el único remoto que hace falta.
@@ -418,10 +418,12 @@ Después de que se fusione el PR, se limpia la rama local ya mergeada:
 ```bash
 git checkout main
 git pull
-git branch -d data/anotacion-ES2015
+git branch -d data/anotacion-ES2015-gv
 ```
 
-- **Rama `data/anotacion-<serie>`**, con el prefijo `data/` de `CONTRIBUTING.md` §7.2.
+- **Rama `data/anotacion-<serie>-gv`**, con el prefijo `data/` de `CONTRIBUTING.md` §7.2. Las
+  iniciales al final son obligatorias: en las Fases 1 y 2 las dos personas anotan la misma
+  serie, y sin ellas las dos ramas tendrían el mismo nombre y el segundo `git push` chocaría.
 - **Revisa el mantenedor** (`jss`), que es el CODEOWNER de `main`.
 - **Una serie por PR, no todas juntas.** Un PR por serie permite detectar deriva de criterio
   temprano: si en la tercera serie empezaste a marcar `compuesta` con otro umbral, se ve en
@@ -463,7 +465,7 @@ dividida con sentido).
 - [ ] No hubo comparación de etiquetas ni discusión de casos concretos con `gm` antes de la adjudicación
 
 ### Entrega
-- [ ] Rama `data/anotacion-<serie>` creada desde `main` actualizado (`git pull` antes de crear la rama)
+- [ ] Rama `data/anotacion-<serie>-gv` creada desde `main` actualizado (`git pull` antes de crear la rama)
 - [ ] `uv run afg gold validate --annotator gv --series <ID>` sale sin errores
 - [ ] Un PR con **esta serie sola**
 - [ ] `uv run pytest -q` pasa
