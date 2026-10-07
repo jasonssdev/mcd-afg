@@ -323,6 +323,7 @@ Declarados por adelantado para acotar las conclusiones defendibles.
 
 - Carletta, J., Ashby, S., Bourban, S., Flynn, M., Guillemot, M., Hain, T., Kadlec, J., Karaiskos, V., Kraaij, W., Kronenthal, M., Lathoud, G., Lincoln, M., Lisowska, A., McCowan, I., Post, W., Reidsma, D., & Wellner, P. (2006). The AMI Meeting Corpus: A Pre-announcement. En *Machine Learning for Multimodal Interaction (MLMI 2005)*, LNCS 3869, 28–39. Springer. DOI 10.1007/11677482_3
 - Carletta, J. (2007). Unleashing the killer corpus: experiences in creating the multi-everything AMI Meeting Corpus. *Language Resources and Evaluation*, 41(2), 181–190. DOI 10.1007/s10579-007-9040-x — *autoría individual; revista, no LREC*
+- AMI Meeting Corpus. (s.f.). *Licence* [Página web]. University of Edinburgh. Recuperado el 20 de septiembre de 2026, de https://groups.inf.ed.ac.uk/ami/corpus/license.shtml — *declara CC BY 4.0 sin fecha de entrada en vigor (§5.0)*
 - Renals, S., Hain, T., & Bourlard, H. (2007). Recognition and Understanding of Meetings: The AMI and AMIDA Projects. *IEEE ASRU 2007*.
 - Hsueh, P.-Y., & Moore, J. D. (2007a). What Decisions Have You Made?: Automatic Decision Detection in Meeting Conversations. *NAACL-HLT 2007*, 25–32. ACL Anthology N07-1004.
 - Hsueh, P.-Y., & Moore, J. D. (2007b). Automatic Decision Detection in Meeting Speech. *MLMI 2007*, LNCS 4892, 168–179. Springer. DOI 10.1007/978-3-540-78155-4_15 — *Springer fecha el volumen en 2008; son dos artículos distintos, no confundir con el anterior*
@@ -354,9 +355,9 @@ Declarados por adelantado para acotar las conclusiones defendibles.
 ### 8.4 Alucinación, atribución y evaluación
 
 - Ji, Z., Lee, N., Frieske, R., Yu, T., Su, D., Xu, Y., Ishii, E., Bang, Y. J., Madotto, A., & Fung, P. (2023). Survey of Hallucination in Natural Language Generation. *ACM Computing Surveys*, 55(12), art. 248. DOI 10.1145/3571730 — *fuente de la distinción intrínseca/extrínseca*
-- Huang, L., et al. (2025). A Survey on Hallucination in Large Language Models: Principles, Taxonomy, Challenges, and Open Questions. *ACM TOIS*, 43(2), art. 42. DOI 10.1145/3703155
+- Huang, L., Yu, W., Ma, W., Zhong, W., Feng, Z., Wang, H., Chen, Q., Peng, W., Feng, X., Qin, B., & Liu, T. (2025). A Survey on Hallucination in Large Language Models: Principles, Taxonomy, Challenges, and Open Questions. *ACM TOIS*, 43(2), 1–55. DOI 10.1145/3703155
 - Rashkin, H., Nikolaev, V., Lamm, M., Aroyo, L., Collins, M., Das, D., Petrov, S., Tomar, G. S., Turc, I., & Reitter, D. (2023). Measuring Attribution in Natural Language Generation Models. *Computational Linguistics*, 49(4), 777–840. DOI 10.1162/coli_a_00486
-- Bohnet, B., et al. (2022). Attributed Question Answering: Evaluation and Modeling for Attributed Large Language Models. arXiv:2212.08037 — **preprint sin revisión por pares**
+- Bohnet, B., Tran, V. Q., Verga, P., Aharoni, R., Andor, D., Soares, L. B., Ciaramita, M., Eisenstein, J., Ganchev, K., Herzig, J., Hui, K., Kwiatkowski, T., Ma, J., Ni, J., Saralegui, L. S., Schuster, T., Cohen, W. W., Collins, M., Das, D., … Webster, K. (2022). Attributed Question Answering: Evaluation and Modeling for Attributed Large Language Models. arXiv:2212.08037 — **preprint sin revisión por pares**
 - Zheng, L., Chiang, W.-L., Sheng, Y., Zhuang, S., Wu, Z., Zhuang, Y., Lin, Z., Li, Z., Li, D., Xing, E. P., Zhang, H., Gonzalez, J. E., & Stoica, I. (2023). Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena. *NeurIPS 2023 Datasets and Benchmarks*, 46595–46623.
 - Wang, P., Li, L., Chen, L., Cai, Z., Zhu, D., Lin, B., Cao, Y., Liu, Q., Liu, T., & Sui, Z. (2024). Large Language Models are not Fair Evaluators. *ACL 2024*, 9440–9450. DOI 10.18653/v1/2024.acl-long.511
 - Panickssery, A., Bowman, S. R., & Feng, S. (2024). LLM Evaluators Recognize and Favor Their Own Generations. *NeurIPS 2024*, 68772–68802.
