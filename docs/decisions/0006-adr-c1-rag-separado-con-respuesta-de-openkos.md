@@ -53,16 +53,29 @@ Se consideraron tres caminos para C1:
    no describe fragmentos de transcripción; se copia igual y se declara como limitación.
    Cualquier ajuste reabriría la duda de que la diferencia entre condiciones venga de la
    instrucción y no de la representación.
-5. **OpenKOS se fija a una versión exacta publicada, `openkos==0.5.3`**, que incluye los
-   cambios de recuperación posteriores a `v0.5.2`. No se usa un rango (`>=`).
-6. **`openkos query --json`** se agrega en OpenKOS como prerrequisito: devuelve la respuesta,
-   **todos** los bloques enviados al modelo con su texto exacto, lo recuperado antes de armar
-   el contexto, las citas y los parámetros usados. OE4 lo necesita para distinguir un error
+5. **OpenKOS se fija a una versión exacta publicada, `openkos==0.5.4`**, la primera que trae
+   `query --json` (issue jasonssdev/openkos#1345). No se usa un rango (`>=`) ni la 0.5.3. Desde
+   la 0.5.3 el índice léxico cambia (stemming), así que cada condición usa un espacio de
+   trabajo nuevo, construido con la versión fijada.
+6. **`openkos query --json`** se agrega en OpenKOS como prerrequisito (esquema versión 1):
+   devuelve la respuesta, el resultado (`outcome`), **todos** los bloques enviados al modelo
+   con su texto exacto, lo omitido por presupuesto, lo recuperado antes de armar el contexto,
+   las citas, los parámetros del modelo y el SHA-256 de los prompts **tal como se enviaron**
+   (`system`, `user`, `sufficiency`). El resultado se lee de `outcome`, no del código de
+   salida. Es de solo lectura y no cambia cómo se responde. OE4 lo necesita para distinguir un error
    de recuperación de uno de síntesis; hoy ni la CLI ni el servidor MCP exponen el conjunto
    completo. Este proyecto se comunica con OpenKOS solo por la CLI, nunca importando sus
    módulos internos, que no tienen API estable.
 7. **Temperatura y semilla se fijan explícitamente** en las tres condiciones, en
-   `config/experiments.toml` y en el `openkos.yaml` de cada espacio de trabajo.
+   `config/experiments.toml` y en el `openkos.yaml` de cada espacio de trabajo. OpenKOS las
+   reporta como `null` cuando no están fijadas; una ejecución con `null` se rechaza.
+8. **La igualdad de instrucciones se verifica en cada ejecución.** C1 calcula el SHA-256 de
+   los prompts enviados igual que OpenKOS; los de sistema y suficiencia no dependen del
+   contexto, de modo que deben coincidir entre condiciones. El de usuario permite comprobar
+   que los bloques registrados reproducen exactamente lo que vio el modelo.
+9. **Sin contenido confidencial.** No se usa `--include-confidential`; si OpenKOS informa
+   algún concepto confidencial en una consulta, la ejecución se rechaza, para no mezclar
+   condiciones con reglas de visibilidad distintas.
 
 ## Consecuencias
 
@@ -70,7 +83,7 @@ Se consideraron tres caminos para C1:
   temperatura y semilla. Lo que varía es qué se recupera y de dónde, que es lo que §5.3 pide.
 - C1 sigue siendo ajustable, como exige una línea base honesta, sin tocar el instrumento.
 - El experimento depende de un cambio en OpenKOS (`query --json`) y de su publicación como
-  0.5.3. Mientras no exista, C2 y C3 no pueden registrar lo recuperado y OE4 queda bloqueado.
+  0.5.4. Mientras no exista, C2 y C3 no pueden registrar lo recuperado y OE4 queda bloqueado.
 - Si OpenKOS cambia sus prompts de respuesta en una versión posterior, la copia de C1 no se
   actualiza sola: el SHA-256 fijado lo detecta y la prueba falla.
 - Los valores de `config/experiments.toml` que hoy difieren de los de OpenKOS
