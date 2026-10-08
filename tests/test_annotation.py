@@ -6,7 +6,6 @@ import pytest
 
 from afg.annotation.agreement import (
     agreement_meets_threshold,
-    build_adjudication_log,
     compute_agreement,
 )
 from afg.annotation.linking import (
@@ -115,30 +114,6 @@ class TestAgreement:
     def test_compute_agreement_perfect(self) -> None:
         labels = ["revierte", "refina", "no_relacionada"]
         assert compute_agreement(labels, labels) == pytest.approx(1.0)
-
-    def test_build_adjudication_log_only_includes_disagreements(self) -> None:
-        log = build_adjudication_log(
-            item_ids=["p1", "p2", "p3"],
-            labels_a=["revierte", "refina", "no_relacionada"],
-            labels_b=["revierte", "reemplaza", "no_relacionada"],
-            annotator_a="alice",
-            annotator_b="bob",
-        )
-
-        assert len(log) == 1
-        assert log[0].item_id == "p2"
-        assert log[0].label_a == "refina"
-        assert log[0].label_b == "reemplaza"
-
-    def test_mismatched_lengths_raises(self) -> None:
-        with pytest.raises(ValueError, match="same length"):
-            build_adjudication_log(
-                item_ids=["p1"],
-                labels_a=["a", "b"],
-                labels_b=["a"],
-                annotator_a="alice",
-                annotator_b="bob",
-            )
 
     def test_agreement_meets_threshold(self) -> None:
         assert agreement_meets_threshold(0.65) is True

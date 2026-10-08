@@ -482,12 +482,13 @@ def gold_agreement(
     """
     from afg.annotation.agreement import (
         AgreementInputError,
+        annotator_csvs,
         compute_series_agreement,
         write_agreement_csv,
     )
 
-    pattern = f"{series}.candidates.*.csv"
-    paths = sorted(GOLD_RELATIONS_DIR.glob(pattern))
+    pattern = f"{series}.candidates.<initials>.csv"
+    paths = annotator_csvs(GOLD_RELATIONS_DIR, series, "candidates")
     if len(paths) < 2:
         console.print(
             f"[bold red]Need at least 2 annotator files matching "
@@ -1101,37 +1102,61 @@ def gold_status(
 def gold_adjudicate(
     series: str = typer.Option(..., "--series", help="Serie de doble anotación, p. ej. ES2015."),
     force: bool = typer.Option(
-        False, "--force", help="Regenera aunque el registro ya tenga resoluciones escritas."
+        False, "--force", help="Regenera aunque los CSV ya tengan veredictos escritos."
     ),
 ) -> None:
-    """Escribe data/processed/relations/<serie>.adjudication.md ya pre-llenado.
+    """Escribe los dos CSV de adjudicación de una serie, con las respuestas lado a lado.
 
-    Calcula los tres kappas, encuentra los desacuerdos y deja una fila por cada uno con
-    las dos etiquetas puestas. El humano llena solo "etiqueta final" y "razón".
+    Genera `<serie>.decisions.adjudicated.csv` (una fila por decisión base) y
+    `<serie>.candidates.adjudicated.csv` (una fila por par). Cada archivo trae las columnas
+    de los dos anotadores, `acuerdo` (`si`/`no`) y las columnas del veredicto final. Solo
+    donde los dos coinciden se prellena el veredicto; donde discrepan, lo decide el
+    adjudicador.
     """
+    from afg.annotation.adjudication import write_adjudication_csvs
     from afg.annotation.agreement import AgreementInputError
-    from afg.annotation.workspace import write_adjudication_log
 
     plan = _plan_or_exit()
     try:
-        out_path = write_adjudication_log(plan, series, paths=_workspace_paths(), force=force)
-    except FileExistsError as exc:
-        console.print(f"[bold red]{exc}[/bold red]")
-        raise typer.Exit(code=1) from exc
-    except FileNotFoundError as exc:
-        console.print(f"[bold red]{exc}[/bold red]")
-        raise typer.Exit(code=1) from exc
-    except AgreementInputError as exc:
+        decisions_path, candidates_path = write_adjudication_csvs(
+            plan, series, paths=_workspace_paths(), force=force
+        )
+    except (FileExistsError, FileNotFoundError, AgreementInputError) as exc:
         console.print(f"[bold red]{exc}[/bold red]")
         raise typer.Exit(code=1) from exc
 
-    console.print(f"Escrito {_short(out_path)}")
+    console.print(f"Escrito {_short(decisions_path)}")
+    console.print(f"Escrito {_short(candidates_path)}")
     console.print(
-        "Faltan por llenar, a mano y solo por el adjudicador: la columna **etiqueta "
-        "final**, la columna **razón**, y la tabla de la Tarea A (`afg gold agreement` no "
-        "calcula ese eje).\n"
-        f"Corre también: uv run afg gold agreement --series {series}"
+        "Donde `acuerdo` es `no`, el adjudicador llena `final_*` y `razon` (y su "
+        "iniciales en `adjudicator`). Si una fila resulta `compuesta`, agrega debajo sus "
+        "filas hijas `<id>-1`, `<id>-2`, ... con `final_*` cada una.\n"
+        f"Luego corre: uv run afg gold validate-adjudication --series {series}\n"
+        f"Y los kappas: uv run afg gold agreement --series {series}"
     )
+
+
+@gold_app.command("validate-adjudication")
+def gold_validate_adjudication(
+    series: str = typer.Option(..., "--series", help="Serie de doble anotación, p. ej. ES2015."),
+) -> None:
+    """Verifica que el adjudicador terminó los dos CSV de adjudicación de una serie.
+
+    Cada fila necesita un `final_*` legal, `razon` donde hubo desacuerdo o `sin_soporte`,
+    y `adjudicator`; una fila `compuesta` necesita al menos dos filas hijas consecutivas.
+    Sale con código distinto de cero si queda algo pendiente.
+    """
+    from afg.annotation.adjudication import validate_adjudication
+
+    issues = validate_adjudication(series, paths=_workspace_paths())
+    if not issues:
+        console.print(f"[green]Sin errores.[/green] La adjudicación de {series} está completa.")
+        return
+
+    console.print(f"[bold red]{len(issues)} problema(s) en la adjudicación de {series}:[/bold red]")
+    for issue in issues:
+        console.print(f"  - {issue.message}")
+    raise typer.Exit(code=1)
 
 
 @gold_app.command("questions-init")

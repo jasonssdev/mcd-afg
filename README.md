@@ -297,7 +297,7 @@ uv run afg gold evidence --meeting IS1004d --term turbo          # busca evidenc
 uv run afg gold agreement --series IS1004          # kappa: existencia / tipo / dirección (Tarea D)
 uv run afg gold validate --annotator <iniciales>   # verifica tu trabajo antes de abrir el PR
 uv run afg gold status                             # panel del mantenedor: una fila por anotador y serie
-uv run afg gold adjudicate --series ES2015         # pre-llena la adjudicación de una serie de doble anotación
+uv run afg gold adjudicate --series ES2015         # escribe los dos CSV de adjudicación (prellenados donde hay acuerdo)
 uv run afg gold questions-init                     # crea el banco de 100 preguntas, vacío, 25 por estrato
 uv run afg gold link                               # sin implementar: sale con código 2 y explica qué falta
 

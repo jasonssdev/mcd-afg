@@ -13,8 +13,6 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
-from pydantic import BaseModel, ConfigDict, Field
-
 from afg.evaluation.metrics import cohen_kappa
 from afg.shared.csvio import open_csv_writer
 
@@ -25,22 +23,6 @@ from afg.shared.csvio import open_csv_writer
 _NO_RELATION_LABEL = "no_relacionada"
 
 
-class AdjudicationEntry(BaseModel):
-    """One disagreement between two annotators, pending (or recording) adjudication."""
-
-    model_config = ConfigDict(frozen=True)
-
-    item_id: str = Field(description="Id of the decision pair / relation being labeled.")
-    annotator_a: str
-    label_a: str
-    annotator_b: str
-    label_b: str
-    resolution: str | None = Field(
-        default=None, description="Final label after adjudication; None while unresolved."
-    )
-    adjudicator: str | None = Field(default=None)
-
-
 def compute_agreement(labels_a: list[str], labels_b: list[str]) -> float:
     """Cohen's kappa between two annotators' labels over the same items, in order.
 
@@ -48,34 +30,6 @@ def compute_agreement(labels_a: list[str], labels_b: list[str]) -> float:
     implementation of the statistic in this codebase.
     """
     return cohen_kappa(labels_a, labels_b)
-
-
-def build_adjudication_log(
-    item_ids: list[str],
-    labels_a: list[str],
-    labels_b: list[str],
-    *,
-    annotator_a: str,
-    annotator_b: str,
-) -> list[AdjudicationEntry]:
-    """Build the adjudication log: one entry per item where the two annotators disagree.
-
-    Items where both annotators agree are not included -- there is nothing to adjudicate.
-    """
-    if not (len(item_ids) == len(labels_a) == len(labels_b)):
-        raise ValueError("item_ids, labels_a, and labels_b must have the same length.")
-
-    return [
-        AdjudicationEntry(
-            item_id=item_id,
-            annotator_a=annotator_a,
-            label_a=label_a,
-            annotator_b=annotator_b,
-            label_b=label_b,
-        )
-        for item_id, label_a, label_b in zip(item_ids, labels_a, labels_b, strict=True)
-        if label_a != label_b
-    ]
 
 
 def agreement_meets_threshold(kappa: float, *, threshold: float = 0.60) -> bool:
@@ -133,10 +87,28 @@ class SeriesAgreementResult:
     direction_disagreements: tuple[str, ...]
 
 
-def _annotator_initials(path: Path) -> str:
-    """Extract ``<initials>`` from ``<series>.candidates.<initials>.csv``."""
+ADJUDICATED_SUFFIX = "adjudicated"
+"""Reserved filename suffix of the adjudication CSVs; it is never an annotator's initials."""
+
+
+def annotator_initials(path: Path) -> str:
+    """Extract ``<initials>`` from ``<series>.<kind>.<initials>.csv``."""
     stem = path.name.removesuffix(".csv")
     return stem.rsplit(".", 1)[-1]
+
+
+def annotator_csvs(directory: Path, series_id: str, kind: str) -> list[Path]:
+    """Every annotator file ``<series>.<kind>.<initials>.csv`` in ``directory``, sorted.
+
+    The one place that discovers annotator files by pattern. ``<series>.<kind>.adjudicated.csv``
+    matches the glob but is the adjudicator's output, never an annotator, so it is excluded
+    explicitly.
+    """
+    return sorted(
+        path
+        for path in directory.glob(f"{series_id}.{kind}.*.csv")
+        if annotator_initials(path) != ADJUDICATED_SUFFIX
+    )
 
 
 def _read_candidate_rows(path: Path) -> dict[str, dict[str, str]]:
@@ -174,14 +146,15 @@ def compute_series_agreement(paths: Sequence[Path]) -> SeriesAgreementResult:
         AgreementInputError: fewer than two input files, or the two selected files share no
             ``pair_id`` in common.
     """
+    paths = [p for p in paths if annotator_initials(p) != ADJUDICATED_SUFFIX]
     if len(paths) < 2:
         raise AgreementInputError(
             f"Need at least 2 annotator files to compute agreement, found {len(paths)}."
         )
 
     path_a, path_b = sorted(paths)[:2]
-    annotator_a = _annotator_initials(path_a)
-    annotator_b = _annotator_initials(path_b)
+    annotator_a = annotator_initials(path_a)
+    annotator_b = annotator_initials(path_b)
     rows_a = _read_candidate_rows(path_a)
     rows_b = _read_candidate_rows(path_b)
 

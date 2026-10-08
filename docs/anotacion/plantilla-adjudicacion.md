@@ -1,5 +1,16 @@
 # Plantilla del registro de adjudicación
 
+> **Reemplazada.** Esta plantilla describía el `<serie>.adjudication.md`, que ya no existe: la
+> adjudicación se escribe ahora en dos CSV, `<serie>.decisions.adjudicated.csv` y
+> `<serie>.candidates.adjudicated.csv`, que `uv run afg gold adjudicate --series <ID>` genera
+> y `uv run afg gold validate-adjudication --series <ID>` verifica. El procedimiento vigente
+> (columnas, prellenado, filas `compuesta`, vacíos de la guía) está en
+> [`asignacion/tareas-jss.md`](asignacion/tareas-jss.md) §3; la decisión, en
+> [`../decisions/README.md`](../decisions/README.md) D14. El resto de este archivo se conserva
+> solo como referencia histórica de la estructura del registro anterior.
+
+---
+
 > **Para qué.** Cada serie de doble anotación produce un archivo
 > `data/processed/relations/<serie>.adjudication.md`. Esta plantilla existe para que los
 > cinco salgan comparables entre sí.

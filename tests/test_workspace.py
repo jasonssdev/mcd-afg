@@ -17,21 +17,18 @@ import pytest
 
 from afg.annotation.workspace import (
     _QUESTION_COLUMNS,
-    ADJUDICATION_UNRESOLVED,
     AnnotationPlan,
     IssueKind,
     QuestionBankNotEmptyError,
     TaskKind,
     UnknownAnnotatorError,
     WorkspacePaths,
-    adjudication_has_resolutions,
     expected_files,
     load_annotation_plan,
     prepare_annotator_workspace,
     question_bank_is_empty,
     series_has_annotated_work,
     validate_annotator,
-    write_adjudication_log,
     write_question_bank_template,
 )
 from afg.domain.decision import AnnotationStatus
@@ -832,107 +829,6 @@ class TestValidateMachineColumns:
         _write_csv(path, _DECISION_COLUMNS, rows)
         report = validate_annotator(plan, "gv", paths=sources, series="ES2015")
         assert any(i.row_id == "ES2015z.d99" for i in report.issues)
-
-
-# --- adjudicate ---------------------------------------------------------------------------
-
-
-class TestAdjudicate:
-    @pytest.fixture
-    def two_annotators(self, plan: AnnotationPlan, sources: WorkspacePaths) -> WorkspacePaths:
-        prepare_annotator_workspace(plan, "gv", paths=sources)
-        prepare_annotator_workspace(plan, "gm", paths=sources)
-        base = sources.relations_dir / "ES2015.candidates.csv"
-        rows = list(csv.DictReader(base.open(newline="", encoding="utf-8")))
-        rows.append(_candidate_row("ES2015.p002", "ES2015a.d01", "ES2015b.d02"))
-        for initials, relation, direction in (("gv", "refina", "si"), ("gm", "reafirma", "no")):
-            annotated = []
-            for index, row in enumerate(rows):
-                new = dict(row)
-                new["relation"] = relation if index == 0 else "reafirma"
-                new["direction_ok"] = direction if index == 0 else "si"
-                new["confidence"] = "alta"
-                new["annotator"] = initials
-                annotated.append(new)
-            _write_csv(
-                sources.relations_dir / f"ES2015.candidates.{initials}.csv",
-                _CANDIDATE_COLUMNS,
-                annotated,
-            )
-        return sources
-
-    def test_writes_the_disagreement_table(
-        self, plan: AnnotationPlan, two_annotators: WorkspacePaths
-    ) -> None:
-        out_path = write_adjudication_log(plan, "ES2015", paths=two_annotators)
-        text = out_path.read_text(encoding="utf-8")
-
-        # Annotator A is the lexicographically first file, inherited from
-        # `compute_series_agreement` -- `gm` sorts before `gv`.
-        assert out_path.name == "ES2015.adjudication.md"
-        assert "| `ES2015.p001` | `reafirma` | `refina` |" in text
-        assert "`ES2015.p002`" not in text, "agreeing pairs have nothing to adjudicate"
-        assert "`si`" in text and "`no`" in text, "direction disagreements go in their own table"
-
-    def test_header_carries_series_people_and_three_kappas(
-        self, plan: AnnotationPlan, two_annotators: WorkspacePaths
-    ) -> None:
-        text = write_adjudication_log(plan, "ES2015", paths=two_annotators).read_text(
-            encoding="utf-8"
-        )
-        assert "Adjudicación — `ES2015`" in text
-        assert "Germán Vega" in text and "Gustavo Martínez" in text
-        assert "jss" in text
-        assert "Existencia del enlace" in text
-        assert "Tipo de relación" in text
-        assert "Dirección" in text
-
-    def test_final_label_and_reason_are_left_for_the_human(
-        self, plan: AnnotationPlan, two_annotators: WorkspacePaths
-    ) -> None:
-        text = write_adjudication_log(plan, "ES2015", paths=two_annotators).read_text(
-            encoding="utf-8"
-        )
-        row = next(line for line in text.splitlines() if "`ES2015.p001` | `reafirma`" in line)
-        assert row.count(ADJUDICATION_UNRESOLVED) == 2
-
-    def test_refuses_to_clobber_filled_resolutions(
-        self, plan: AnnotationPlan, two_annotators: WorkspacePaths
-    ) -> None:
-        out_path = write_adjudication_log(plan, "ES2015", paths=two_annotators)
-        resolved = out_path.read_text(encoding="utf-8").replace(
-            f"| {ADJUDICATION_UNRESOLVED} | {ADJUDICATION_UNRESOLVED} |",
-            "| `refina` | La posterior acota el objeto. |",
-            1,
-        )
-        out_path.write_text(resolved, encoding="utf-8")
-        assert adjudication_has_resolutions(out_path)
-
-        with pytest.raises(FileExistsError, match="ES2015"):
-            write_adjudication_log(plan, "ES2015", paths=two_annotators)
-
-        assert out_path.read_text(encoding="utf-8") == resolved
-
-    def test_force_overwrites_resolutions(
-        self, plan: AnnotationPlan, two_annotators: WorkspacePaths
-    ) -> None:
-        out_path = write_adjudication_log(plan, "ES2015", paths=two_annotators)
-        out_path.write_text("| `refina` | porque sí |", encoding="utf-8")
-        write_adjudication_log(plan, "ES2015", paths=two_annotators, force=True)
-        assert "Adjudicación" in out_path.read_text(encoding="utf-8")
-
-    def test_unresolved_log_is_not_treated_as_resolved(
-        self, plan: AnnotationPlan, two_annotators: WorkspacePaths
-    ) -> None:
-        out_path = write_adjudication_log(plan, "ES2015", paths=two_annotators)
-        assert not adjudication_has_resolutions(out_path)
-        write_adjudication_log(plan, "ES2015", paths=two_annotators)  # must not raise
-
-    def test_missing_annotator_files_fail_clearly(
-        self, plan: AnnotationPlan, sources: WorkspacePaths
-    ) -> None:
-        with pytest.raises(FileNotFoundError, match="ES2015"):
-            write_adjudication_log(plan, "ES2015", paths=sources)
 
 
 # --- question bank ---------------------------------------------------------------------

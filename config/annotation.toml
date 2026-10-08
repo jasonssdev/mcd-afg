@@ -80,6 +80,6 @@ role = "maintainer"
 # GitHub login (sin `@`), para asignar issues/pull requests y mostrar el handle en
 # `afg gold status`.
 github = "jasonssdev"
-# Adjudicates the five double-annotated series and writes their adjudication logs.
+# Adjudicates the five double-annotated series and writes their adjudication CSVs.
 # Annotates nothing, by design.
 phase3_series = []

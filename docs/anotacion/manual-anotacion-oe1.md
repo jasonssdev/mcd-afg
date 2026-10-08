@@ -355,8 +355,9 @@ Exigido por OE1: **mínimo 25 % de las series, anotadas de forma independiente.*
    - **tipo** de relación
    - **dirección**
 4. Los desacuerdos se resuelven en sesión de adjudicación y se registran en
-   `data/processed/relations/IS1004.adjudication.md`: par, etiqueta de cada anotador,
-   etiqueta final, razón.
+   `data/processed/relations/IS1004.candidates.adjudicated.csv` (y, para la Tarea A,
+   `data/processed/decisions/IS1004.decisions.adjudicated.csv`): par, etiqueta de cada
+   anotador, etiqueta final, razón.
 
 **El kappa se reporta tal como salga.** El §1.4 de la tesis existe porque dos equipos
 competentes obtuvieron kappa negativo sobre este mismo corpus. Un kappa bajo no es un
@@ -395,7 +396,7 @@ Marca solo lo verificado. Cada ítem corresponde a algo revisable después.
 - [ ] La serie está marcada como control, o se declaró que no lo es
 - [ ] Si es control: segunda anotación independiente completa
 - [ ] Kappa calculado por separado para existencia / tipo / dirección
-- [ ] Desacuerdos resueltos y registrados en `<serie>.adjudication.md`
+- [ ] Desacuerdos resueltos y registrados en los `<serie>.*.adjudicated.csv`
 
 ### Cierre
 - [ ] `uv run afg gold agreement --series <ID>` corre sin error
