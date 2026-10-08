@@ -20,8 +20,7 @@ runs_per_config = 3                  # thesis section 5.8: minimum 3 runs, repor
 [retrieval]
 answer_limit = 5                     # blocks sent to the answer prompt; openkos query --limit default (ADR 0006)
 rrf_k = 60                           # reciprocal rank fusion constant, as in openkos retrieval/fusion.py
-hybrid_lexical_weight = 0.5          # RRF fusion weight, lexical channel (BM25)
-hybrid_dense_weight = 0.5            # RRF fusion weight, dense channel (bge-m3 / sqlite-vec)
+# Unweighted RRF over the lexical and dense channels, as in openkos retrieval/fusion.py.
 
 [alignment]
 # Thesis section 5.4: cosine-similarity candidates over (decision object, content) pairs,
