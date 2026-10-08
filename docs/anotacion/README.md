@@ -11,7 +11,7 @@ leer el código.
 | [`annotation-guidelines.md`](annotation-guidelines.md) | Qué cuenta como decisión y qué significa cada una de las seis relaciones | Antes de anotar la primera fila |
 | [`manual-anotacion-oe1.md`](manual-anotacion-oe1.md) | El manual operativo: qué archivo abres, qué columna llenas, qué escribes, con un ejemplo real resuelto de punta a punta | Con el CSV abierto al lado |
 | [`asignacion/`](asignacion/) | El reparto concreto: qué serie le toca a cada persona, en qué orden, cuándo se adjudica. `config/annotation.toml` es la fuente de verdad; `afg gold status` muestra el avance en vivo | Antes de abrir tu primera serie |
-| [`plantilla-adjudicacion.md`](plantilla-adjudicacion.md) | La plantilla original de `<serie>.adjudication.md`, de cuando se escribía a mano. `uv run afg gold adjudicate --series <ID>` lo escribe hoy por ti | Referencia, si quieres ver el formato sin correr el comando |
+| [`plantilla-adjudicacion.md`](plantilla-adjudicacion.md) | **Reemplazada.** Describía el `<serie>.adjudication.md`, que ya no existe; la adjudicación son hoy los dos `*.adjudicated.csv` ([`asignacion/tareas-jss.md`](asignacion/tareas-jss.md) §3) | Solo como referencia histórica |
 
 ## Quién hace qué
 
@@ -82,7 +82,7 @@ uv run afg gold agreement --series IS1004    # Tarea D: lo corre quien adjudica 
 | **A** Normalizar decisiones | Lees la evidencia, decides `status`, escribes objeto y contenido | `data/processed/decisions/<serie>.decisions.csv` | ~30 s por fila | ≈ 3 h (343 filas) |
 | **B** Adjudicar pares | Eliges la relación entre dos decisiones de reuniones distintas | `data/processed/relations/<serie>.candidates.csv` | 1–2 min por par | ≈ 2–3 h (92 pares) |
 | **C** Muestra de recall | Anotas 50 pares que el filtro rechazó, para medir qué se perdió (solo IS1004, la hace `gv`) | `data/processed/relations/IS1004.recall-sample.<iniciales>.csv` | 1–2 min por par | ≈ 1–2 h |
-| **D** Doble anotación | La segunda persona repite A y B sobre copia limpia; se calcula kappa y se adjudica | `<serie>.candidates.<iniciales>.csv` y `<serie>.adjudication.md` | como A y B | ≈ 3 h por persona |
+| **D** Doble anotación | La segunda persona repite A y B sobre copia limpia; se calcula kappa y se adjudica | `<serie>.candidates.<iniciales>.csv` y los dos `<serie>.*.adjudicated.csv` | como A y B | ≈ 3 h por persona |
 
 El orden dentro de cada serie es **cronológico**: primero la reunión a, luego b, c, d. No se
 mira una reunión posterior para etiquetar una anterior.

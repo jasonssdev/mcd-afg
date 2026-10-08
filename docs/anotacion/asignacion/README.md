@@ -143,7 +143,7 @@ reparto equilibra horas totales, no filas.
 |---|---:|---:|---|
 | **`gv`** | 260 | 61 | Tarea C (50 pares) + validación del banco (≥100 preguntas) |
 | **`gm`** | 223 | 71 | Escritura del banco (≥100 preguntas) |
-| **`jss`** | 0 | 0 | Adjudicación de las 5 series dobles, los `.adjudication.md`, notebook 03 |
+| **`jss`** | 0 | 0 | Adjudicación de las 5 series dobles, los CSV de adjudicación, notebook 03 |
 
 (260 = 29 de Fase 1 + 111 de Fase 2 + 120 de Fase 3. 223 = 29 + 111 + 83.)
 
@@ -170,13 +170,13 @@ propio procedimiento de anotación: cuanto más tarde se detecta, más caro sale
 **Qué produce cada sesión de adjudicación:**
 
 1. `uv run afg gold adjudicate --series <ID>` escribe
-   `data/processed/relations/<serie>.adjudication.md`, ya con los tres kappas, la fecha, los
-   dos anotadores y una fila por cada desacuerdo de la Tarea B con ambas etiquetas puestas.
-   `jss` solo llena **etiqueta final** y **razón** de cada fila, más la tabla de la Tarea A
-   (ver §5.3).
+   `data/processed/decisions/<serie>.decisions.adjudicated.csv` y
+   `data/processed/relations/<serie>.candidates.adjudicated.csv`, con las respuestas de las
+   dos personas lado a lado y el veredicto prellenado solo donde coinciden. `jss` llena
+   `final_*`, `razon` y `adjudicator` donde `acuerdo = no` (ver §5.3).
 2. `uv run afg gold agreement --series <ID>` escribe además
-   `reports/tables/<serie>.agreement.csv`, la tabla de los tres kappas como artefacto aparte
-   — `adjudicate` calcula los mismos números para el `.md`, pero no escribe este CSV.
+   `reports/tables/<serie>.agreement.csv`, la tabla de los tres kappas. Los kappas viven solo
+   ahí: los CSV de adjudicación no los llevan.
 3. Si el desacuerdo revela un vacío de la guía: una corrección explícita de
    `annotation-guidelines.md` o del manual, en su propio PR, **antes** de seguir.
 
@@ -232,36 +232,31 @@ una persona. Nadie copia ni renombra un CSV a mano; el archivo sin iniciales
 `afg gold build` y `afg gold candidates`, y **no se edita nunca** — `afg gold validate` lo
 verifica columna por columna.
 
-### 5.2 Sigue siendo manual: el acuerdo de la Tarea A
+### 5.2 Sin kappa, pero alineado: el acuerdo de la Tarea A
 
 Verificado de nuevo en `src/afg/annotation/agreement.py`: `compute_series_agreement` deriva
 sus tres ejes —existencia, tipo, dirección— exclusivamente de las columnas `relation` y
-`direction_ok` de `<serie>.candidates.*.csv`. No hay ninguna función equivalente para la
-columna `status` de la Tarea A, y `afg gold adjudicate` (§5.3) llama a la misma función:
-tampoco calcula ese eje.
+`direction_ok` de `<serie>.candidates.<iniciales>.csv`. No hay ninguna función equivalente
+para la columna `status` de la Tarea A: no existe un kappa de `status`.
 
-**Consecuencia operativa, sin cambios:** en las series de doble anotación, la Tarea A se
-adjudica **leyendo los dos archivos a mano**, fila por fila, comparando `status` alineado por
-`decision_id` (detalle del procedimiento en
-[`tareas-jss.md`](tareas-jss.md) §2.4). `afg gold adjudicate` deja la tabla de la Tarea A
-dentro del `.adjudication.md` generado, vacía y con esta misma explicación escrita adentro —
-no por descuido, porque no hay nada que calcular todavía.
+**Consecuencia operativa:** ya no hace falta leer los dos archivos de decisiones en paralelo.
+`afg gold adjudicate` alinea la Tarea A por `decision_id` base en
+`<serie>.decisions.adjudicated.csv`, con el `status` de cada persona en la misma fila y la
+columna `acuerdo` (detalle en [`tareas-jss.md`](tareas-jss.md) §2.4 y §3).
 
-### 5.3 Resuelto: el registro de adjudicación ya no se escribe a mano
-
-`build_adjudication_log()` existía en `src/afg/annotation/agreement.py`, con tests, pero
-nadie la invocaba desde el CLI. Hoy sí:
+### 5.3 Resuelto: la adjudicación se escribe en CSV, no en Markdown
 
 ```bash
 uv run afg gold adjudicate --series <ID>
 ```
 
-Escribe `data/processed/relations/<serie>.adjudication.md` con la fecha, los dos anotadores,
-el adjudicador, los tres kappas y una fila por cada desacuerdo de la Tarea B —relación y
-dirección— con las dos etiquetas ya puestas. El humano llena exactamente dos celdas por fila,
-**etiqueta final** y **razón**, más la tabla de la Tarea A que §5.2 explica por qué queda
-vacía. Se niega a regenerar un archivo que ya tenga resoluciones escritas a mano, salvo
-`--force`.
+Escribe `data/processed/decisions/<serie>.decisions.adjudicated.csv` y
+`data/processed/relations/<serie>.candidates.adjudicated.csv`: las respuestas de las dos
+personas lado a lado, `acuerdo`, y las columnas `final_*`, `razon` y `adjudicator`, que se
+prellenan solo donde las dos coinciden. `jss` llena el resto y lo verifica con
+`afg gold validate-adjudication`. Se niega a regenerar un archivo con veredictos escritos a
+mano, salvo `--force`. Decisión registrada en
+[`../../decisions/README.md`](../../decisions/README.md) D14.
 
 ---
 
@@ -275,7 +270,7 @@ persona; `afg gold validate` verifica el resultado.
 | `data/processed/decisions/<serie>.decisions.<iniciales>.csv` | `gv`, `gm` | Tarea A de cada serie |
 | `data/processed/relations/<serie>.candidates.<iniciales>.csv` | `gv`, `gm` | Tarea B de cada serie |
 | `data/processed/relations/IS1004.recall-sample.<iniciales>.csv` (adjudicado) | `gv` | Tarea C |
-| `data/processed/relations/<serie>.adjudication.md` | `afg gold adjudicate` escribe, `jss` completa | Tras cada serie doble |
+| `data/processed/decisions/<serie>.decisions.adjudicated.csv` y `data/processed/relations/<serie>.candidates.adjudicated.csv` | `afg gold adjudicate` escribe, `jss` completa | Tras cada serie doble |
 | `reports/tables/<serie>.agreement.csv` | `afg gold agreement` | Tras cada serie doble |
 | `data/processed/questions/banco-preguntas.csv` | `afg gold questions-init` crea, `gm` escribe, `gv` valida | Banco de preguntas |
 | `notebooks/03-jss-anotacion-oe1.ipynb` | `jss` | Al cerrar OE1 |

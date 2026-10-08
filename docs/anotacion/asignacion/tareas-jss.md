@@ -1,7 +1,7 @@
 # Tareas de Jason Sepúlveda (`jss`)
 
 > **Tu papel es distinto.** No anotas ninguna fila. Generas los insumos, adjudicas los
-> desacuerdos de la doble anotación, escribes los registros de adjudicación, verificas que
+> desacuerdos de la doble anotación en los CSV de adjudicación, verificas que
 > ninguna etiqueta de máquina se coló en el conjunto de referencia, y cierras OE1 con el
 > notebook 03. Que quien adjudica no anote es una regla del diseño
 > (`CONTRIBUTING.md` §1): si adjudicaras tus propias etiquetas, las finales quedarían
@@ -10,22 +10,23 @@
 ## Tu encargo en una frase
 
 Cerrar el bucle de calidad de OE1: adjudicar las cinco series de doble anotación una por
-una, dejar cada decisión registrada por escrito, y garantizar que ninguna etiqueta del
+una, dejar cada veredicto registrado en un CSV con su razón, y garantizar que ninguna etiqueta del
 conjunto de referencia la haya puesto una máquina.
 
 ## Tu día a día en tres comandos
 
 ```bash
 uv run afg gold status                                 # avance de todo el equipo, sin abrir un CSV
-uv run afg gold adjudicate --series <ID>                # tras cada serie doble: escribe el .adjudication.md
+uv run afg gold adjudicate --series <ID>                # tras cada serie doble: escribe los dos CSV de adjudicación
 uv run afg gold validate --annotator <iniciales>        # en cada PR, antes de aprobarlo
+uv run afg gold validate-adjudication --series <ID>     # al terminar de adjudicar: ¿quedó todo con veredicto y razón?
 ```
 
 `status` es tu panel: una fila por persona y serie, con fase, avance de las dos tareas y si
 pasa la validación — así sabes cuándo una serie doble ya tiene los cuatro archivos listos
-para adjudicar, sin entrar a `data/processed/`. `adjudicate` escribe el registro de
-adjudicación ya con los tres kappas y los desacuerdos de la Tarea B puestos: tú completas
-etiqueta final, razón y la tabla de la Tarea A. `validate --annotator <iniciales>` (sin
+para adjudicar, sin entrar a `data/processed/`. `adjudicate` escribe los dos CSV de
+adjudicación (§3) con las respuestas de las dos personas lado a lado, ya prellenados donde
+coinciden: tú completas el veredicto final y la razón donde discrepan. `validate --annotator <iniciales>` (sin
 `--series`, para revisar el PR entero) es la mitad mecánica de la verificación de §4: confirma
 que las columnas de máquina llegaron intactas y que los valores son legales, antes de que tú
 revises a ojo lo que ningún comando puede juzgar.
@@ -80,21 +81,21 @@ Lee todos los `data/processed/relations/ES2015.candidates.*.csv` y escribe
 
 | Salida | Qué es | Qué haces |
 |---|---|---|
-| `existence kappa` | ¿Hay relación, sí o no? Derivado de `relation`: todo lo distinto de `no_relacionada` cuenta como enlace existente | Lo anotas en la cabecera del registro |
+| `existence kappa` | ¿Hay relación, sí o no? Derivado de `relation`: todo lo distinto de `no_relacionada` cuenta como enlace existente | Lo anotas para el reporte de la serie |
 | `type kappa` | La etiqueta concreta, **solo sobre los pares que ambas personas marcaron como enlace existente** | Lo anotas. Puede salir `n/a` si ningún par fue marcado como enlace por los dos: no es un error |
 | `direction kappa` | El valor de `direction_ok`, sobre todos los pares emparejados | Lo anotas |
-| `... disagreements (adjudicate): <pair_ids>` | La lista exacta de pares a resolver | **Es tu orden del día.** Una fila del registro por cada uno |
-| `Wrote reports/tables/<serie>.agreement.csv` | La tabla con los tres ejes | Entra al PR de adjudicación |
+| `... disagreements (adjudicate): <pair_ids>` | La lista exacta de pares a resolver | **Es tu orden del día**; los mismos pares aparecen con `acuerdo = no` en el CSV de candidatos |
+| `Wrote reports/tables/<serie>.agreement.csv` | La tabla con los tres ejes | Entra al PR de adjudicación junto con los dos CSV |
 
 Los tres kappas se reportan **por separado, nunca combinados en uno**: `existence` y
 `direction` pueden ser perfectos mientras `type` no lo es, y colapsarlos escondería
 exactamente el modo de falla de H3 que la tesis mide (`agreement.py`,
 `SeriesAgreementResult`).
 
-**`afg gold adjudicate --series <ID>` (§3) calcula estos mismos tres kappas por dentro** y
-los deja escritos en el `.adjudication.md` — no hace falta copiarlos a mano de la salida de
-`agreement` al registro. Sigue corriendo `agreement` aparte para que quede
-`reports/tables/<serie>.agreement.csv` como artefacto versionado; `adjudicate` no lo escribe.
+**Los kappas viven solo aquí**: `afg gold adjudicate --series <ID>` (§3) no los calcula ni los
+escribe. `agreement` deja `reports/tables/<serie>.agreement.csv` como artefacto versionado, y
+los CSV de adjudicación quedan sin kappas a propósito: son el conjunto de referencia, no un
+reporte.
 
 **Errores que puede devolver el comando** (`AgreementInputError`, y el chequeo previo del
 CLI):
@@ -103,8 +104,10 @@ CLI):
   `<serie>.candidates.<iniciales>.csv`. Es de nombre, no de contenido.
 - *"share no pair_id in common"* — alguien editó la columna `pair_id`, o trabajó sobre un
   insumo regenerado. Hay que volver al insumo original.
-- Si aparecen **más de dos** archivos, el comando avisa y usa los dos primeros por orden
-  alfabético, porque el kappa de Cohen es por pares. Con `gv` y `gm` no debería ocurrir.
+- Si aparecen **más de dos** archivos de anotador, el comando avisa y usa los dos primeros por
+  orden alfabético, porque el kappa de Cohen es por pares. Con `gv` y `gm` no debería ocurrir.
+  Los archivos `*.adjudicated.csv` nunca cuentan como anotador: `agreement` los excluye
+  explícitamente, así que puede correrse antes o después de `adjudicate`.
 
 ### 2.3 Los kappas de calibración no se reportan
 
@@ -114,63 +117,97 @@ tesis. Si sale bajo, se corrige `annotation-guidelines.md` o el manual —en su 
 reportan, tal como salgan: son el 36,4 % del conjunto de evaluación que exige el
 ADR [0005](../../decisions/0005-adr-development-evaluation-split.md).
 
-### 2.4 La Tarea A se adjudica a mano
+### 2.4 La Tarea A se adjudica sobre el CSV
 
-**Sigue siendo así** ([`README.md`](README.md) §5.2, verificado de nuevo en
-`src/afg/annotation/agreement.py`): `compute_series_agreement` deriva sus tres ejes solo de
-`relation` y `direction_ok` en `<serie>.candidates.*.csv`. No existe función equivalente para
-`status`, y `afg gold adjudicate` (§3) llama a la misma función — tampoco lo calcula. La
-Tarea A se sigue adjudicando **leyendo los dos archivos en paralelo**, alineados por
-`decision_id`, y comparando `status`. Una forma rápida de sacar la lista de desacuerdos, solo
-para preparar la sesión —el veredicto lo pones tú:
+`compute_series_agreement` deriva sus tres ejes solo de `relation` y `direction_ok`
+(`src/afg/annotation/agreement.py`; [`README.md`](README.md) §5.2): no existe un kappa para
+`status`. Eso ya no obliga a leer los dos archivos de decisiones en paralelo. El CSV de
+decisiones de §3 trae, por cada decisión base, el `status`, el objeto, el contenido y las
+notas de cada persona **en la misma fila**, y la columna `acuerdo` ya dice dónde coinciden.
+La lista de desacuerdos de la Tarea A es simplemente filtrar `acuerdo = no`.
 
-```bash
-python3 - <<'PY'
-import csv
-a = {r["decision_id"]: r for r in csv.DictReader(open("data/processed/decisions/ES2015.decisions.gv.csv"))}
-b = {r["decision_id"]: r for r in csv.DictReader(open("data/processed/decisions/ES2015.decisions.gm.csv"))}
-for k in sorted(set(a) & set(b)):
-    if a[k]["status"].strip() != b[k]["status"].strip():
-        print(k, a[k]["status"], "|", b[k]["status"])
-PY
-```
-
-Las filas `compuesta` necesitan atención aparte: si una persona dividió una frase en tres
-hijas y la otra en cuatro, los `decision_id` hijos no coinciden y no hay nada que alinear. Se
-resuelve sobre la fila **madre**, y la división final se decide en la sesión.
+Las filas `compuesta` se alinean por la fila **madre**. Si una persona dividió una frase en
+tres hijas y la otra en cuatro, los `decision_id` hijos no coinciden; por eso cada persona
+trae una columna `<iniciales>_split` con un resumen de sus hijas y la fila cuenta como
+desacuerdo (§3).
 
 ---
 
-## 3. El registro de adjudicación
+## 3. Los CSV de adjudicación
 
-**Ya no se escribe a mano** ([`README.md`](README.md) §5.3). `build_adjudication_log()`
-existe en `src/afg/annotation/agreement.py`, con pruebas en `tests/test_annotation.py`, y hoy
-el CLI la invoca:
+**Ya no se escribe a mano ni en Markdown.** La adjudicación son dos CSV con las respuestas de
+las dos personas lado a lado y tu veredicto al final. Son el **conjunto de referencia legible
+por código**: C3, el banco de preguntas y la medición de C2 leen `final_*`, no un documento.
 
 ```bash
 uv run afg gold adjudicate --series ES2015
 ```
 
-Escribe `data/processed/relations/ES2015.adjudication.md`, uno por serie, con:
+Escribe, sin tocar nada más:
 
-1. Los **tres kappas** en la cabecera, con la fecha, los dos anotadores (por orden alfabético
-   de iniciales) y tú como adjudicador — todo puesto, nada que copiar a mano.
-2. **Una fila por desacuerdo de la Tarea B** (relación y, en su propia tabla, dirección), con
-   la etiqueta de cada persona ya puesta y **etiqueta final** / **razón** marcadas
-   `` `<pendiente>` ``. Llenas exactamente esas dos celdas por fila. La razón es el contenido
-   real del documento: sin ella, el registro es una lista de veredictos sin criterio, y el
-   criterio es lo que hay que poder aplicar igual en la serie siguiente.
-3. La tabla de la **Tarea A**, vacía, con la explicación de por qué (§2.4) escrita dentro del
-   propio archivo — la llenas tú con lo que sacaste del script de §2.4.
-4. Una sección de cierre que preguntas tú a mano: **si el desacuerdo revela un vacío de la
-   guía**. Si dos personas competentes discreparon, la primera hipótesis es que la guía no
-   decidía el caso, no que una de las dos se equivocó.
+- `data/processed/decisions/ES2015.decisions.adjudicated.csv` — una fila por decisión
+  **base** de `ES2015.decisions.csv`.
+- `data/processed/relations/ES2015.candidates.adjudicated.csv` — una fila por `pair_id`.
 
-Se niega a regenerar un archivo que ya tenga **etiqueta final** o **razón** escritas, salvo
-`--force` — que descarta el criterio ya registrado, igual que `prepare --force` descarta
-anotación. La convención de nombres de [`README.md`](README.md) §5.1 es la que hace posible
-que `adjudicate` encuentre los archivos: busca `<serie>.candidates.*.csv`, así que los dos PRs
-de esa serie tienen que estar mergeados primero (§2.1).
+El sufijo es siempre `adjudicated`, nunca unas iniciales: quién adjudicó va en la columna
+`adjudicator`. Por eso `agreement`, `status`, `validate` y `prepare` los excluyen de toda
+búsqueda de archivos de anotador.
+
+**Columnas de decisiones**, en este orden: `decision_id`, `meeting_id`, `source_sentence_id`,
+`sentence_text`, `evidence_text`; luego, por cada persona (orden alfabético de iniciales),
+`<ini>_status`, `<ini>_object`, `<ini>_content`, `<ini>_notes`, `<ini>_split`; y al final
+`acuerdo`, `final_status`, `final_object`, `final_content`, `razon`, `adjudicator`.
+
+**Columnas de candidatos**: `pair_id`, `earlier_decision_id`, `later_decision_id`,
+`earlier_text`, `later_text`, `blocker_score`; por persona, `<ini>_relation`,
+`<ini>_direction_ok`, `<ini>_confidence`, `<ini>_notes`; y `acuerdo`, `final_relation`,
+`final_direction_ok`, `razon`, `adjudicator`.
+
+**`acuerdo`.** En decisiones es `si` cuando los dos `status` son iguales y ninguno es
+`compuesta`, o cuando los dos son `compuesta` con **los mismos `status` en las filas hijas, en
+el mismo orden**; en cualquier otro caso es `no`. En candidatos es `si` solo si `relation` y
+`direction_ok` coinciden en ambos. Una fila que nadie respondió no es acuerdo.
+
+**Qué viene prellenado.** Solo donde `acuerdo = si`: `final_status` (o `final_relation` y
+`final_direction_ok`) con el valor en que las dos personas coinciden, `final_object` y
+`final_content` copiados de la primera persona en orden alfabético, y `adjudicator` con el
+adjudicador de `config/annotation.toml`. `razon` queda vacía. Donde `acuerdo = no`, **todo
+`final_*`, `razon` y `adjudicator` quedan vacíos**: la máquina copia una etiqueta en la que
+dos humanos ya coinciden, nunca elige entre dos que discrepan.
+
+**Qué llenas tú.**
+
+1. En cada fila con `acuerdo = no`: el veredicto `final_*`, la `razon` y tus iniciales en
+   `adjudicator`. La razón es el contenido real del archivo: sin ella, es una lista de
+   veredictos sin criterio, y el criterio es lo que hay que poder aplicar igual en la serie
+   siguiente.
+2. En las filas con acuerdo, revisa el prellenado y cámbialo si hace falta; si dejas un
+   `sin_soporte` la razón sigue siendo obligatoria.
+3. Si dictaminas una fila `compuesta` (haya acuerdo o no), agrega **debajo de la fila madre**
+   las filas hijas con ids `<id_base>-1`, `<id_base>-2`, ..., y llena `final_*` en cada una
+   (`decision_id`, `acuerdo` y las columnas de anotador de las hijas pueden quedar vacías).
+   Una `compuesta` final exige al menos dos hijas consecutivas.
+
+```bash
+uv run afg gold validate-adjudication --series ES2015
+```
+
+Falla con código distinto de cero y dice fila y columna de cada pendiente: veredicto ausente
+o fuera del conjunto cerrado, `decision` sin `final_object`/`final_content`, `razon` ausente
+donde hubo desacuerdo o el veredicto es `sin_soporte`, `adjudicator` vacío, o una `compuesta`
+sin hijas.
+
+`adjudicate` se niega a regenerar cualquiera de los dos archivos si alguna fila tiene una
+`razon` escrita o un `final_*` distinto del prellenado, salvo `--force`, que descarta el
+criterio ya registrado igual que `prepare --force` descarta anotación. Necesita que los dos
+PRs de esa serie estén mergeados (§2.1): busca `<serie>.candidates.<iniciales>.csv` y
+`<serie>.decisions.<iniciales>.csv` de dos personas.
+
+**Los vacíos de la guía** no van en un archivo de la serie. Si dos personas competentes
+discreparon, la primera hipótesis es que la guía no decidía el caso, no que una de las dos se
+equivocó; la corrección va como PR a
+[`annotation-guidelines.md`](../annotation-guidelines.md) (o al manual), antes de abrir la
+serie siguiente.
 
 ---
 
@@ -254,29 +291,29 @@ later_text          : The remote will be a single function design- television on
 blocker_score       : 0.6666666666666666
 ```
 
-`uv run afg gold adjudicate --series ES2015` ya deja escrita en el `.adjudication.md` la fila
-con las dos etiquetas puestas y **etiqueta final** / **razón** en `` `<pendiente>` ``. Tú
-solo completas esas dos celdas:
+`uv run afg gold adjudicate --series ES2015` ya deja en `ES2015.candidates.adjudicated.csv` la
+fila con las dos etiquetas puestas, `acuerdo = no` y `final_*`, `razon` y `adjudicator` vacíos.
+Tú completas el veredicto, la razón y tus iniciales; el resultado, leído por columnas, es:
 
-| `pair_id` | `gm` | `gv` | Final | Razón |
+| `pair_id` | `gm_relation` | `gv_relation` | `final_relation` | `razon` |
 |---|---|---|---|---|
 | `ES2015.p001` | `reafirma` | `refina` | `refina` | La posterior conserva el objeto (control de televisión) y **agrega** un límite que antes no estaba: función única, sin DVD ni VCR. `reafirma` exige que el contenido no cambie; aquí cambió por acotación, que es la definición de `refina`. |
 
 (El orden de las columnas de anotador en el archivo generado es alfabético por iniciales —
 `gm` antes que `gv` — no el orden en que se anotó.)
 
-Y en la sección de cierre:
+Y, aparte del CSV, el vacío de la guía que el desacuerdo revela:
 
 > Este desacuerdo revela un vacío: la guía no dice si **excluir** alternativas cuenta como
 > agregar detalle. Propuesta de corrección de `annotation-guidelines.md`: en `refina`,
 > precisar que acotar incluye excluir explícitamente opciones que la decisión anterior dejaba
-> abiertas.
+> abiertas. Va como PR a `annotation-guidelines.md`, no a un archivo de la serie.
 
 **Por qué el veredicto es `refina` y no `reafirma`.** Las dos etiquetas se distinguen por una
 sola cosa —si el contenido cambió— y aquí cambió: `ES2015a` no excluía la multifunción y
 `ES2015b` sí. Que el desacuerdo caiga justo en el borde entre dos etiquetas vecinas es la
 señal típica de un vacío de la guía, no de un descuido de una de las dos personas; por eso
-la fila lleva razón **y** el cierre lleva propuesta de corrección.
+la fila lleva razón **y** la guía recibe un PR de corrección.
 
 ---
 
@@ -331,10 +368,13 @@ Cada adjudicación es su propio PR, contra `main`, revisado por ti mismo — es 
 git checkout main
 git pull
 git checkout -b data/adjudicacion-ES2015
-uv run afg gold adjudicate --series ES2015    # escribe el .adjudication.md pre-llenado
+uv run afg gold adjudicate --series ES2015    # escribe los dos *.adjudicated.csv prellenados
 uv run afg gold agreement  --series ES2015    # escribe reports/tables/ES2015.agreement.csv
-# completas etiqueta final, razón y la tabla de la Tarea A en el .adjudication.md
-git add data/processed/relations/ES2015.adjudication.md reports/tables/ES2015.agreement.csv
+# completas final_*, razon y adjudicator en las filas con acuerdo = no
+uv run afg gold validate-adjudication --series ES2015
+git add data/processed/decisions/ES2015.decisions.adjudicated.csv \
+        data/processed/relations/ES2015.candidates.adjudicated.csv \
+        reports/tables/ES2015.agreement.csv
 git commit -m "data(adjudicacion): resolver desacuerdos de ES2015 y registrar kappas"
 ```
 
@@ -349,20 +389,19 @@ Nunca push directo a `main`, ni para cambios triviales.
 - [ ] Los cuatro archivos de la serie están mergeados (§2.1)
 - [ ] `uv run afg gold validate --annotator gv` y `--annotator gm` corrieron sin error en sus
       PRs respectivos (§4) — columnas de máquina intactas y valores legales ya verificados
-- [ ] La lista de desacuerdos de `status` de la Tarea A está sacada a mano (§2.4)
 
 ### Durante
-- [ ] `uv run afg gold adjudicate --series <ID>` corrió sin error y escribió el `.adjudication.md`
-- [ ] Cada desacuerdo de la Tarea B tiene etiqueta final **y razón escrita**
-- [ ] La tabla de la Tarea A se llenó con lo sacado en §2.4
-- [ ] Las filas `compuesta` con divisiones distintas se resolvieron sobre la fila madre
-- [ ] Se anotó si el desacuerdo revela un vacío de la guía
+- [ ] `uv run afg gold adjudicate --series <ID>` corrió sin error y escribió los dos `*.adjudicated.csv`
+- [ ] Cada fila con `acuerdo = no` (Tarea A y Tarea B) tiene `final_*` **y `razon` escrita**
+- [ ] Las filas `compuesta` tienen sus hijas `<id>-1`, `<id>-2`, ... con `final_*`
+- [ ] `uv run afg gold validate-adjudication --series <ID>` sale sin errores
+- [ ] Se evaluó si el desacuerdo revela un vacío de la guía
 
 ### Después
 - [ ] `uv run afg gold agreement --series <ID>` corrió y `reports/tables/<serie>.agreement.csv`
       quedó versionado
-- [ ] Los tres kappas del `.adjudication.md` coinciden con los del `.agreement.csv`
-- [ ] Si hay vacío de guía: PR de corrección de `annotation-guidelines.md` o del manual,
+- [ ] Los dos `*.adjudicated.csv` y el `.agreement.csv` van en el mismo PR (§9)
+- [ ] Si hay vacío de guía: PR a `annotation-guidelines.md` o al manual,
       **antes** de abrir la serie siguiente
 - [ ] Si la serie es de calibración: queda escrito que ese kappa **no se reporta**
 - [ ] `uv run pytest -q`, `uv run ruff check .` y `uv run mypy src/afg` pasan

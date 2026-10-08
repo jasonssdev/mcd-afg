@@ -1,4 +1,4 @@
-"""Per-annotator annotation workspaces: prepare, validate, adjudicate, question bank.
+"""Per-annotator annotation workspaces: prepare, validate, question bank.
 
 This module exists to delete manual work. Before it, an annotator had to copy the right
 CSVs out of ``data/processed/``, rename each one with their own initials, and remember
@@ -45,16 +45,11 @@ from __future__ import annotations
 import csv
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
-from datetime import date
 from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
-from afg.annotation.agreement import (
-    AdjudicationEntry,
-    build_adjudication_log,
-    compute_series_agreement,
-)
+from afg.annotation.agreement import annotator_csvs
 from afg.domain.decision import AnnotationStatus
 from afg.domain.question import QuestionStratum
 from afg.domain.relation import Confidence, DirectionOk, RelationType
@@ -63,7 +58,6 @@ from afg.shared.csvio import open_csv_writer
 from afg.shared.paths import GOLD_DECISIONS_DIR, GOLD_RELATIONS_DIR, QUESTIONS_DIR
 
 __all__ = [
-    "ADJUDICATION_UNRESOLVED",
     "AnnotationPlan",
     "Annotator",
     "IssueKind",
@@ -77,14 +71,12 @@ __all__ = [
     "ValidationReport",
     "WorkspaceFile",
     "WorkspacePaths",
-    "adjudication_has_resolutions",
     "expected_files",
     "load_annotation_plan",
     "prepare_annotator_workspace",
     "question_bank_is_empty",
     "series_has_annotated_work",
     "validate_annotator",
-    "write_adjudication_log",
     "write_question_bank_template",
 ]
 
@@ -160,10 +152,6 @@ _QUESTION_COLUMNS = (
 # whether a file "contains annotation": the annotator's own initials are already in the
 # filename, so writing them into every row is transcription, not judgment.
 _IDENTITY_COLUMN = "annotator"
-
-ADJUDICATION_UNRESOLVED = "`<pendiente>`"
-"""Placeholder written into the two cells only the adjudicator may fill."""
-
 
 # --- the plan ----------------------------------------------------------------------------
 
@@ -339,8 +327,9 @@ class WorkspacePaths:
         """One person's copy: ``<series>.<kind>.<initials>.csv``."""
         return self.directory_for(kind) / f"{series_id}.{kind.value}.{initials}.csv"
 
-    def adjudication(self, series_id: str) -> Path:
-        return self.relations_dir / f"{series_id}.adjudication.md"
+    def adjudicated(self, kind: TaskKind, series_id: str) -> Path:
+        """The adjudication CSV: ``<series>.<kind>.adjudicated.csv``, never initials."""
+        return self.directory_for(kind) / f"{series_id}.{kind.value}.adjudicated.csv"
 
     @property
     def question_bank(self) -> Path:
@@ -433,8 +422,7 @@ def series_has_annotated_work(
     found: list[Path] = []
     for kind in (TaskKind.DECISIONS, TaskKind.CANDIDATES):
         directory = paths.directory_for(kind)
-        pattern = f"{series_id}.{kind.value}.*.csv"
-        for candidate in sorted(directory.glob(pattern)):
+        for candidate in annotator_csvs(directory, series_id, kind.value):
             if file_contains_annotation(candidate, kind):
                 found.append(candidate)
     return tuple(found)
@@ -1019,230 +1007,6 @@ def validate_annotator(
         )
 
     return ValidationReport(initials=initials, series=tuple(progresses))
-
-
-# --- adjudicate -------------------------------------------------------------------------
-
-
-def adjudication_has_resolutions(path: Path) -> bool:
-    """Whether an adjudication log already carries human resolutions.
-
-    A generated log has exactly two unresolved placeholders per disagreement row ("etiqueta
-    final" and "razón"). If any table row that names a pair or decision id has lost a
-    placeholder, a human has filled something in and the file must not be regenerated.
-    """
-    if not path.exists():
-        return False
-    for line in path.read_text(encoding="utf-8").splitlines():
-        stripped = line.strip()
-        if not stripped.startswith("|") or ADJUDICATION_UNRESOLVED in stripped:
-            continue
-        cells = [cell.strip() for cell in stripped.strip("|").split("|")]
-        if len(cells) >= 5 and cells[0].startswith("`") and not cells[0].startswith("`<"):
-            return True
-    return False
-
-
-def _disagreement_rows(entries: Sequence[AdjudicationEntry]) -> list[str]:
-    return [
-        f"| `{entry.item_id}` | `{entry.label_a or '(vacío)'}` | `{entry.label_b or '(vacío)'}` "
-        f"| {ADJUDICATION_UNRESOLVED} | {ADJUDICATION_UNRESOLVED} |"
-        for entry in entries
-    ]
-
-
-def _kappa_cell(value: float | None) -> str:
-    return "n/a" if value is None else f"{value:.3f}"
-
-
-def write_adjudication_log(
-    plan: AnnotationPlan,
-    series_id: str,
-    *,
-    paths: WorkspacePaths | None = None,
-    force: bool = False,
-    today: date | None = None,
-) -> Path:
-    """Write ``<series>.adjudication.md`` pre-filled from the two annotator files.
-
-    Computes the three independent kappas (:func:`~afg.annotation.agreement.
-    compute_series_agreement`) and wires :func:`~afg.annotation.agreement.
-    build_adjudication_log`, which existed with tests but had no caller. Every column the
-    machine can know is filled: series, annotators, adjudicator, the three kappas, and one
-    table row per disagreement with both labels already in place. The human fills exactly
-    two cells per row -- "etiqueta final" and "razón" -- and the latter is the point: a
-    list of verdicts without criteria cannot be applied to the next series.
-
-    Follows ``docs/anotacion/plantilla-adjudicacion.md``. The Task-A ``status`` table is
-    emitted empty, because ``afg gold agreement`` does not compute that axis
-    (``asignacion/README.md`` §5.2) and inventing rows for it would be a lie.
-
-    Raises:
-        FileNotFoundError: fewer than two annotator files for this series.
-        FileExistsError: the log already has resolutions and ``force`` is not set.
-    """
-    paths = paths or WorkspacePaths()
-    out_path = paths.adjudication(series_id)
-    if not force and adjudication_has_resolutions(out_path):
-        raise FileExistsError(
-            f"{out_path.name} ya tiene resoluciones escritas a mano. No se regenera: "
-            f"perderías el criterio registrado de la serie {series_id}. Usa --force solo "
-            "si de verdad quieres descartarlo."
-        )
-
-    annotator_paths = sorted(paths.relations_dir.glob(f"{series_id}.candidates.*.csv"))
-    if len(annotator_paths) < 2:
-        raise FileNotFoundError(
-            f"Se necesitan al menos 2 archivos "
-            f"data/processed/relations/{series_id}.candidates.<iniciales>.csv para "
-            f"adjudicar la serie {series_id} (hay {len(annotator_paths)}). Cada anotador "
-            "crea el suyo con `uv run afg gold prepare --annotator <iniciales>`."
-        )
-
-    result = compute_series_agreement(annotator_paths)
-    rows_by_annotator = {}
-    for path in annotator_paths[:2]:
-        _, rows = _read_rows(path)
-        rows_by_annotator[path.name.removesuffix(".csv").rsplit(".", 1)[-1]] = {
-            row[_PAIR_ID_COLUMN]: row for row in rows if row.get(_PAIR_ID_COLUMN, "").strip()
-        }
-
-    rows_a = rows_by_annotator[result.annotator_a]
-    rows_b = rows_by_annotator[result.annotator_b]
-    common_ids = sorted(set(rows_a) & set(rows_b))
-
-    relation_entries = build_adjudication_log(
-        common_ids,
-        [rows_a[pair_id].get("relation", "").strip() for pair_id in common_ids],
-        [rows_b[pair_id].get("relation", "").strip() for pair_id in common_ids],
-        annotator_a=result.annotator_a,
-        annotator_b=result.annotator_b,
-    )
-    direction_entries = build_adjudication_log(
-        common_ids,
-        [rows_a[pair_id].get("direction_ok", "").strip() for pair_id in common_ids],
-        [rows_b[pair_id].get("direction_ok", "").strip() for pair_id in common_ids],
-        annotator_a=result.annotator_a,
-        annotator_b=result.annotator_b,
-    )
-
-    names = {person.initials: person.name for person in plan.annotators}
-    phase = 1 if series_id in plan.phase1_series else 2
-    reported = "no — la calibración es diagnóstica" if phase == 1 else "sí"
-    empty_row = (
-        f"| {ADJUDICATION_UNRESOLVED} | {ADJUDICATION_UNRESOLVED} | "
-        f"{ADJUDICATION_UNRESOLVED} | {ADJUDICATION_UNRESOLVED} | "
-        f"{ADJUDICATION_UNRESOLVED} |"
-    )
-
-    lines = [
-        f"# Adjudicación — `{series_id}`",
-        "",
-        "> Generado por `uv run afg gold adjudicate --series "
-        f"{series_id}`. Las cabeceras y los desacuerdos ya están puestos; solo faltan las "
-        "columnas **etiqueta final** y **razón**, que son decisión humana.",
-        "",
-        "| | |",
-        "|---|---|",
-        f"| **Serie** | `{series_id}` |",
-        f"| **Fecha de la sesión** | `{(today or date.today()).isoformat()}` |",
-        "| **Anotadores** | "
-        f"`{result.annotator_a}` ({names.get(result.annotator_a, '?')}), "
-        f"`{result.annotator_b}` ({names.get(result.annotator_b, '?')}) |",
-        f"| **Adjudicador** | `{plan.adjudicator}` ({names.get(plan.adjudicator, '?')}) |",
-        f"| **Fase** | `{phase}` |",
-        f"| **¿Se reporta en la tesis?** | `{reported}` |",
-        "",
-        "## Kappas",
-        "",
-        f"Salida de `uv run afg gold agreement --series {series_id}`. Los tres ejes van "
-        "**por separado, nunca combinados**: `existence` y `direction` pueden ser perfectos "
-        "mientras `type` no lo es, y colapsarlos escondería el modo de falla de H3 que la "
-        "tesis mide.",
-        "",
-        "| Eje | κ | Ítems | Desacuerdos |",
-        "|---|---:|---:|---:|",
-        f"| Existencia del enlace | {_kappa_cell(result.existence_kappa)} | "
-        f"{result.n_items} | {len(result.existence_disagreements)} |",
-        f"| Tipo de relación | {_kappa_cell(result.type_kappa)} | "
-        f"{result.n_type_items} | {len(result.type_disagreements)} |",
-        f"| Dirección | {_kappa_cell(result.direction_kappa)} | "
-        f"{result.n_items} | {len(result.direction_disagreements)} |",
-        "",
-        "El kappa se reporta **tal como salga**. Un kappa bajo es el resultado que OE1 se "
-        "propuso medir, no un fracaso a esconder (manual §6).",
-        "",
-        "## Desacuerdos de la Tarea B — relaciones",
-        "",
-        "La columna **Razón** es el contenido real del registro: sin ella queda una lista "
-        "de veredictos sin criterio, y el criterio es lo que hay que poder aplicar igual en "
-        "la serie siguiente.",
-        "",
-        f"| Par | Etiqueta de `{result.annotator_a}` | Etiqueta de `{result.annotator_b}` "
-        "| Etiqueta final | Razón |",
-        "|---|---|---|---|---|",
-        *(_disagreement_rows(relation_entries) or [empty_row]),
-        "",
-        "### Desacuerdos de dirección",
-        "",
-        "Una dirección invertida es una falla distinta de una etiqueta equivocada, y la "
-        "tesis las puntúa por separado (H3).",
-        "",
-        f"| Par | `direction_ok` de `{result.annotator_a}` | `direction_ok` de "
-        f"`{result.annotator_b}` | Final | Razón |",
-        "|---|---|---|---|---|",
-        *(_disagreement_rows(direction_entries) or [empty_row]),
-        "",
-        "## Desacuerdos de la Tarea A — `status` de las decisiones",
-        "",
-        "**`afg gold agreement` no cubre esta tabla** (`asignacion/README.md` §5.2): sus "
-        "tres kappas son todos de la Tarea B. El acuerdo sobre `status` se adjudica "
-        f"leyendo a mano `{series_id}.decisions.{result.annotator_a}.csv` y "
-        f"`{series_id}.decisions.{result.annotator_b}.csv`, alineados por `decision_id`. "
-        "Esta tabla se llena a mano por esa razón, no por olvido.",
-        "",
-        f"| Decisión | `status` de `{result.annotator_a}` | `status` de "
-        f"`{result.annotator_b}` | `status` final | Razón |",
-        "|---|---|---|---|---|",
-        empty_row,
-        "",
-        "### Divisiones de filas `compuesta`",
-        "",
-        "Cuando una persona dividió una frase en N hijas y la otra en M, los `decision_id` "
-        "hijos no coinciden y no hay nada que alinear. Se resuelve sobre la fila **madre**.",
-        "",
-        "| Decisión madre | División de "
-        f"`{result.annotator_a}` | División de `{result.annotator_b}` | División final | "
-        "Razón |",
-        "|---|---|---|---|---|",
-        empty_row,
-        "",
-        "## Cierre — ¿revela esto un vacío de la guía?",
-        "",
-        "Si dos personas competentes discreparon, la primera hipótesis es que **la guía no "
-        "decidía el caso**, no que una de las dos se equivocó (tesis §1.4).",
-        "",
-        "1. **¿Hay un patrón?** Un desacuerdo aislado es ruido; tres en el mismo borde son "
-        "un vacío.",
-        "   > `<respuesta>`",
-        "",
-        "2. **¿Qué corrección concreta hace falta?** Cita el documento y la sección.",
-        '   > `<respuesta, o "ninguna">`',
-        "",
-        "3. **¿Se corrigió antes de abrir la serie siguiente?**",
-        "   > `<sí / no aplica — enlace al PR de corrección>`",
-        "",
-        "## Artefactos de esta sesión",
-        "",
-        f"- [ ] `data/processed/relations/{series_id}.adjudication.md` (este archivo)",
-        f"- [ ] `reports/tables/{series_id}.agreement.csv`",
-        '- [ ] PR de corrección de la guía, si el cierre lo pidió: `<enlace o "no aplica">`',
-        "",
-    ]
-
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text("\n".join(lines), encoding="utf-8")
-    return out_path
 
 
 # --- question bank ---------------------------------------------------------------------

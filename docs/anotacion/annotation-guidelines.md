@@ -64,6 +64,6 @@ forma estructural:
 
 Doble anotación en al menos el 25 % de las series, con kappa de Cohen reportado
 (`src/afg/annotation/agreement.py::compute_agreement`), y un registro de adjudicación
-documentado para cada desacuerdo (`build_adjudication_log`). Dado el precedente de la
+documentado para cada desacuerdo (los CSV `<serie>.*.adjudicated.csv` de `afg gold adjudicate`). Dado el precedente de la
 sección 1.4 de la tesis, no se asume que el acuerdo sea alto — se mide y se reporta
 independientemente del resultado.
