@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 05 — Aspectos éticos |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.3 |
-| **Fecha** | 2026-10-01 |
+| **Versión** | 2.0 |
+| **Fecha** | 2026-10-13 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -16,6 +16,7 @@
 | 1.1 | 2026-09-20 | Partes involucradas explícitas; se retira la atribución al curso de la regla "dos o tres principios" | Precisión de redacción |
 | 1.2 | 2026-09-20 | Tabla que ancla cada principio a la etapa del flujo de datos donde se aplica | Revisión final de AFG1 |
 | 1.3 | 2026-10-01 | Reescritura completa de la redacción: cada principio se presenta primero con un caso real de los datos y después con la regla que se deriva, cada término técnico se explica al aparecer y se agrega un glosario breve. Los tres principios, las cifras, las partes involucradas y el marco de referencia no cambian. | Retroalimentación de la revisión entre equipos de la semana 8: el problema y la metodología no se entendían, menos aún para una audiencia no técnica. |
+| 2.0 | 2026-10-13 | La comparación del principio de justicia y equidad pasa a ser una métrica con nombre y fórmula, la amplificación por rol, con intervalo bootstrap del 95 %. | Retroalimentación del profesor sobre la metodología (AFG1/avance): recomendó definir desde ya con qué métrica se distinguirá el sesgo que viene de la fuente del que agrega el sistema. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -117,7 +118,23 @@ que ya existe en el registro organizacional. La pregunta correcta no es si el re
 es alto (recall es la proporción de decisiones reales de un hablante que el sistema
 recupera; 47 % refleja el corpus, no necesariamente un sesgo del sistema), sino **si el
 sistema lo favorece más de lo que ya lo favorece el material fuente**. Esa comparación
-(recall del sistema por rol contra la proporción base del corpus) es la que se reporta.
+(recall del sistema por rol contra la proporción base del corpus) es la que se reporta, y
+se formaliza en una métrica con nombre:
+
+> **amplificación por rol** = (proporción del rol entre las decisiones que el sistema
+> recupera) ÷ (proporción del rol entre las decisiones del corpus)
+
+Un valor de 1 significa que el sistema refleja la fuente; por encima de 1 amplifica ese rol;
+por debajo de 1 lo subrepresenta. Se calcula por condición (C1 y C2) y por rol, con un
+intervalo bootstrap del 95 % (un intervalo de confianza calculado remuestreando los datos);
+si el intervalo contiene el 1, se reporta que no hay evidencia de sesgo agregado. Ejemplo
+ilustrativo, **no un resultado**: el PM tiene el 47,0 % de los actos de decisión atribuidos
+del corpus; si las decisiones que recuperara un sistema fueran 60 % del PM, la amplificación
+sería 60 ÷ 47 ≈ 1,28. Con esto se vuelve medible la separación entre el **sesgo de la
+fuente** y el **sesgo del sistema**: el primero es el denominador (ya medido: 47,0 %, entre
+44 % y 50 % por sitio) y el segundo es la razón. El sitio de grabación puede tratarse con la
+misma fórmula como eje secundario, sin cifras todavía. La métrica aún no está implementada
+en `src/afg/`: se implementará con pruebas antes del Experimento A.
 
 **Lo que no se puede medir, y por qué se dice.** El eje **nativo/no-nativo de inglés**, que
 la propuesta original trataba como estratificación obligatoria (es decir, como un desglose
@@ -184,6 +201,8 @@ publican agregados por categoría, **nunca por individuo**.
 |---|---|
 | Trazabilidad | Que cada decisión registrada apunte al fragmento exacto de conversación que la respalda. |
 | Tasa de soporte de evidencia | Proporción de respuestas del sistema que vienen acompañadas de su fragmento de respaldo. |
+| Amplificación por rol | Proporción de un rol entre lo que el sistema recupera dividida por su proporción en el corpus. 1 = el sistema refleja la fuente. |
+| Intervalo de confianza | Rango de valores compatibles con lo observado, dado el tamaño de la muestra. |
 | Recall por rol | De las decisiones que dijo una persona con cierto rol, qué proporción recupera el sistema. |
 | Estratificación | Desglosar los resultados por grupos (rol, sitio) para ver si el sistema trata a todos igual. |
 | Limitación declarada | Un desglose que no se puede hacer con estos datos y se dice explícitamente, en lugar de reportarse como si midiera algo. |
