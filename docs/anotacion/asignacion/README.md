@@ -143,7 +143,7 @@ reparto equilibra horas totales, no filas.
 |---|---:|---:|---|
 | **`gv`** | 260 | 61 | Tarea C (200 pares: 4 series × 50) + validación del banco (≥100 preguntas) |
 | **`gm`** | 223 | 71 | Escritura del banco (≥100 preguntas) |
-| **`jss`** | 0 | 0 | Adjudicación de las 5 series dobles, los CSV de adjudicación, notebook 03 |
+| **`jss`** | 0 | 0 | Adjudicación de las 5 series dobles, los CSV de adjudicación, notebook 04 |
 
 (260 = 29 de Fase 1 + 111 de Fase 2 + 120 de Fase 3. 223 = 29 + 111 + 83.)
 
@@ -273,4 +273,4 @@ persona; `afg gold validate` verifica el resultado.
 | `data/processed/decisions/<serie>.decisions.adjudicated.csv` y `data/processed/relations/<serie>.candidates.adjudicated.csv` | `afg gold adjudicate` escribe, `jss` completa | Tras cada serie doble |
 | `reports/tables/<serie>.agreement.csv` | `afg gold agreement` | Tras cada serie doble |
 | `data/processed/questions/banco-preguntas.csv` | `afg gold questions-init` crea, `gm` escribe, `gv` valida | Banco de preguntas |
-| `notebooks/03-jss-anotacion-oe1.ipynb` | `jss` | Al cerrar OE1 |
+| `notebooks/04-jss-anotacion-oe1.ipynb` | `jss` | Al cerrar OE1 |

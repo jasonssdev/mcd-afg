@@ -22,11 +22,13 @@ from afg.domain.decision import Decision, DecisionStatus, EvidenceSpan
 from afg.eda.dictionary import table_dictionary
 from afg.eda.tables import (
     EdaTables,
+    add_pair_features,
     build_decision_table,
     build_meeting_table,
     build_pair_table,
     build_series_table,
     build_speaker_table,
+    duration_coherence,
     load_eda_tables,
     read_meeting_metadata,
     read_speaker_metadata,
@@ -434,3 +436,48 @@ class TestRealRegistry:
             dictionary = table_dictionary(getattr(real, name))
             missing = dictionary.loc[dictionary["description"] == "", "variable"].tolist()
             assert not missing, f"{name}: {missing}"
+
+
+class TestPairFeatures:
+    def test_shorter_decision_and_the_two_blocker_rules(self) -> None:
+        pairs = pd.DataFrame(
+            {
+                "n_tokens_earlier": [3, 8],
+                "n_tokens_later": [5, 2],
+                "shared_tokens": [1, 2],
+                "overlap": [0.5, 1.0],
+                "is_candidate": [False, True],
+            }
+        )
+        out = add_pair_features(pairs)
+        assert out["shorter_tokens"].tolist() == [3, 2]
+        assert out["passes_overlap"].tolist() == [True, True]
+        assert out["passes_shared"].tolist() == [False, True]
+        assert (out["passes_overlap"] & out["passes_shared"]).tolist() == pairs[
+            "is_candidate"
+        ].tolist()
+
+    def test_thresholds_are_parameters_and_input_is_not_mutated(self) -> None:
+        pairs = pd.DataFrame(
+            {
+                "n_tokens_earlier": [4],
+                "n_tokens_later": [4],
+                "shared_tokens": [1],
+                "overlap": [0.25],
+            }
+        )
+        out = add_pair_features(pairs, threshold=0.2, min_shared=1)
+        assert bool(out.loc[0, "passes_overlap"]) and bool(out.loc[0, "passes_shared"])
+        assert "shorter_tokens" not in pairs.columns
+
+
+class TestDurationCoherence:
+    def test_gap_between_recorded_duration_and_last_turn(self) -> None:
+        meetings = pd.DataFrame({"meeting_id": ["m1", "m2"], "duration_seconds": [100.0, 50.0]})
+        turns = pd.DataFrame({"meeting_id": ["m1", "m1"], "end": [40.0, 90.0]})
+        out = duration_coherence(meetings, turns).set_index("meeting_id")
+        assert out.loc["m1", "transcript_end_seconds"] == 90.0
+        assert out.loc["m1", "gap_seconds"] == pytest.approx(10.0)
+        assert out.loc["m1", "gap_share"] == pytest.approx(0.1)
+        assert math.isnan(out.loc["m2", "transcript_end_seconds"])
+        assert math.isnan(out.loc["m2", "gap_seconds"])

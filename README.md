@@ -325,9 +325,10 @@ uv run jupyter lab
 | 00 | `00-jss-corpus-y-auditoria.ipynb` | Adquisición, paso cero, auditoría de datos, y qué cambió por ella |
 | 01 | `01-jss-viabilidad-e3.ipynb` | Estimación provisional de viabilidad del estrato de evolución |
 | 02 | `02-jss-transcripciones.ipynb` | De AMI a transcripciones legibles y congeladas |
-| 03 | `03-jss-anotacion-oe1.ipynb` | *(pendiente)* anotación humana y conjunto de referencia |
-| 04 | `04-jss-experimento-a.ipynb` | *(pendiente)* OE2 — calidad de la extracción automática |
-| 05 | `05-jss-experimento-b.ipynb` | *(pendiente)* OE3/OE4 — C1 vs C2 vs C3 y atribución del error |
+| 03 | `03-jss-eda.ipynb` | Análisis exploratorio de datos de AFG2: calidad, faltantes, atípicos, relaciones, estructura multivariada y temporal, e implicancias para el modelado |
+| 04 | `04-jss-anotacion-oe1.ipynb` | *(pendiente)* anotación humana y conjunto de referencia |
+| 05 | `05-jss-experimento-a.ipynb` | *(pendiente)* OE2 — calidad de la extracción automática |
+| 06 | `06-jss-experimento-b.ipynb` | *(pendiente)* OE3/OE4 — C1 vs C2 vs C3 y atribución del error |
 
 Los notebooks son el **registro académico** del proyecto y se versionan con sus salidas, para
 que un revisor pueda leerlos sin ejecutar nada. Si tocas uno, re-ejecútalo de punta a punta

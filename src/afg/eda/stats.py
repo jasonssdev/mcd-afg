@@ -100,6 +100,30 @@ def describe_categorical(
     return pd.DataFrame(rows, columns=["variable", "category", "count", "share"])
 
 
+def rate_by_bin(
+    df: pd.DataFrame,
+    value: str,
+    flag: str,
+    bins: Sequence[float],
+    *,
+    labels: Sequence[str] | None = None,
+) -> pd.DataFrame:
+    """Share of rows with ``flag`` true inside right-closed bins of ``value``.
+
+    Columns: ``bin``, ``n`` (rows with a non-missing ``value`` in the bin), ``n_true`` and
+    ``rate`` (NaN for an empty bin). Rows whose ``value`` is missing or outside ``bins`` are
+    left out.
+    """
+    cut = pd.cut(pd.to_numeric(df[value], errors="coerce"), bins=list(bins), labels=labels)
+    grouped = df[flag].astype(bool).groupby(cut, observed=False)
+    n = grouped.size()
+    n_true = grouped.sum()
+    out = pd.DataFrame({"bin": n.index.astype(str), "n": n.to_numpy(dtype=int)})
+    out["n_true"] = n_true.to_numpy(dtype=int)
+    out["rate"] = np.where(out["n"] > 0, out["n_true"] / out["n"].where(out["n"] > 0), np.nan)
+    return out
+
+
 # --- univariate outliers -------------------------------------------------------------------
 
 
