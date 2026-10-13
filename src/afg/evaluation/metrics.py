@@ -219,3 +219,58 @@ def wilson_interval(
         upper=min(1.0, centre + half_width),
         confidence_level=confidence_level,
     )
+
+
+@dataclass(frozen=True, slots=True)
+class RoleAmplification:
+    role: str
+    system_share: float
+    source_share: float
+    ratio: float
+    ci: BootstrapCI
+
+
+def role_amplification(
+    system_roles: Sequence[str],
+    source_roles: Sequence[str],
+    role: str,
+    n: int = 10_000,
+    seed: int | None = None,
+    confidence_level: float = 0.95,
+) -> RoleAmplification:
+    """Share of ``role`` among the decisions a system recovers, over its share in the source.
+
+    Ethics metric of docs/avances/05 section 2: it separates the bias already present in
+    the source (the denominator, e.g. the PM holds 47.0% of attributed decision acts) from
+    the bias the system adds (the ratio). 1 means the system mirrors the source; above 1 it
+    amplifies the role; below 1 it under-represents it.
+
+    ``system_roles`` holds one role per recovered decision and ``source_roles`` one per
+    decision in the corpus. The source share is treated as a measured population value, so
+    the bootstrap CI resamples only the system's recovered decisions; an interval that
+    contains 1 is reported as no evidence of added bias.
+    """
+    if not system_roles:
+        raise ValueError("role_amplification is undefined for an empty system output.")
+    if not source_roles:
+        raise ValueError("role_amplification is undefined for an empty source.")
+    source_share = sum(1 for r in source_roles if r == role) / len(source_roles)
+    if source_share == 0.0:
+        raise ValueError(f"role {role!r} never appears in the source; the ratio is undefined.")
+
+    indicators = [1.0 if r == role else 0.0 for r in system_roles]
+    system_share = sum(indicators) / len(indicators)
+    ci = bootstrap_ci(
+        indicators,
+        statistic=lambda values: (sum(values) / len(values)) / source_share,
+        n=n,
+        seed=seed,
+        confidence_level=confidence_level,
+    )
+    return RoleAmplification(
+        role=role,
+        system_share=system_share,
+        source_share=source_share,
+        ratio=system_share / source_share,
+        ci=ci,
+    )

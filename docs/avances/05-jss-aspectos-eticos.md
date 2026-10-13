@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 05 — Aspectos éticos |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 2.0 |
+| **Versión** | 2.1 |
 | **Fecha** | 2026-10-13 |
 | **Estado** | Vigente |
 
@@ -17,6 +17,7 @@
 | 1.2 | 2026-09-20 | Tabla que ancla cada principio a la etapa del flujo de datos donde se aplica | Revisión final de AFG1 |
 | 1.3 | 2026-10-01 | Reescritura completa de la redacción: cada principio se presenta primero con un caso real de los datos y después con la regla que se deriva, cada término técnico se explica al aparecer y se agrega un glosario breve. Los tres principios, las cifras, las partes involucradas y el marco de referencia no cambian. | Retroalimentación de la revisión entre equipos de la semana 8: el problema y la metodología no se entendían, menos aún para una audiencia no técnica. |
 | 2.0 | 2026-10-13 | La comparación del principio de justicia y equidad pasa a ser una métrica con nombre y fórmula, la amplificación por rol, con intervalo bootstrap del 95 %. | Retroalimentación del profesor sobre la metodología (AFG1/avance): recomendó definir desde ya con qué métrica se distinguirá el sesgo que viene de la fuente del que agrega el sistema. |
+| 2.1 | 2026-10-13 | La amplificación por rol queda implementada con pruebas en `afg.evaluation.metrics.role_amplification`. | La versión 2.0 la declaraba pendiente. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -133,8 +134,9 @@ del corpus; si las decisiones que recuperara un sistema fueran 60 % del PM, la a
 sería 60 ÷ 47 ≈ 1,28. Con esto se vuelve medible la separación entre el **sesgo de la
 fuente** y el **sesgo del sistema**: el primero es el denominador (ya medido: 47,0 %, entre
 44 % y 50 % por sitio) y el segundo es la razón. El sitio de grabación puede tratarse con la
-misma fórmula como eje secundario, sin cifras todavía. La métrica aún no está implementada
-en `src/afg/`: se implementará con pruebas antes del Experimento A.
+misma fórmula como eje secundario, sin cifras todavía. La métrica está implementada, con
+pruebas, en `afg.evaluation.metrics.role_amplification`; todavía no produce cifras, porque
+las condiciones aún no responden preguntas.
 
 **Lo que no se puede medir, y por qué se dice.** El eje **nativo/no-nativo de inglés**, que
 la propuesta original trataba como estratificación obligatoria (es decir, como un desglose
