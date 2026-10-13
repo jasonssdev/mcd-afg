@@ -134,14 +134,14 @@ segunda anotación ni kappa.
 
 **Por qué Gustavo lleva menos decisiones.** Porque además escribe el **banco de preguntas**:
 mínimo 100 preguntas (25 por estrato, `docs/propuesta.md` §5.5) a un ritmo estimado de ~5
-minutos cada una. Germán las valida (~3 min cada una) y además hace la **Tarea C**. El
+minutos cada una. Germán las valida (~3 min cada una) y además hace la **Tarea C** (cuatro muestras de 50 pares, una por serie). El
 reparto equilibra horas totales, no filas.
 
 ### Carga total por persona
 
 | | Decisiones | Candidatos | Además |
 |---|---:|---:|---|
-| **`gv`** | 260 | 61 | Tarea C (50 pares) + validación del banco (≥100 preguntas) |
+| **`gv`** | 260 | 61 | Tarea C (200 pares: 4 series × 50) + validación del banco (≥100 preguntas) |
 | **`gm`** | 223 | 71 | Escritura del banco (≥100 preguntas) |
 | **`jss`** | 0 | 0 | Adjudicación de las 5 series dobles, los CSV de adjudicación, notebook 03 |
 
@@ -269,7 +269,7 @@ persona; `afg gold validate` verifica el resultado.
 |---|---|---|
 | `data/processed/decisions/<serie>.decisions.<iniciales>.csv` | `gv`, `gm` | Tarea A de cada serie |
 | `data/processed/relations/<serie>.candidates.<iniciales>.csv` | `gv`, `gm` | Tarea B de cada serie |
-| `data/processed/relations/IS1004.recall-sample.<iniciales>.csv` (adjudicado) | `gv` | Tarea C |
+| `data/processed/relations/<serie>.recall-sample.<iniciales>.csv` (adjudicado; IS1004, ES2016, IS1003, TS3005) | `gv` | Tarea C |
 | `data/processed/decisions/<serie>.decisions.adjudicated.csv` y `data/processed/relations/<serie>.candidates.adjudicated.csv` | `afg gold adjudicate` escribe, `jss` completa | Tras cada serie doble |
 | `reports/tables/<serie>.agreement.csv` | `afg gold agreement` | Tras cada serie doble |
 | `data/processed/questions/banco-preguntas.csv` | `afg gold questions-init` crea, `gm` escribe, `gv` valida | Banco de preguntas |

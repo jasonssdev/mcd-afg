@@ -76,7 +76,7 @@ trabajado (§3), ya está contaminada, y equivocarse ahí no cuesta nada.
 
 ### Tu carga total
 
-**260 decisiones y 61 pares candidatos** (29 + 111 + 120 y 3 + 37 + 21), más la Tarea C y la
+**260 decisiones y 61 pares candidatos** (29 + 111 + 120 y 3 + 37 + 21), más la Tarea C (200 pares: cuatro muestras de 50) y la
 validación del banco.
 
 ---
@@ -319,23 +319,30 @@ convención (la posterior actúa sobre la anterior).
 
 ## 7. Tarea C — Muestra de recall del bloqueador
 
-**Archivo:** `data/processed/relations/IS1004.recall-sample.csv` — **ya está generado**, con
-50 pares que el bloqueador **rechazó** (verificado: 50 filas, con la semilla ya registrada).
-No lo regeneres: `afg gold recall-sample` se niega a sobrescribir una muestra que ya existe,
-y forzarlo con `--force` es decisión de `jss`, no tuya.
+**Archivos:** una muestra por serie, `data/processed/relations/<serie>.recall-sample.csv`,
+para IS1004 (desarrollo) y para una serie de evaluación por sitio: ES2016, IS1003 y TS3005.
+**Ya están generadas**, cada una con 50 pares que el bloqueador **rechazó** (verificado: 50
+filas por archivo, con la semilla ya registrada). No las regeneres: `afg gold recall-sample`
+se niega a sobrescribir una muestra que ya existe, y forzarlo con `--force` es decisión de
+`jss`, no tuya.
 
-`uv run afg gold prepare --annotator gv` crea tu copia,
-`IS1004.recall-sample.gv.csv`, junto con el resto de tus archivos. Mismas columnas y
+`uv run afg gold prepare --annotator gv` crea tus cuatro copias,
+`<serie>.recall-sample.gv.csv`, junto con el resto de tus archivos. Mismas columnas y
 **mismas reglas que la Tarea B**: mismo conjunto cerrado de `relation`, mismo `direction_ok`,
-misma `confidence`. `afg gold validate --annotator gv --series IS1004` la revisa con las
-mismas reglas de Tarea B.
+misma `confidence`. `afg gold validate --annotator gv --series <serie>` revisa cada una con
+las mismas reglas de Tarea B.
+
+**Orden y carga.** ES2016, IS1003 y TS3005 son series de tu Fase 2; IS1004 es de la Fase 3.
+Cada muestra se hace al terminar la serie de la misma fase, para tener fresco el contexto de
+las reuniones. Son 200 pares en total, ≈ 5 h a 1,5 min por par (150 pares de las tres series
+de evaluación, ≈ 3,75 h, más los 50 de IS1004).
 
 **Qué mide.** Cada par que resulte **distinto de `no_relacionada`** es un **falso negativo
 del bloqueador**: una relación real que el filtro tiró. Sin esta muestra el bloqueador es una
 caja negra y la tesis no puede reportar qué se perdió (manual §5).
 
-**Si crees que hace falta una segunda muestra, no la generes.** Esa decisión la toma `jss`
-al ver los resultados de la primera. Escríbelo en el PR y para ahí.
+**Si crees que hace falta otra muestra, no la generes.** Esa decisión la toma `jss` al ver
+los resultados de las cuatro. Escríbelo en el PR y para ahí.
 
 ---
 
@@ -428,7 +435,10 @@ git branch -d data/anotacion-ES2015-gv
 - **Una serie por PR, no todas juntas.** Un PR por serie permite detectar deriva de criterio
   temprano: si en la tercera serie empezaste a marcar `compuesta` con otro umbral, se ve en
   esa PR y no dentro de un bulto de diez series ya mezcladas.
-- La Tarea C va en su propio PR, rama `data/anotacion-recall-IS1004`.
+- La Tarea C va en PR aparte de las Tareas A y B, **uno por serie**, rama
+  `data/anotacion-recall-<SERIE>` (`data/anotacion-recall-IS1004`, `-ES2016`, `-IS1003` y
+  `-TS3005`). Un PR por serie mantiene la misma lógica que arriba: se ve la deriva de criterio
+  temprano, y el recall de cada sitio se puede revisar por separado.
 
 ---
 

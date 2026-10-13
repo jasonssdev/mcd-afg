@@ -199,10 +199,15 @@ class Annotator:
 
 @dataclass(frozen=True, slots=True)
 class RecallSampleAssignment:
-    """Tarea C: who adjudicates the blocker's rejected-pair sample, over which series."""
+    """Tarea C: who adjudicates the blocker's rejected-pair samples, over which series.
+
+    One sample of ``n`` pairs per series, all drawn with the same ``seed``. A recall series
+    that is not among the owner's assignments still gets its workspace file (the sample is
+    the owner's to annotate) but has no ``status`` row, so it is not validated there.
+    """
 
     owner: str
-    series_id: str
+    series_ids: tuple[str, ...]
     n: int
     seed: int
 
@@ -280,6 +285,9 @@ def load_annotation_plan(raw: Mapping[str, Any] | None = None) -> AnnotationPlan
         )
 
     recall = section["recall_sample"]
+    recall_series = recall["series"]
+    # a bare string is the original single-series form; a list covers several series
+    recall_series_ids = (recall_series,) if isinstance(recall_series, str) else tuple(recall_series)
     bank = section["question_bank"]
     return AnnotationPlan(
         annotators=tuple(annotators),
@@ -288,7 +296,7 @@ def load_annotation_plan(raw: Mapping[str, Any] | None = None) -> AnnotationPlan
         phase2_series=phase2,
         recall_sample=RecallSampleAssignment(
             owner=recall["owner"],
-            series_id=recall["series"],
+            series_ids=recall_series_ids,
             n=int(recall["n"]),
             seed=int(recall["seed"]),
         ),
@@ -471,15 +479,17 @@ def expected_files(
             )
     recall = plan.recall_sample
     if recall.owner == annotator.initials:
-        files.append(
-            WorkspaceFile(
-                kind=TaskKind.RECALL_SAMPLE,
-                series_id=recall.series_id,
-                phase=3,
-                source=paths.source(TaskKind.RECALL_SAMPLE, recall.series_id),
-                target=paths.target(TaskKind.RECALL_SAMPLE, recall.series_id, annotator.initials),
+        phases = {a.series_id: a.phase for a in annotator.assignments}
+        for series_id in recall.series_ids:
+            files.append(
+                WorkspaceFile(
+                    kind=TaskKind.RECALL_SAMPLE,
+                    series_id=series_id,
+                    phase=phases.get(series_id, 3),
+                    source=paths.source(TaskKind.RECALL_SAMPLE, series_id),
+                    target=paths.target(TaskKind.RECALL_SAMPLE, series_id, annotator.initials),
+                )
             )
-        )
     return files
 
 
@@ -986,10 +996,10 @@ def validate_annotator(
         )
         issues = [*issues, *candidate_issues]
 
-        if recall.owner == initials and recall.series_id == assignment.series_id:
+        if recall.owner == initials and assignment.series_id in recall.series_ids:
             _, _, recall_issues = _validate_file(
-                paths.target(TaskKind.RECALL_SAMPLE, recall.series_id, initials),
-                paths.source(TaskKind.RECALL_SAMPLE, recall.series_id),
+                paths.target(TaskKind.RECALL_SAMPLE, assignment.series_id, initials),
+                paths.source(TaskKind.RECALL_SAMPLE, assignment.series_id),
                 TaskKind.RECALL_SAMPLE,
             )
             issues.extend(recall_issues)

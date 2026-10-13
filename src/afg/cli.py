@@ -1094,7 +1094,7 @@ def gold_status(
         f"Adjudica `{plan.adjudicator}`. Banco de preguntas: lo escribe "
         f"`{plan.question_bank.author}`, lo valida `{plan.question_bank.validator}`. "
         f"Muestra de recall (Tarea C): `{plan.recall_sample.owner}` sobre "
-        f"{plan.recall_sample.series_id}."
+        f"{', '.join(plan.recall_sample.series_ids)}."
     )
 
 
