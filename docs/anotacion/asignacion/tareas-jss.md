@@ -3,7 +3,7 @@
 > **Tu papel es distinto.** No anotas ninguna fila. Generas los insumos, adjudicas los
 > desacuerdos de la doble anotación en los CSV de adjudicación, verificas que
 > ninguna etiqueta de máquina se coló en el conjunto de referencia, y cierras OE1 con el
-> notebook 03. Que quien adjudica no anote es una regla del diseño
+> notebook 04. Que quien adjudica no anote es una regla del diseño
 > (`CONTRIBUTING.md` §1): si adjudicaras tus propias etiquetas, las finales quedarían
 > sesgadas hacia uno de los tres.
 
@@ -327,9 +327,9 @@ la fila lleva razón **y** la guía recibe un PR de corrección.
 
 ---
 
-## 7. Notebook 03 — el cierre de OE1
+## 7. Notebook 04 — el cierre de OE1
 
-`notebooks/03-jss-anotacion-oe1.ipynb` está pendiente (`notebooks/README.md`). Es el registro
+`notebooks/04-jss-anotacion-oe1.ipynb` está pendiente (`notebooks/README.md`). Es el registro
 académico de la anotación humana: acuerdo, kappa, adjudicación y el conjunto de referencia
 resultante.
 
@@ -338,14 +338,14 @@ resultante.
   escribirlo aparece una cifra que no tiene función detrás, la función se escribe primero,
   con su prueba.
 - **Va separado del 01** a propósito: el 01 contiene etiquetas puestas por una máquina con
-  fines de planificación, y el 03 contendrá el conjunto de referencia real, hecho a mano.
+  fines de planificación, y el 04 contendrá el conjunto de referencia real, hecho a mano.
   Mezclarlos invitaría a citar las provisionales como si fueran la referencia.
 - **Se versiona con sus outputs y se re-ejecuta antes de entregarlo.** Un notebook con
   outputs obsoletos miente con autoridad.
 
 ```bash
 uv run jupyter nbconvert --to notebook --execute --inplace \
-  --ExecutePreprocessor.timeout=900 notebooks/03-jss-anotacion-oe1.ipynb
+  --ExecutePreprocessor.timeout=900 notebooks/04-jss-anotacion-oe1.ipynb
 ```
 
 Si al escribirlo una cifra cambia respecto de lo ya publicado, hay que decir **dónde más

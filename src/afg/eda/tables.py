@@ -460,6 +460,39 @@ def build_pair_table(
     )
 
 
+def add_pair_features(
+    pairs: pd.DataFrame, *, threshold: float = 0.30, min_shared: int = 2
+) -> pd.DataFrame:
+    """Copy of the pair table with the pieces of the blocker rule made visible.
+
+    Added columns: ``shorter_tokens`` (tokens of the shorter decision of the pair),
+    ``passes_overlap`` (``overlap >= threshold``: the coefficient rule alone, the original
+    operating point of decision D9) and ``passes_shared`` (``shared_tokens >= min_shared``:
+    the absolute-intersection rule that was added). ``is_candidate`` is their conjunction at
+    the defaults, which lets the notebook show how much each rule filters.
+    """
+    out = pairs.copy()
+    out["shorter_tokens"] = out[["n_tokens_earlier", "n_tokens_later"]].min(axis=1)
+    out["passes_overlap"] = out["overlap"] >= threshold
+    out["passes_shared"] = out["shared_tokens"] >= min_shared
+    return out
+
+
+def duration_coherence(meetings: pd.DataFrame, turns: pd.DataFrame) -> pd.DataFrame:
+    """Compare the recorded duration with the end of the last transcribed turn.
+
+    Two independent sources (``meetings.xml`` and the transcript) measure the same quantity,
+    so a large gap would point to a capture error. Columns: ``meeting_id``,
+    ``duration_seconds``, ``transcript_end_seconds`` (NaN without turns), ``gap_seconds``
+    (duration minus transcript end) and ``gap_share`` (gap over duration).
+    """
+    last_end = turns.groupby("meeting_id")["end"].max().rename("transcript_end_seconds")
+    out = meetings[["meeting_id", "duration_seconds"]].merge(last_end, on="meeting_id", how="left")
+    out["gap_seconds"] = out["duration_seconds"] - out["transcript_end_seconds"]
+    out["gap_share"] = out["gap_seconds"] / out["duration_seconds"]
+    return out
+
+
 # --- meeting, speaker and series levels (pure) ------------------------------------------------
 
 

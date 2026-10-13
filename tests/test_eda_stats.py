@@ -20,6 +20,7 @@ from afg.eda.stats import (
     mosaic_rectangles,
     multivariate_outliers,
     outlier_summary,
+    rate_by_bin,
     variance_inflation_factors,
     zscore_outliers,
 )
@@ -227,3 +228,26 @@ class TestVif:
         r2 = np.corrcoef(df["x"], df["y"])[0, 1] ** 2
         out = variance_inflation_factors(df, ["x", "y"]).set_index("variable")
         assert out.loc["x", "vif"] == pytest.approx(1 / (1 - r2))
+
+
+class TestRateByBin:
+    def test_counts_and_rates_per_right_closed_bin(self) -> None:
+        df = pd.DataFrame(
+            {"len": [1, 2, 3, 4, 5, 6], "hit": [False, True, True, False, False, True]}
+        )
+        out = rate_by_bin(df, "len", "hit", [0, 2, 4, 6])
+        assert out["n"].tolist() == [2, 2, 2]
+        assert out["n_true"].tolist() == [1, 1, 1]
+        assert out["rate"].tolist() == pytest.approx([0.5, 0.5, 0.5])
+
+    def test_empty_bin_has_nan_rate_and_labels_are_used(self) -> None:
+        df = pd.DataFrame({"len": [1, 1], "hit": [True, False]})
+        out = rate_by_bin(df, "len", "hit", [0, 2, 4], labels=["short", "long"])
+        assert out["bin"].tolist() == ["short", "long"]
+        assert out["n"].tolist() == [2, 0]
+        assert math.isnan(out.loc[1, "rate"])
+
+    def test_missing_values_are_left_out(self) -> None:
+        df = pd.DataFrame({"len": [1.0, np.nan, 3.0], "hit": [True, True, False]})
+        out = rate_by_bin(df, "len", "hit", [0, 2, 4])
+        assert out["n"].sum() == 2
