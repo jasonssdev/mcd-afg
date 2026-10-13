@@ -66,7 +66,7 @@ _PLAN_CONFIG: dict[str, object] = {
         "adjudicator": "jss",
         "phase1_series": ["ES1"],
         "phase2_series": [],
-        "recall_sample": {"owner": "gm", "series": "ES2", "n": 1, "seed": 1},
+        "recall_sample": {"owner": "gm", "series": ["ES2"], "n": 1, "seed": 1},
         "question_bank": {
             "author": "gm",
             "validator": "gv",

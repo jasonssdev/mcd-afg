@@ -30,10 +30,13 @@ phase2_series = ["ES2016", "IS1003", "TS3005", "ES2008"]
 
 [annotation.recall_sample]
 # Tarea C (manual section 5): adjudicate a random sample of pairs the blocker REJECTED, to
-# put a number on what it lost. One person, one series. `seed` and `n` are the arguments
-# `afg gold recall-sample` was run with, recorded here so the sample stays reproducible.
+# put a number on what it lost. One person, one sample per listed series: the original
+# development series (IS1004) plus one evaluation series per recording site (ES2016, IS1003,
+# TS3005), so recall can be reported per site and overall (professor feedback, avance 06
+# section 2). `seed` and `n` are the arguments `afg gold recall-sample` was run with for each
+# series, recorded here so every sample stays reproducible.
 owner = "gv"
-series = "IS1004"
+series = ["IS1004", "ES2016", "IS1003", "TS3005"]
 n = 50
 seed = 42
 

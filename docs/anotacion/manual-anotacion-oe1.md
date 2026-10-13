@@ -323,11 +323,18 @@ desactualizada y con cita que no la sustenta.
 
 Sin esto, el blocker es una caja negra y no puedes reportar qué se perdió.
 
-1. `uv run afg gold recall-sample --series IS1004 --n 50` extrae 50 pares **rechazados**
-   por el blocker, al azar, con semilla fija.
+La muestra tiene **una parte por serie**: IS1004 (desarrollo) más una serie de evaluación
+por sitio de grabación (ES2016, IS1003 y TS3005). Para cada serie:
+
+1. `uv run afg gold recall-sample --series <SERIE> --n 50 --seed 42` extrae 50 pares
+   **rechazados** por el blocker, al azar, con semilla fija (la misma en las cuatro series).
 2. Los adjudicas con las mismas reglas de la Tarea B.
 3. Cualquier par que resulte distinto de `no_relacionada` es un **falso negativo del
    blocker**.
+
+El recall se reporta **por sitio** (una cifra para ES, IS y TS, cada una con su intervalo
+bootstrap) y **en conjunto**. Así se puede ver si la pérdida es pareja entre sitios o si el
+filtro pierde más en uno; IS1004 aporta la cifra del sitio IS junto con IS1003.
 
 La cifra a reportar en la tesis es: *"el blocker con coeficiente de solapamiento ≥ 0,30
 recuperó N de M relaciones en una muestra aleatoria de pares rechazados (IC 95 % por
@@ -388,8 +395,8 @@ Marca solo lo verificado. Cada ítem corresponde a algo revisable después.
 - [ ] `confidence` está en todas las filas
 
 ### Tarea C — recall
-- [ ] Muestra de rechazados extraída con semilla registrada
-- [ ] Muestra adjudicada con las mismas reglas
+- [ ] Muestra de rechazados extraída con semilla registrada, una por serie (IS1004, ES2016, IS1003, TS3005)
+- [ ] Las cuatro muestras adjudicadas con las mismas reglas
 - [ ] Falsos negativos contados y anotados
 
 ### Tarea D — acuerdo

@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 06 — Metodología |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 2.0 |
+| **Versión** | 2.1 |
 | **Fecha** | 2026-10-13 |
 | **Estado** | Vigente |
 
@@ -17,6 +17,7 @@
 | 1.2 | 2026-09-20 | Umbrales operativos provisionales en el paso 1 | Revisión final de AFG1: el paso 1 debe ser cuantitativo |
 | 1.3 | 2026-10-01 | Reescritura completa de la redacción: se abre con las tres condiciones y las cuatro fases contadas como una secuencia con su razón, cada paso explica qué se hace y por qué, cada término técnico se explica al aparecer y se agrega un glosario breve. Las cifras, los umbrales, el diseño experimental y la numeración de secciones no cambian. | Retroalimentación de la revisión entre equipos de la semana 8: el problema y la metodología no se entendían, menos aún para una audiencia no técnica. |
 | 2.0 | 2026-10-13 | Se agregan el detalle del filtro léxico y sus sesgos con su plan de medición (§2), el cálculo de los intervalos de confianza (§7–8), el criterio de éxito principal del proyecto (D16, §1), la acumulación de reuniones por serie (D15, §1) y el riesgo de C2 observado en una prueba sobre ES2015 (§7–8). | Retroalimentación del profesor sobre la metodología (AFG1/avance): faltaba el detalle del filtro y sus sesgos, el cálculo de los intervalos, las métricas de éxito y la definición de cuántas reuniones acumula cada evaluación. |
+| 2.1 | 2026-10-13 | Se actualiza el estado de la Tarea C (§2): la muestra de recall pasa de una serie (IS1004) a cuatro, IS1004 más una serie de evaluación por sitio (ES2016, IS1003, TS3005), generadas con la misma semilla y sin anotar todavía. Cambio de estado y redacción; no altera cifras ni umbrales. | Poder reportar el recall del filtro por sitio, como pide la retroalimentación del profesor sobre el sesgo del filtro. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -164,8 +165,9 @@ cada sitio. La mitigación es la **Tarea C**: 50 pares que el filtro rechazó, m
 azar con semilla fija y anotados con las mismas reglas; toda relación real entre ellos es un
 falso negativo, y con eso se reporta el recall del filtro (qué proporción de las relaciones
 reales deja pasar) con un intervalo bootstrap. Estado real: la muestra está generada pero no
-anotada, y hoy proviene solo de IS1004, una serie de desarrollo y una de las dos de menor
-tasa; debe ampliarse a series de evaluación de los tres sitios para responder la pregunta del
+anotada. Cubre IS1004 (serie de desarrollo y una de las dos de menor tasa) y una serie de
+evaluación por sitio de grabación (ES2016, IS1003 y TS3005), con la misma semilla y 50 pares
+por serie; así el recall puede reportarse por sitio y en conjunto, y responder la pregunta del
 sesgo. Mientras tanto, 92 es la cota superior de lo que este filtro permite anotar, no de las
 relaciones que existen en el corpus. La evidencia está en
 [`../../notebooks/00-jss-corpus-y-auditoria.ipynb`](../../notebooks/00-jss-corpus-y-auditoria.ipynb)

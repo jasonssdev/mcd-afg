@@ -63,7 +63,8 @@ uv run afg gold status   --annotator <iniciales>                 # tu avance (so
 ```
 
 `setup` crea tus copias `<serie>.decisions.<iniciales>.csv` y `<serie>.candidates.<iniciales>.csv`
-(Tareas A y B) y, para quien hace la Tarea C, `IS1004.recall-sample.<iniciales>.csv`.
+(Tareas A y B) y, para quien hace la Tarea C, una `<serie>.recall-sample.<iniciales>.csv` por cada serie de la muestra
+(IS1004, ES2016, IS1003 y TS3005).
 
 **Los archivos base ya están generados y no se regeneran.** Los comandos siguientes los
 corrió quien mantiene el repositorio en la Fase 0, y se listan solo como referencia. Volver a
@@ -73,7 +74,8 @@ muestra existente salvo con `--force`, porque una muestra regenerada deja de ser
 ```bash
 uv run afg gold build --series IS1004        # -> data/processed/decisions/IS1004.decisions.csv (base de la Tarea A)
 uv run afg gold candidates --series IS1004   # -> data/processed/relations/IS1004.candidates.csv (base de la Tarea B)
-uv run afg gold recall-sample --series IS1004 --n 50 --seed 42   # -> IS1004.recall-sample.csv (base de la Tarea C, solo IS1004)
+uv run afg gold recall-sample --series IS1004 --n 50 --seed 42   # -> IS1004.recall-sample.csv (base de la Tarea C)
+# igual para ES2016, IS1003 y TS3005: una muestra por serie, misma semilla
 uv run afg gold agreement --series IS1004    # Tarea D: lo corre quien adjudica (kappa por existencia, tipo y dirección)
 ```
 
@@ -81,7 +83,7 @@ uv run afg gold agreement --series IS1004    # Tarea D: lo corre quien adjudica 
 |---|---|---|---|---|
 | **A** Normalizar decisiones | Lees la evidencia, decides `status`, escribes objeto y contenido | `data/processed/decisions/<serie>.decisions.csv` | ~30 s por fila | ≈ 3 h (343 filas) |
 | **B** Adjudicar pares | Eliges la relación entre dos decisiones de reuniones distintas | `data/processed/relations/<serie>.candidates.csv` | 1–2 min por par | ≈ 2–3 h (92 pares) |
-| **C** Muestra de recall | Anotas 50 pares que el filtro rechazó, para medir qué se perdió (solo IS1004, la hace `gv`) | `data/processed/relations/IS1004.recall-sample.<iniciales>.csv` | 1–2 min por par | ≈ 1–2 h |
+| **C** Muestra de recall | Anotas 50 pares que el filtro rechazó por cada serie de la muestra (IS1004, ES2016, IS1003 y TS3005; la hace `gv`), para medir qué se perdió | `data/processed/relations/<serie>.recall-sample.<iniciales>.csv` | 1–2 min por par | ≈ 3–7 h (200 pares) |
 | **D** Doble anotación | La segunda persona repite A y B sobre copia limpia; se calcula kappa y se adjudica | `<serie>.candidates.<iniciales>.csv` y los dos `<serie>.*.adjudicated.csv` | como A y B | ≈ 3 h por persona |
 
 El orden dentro de cada serie es **cronológico**: primero la reunión a, luego b, c, d. No se

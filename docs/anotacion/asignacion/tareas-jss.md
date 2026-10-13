@@ -246,25 +246,35 @@ mergear:
 
 ---
 
-## 5. Decisión sobre la segunda muestra de recall
+## 5. Muestras de recall: una por serie
 
-La Tarea C la ejecuta `gv` sobre `data/processed/relations/IS1004.recall-sample.csv` — 50
-pares rechazados por el bloqueador, ya generados con semilla fija. Cada par que resulte
-distinto de `no_relacionada` es un **falso negativo**.
+La Tarea C la ejecuta `gv` sobre cuatro muestras, una por serie:
+`data/processed/relations/{IS1004,ES2016,IS1003,TS3005}.recall-sample.csv`. Cada una tiene 50
+pares rechazados por el bloqueador, generados con la misma semilla (42) y el mismo punto de
+operación (0,30 / 2). Cada par que resulte distinto de `no_relacionada` es un **falso
+negativo**.
 
-**La decisión sobre una segunda muestra es tuya, y se toma después de ver la primera.**
-Nadie genera otra por su cuenta: una segunda muestra elegida después de ver un resultado que
-no gustó es selección de muestra por conveniencia, y eso sí invalidaría la cifra.
+**Por qué cuatro.** El recall del filtro tiene que poder reportarse por sitio de grabación
+(avance 06 §2): una sola muestra de IS1004, serie de desarrollo y de las dos de menor tasa,
+no permite extender la cifra a ES ni a TS. IS1004 se mantiene y se agregan ES2016, IS1003 y
+TS3005, que son series de evaluación de cada sitio. Eso implica que `gv` lee contenido de
+evaluación al anotarlas; la decisión quedó registrada así y las muestras se generaron antes de
+ver ningún resultado.
 
-Qué mirar para decidir:
+**Regla para no sesgar la cifra.** Nadie genera otra muestra por su cuenta, y la decisión de
+ampliar o repetir una se toma después de ver las cuatro. Una muestra adicional elegida después
+de ver un resultado que no gustó es selección por conveniencia, y eso sí invalidaría la
+cifra.
 
-- **Cuántos falsos negativos aparecieron.** Si son cero o uno en 50, el intervalo de
-  confianza por bootstrap va a ser ancho por abajo pero la conclusión —"el bloqueador pierde
-  poco"— se sostiene. Si son muchos, el punto de operación del bloqueador es el problema, no
-  el tamaño de la muestra, y lo que toca es revisarlo, no muestrear más.
-- **Si la segunda muestra fuera de otra serie**, deja de estimar lo mismo: IS1004 es
-  desarrollo, y muestrear una serie de evaluación para esto significa leer contenido de
-  evaluación. Tendría que justificarse y registrarse.
+Qué mirar al ver los resultados:
+
+- **Cuántos falsos negativos aparecieron en cada sitio.** Con 50 pares por sitio, si son cero
+  o uno el intervalo de confianza por bootstrap va a ser ancho por abajo, pero la conclusión
+  —"el bloqueador pierde poco"— se sostiene. Si son muchos en un sitio, el punto de
+  operación del bloqueador es el problema en ese sitio, y lo que toca es revisarlo, no
+  muestrear más.
+- **Si los sitios difieren.** La diferencia entre sitios es justamente lo que las muestras por
+  serie permiten ver.
 - Cualquiera que sea la decisión, se escribe: como entrada nueva en
   `docs/decisions/README.md` si cambia una cifra publicada, o como ADR si cambia el
   procedimiento.

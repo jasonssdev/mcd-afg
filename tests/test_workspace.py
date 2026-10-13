@@ -10,6 +10,7 @@ is a plausible accident, and the cost of getting it wrong is a day of somebody's
 
 from __future__ import annotations
 
+import copy
 import csv
 from pathlib import Path
 
@@ -228,7 +229,8 @@ class TestLoadAnnotationPlan:
         assert gv.phase3_series == ("IS1004", "IS1006", "IS1009", "TS3003", "ES2002")
         assert gm.phase3_series == ("TS3009", "TS3011", "IS1008", "ES2014")
         assert real_plan.recall_sample.owner == "gv"
-        assert real_plan.recall_sample.series_id == "IS1004"
+        assert real_plan.recall_sample.series_ids == ("IS1004", "ES2016", "IS1003", "TS3005")
+        assert (real_plan.recall_sample.n, real_plan.recall_sample.seed) == (50, 42)
         assert real_plan.question_bank.author == "gm"
         assert real_plan.question_bank.validator == "gv"
 
@@ -330,6 +332,80 @@ class TestLoadAnnotationPlan:
         }
         with pytest.raises(KeyError, match="github"):
             load_annotation_plan(config)
+
+
+class TestRecallSampleSeries:
+    """Tarea C covers several series: ``series`` is a list, or a bare string for old configs."""
+
+    @staticmethod
+    def _config(series: object) -> dict[str, object]:
+        config = copy.deepcopy(_PLAN_CONFIG)
+        section = config["annotation"]
+        assert isinstance(section, dict)
+        section["recall_sample"] = {"owner": "gv", "series": series, "n": 50, "seed": 42}
+        return config
+
+    def test_a_list_is_parsed_in_order(self) -> None:
+        loaded = load_annotation_plan(self._config(["IS1004", "ES2008"]))
+        assert loaded.recall_sample.series_ids == ("IS1004", "ES2008")
+
+    def test_a_single_string_stays_valid(self) -> None:
+        loaded = load_annotation_plan(self._config("IS1004"))
+        assert loaded.recall_sample.series_ids == ("IS1004",)
+
+    def test_one_workspace_file_per_recall_series(
+        self, paths: WorkspacePaths, sources: WorkspacePaths
+    ) -> None:
+        multi = load_annotation_plan(self._config(["IS1004", "ES2008"]))
+        files = [
+            f
+            for f in expected_files(multi, multi.annotator("gv"), paths)
+            if f.kind is TaskKind.RECALL_SAMPLE
+        ]
+        assert [(f.series_id, f.phase) for f in files] == [("IS1004", 3), ("ES2008", 2)]
+        assert files[1].target.name == "ES2008.recall-sample.gv.csv"
+
+    def test_prepare_creates_every_recall_file(
+        self, paths: WorkspacePaths, sources: WorkspacePaths
+    ) -> None:
+        multi = load_annotation_plan(self._config(["IS1004", "ES2008"]))
+        _write_csv(
+            paths.relations_dir / "ES2008.recall-sample.csv",
+            _CANDIDATE_COLUMNS,
+            [_candidate_row("ES2008.r001", "ES2008a.d01", "ES2008b.d02")],
+        )
+        outcome = prepare_annotator_workspace(multi, "gv", paths=sources)
+        names = {f.target.name for f in outcome.created}
+        assert {"IS1004.recall-sample.gv.csv", "ES2008.recall-sample.gv.csv"} <= names
+
+    def test_status_validates_a_non_first_recall_series(
+        self, paths: WorkspacePaths, sources: WorkspacePaths
+    ) -> None:
+        multi = load_annotation_plan(self._config(["IS1004", "ES2008"]))
+        _write_csv(
+            paths.relations_dir / "ES2008.recall-sample.csv",
+            _CANDIDATE_COLUMNS,
+            [_candidate_row("ES2008.r001", "ES2008a.d01", "ES2008b.d02")],
+        )
+        prepare_annotator_workspace(multi, "gv", paths=sources)
+        assert validate_annotator(multi, "gv", paths=sources, series="ES2008").ok
+
+        (sources.relations_dir / "ES2008.recall-sample.gv.csv").unlink()
+        report = validate_annotator(multi, "gv", paths=sources, series="ES2008")
+        assert any("recall-sample" in issue.message for issue in report.issues)
+        # the first recall series is unaffected by the missing second file
+        assert validate_annotator(multi, "gv", paths=sources, series="IS1004").ok
+
+    def test_recall_series_outside_the_assignments_are_listed_but_not_validated(
+        self, paths: WorkspacePaths, sources: WorkspacePaths
+    ) -> None:
+        """A recall series the owner is not assigned gets its file (the sample is still
+        theirs to annotate) but ``status`` has no row for it, so nothing to validate."""
+        multi = load_annotation_plan(self._config(["IS1004", "TS3009"]))
+        listed = {f.series_id for f in expected_files(multi, multi.annotator("gv"), paths)}
+        assert "TS3009" in listed
+        report = validate_annotator(multi, "gv", paths=sources)
+        assert "TS3009" not in {p.series_id for p in report.series}
 
 
 # --- prepare ------------------------------------------------------------------------------

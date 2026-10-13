@@ -292,7 +292,7 @@ uv run afg gold setup --annotator <iniciales>      # de un clon nuevo a "abre es
 uv run afg gold build --series IS1004              # archivo de trabajo de la Tarea A
 uv run afg gold prepare --annotator <iniciales>    # crea tus archivos de trabajo (gold setup ya lo hace por ti)
 uv run afg gold candidates --series IS1004         # pares candidatos a adjudicar (Tarea B)
-uv run afg gold recall-sample --series IS1004 --n 50 --seed 42   # Tarea C
+uv run afg gold recall-sample --series IS1004 --n 50 --seed 42   # Tarea C (una muestra por serie: IS1004, ES2016, IS1003, TS3005)
 uv run afg gold evidence --meeting IS1004d --term turbo          # busca evidencia en la transcripción
 uv run afg gold agreement --series IS1004          # kappa: existencia / tipo / dirección (Tarea D)
 uv run afg gold validate --annotator <iniciales>   # verifica tu trabajo antes de abrir el PR
