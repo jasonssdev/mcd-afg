@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 06 — Metodología |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 2.1 |
+| **Versión** | 2.2 |
 | **Fecha** | 2026-10-13 |
 | **Estado** | Vigente |
 
@@ -18,6 +18,7 @@
 | 1.3 | 2026-10-01 | Reescritura completa de la redacción: se abre con las tres condiciones y las cuatro fases contadas como una secuencia con su razón, cada paso explica qué se hace y por qué, cada término técnico se explica al aparecer y se agrega un glosario breve. Las cifras, los umbrales, el diseño experimental y la numeración de secciones no cambian. | Retroalimentación de la revisión entre equipos de la semana 8: el problema y la metodología no se entendían, menos aún para una audiencia no técnica. |
 | 2.0 | 2026-10-13 | Se agregan el detalle del filtro léxico y sus sesgos con su plan de medición (§2), el cálculo de los intervalos de confianza (§7–8), el criterio de éxito principal del proyecto (D16, §1), la acumulación de reuniones por serie (D15, §1) y el riesgo de C2 observado en una prueba sobre ES2015 (§7–8). | Retroalimentación del profesor sobre la metodología (AFG1/avance): faltaba el detalle del filtro y sus sesgos, el cálculo de los intervalos, las métricas de éxito y la definición de cuántas reuniones acumula cada evaluación. |
 | 2.1 | 2026-10-13 | Se actualiza el estado de la Tarea C (§2): la muestra de recall pasa de una serie (IS1004) a cuatro, IS1004 más una serie de evaluación por sitio (ES2016, IS1003, TS3005), generadas con la misma semilla y sin anotar todavía. Cambio de estado y redacción; no altera cifras ni umbrales. | Poder reportar el recall del filtro por sitio, como pide la retroalimentación del profesor sobre el sesgo del filtro. |
+| 2.2 | 2026-10-13 | La primera mención de la Tarea C en §2 dice "50 pares por serie". | La redacción de la versión 2.1 podía leerse como 50 pares en total. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -161,7 +162,7 @@ entró en la elección del punto de operación; (5) el conjunto de referencia fa
 métodos léxicos (D6 evita el sesgo inverso, no este). Una comprobación medida: la proporción
 de candidatos por sitio de grabación en el punto de operación es parecida (ES 44 pares,
 3,2 %; IS 22, 3,1 %; TS 26, 2,6 %), pero eso **no** demuestra que la pérdida sea igual en
-cada sitio. La mitigación es la **Tarea C**: 50 pares que el filtro rechazó, muestreados al
+cada sitio. La mitigación es la **Tarea C**: 50 pares por serie que el filtro rechazó, muestreados al
 azar con semilla fija y anotados con las mismas reglas; toda relación real entre ellos es un
 falso negativo, y con eso se reporta el recall del filtro (qué proporción de las relaciones
 reales deja pasar) con un intervalo bootstrap. Estado real: la muestra está generada pero no
