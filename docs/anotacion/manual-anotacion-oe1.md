@@ -107,12 +107,19 @@ copia con las columnas humanas vacías: el trabajo desaparece sin ningún error 
 | `no_decision` | Propuesta abierta, pregunta u opinión. **Se conserva**: mide falsos positivos |
 | `compuesta` | La frase contiene N decisiones. Se divide (ver abajo) |
 | `sin_soporte` | La evidencia no respalda lo que la frase afirma |
-| `descartar` | Frase truncada, rota o ininteligible |
+| `descartar` | Frase truncada, rota o ininteligible, o que repite una decisión ya anotada en la misma reunión (ver abajo) |
 
 **`compuesta` no es un veredicto final, es una instrucción.** Marcas la fila original como
 `compuesta` y creas N filas nuevas con `decision_id` sufijado `-1`, `-2`, … copiando
 `source_sentence_id` y `evidence_text`. Cada fila nueva lleva su propio
 `decision_object` / `decision_content` y su `status`.
+
+**Una decisión repetida dentro de la misma reunión se anota una sola vez.** Si dos filas de
+la misma reunión describen la misma decisión (por ejemplo, una frase propia y la hija de una
+`compuesta`), conservas la fila cuya frase la enuncia de forma explícita y marcas la otra
+`descartar`, con `notes` (o `razon`, al adjudicar) indicando qué fila duplica: *"duplica
+ES2015b.d02"*. Así la reunión no suma una decisión de más ni aparece un par de la decisión
+consigo misma.
 
 ### La regla de oro
 
