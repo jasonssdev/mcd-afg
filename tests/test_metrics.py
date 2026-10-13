@@ -15,6 +15,7 @@ from afg.evaluation.metrics import (
     recall_at_k,
     relation_direction_accuracy,
     relation_label_accuracy,
+    role_amplification,
     wilson_interval,
 )
 
@@ -188,3 +189,57 @@ class TestWilsonInterval:
     def test_rejects_invalid_confidence_level(self) -> None:
         with pytest.raises(ValueError):
             wilson_interval(5, 11, confidence_level=1.0)
+
+
+class TestRoleAmplification:
+    """Ethics metric (docs/avances/05 section 2): system share of a role over source share."""
+
+    SOURCE = ["PM"] * 47 + ["ID"] * 20 + ["ME"] * 18 + ["UI"] * 15
+
+    def test_system_mirroring_the_source_scores_one(self) -> None:
+        result = role_amplification(self.SOURCE, self.SOURCE, "PM", n=500, seed=1)
+        assert result.system_share == pytest.approx(0.47)
+        assert result.source_share == pytest.approx(0.47)
+        assert result.ratio == pytest.approx(1.0)
+
+    def test_over_representing_a_role_scores_above_one(self) -> None:
+        system = ["PM"] * 60 + ["ID"] * 40
+        result = role_amplification(system, self.SOURCE, "PM", n=500, seed=1)
+        assert result.ratio == pytest.approx(0.60 / 0.47)
+        assert result.ratio > 1.0
+
+    def test_under_representing_a_role_scores_below_one(self) -> None:
+        system = ["PM"] * 20 + ["ID"] * 80
+        result = role_amplification(system, self.SOURCE, "PM", n=500, seed=1)
+        assert result.ratio == pytest.approx(0.20 / 0.47)
+
+    def test_role_absent_from_system_output_scores_zero(self) -> None:
+        result = role_amplification(["ID", "ME"], self.SOURCE, "PM", n=500, seed=1)
+        assert result.ratio == 0.0
+
+    def test_interval_brackets_the_point_estimate_and_carries_its_settings(self) -> None:
+        system = ["PM"] * 60 + ["ID"] * 40
+        result = role_amplification(system, self.SOURCE, "PM", n=2_000, seed=7)
+        assert result.ci.lower <= result.ratio <= result.ci.upper
+        assert result.ci.point_estimate == pytest.approx(result.ratio)
+        assert result.ci.n_resamples == 2_000
+        assert result.ci.confidence_level == 0.95
+
+    def test_same_seed_gives_same_interval(self) -> None:
+        system = ["PM"] * 60 + ["ID"] * 40
+        first = role_amplification(system, self.SOURCE, "PM", n=1_000, seed=3)
+        second = role_amplification(system, self.SOURCE, "PM", n=1_000, seed=3)
+        assert (first.ci.lower, first.ci.upper) == (second.ci.lower, second.ci.upper)
+
+    def test_rejects_empty_system_output(self) -> None:
+        with pytest.raises(ValueError):
+            role_amplification([], self.SOURCE, "PM")
+
+    def test_rejects_empty_source(self) -> None:
+        with pytest.raises(ValueError):
+            role_amplification(["PM"], [], "PM")
+
+    def test_rejects_role_absent_from_source(self) -> None:
+        # The ratio is undefined when the source never attributes a decision to the role.
+        with pytest.raises(ValueError):
+            role_amplification(["PM"], ["ID", "ME"], "PM")
