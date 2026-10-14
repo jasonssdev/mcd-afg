@@ -82,7 +82,7 @@ from afg.evaluation.judge_calibration_worksheet import (
     write_worksheet,
 )
 from afg.shared.config import get_settings, load_corpus_config, load_experiments_config
-from afg.shared.logging import configure_logging, get_logger
+from afg.shared.logging import configure_logging, get_logger, quiet_http_logs
 from afg.shared.paths import (
     AMI_DIR,
     GOLD_DECISIONS_DIR,
@@ -1345,6 +1345,7 @@ def judge_calibration_answers() -> None:
     las etiquetas ya puestas se conservan.
     """
     rows = _load_valid_worksheet_or_exit()
+    quiet_http_logs()
     try:
         questions = worksheet_questions(rows)
         report = generate_calibration_set(
@@ -1353,6 +1354,7 @@ def judge_calibration_answers() -> None:
             backend=OllamaGenerationBackend(),
             transcripts_dir=TRANSCRIPTS_DIR,
             questions=questions,
+            on_progress=lambda done, total: console.print(f"Pregunta {done}/{total} lista."),
         )
     except (WorksheetError, CalibrationSetError, FileNotFoundError, ValueError) as exc:
         console.print(f"[bold red]{exc}[/bold red]")
@@ -1385,6 +1387,7 @@ def judge_calibration_run() -> None:
             "Genéralo con `uv run afg judge calibration-answers`."
         )
         raise typer.Exit(code=1)
+    quiet_http_logs()
     try:
         items = load_calibration_items(CALIBRATION_PATH)
     except CalibrationSetError as exc:

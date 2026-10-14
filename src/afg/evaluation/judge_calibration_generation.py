@@ -8,7 +8,8 @@ similar proportion:
 * ``grounded``: the model sees the transcript passage that covers the reference dialogue
   acts, so it can answer correctly.
 * ``ungrounded``: the model sees a passage of the same series that contains none of those
-  acts, chosen deterministically from the seed, so a wrong or abstaining answer is likely.
+  acts, chosen deterministically from the seed, and is told to answer anyway, so a confident
+  wrong answer is likely.
 * E4 (unanswerable) questions have no reference acts: they get the ``ungrounded`` passage
   and a ``no_context`` answer instead.
 
@@ -25,7 +26,7 @@ from __future__ import annotations
 import csv
 import random
 import re
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
@@ -85,6 +86,16 @@ _SYSTEM_PROMPT = (
     "Do not use outside knowledge. "
     f"If the context does not contain the answer, reply with exactly {ABSTAIN_MARKER}."
 )
+
+_FORCED_SYSTEM_PROMPT = (
+    "You answer questions about a meeting using the context you are given. "
+    "Answer in the language of the question, in at most three sentences. "
+    "Always give a direct, confident answer; never say that the context lacks the answer."
+)
+"""Used for the ``ungrounded`` answer of an answerable question. Left free to abstain, the
+model abstains on almost every wrong passage, and the set then tests only whether the judge
+rejects abstentions. Forcing an answer yields the failure section 5.6 singles out as the most
+dangerous one: a confident answer that the evidence does not support."""
 
 
 class CalibrationQuestion(BaseModel):
@@ -290,16 +301,23 @@ def generate_answers(
     """Two answers for one question, each tagged with the variant that produced it."""
     distractor = ungrounded_passage(question, seed=seed, transcripts_dir=transcripts_dir)
     if question.stratum is QuestionStratum.E4_UNANSWERABLE:
-        contexts = [("ungrounded", distractor), ("no_context", _NO_CONTEXT)]
+        contexts = [
+            ("ungrounded", distractor, _SYSTEM_PROMPT),
+            ("no_context", _NO_CONTEXT, _SYSTEM_PROMPT),
+        ]
     else:
         contexts = [
-            ("grounded", grounded_passage(question, transcripts_dir=transcripts_dir)),
-            ("ungrounded", distractor),
+            (
+                "grounded",
+                grounded_passage(question, transcripts_dir=transcripts_dir),
+                _SYSTEM_PROMPT,
+            ),
+            ("ungrounded", distractor, _FORCED_SYSTEM_PROMPT),
         ]
     answers: list[GeneratedAnswer] = []
-    for variant, context in contexts:
+    for variant, context, system in contexts:
         raw = backend.generate(
-            _SYSTEM_PROMPT,
+            system,
             _user_prompt(question, context),
             model=model,
             seed=seed,
@@ -328,6 +346,7 @@ def generate_calibration_set(
     backend: GenerationBackend,
     transcripts_dir: Path = TRANSCRIPTS_DIR,
     questions: Sequence[CalibrationQuestion] | None = None,
+    on_progress: Callable[[int, int], None] | None = None,
 ) -> GenerationReport:
     """Generate the answers of every new question and append them to the calibration CSV.
 
@@ -336,6 +355,7 @@ def generate_calibration_set(
     columns of new rows stay empty. Nothing is written, and the backend is never called,
     when there are no questions. The file is written as UTF-8 without a BOM. ``questions``
     replaces the question file when given (the worksheet bridge passes them directly).
+    ``on_progress(done, total)`` is called after each question, skipped ones included.
     """
     if questions is None:
         questions = load_calibration_questions(questions_path)
@@ -348,9 +368,11 @@ def generate_calibration_set(
     new_rows: list[dict[str, str]] = []
     new_variants: dict[str, str] = {}
     processed = skipped = 0
-    for question in questions:
+    for position, question in enumerate(questions, start=1):
         if any(row_id.startswith(f"{question.id}.") for row_id in taken):
             skipped += 1
+            if on_progress is not None:
+                on_progress(position, len(questions))
             continue
         answers = generate_answers(
             question,
@@ -384,6 +406,8 @@ def generate_calibration_set(
                 }
             )
         processed += 1
+        if on_progress is not None:
+            on_progress(position, len(questions))
     if new_rows:
         variants = {**load_variants(calibration_path), **new_variants}
         # Shuffle (deterministically) so the two answers of a question are not adjacent and

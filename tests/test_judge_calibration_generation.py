@@ -14,6 +14,7 @@ import pytest
 from afg.domain.decision import EvidenceSpan
 from afg.domain.question import QuestionStratum
 from afg.evaluation.judge_calibration_generation import (
+    ABSTAIN_MARKER,
     ABSTENTION_TEXT,
     QUESTIONS_TEMPLATE_PATH,
     CalibrationQuestion,
@@ -495,3 +496,51 @@ class TestOllamaGenerationBackend:
             OllamaGenerationBackend(host="http://h:1").generate(
                 "s", "u", model="m", seed=1, temperature=0.1, top_p=0.9
             )
+
+
+class TestForcedWrongAnswers:
+    """Answerable questions must yield confident wrong answers, not mostly abstentions."""
+
+    def test_answerable_ungrounded_call_cannot_abstain(self, transcripts: Path) -> None:
+        backend = FakeBackend()
+        generate_answers(
+            _question(),
+            backend=backend,
+            model="m",
+            seed=1,
+            temperature=0.1,
+            top_p=0.9,
+            transcripts_dir=transcripts,
+        )
+        grounded, ungrounded = backend.calls
+        assert ABSTAIN_MARKER in grounded["system"]
+        assert ABSTAIN_MARKER not in ungrounded["system"]
+
+    def test_unanswerable_calls_may_still_abstain(self, transcripts: Path) -> None:
+        backend = FakeBackend()
+        generate_answers(
+            _question(QuestionStratum.E4_UNANSWERABLE),
+            backend=backend,
+            model="m",
+            seed=1,
+            temperature=0.1,
+            top_p=0.9,
+            transcripts_dir=transcripts,
+        )
+        assert all(ABSTAIN_MARKER in call["system"] for call in backend.calls)
+
+
+class TestProgress:
+    def test_progress_is_reported_once_per_question(
+        self, tmp_path: Path, transcripts: Path
+    ) -> None:
+        seen: list[tuple[int, int]] = []
+        generate_calibration_set(
+            tmp_path / "unused.csv",
+            tmp_path / "calibration.csv",
+            backend=FakeBackend(),
+            transcripts_dir=transcripts,
+            questions=[_question(), _question(QuestionStratum.E4_UNANSWERABLE, "ES2015.q002")],
+            on_progress=lambda done, total: seen.append((done, total)),
+        )
+        assert seen == [(1, 2), (2, 2)]
