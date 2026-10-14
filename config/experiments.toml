@@ -56,6 +56,17 @@ min_seed_consistency = 0.95          # same verdict across all seeds
 min_e4_accuracy = 0.80               # accuracy on the E4_unanswerable stratum
 min_json_valid_rate = 0.99           # share of outputs that parse and validate
 max_verbosity_flip_rate = 0.10       # verdict changes when a wrong answer is padded
+series = ["ES2015"]                  # the calibration set draws only from these series
+# ES2015 is annotated and adjudicated, so reading questions about it breaks no pending
+# annotation. IS1004 (annotated independently in Phase 3, issue #30) and TS3009
+# (recalibration not finished) are development series too, but exposing their content
+# before those annotations close would break annotator independence. Must stay a subset of
+# `development_series` in corpus.toml; the loader fails otherwise.
+candidates = [                       # judge models to calibrate, primary first; none is a Qwen or
+    "mistral-small3.2:24b",          # Gemma model (openkos families), see notebook 05
+    "atla/selene-mini:q8_0",
+    "gpt-oss:20b",
+]
 seeds = [42, 43, 44]                 # seeds for the self-consistency check (3 runs)
 # Bootstrap resamples and confidence level come from [evaluation]; the bootstrap seed from
 # [shared_budget].seed.
