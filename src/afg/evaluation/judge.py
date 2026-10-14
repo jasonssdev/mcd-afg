@@ -10,6 +10,7 @@ low, automatic judging is discarded in favor of the human subsample alone.
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from importlib import resources
 from typing import Any, Literal, Protocol
@@ -121,8 +122,11 @@ class OllamaJudgeBackend:
     the package works without it.
     """
 
-    def __init__(self, host: str | None = None) -> None:
+    def __init__(
+        self, host: str | None = None, think: Mapping[str, bool | str] | None = None
+    ) -> None:
         self._host = host
+        self._think = dict(think or {})
 
     def complete(
         self,
@@ -143,6 +147,9 @@ class OllamaJudgeBackend:
         from afg.conditions.c1_retrieval import resolve_ollama_host
 
         client = ollama.Client(host=self._host or resolve_ollama_host())
+        # `think` is sent only for models configured for it; the reply's content (the JSON
+        # verdict) is parsed, never the separate thinking field.
+        extra: dict[str, Any] = {"think": self._think[model]} if model in self._think else {}
         response = client.chat(
             model=model,
             messages=[
@@ -151,11 +158,42 @@ class OllamaJudgeBackend:
             ],
             format=format_schema,
             options={"temperature": temperature, "seed": seed},
+            **extra,
         )
         return str(response.message.content or "")
 
 
-def _system_prompt() -> str:
+def list_installed_models(host: str | None = None) -> list[str]:
+    """Names of the models installed in the local Ollama server.
+
+    Raises:
+        RuntimeError: if the optional ``llm`` extra is missing.
+    """
+    try:
+        import ollama
+    except ImportError as exc:
+        raise RuntimeError(
+            "Listing models needs the optional `llm` extra: `uv sync --extra llm`."
+        ) from exc
+    from afg.conditions.c1_retrieval import resolve_ollama_host
+
+    client = ollama.Client(host=host or resolve_ollama_host())
+    return [str(model.model) for model in client.list().models]
+
+
+def _with_tag(name: str) -> str:
+    last = name.rsplit("/", 1)[-1]
+    return name if ":" in last else f"{name}:latest"
+
+
+def missing_models(wanted: Sequence[str], installed: Sequence[str]) -> list[str]:
+    """The ``wanted`` models absent from ``installed``, in order (untagged means ``:latest``)."""
+    present = {_with_tag(name) for name in installed}
+    return [name for name in wanted if _with_tag(name) not in present]
+
+
+def judge_system_prompt() -> str:
+    """The judge instructions (``prompts/judge.md``), the same for every candidate."""
     path = resources.files("afg.evaluation") / "prompts" / "judge.md"
     return path.read_bytes().decode("utf-8")
 
@@ -227,7 +265,7 @@ def judge_answer(
             "transcript excerpt was given; the judge cannot check evidence_supported."
         )
     raw = backend.complete(
-        _system_prompt(),
+        judge_system_prompt(),
         _user_prompt(question, answer, order, transcript_excerpt),
         model=judge_model,
         seed=seed,

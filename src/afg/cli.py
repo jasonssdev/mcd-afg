@@ -51,8 +51,9 @@ from afg.corpus.participants import (
 )
 from afg.corpus.render import discover_meeting_ids, render_meetings
 from afg.domain.decision import Decision
-from afg.evaluation.judge import OllamaJudgeBackend
+from afg.evaluation.judge import OllamaJudgeBackend, list_installed_models, missing_models
 from afg.evaluation.judge_calibration import load_thresholds
+from afg.evaluation.judge_calibration_checkpoint import CandidateCheckpoints, calibration_key
 from afg.evaluation.judge_calibration_generation import (
     CALIBRATION_PATH,
     OllamaGenerationBackend,
@@ -60,7 +61,9 @@ from afg.evaluation.judge_calibration_generation import (
 )
 from afg.evaluation.judge_calibration_results import RESULTS_PATH, save_calibration_results
 from afg.evaluation.judge_calibration_runner import (
+    CandidateRun,
     load_candidates,
+    load_think_settings,
     run_calibration,
     stored_excerpt_for,
 )
@@ -1408,18 +1411,78 @@ def judge_calibration_run() -> None:
             "columna `pasaje_transcripcion`): el pasaje se reconstruye desde la transcripción "
             "con la ventana actual, que puede no ser el que vio quien etiquetó.[/yellow]"
         )
-    console.print(f"Corriendo {len(load_candidates())} candidatos sobre {summary.n_items} ítems…")
+    candidates = load_candidates()
+    try:
+        absent = missing_models(candidates, list_installed_models())
+    except (RuntimeError, ConnectionError, OSError) as exc:
+        console.print(
+            f"[bold red]No se pudo consultar los modelos instalados en Ollama: {exc}[/bold red] "
+            "Comprueba que Ollama esté corriendo."
+        )
+        raise typer.Exit(code=1) from exc
+    if absent:
+        console.print(
+            f"[bold red]Faltan {len(absent)} modelo(s) candidato(s) en Ollama; no se corrió "
+            "nada:[/bold red]"
+        )
+        for model in absent:
+            console.print(f"  - {model}: `ollama pull {model}`")
+        raise typer.Exit(code=1)
+
+    thresholds = load_thresholds()
+    think = load_think_settings()
+    generative_model = str(load_experiments_config()["shared_budget"]["generative_model"])
+    try:
+        excerpts = {
+            item.id: stored_excerpt_for(item, transcripts_dir=TRANSCRIPTS_DIR) for item in items
+        }
+    except (ValueError, FileNotFoundError) as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    checkpoints = CandidateCheckpoints(
+        RESULTS_PATH.parent / "candidatos",
+        key_for=lambda model: calibration_key(
+            items=items,
+            excerpts=excerpts,
+            thresholds=thresholds,
+            model=model,
+            generative_model=generative_model,
+            think=think.get(model),
+        ),
+    )
+
+    def report_progress(model: str, done: int, total: int) -> None:
+        step = max(total // 10, 1)
+        if done == total or done % step == 0:
+            console.print(f"  {model}: {done}/{total} llamadas")
+
+    def report_done(model: str, run: CandidateRun, reused: bool) -> None:
+        metrics = run.metrics
+        suffix = " (ya calculado, se reutiliza)" if reused else ""
+        console.print(
+            f"{model}: kappa {metrics.kappa_correct.point_estimate:.2f}, "
+            f"posición {metrics.position_consistency:.2f}, "
+            f"latencia {metrics.latency_seconds:.1f} s/llamada, "
+            f"{run.calls} llamadas, {run.failures} fallos{suffix}"
+        )
+
+    console.print(f"Corriendo {len(candidates)} candidatos sobre {summary.n_items} ítems…")
     try:
         result = run_calibration(
             items,
-            candidates=load_candidates(),
-            generative_model=str(load_experiments_config()["shared_budget"]["generative_model"]),
-            backend_for=lambda model: OllamaJudgeBackend(),
-            thresholds=load_thresholds(),
-            excerpt_for=lambda item: stored_excerpt_for(item, transcripts_dir=TRANSCRIPTS_DIR),
+            candidates=candidates,
+            generative_model=generative_model,
+            backend_for=lambda model: OllamaJudgeBackend(think=think),
+            thresholds=thresholds,
+            excerpt_for=lambda item: excerpts[item.id],
+            progress=report_progress,
+            load_run=checkpoints.load,
+            save_run=checkpoints.save,
+            on_done=report_done,
         )
     except (ValueError, RuntimeError, FileNotFoundError) as exc:
         console.print(f"[bold red]{exc}[/bold red]")
+        console.print("Lo ya terminado quedó guardado; al repetir el comando se reanuda desde ahí.")
         raise typer.Exit(code=1) from exc
     save_calibration_results(RESULTS_PATH, result, n_items=summary.n_items)
     console.print(f"Resultados guardados en {_short(RESULTS_PATH)}.")

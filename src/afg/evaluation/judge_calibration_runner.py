@@ -75,6 +75,21 @@ class CalibrationResult:
     decision: JudgeDecision
 
 
+def load_think_settings() -> dict[str, bool | str]:
+    """``[judge.calibration.think]``: reasoning setting per candidate (absent: not sent)."""
+    section = load_experiments_config()["judge"]["calibration"].get("think", {})
+    allowed = {"low", "medium", "high"}
+    settings: dict[str, bool | str] = {}
+    for model, value in section.items():
+        if not isinstance(value, bool) and value not in allowed:
+            raise ValueError(
+                f"[judge.calibration.think] {model!r}: {value!r} is not a bool or one of "
+                f"{sorted(allowed)}."
+            )
+        settings[str(model)] = value
+    return settings
+
+
 def load_candidates() -> tuple[str, ...]:
     """The candidate judge models, from ``[judge.calibration].candidates`` (primary first)."""
     section = load_experiments_config()["judge"]["calibration"]
@@ -163,6 +178,7 @@ def run_candidate(
     n_resamples: int | None = None,
     clock: Callable[[], float] = time.perf_counter,
     excerpt_for: ExcerptFor = default_excerpt_for,
+    progress: Callable[[str, int, int], None] | None = None,
 ) -> CandidateRun:
     """Judge every labeled item with one candidate and build its :class:`CandidateMetrics`.
 
@@ -180,6 +196,9 @@ def run_candidate(
         raise ValueError("the calibration set needs at least one answer labeled incorrect.")
     seeds = thresholds.seeds
     excerpts = {item.id: excerpt_for(item) for item in items}
+    total_calls = len(items) * len(_ORDERS) * len(seeds) + sum(
+        1 for item in items if item.correct is False
+    )
     elapsed: list[float] = []
     outcomes: list[Outcome] = []
 
@@ -198,6 +217,8 @@ def run_candidate(
         )
         elapsed.append(clock() - started)
         outcomes.append(outcome)
+        if progress is not None:
+            progress(judge_model, len(outcomes), total_calls)
         return outcome
 
     runs = {
@@ -268,22 +289,41 @@ def run_calibration(
     n_resamples: int | None = None,
     clock: Callable[[], float] = time.perf_counter,
     excerpt_for: ExcerptFor = default_excerpt_for,
+    progress: Callable[[str, int, int], None] | None = None,
+    load_run: Callable[[str], CandidateRun | None] | None = None,
+    save_run: Callable[[str, CandidateRun], None] | None = None,
+    on_done: Callable[[str, CandidateRun, bool], None] | None = None,
 ) -> CalibrationResult:
-    """Run every candidate, then apply the pre-registered decision rule."""
-    runs = tuple(
-        run_candidate(
-            items,
-            judge_model=model,
-            generative_model=generative_model,
-            backend=backend_for(model),
-            thresholds=thresholds,
-            temperature=temperature,
-            n_resamples=n_resamples,
-            clock=clock,
-            excerpt_for=excerpt_for,
-        )
-        for model in candidates
-    )
+    """Run every candidate, then apply the pre-registered decision rule.
+
+    ``load_run`` lets a candidate that already finished (for these very inputs) be skipped;
+    ``save_run`` is called as soon as each candidate finishes, so a failure later in the list
+    loses nothing; ``on_done(model, run, reused)`` reports each candidate.
+    """
+    runs: list[CandidateRun] = []
+    for model in candidates:
+        stored = load_run(model) if load_run is not None else None
+        if stored is not None:
+            run, reused = stored, True
+        else:
+            run = run_candidate(
+                items,
+                judge_model=model,
+                generative_model=generative_model,
+                backend=backend_for(model),
+                thresholds=thresholds,
+                temperature=temperature,
+                n_resamples=n_resamples,
+                clock=clock,
+                excerpt_for=excerpt_for,
+                progress=progress,
+            )
+            reused = False
+            if save_run is not None:
+                save_run(model, run)
+        if on_done is not None:
+            on_done(model, run, reused)
+        runs.append(run)
     return CalibrationResult(
-        runs=runs, decision=decide_judge([r.metrics for r in runs], thresholds)
+        runs=tuple(runs), decision=decide_judge([r.metrics for r in runs], thresholds)
     )

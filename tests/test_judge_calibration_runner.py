@@ -14,6 +14,7 @@ from afg.evaluation.judge import JudgeConfigurationError, MissingTranscriptExcer
 from afg.evaluation.judge_calibration import CalibrationThresholds
 from afg.evaluation.judge_calibration_runner import (
     load_candidates,
+    load_think_settings,
     pad_to_double_length,
     run_calibration,
     run_candidate,
@@ -129,6 +130,75 @@ def _evidence_item(excerpt: str | None) -> CalibrationItem:
             "transcript_excerpt": excerpt,
         }
     )
+
+
+def _calibrate(backends: dict[str, FakeBackend], **kwargs: Any) -> Any:
+    return run_calibration(
+        _items(),
+        candidates=list(backends),
+        generative_model="qwen3:8b",
+        backend_for=lambda model: backends[model],
+        thresholds=THRESHOLDS,
+        n_resamples=50,
+        **kwargs,
+    )
+
+
+class TestProgressAndResume:
+    def test_progress_reports_every_call_up_to_the_known_total(self) -> None:
+        seen: list[tuple[str, int, int]] = []
+        _run(FakeBackend(), progress=lambda model, done, total: seen.append((model, done, total)))
+        total = 10 * 2 * 3 + 5  # items x orders x seeds + padded wrong answers
+        assert [d for _, d, _ in seen] == list(range(1, total + 1))
+        assert {(m, t) for m, _, t in seen} == {("judge:1", total)}
+
+    def test_each_candidate_is_saved_as_soon_as_it_finishes(self) -> None:
+        events: list[str] = []
+
+        class Tracking(FakeBackend):
+            def __init__(self, name: str) -> None:
+                super().__init__()
+                self.name = name
+
+            def complete(self, *args: Any, **kwargs: Any) -> str:
+                if not any(e == f"start:{self.name}" for e in events):
+                    events.append(f"start:{self.name}")
+                return super().complete(*args, **kwargs)
+
+        _calibrate(
+            {"a": Tracking("a"), "b": Tracking("b")},
+            save_run=lambda model, run: events.append(f"save:{model}"),
+        )
+        assert events == ["start:a", "save:a", "start:b", "save:b"]
+
+    def test_candidates_with_a_stored_run_are_skipped_and_the_decision_covers_all(self) -> None:
+        stored: dict[str, Any] = {}
+        first = _calibrate({"a": FakeBackend(), "b": FakeBackend()}, save_run=stored.__setitem__)
+        backend_a, backend_b = FakeBackend(), FakeBackend()
+        reused: list[str] = []
+        second = _calibrate(
+            {"a": backend_a, "b": backend_b},
+            load_run=stored.get,
+            on_done=lambda model, run, was_reused: reused.append(model) if was_reused else None,
+        )
+        assert backend_a.calls == [] and backend_b.calls == []
+        assert reused == ["a", "b"]
+        assert second.runs == first.runs and second.decision == first.decision
+
+    def test_only_the_missing_candidate_is_run_on_resume(self) -> None:
+        stored: dict[str, Any] = {}
+        _calibrate({"a": FakeBackend()}, save_run=stored.__setitem__)
+        backend_a, backend_b = FakeBackend(), FakeBackend()
+        result = _calibrate({"a": backend_a, "b": backend_b}, load_run=stored.get)
+        assert backend_a.calls == [] and backend_b.calls != []
+        assert [r.metrics.model for r in result.runs] == ["a", "b"]
+
+    def test_on_done_reports_fresh_runs_too(self) -> None:
+        done: list[tuple[str, bool]] = []
+        _calibrate(
+            {"a": FakeBackend()}, on_done=lambda model, run, reused: done.append((model, reused))
+        )
+        assert done == [("a", False)]
 
 
 class TestStoredExcerpt:
@@ -315,3 +385,10 @@ def test_candidates_come_from_the_config() -> None:
         "atla/selene-mini:q8_0",
         "gpt-oss:20b",
     )
+
+
+class TestThinkSettings:
+    def test_shipped_config_bounds_the_reasoning_of_gpt_oss_only(self) -> None:
+        settings = load_think_settings()
+        assert settings == {"gpt-oss:20b": "low"}
+        assert set(settings) <= set(load_candidates())

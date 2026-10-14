@@ -18,6 +18,8 @@ from afg.evaluation.judge import (
     MissingTranscriptExcerptError,
     OllamaJudgeBackend,
     judge_answer,
+    list_installed_models,
+    missing_models,
     require_distinct_model_families,
 )
 
@@ -275,6 +277,46 @@ class TestOllamaBackend:
             {"role": "user", "content": "USR"},
         ]
 
+    def _chat_kwargs(
+        self, monkeypatch: pytest.MonkeyPatch, backend: OllamaJudgeBackend, model: str
+    ) -> dict[str, Any]:
+        seen: dict[str, Any] = {}
+
+        class FakeClient:
+            def __init__(self, host: str) -> None: ...
+
+            def chat(self, **kwargs: Any) -> Any:
+                seen.update(kwargs)
+                # A reasoning model returns its thinking apart from the JSON content.
+                return types.SimpleNamespace(
+                    message=types.SimpleNamespace(content=GOOD, thinking="long reasoning...")
+                )
+
+        monkeypatch.setitem(sys.modules, "ollama", types.SimpleNamespace(Client=FakeClient))
+        out = backend.complete(
+            "S", "U", model=model, seed=1, temperature=0.0, format_schema={"type": "object"}
+        )
+        assert out == GOOD  # the content is parsed, never the thinking
+        return seen
+
+    def test_think_is_not_sent_unless_configured_for_the_model(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        backend = OllamaJudgeBackend(host="h", think={"gpt-oss:20b": "low"})
+        assert "think" not in self._chat_kwargs(monkeypatch, backend, "mistral-small3.2:24b")
+        assert "think" not in self._chat_kwargs(monkeypatch, OllamaJudgeBackend(host="h"), "m")
+
+    def test_configured_think_level_is_sent_together_with_the_json_format(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        backend = OllamaJudgeBackend(host="h", think={"gpt-oss:20b": "low"})
+        seen = self._chat_kwargs(monkeypatch, backend, "gpt-oss:20b")
+        assert seen["think"] == "low" and seen["format"] == {"type": "object"}
+
+    def test_think_false_is_sent_as_a_bool(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        backend = OllamaJudgeBackend(host="h", think={"m": False})
+        assert self._chat_kwargs(monkeypatch, backend, "m")["think"] is False
+
     def test_missing_llm_extra_gives_actionable_error(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
@@ -283,3 +325,33 @@ class TestOllamaBackend:
             OllamaJudgeBackend(host="http://h:1").complete(
                 "s", "u", model="m", seed=1, temperature=0.0, format_schema={}
             )
+
+
+class TestInstalledModels:
+    def test_lists_the_models_the_server_reports(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        class FakeClient:
+            def __init__(self, host: str) -> None: ...
+
+            def list(self) -> Any:
+                names = ["mistral-small3.2:24b", "qwen3:8b"]
+                return types.SimpleNamespace(models=[types.SimpleNamespace(model=n) for n in names])
+
+        monkeypatch.setitem(sys.modules, "ollama", types.SimpleNamespace(Client=FakeClient))
+        assert list_installed_models(host="h") == ["mistral-small3.2:24b", "qwen3:8b"]
+
+    def test_missing_llm_extra_gives_actionable_error(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setitem(sys.modules, "ollama", None)
+        with pytest.raises(RuntimeError, match="llm"):
+            list_installed_models(host="h")
+
+    def test_missing_models_reports_only_the_absent_ones_in_order(self) -> None:
+        installed = ["mistral-small3.2:24b", "qwen3:8b"]
+        wanted = ["mistral-small3.2:24b", "atla/selene-mini:q8_0", "gpt-oss:20b"]
+        assert missing_models(wanted, installed) == ["atla/selene-mini:q8_0", "gpt-oss:20b"]
+
+    def test_an_untagged_name_means_latest(self) -> None:
+        assert missing_models(["bge-m3"], ["bge-m3:latest"]) == []
+        assert missing_models(["bge-m3:latest"], ["bge-m3"]) == []
+        assert missing_models(["bge-m3:q8"], ["bge-m3:latest"]) == ["bge-m3:q8"]

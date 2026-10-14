@@ -61,6 +61,7 @@ def paths(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict[str, Path]:
             lambda meeting, sentence: ResolvedActs(ids=(f"{meeting}.A.dialog-act.x.1",), dropped=0)
         ),
     )
+    monkeypatch.setattr(afg_cli, "list_installed_models", lambda: list(afg_cli.load_candidates()))
     return {"worksheet": worksheet, "calibration": calibration, "results": results}
 
 
@@ -206,6 +207,110 @@ def _run_result() -> CalibrationResult:
         runs=(CandidateRun(metrics=metrics, evidence_supported=None, calls=3, failures=0),),
         decision=JudgeDecision(selected="m", failures={"m": ()}),
     )
+
+
+def _write_labeled_set(path: Path) -> None:
+    from afg.evaluation.judge_calibration_set import COLUMNS as SET_COLUMNS
+
+    row = dict.fromkeys(SET_COLUMNS, "")
+    row.update(
+        id="ES2015.q001.grounded",
+        series_id="ES2015",
+        stratum="E1_point_fact",
+        question="q",
+        reference_answer="r",
+        reference_evidence="ES2015a:ES2015a.A.dialog-act.x.1",
+        answer_text="a",
+        pasaje_transcripcion="STORED",
+        answer_abstained="false",
+        correct="si",
+        evidence_supported="si",
+        adjudicated="false",
+    )
+    path.write_text(
+        ",".join(SET_COLUMNS) + "\n" + ",".join(row[c] for c in SET_COLUMNS) + "\n",
+        encoding="utf-8",
+    )
+
+
+class TestRunRobustness:
+    @pytest.fixture(autouse=True)
+    def _labeled(self, paths: dict[str, Path], monkeypatch: pytest.MonkeyPatch) -> None:
+        _write_labeled_set(paths["calibration"])
+        monkeypatch.setattr(afg_cli, "load_candidates", lambda: ("m1", "m2", "m3"))
+        self.installed = ["m1", "m2", "m3"]
+        monkeypatch.setattr(afg_cli, "list_installed_models", lambda: self.installed)
+
+    def test_missing_models_stop_the_run_before_any_call_with_their_pull_commands(
+        self, paths: dict[str, Path], monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        self.installed = ["m1"]
+        monkeypatch.setattr(afg_cli, "run_calibration", lambda *a, **k: pytest.fail("ran"))
+        result = _invoke("calibration-run")
+        message = _out(result)
+        assert result.exit_code == 1
+        assert "ollama pull m2" in message and "ollama pull m3" in message
+        assert "ollama pull m1" not in message
+        assert not paths["results"].exists()
+
+    def test_an_unreachable_server_is_reported_not_a_traceback(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        def boom() -> list[str]:
+            raise ConnectionError("refused")
+
+        monkeypatch.setattr(afg_cli, "list_installed_models", boom)
+        monkeypatch.setattr(afg_cli, "run_calibration", lambda *a, **k: pytest.fail("ran"))
+        result = _invoke("calibration-run")
+        assert result.exit_code == 1 and "Ollama" in _out(result)
+
+    def test_progress_and_candidate_summaries_are_printed_and_runs_are_checkpointed(
+        self, paths: dict[str, Path], monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        seen: dict[str, Any] = {}
+
+        def fake_run(items: Any, **kwargs: Any) -> CalibrationResult:
+            result = _run_result()
+            for done in range(1, 101):
+                kwargs["progress"]("m1", done, 100)
+            kwargs["save_run"]("m1", result.runs[0])
+            seen["reloaded"] = kwargs["load_run"]("m1")
+            kwargs["on_done"]("m1", result.runs[0], False)
+            kwargs["on_done"]("m2", result.runs[0], True)
+            return result
+
+        monkeypatch.setattr(afg_cli, "run_calibration", fake_run)
+        result = _invoke("calibration-run")
+        message = _out(result)
+        assert result.exit_code == 0, result.output
+        assert "m1: 100/100 llamadas" in message
+        assert message.count("llamadas") < 100  # throttled, not one line per call
+        assert "m1: kappa" in message and "m2" in message and "ya calculado" in message
+        assert seen["reloaded"] == _run_result().runs[0]
+        assert any((paths["results"].parent / "candidatos").iterdir())
+        assert json.loads(paths["results"].read_text(encoding="utf-8"))["decision"]["selected"]
+
+    def test_stale_checkpoints_are_not_reused_when_the_labels_change(
+        self, paths: dict[str, Path], monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        def first(items: Any, **kwargs: Any) -> CalibrationResult:
+            kwargs["save_run"]("m1", _run_result().runs[0])
+            return _run_result()
+
+        monkeypatch.setattr(afg_cli, "run_calibration", first)
+        assert _invoke("calibration-run").exit_code == 0
+        _write_labeled_set(paths["calibration"])
+        text = paths["calibration"].read_text(encoding="utf-8").replace(",si,si,", ",no,si,")
+        paths["calibration"].write_text(text, encoding="utf-8")
+        seen: dict[str, Any] = {}
+
+        def second(items: Any, **kwargs: Any) -> CalibrationResult:
+            seen["loaded"] = kwargs["load_run"]("m1")
+            return _run_result()
+
+        monkeypatch.setattr(afg_cli, "run_calibration", second)
+        assert _invoke("calibration-run").exit_code == 0
+        assert seen["loaded"] is None
 
 
 class TestRun:
