@@ -9,7 +9,7 @@
 
 ## Tu encargo en una frase
 
-Cerrar el bucle de calidad de OE1: adjudicar las cinco series de doble anotación una por
+Cerrar el bucle de calidad de OE1: adjudicar las seis series de doble anotación una por
 una, dejar cada veredicto registrado en un CSV con su razón, y garantizar que ninguna etiqueta del
 conjunto de referencia la haya puesto una máquina.
 
@@ -57,7 +57,14 @@ alinear por `pair_id`.
 ## 2. Adjudicación, serie por serie
 
 **Se adjudica después de cada serie de doble anotación, no al final** ([`README.md`](README.md)
-§3). Son cinco sesiones: ES2015 (calibración), y luego ES2016, IS1003, TS3005, ES2008.
+§3). Son seis sesiones: ES2015 (calibración), TS3009 (recalibración) y luego ES2016, IS1003, TS3005, ES2008.
+La Fase 2 no se abre hasta que TS3009 esté adjudicada.
+
+**Antes de TS3009: la sesión conjunta.** ES2015 ya está adjudicada, así que `gv`, `gm` y tú
+revisan juntos sus 16 desacuerdos para alinear criterios (no para readjudicar). El material
+está en [`../calibracion/ES2015-sesion-conjunta.md`](../calibracion/ES2015-sesion-conjunta.md);
+la regla de oro y el criterio de umbral ya están en el manual (§2). TS3009 se anota después
+de esa sesión.
 
 ### 2.1 Requisitos para abrir una sesión
 
@@ -111,9 +118,10 @@ CLI):
 
 ### 2.3 Los kappas de calibración no se reportan
 
-El de ES2015 es **diagnóstico**: responde "¿entendimos los dos lo mismo?" y no entra en la
+Los de ES2015 y TS3009 son **diagnósticos**: responden "¿entendimos los dos lo mismo?" y no entran en la
 tesis. Si sale bajo, se corrige `annotation-guidelines.md` o el manual —en su propio PR—
-**antes** de tocar ES2016, y se recalibra. Los cuatro kappas de las series de control sí se
+**antes** de tocar ES2016, y se recalibra. Eso pasó con ES2015 (kappa de estado 0,094): la
+recalibración es TS3009. Los cuatro kappas de las series de control sí se
 reportan, tal como salgan: son el 36,4 % del conjunto de evaluación que exige el
 ADR [0005](../../decisions/0005-adr-development-evaluation-split.md).
 
@@ -334,7 +342,7 @@ distinto (`notebooks/README.md`):
 
 | Notebook | Fase | Estado |
 |---|---|---|
-| `04-jss-anotacion-f1-calibracion.ipynb` | Fase 1: calibración sobre ES2015, kappa **diagnóstico** | abierto con ES2015 |
+| `04-jss-anotacion-f1-calibracion.ipynb` | Fase 1: calibración sobre ES2015 y recalibración sobre TS3009, kappas **diagnósticos** | abierto con ES2015; la sección de TS3009 se añade tras su adjudicación |
 | `05-jss-anotacion-f2-control.ipynb` | Fase 2: cuatro series de control, kappa **reportable** | pendiente |
 | `06-jss-anotacion-f3-referencia.ipynb` | Fase 3: reparto individual y conjunto de referencia final de las 13 series | pendiente |
 

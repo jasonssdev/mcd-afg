@@ -16,6 +16,7 @@ from afg.annotation.calibration import (
     adjudicated_pairs,
     compuesta_children,
     decision_agreement,
+    disagreement_groups,
     final_rows,
     final_status_counts,
     resolved_disagreements,
@@ -184,6 +185,37 @@ class TestResolvedDisagreements:
         )
         (row,) = resolved_disagreements("ES2015", paths=paths)
         assert row["sided_with"] == "ninguno"
+
+
+class TestDisagreementGroups:
+    def test_groups_by_the_pair_of_statuses_and_carries_the_sentence(
+        self, paths: WorkspacePaths
+    ) -> None:
+        _write(
+            paths.decisions_dir / "ES2015.decisions.adjudicated.csv",
+            _DECISION_COLUMNS,
+            [
+                _d("ES2015a.d01", "decision", "decision", "decision"),
+                _d("ES2015a.d02", "decision", "no_decision", "decision", sentence_text="S2"),
+                _d("ES2015a.d03", "decision", "no_decision", "no_decision", sentence_text="S3"),
+                _d("ES2015a.d04", "decision", "sin_soporte", "decision", sentence_text="S4"),
+                _d("ES2015a.d05", "decision", "compuesta", "compuesta", sentence_text="S5"),
+                _d("ES2015a.d05-1", "", "", "decision"),
+            ],
+        )
+        groups = disagreement_groups("ES2015", paths=paths)
+        assert list(groups) == [
+            ("decision", "compuesta"),
+            ("decision", "no_decision"),
+            ("decision", "sin_soporte"),
+        ]
+        no_decision = groups[("decision", "no_decision")]
+        assert [r["decision_id"] for r in no_decision] == ["ES2015a.d02", "ES2015a.d03"]
+        assert no_decision[0]["sentence_text"] == "S2"
+        assert no_decision[0]["final_status"] == "decision"
+        assert sum(len(rows) for rows in groups.values()) == len(
+            resolved_disagreements("ES2015", paths=paths)
+        )
 
 
 class TestCompuestaChildren:

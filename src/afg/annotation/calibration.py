@@ -26,6 +26,7 @@ __all__ = [
     "adjudicated_pairs",
     "compuesta_children",
     "decision_agreement",
+    "disagreement_groups",
     "final_rows",
     "final_status_counts",
     "resolved_disagreements",
@@ -168,6 +169,30 @@ def resolved_disagreements(
         for r in base
         if r["acuerdo"] == _NO
     ]
+
+
+def disagreement_groups(
+    series_id: str, *, paths: WorkspacePaths | None = None
+) -> dict[tuple[str, str], list[dict[str, str]]]:
+    """Base-row disagreements grouped by ``(status_a, status_b)``, with the sentence.
+
+    Same rows as :func:`resolved_disagreements` (``acuerdo = no``) plus ``sentence_text``,
+    keyed by the pair of statuses in annotator order (``a`` is the alphabetically first
+    initials, as everywhere in this module). Keys and rows keep file order within a group;
+    groups are sorted by key. Used to prepare the joint criteria session.
+    """
+    (a, b), base, _ = _split(series_id, paths)
+    groups: dict[tuple[str, str], list[dict[str, str]]] = {}
+    for row, resolved in zip(
+        (r for r in base if r["acuerdo"] == _NO),
+        resolved_disagreements(series_id, paths=paths),
+        strict=True,
+    ):
+        key = (row[f"{a}_status"], row[f"{b}_status"])
+        groups.setdefault(key, []).append(
+            {**resolved, "sentence_text": row.get("sentence_text", "")}
+        )
+    return dict(sorted(groups.items()))
 
 
 def side_taken_counts(series_id: str, *, paths: WorkspacePaths | None = None) -> dict[str, int]:

@@ -50,6 +50,7 @@ actual del bloqueador).
 | Serie | Decisiones | Candidatos | Conjunto | Fase |
 |---|---:|---:|---|---|
 | ES2015 | 29 | 3 | desarrollo | 1 — calibración |
+| TS3009 | 24 | 4 | desarrollo | 1 — recalibración |
 | ES2008 | 33 | 14 | evaluación / control | 2 |
 | ES2016 | 24 | 4 | evaluación / control | 2 |
 | IS1003 | 25 | 8 | evaluación / control | 2 |
@@ -59,7 +60,6 @@ actual del bloqueador).
 | IS1009 | 20 | 1 | evaluación | 3 — `gv` |
 | TS3003 | 31 | 6 | evaluación | 3 — `gv` |
 | ES2002 | 28 | 9 | evaluación | 3 — `gv` |
-| TS3009 | 24 | 4 | desarrollo | 3 — `gm` |
 | TS3011 | 23 | 5 | evaluación | 3 — `gm` |
 | IS1008 | 13 | 8 | evaluación | 3 — `gm` |
 | ES2014 | 23 | 14 | evaluación | 3 — `gm` |
@@ -87,11 +87,12 @@ desalinear las columnas de máquina que `afg gold validate` compara contra la ba
 la anotación de todo el mundo, no solo la de quien la cargó. Solo `--force` regenera, y
 avisa qué archivos quedan desalineados.
 
-### Fase 1 — Calibración sobre ES2015 (ambos anotadores)
+### Fase 1 — Calibración sobre ES2015 y recalibración sobre TS3009 (ambos anotadores)
 
 `gv` y `gm` hacen **Tarea A y Tarea B sobre ES2015** (29 decisiones, 3 candidatos), por
-separado y sin hablar entre ellos. Después se calcula el acuerdo y se adjudica en sesión
-conjunta con `jss`.
+separado y sin hablar entre ellos. Después se calcula el acuerdo y se adjudica con `jss`.
+La Fase 1 tiene dos series, en este orden: ES2015 y luego TS3009 (24 decisiones, 4
+candidatos), 53 decisiones y 7 candidatos en total.
 
 **Por qué ES2015 y no una serie de control.** Porque **no se quema una serie de control
 aprendiendo la guía.** ES2015 es serie de desarrollo y ya está contaminada por el piloto
@@ -103,6 +104,23 @@ guía"*— sería un kappa reportable, y habría que reportarlo.
 **Este kappa es diagnóstico y no se reporta en la tesis.** Su única función es responder:
 ¿entendimos los dos lo mismo? Si sale bajo, se corrige la guía **antes** de tocar una sola
 serie de evaluación, y se vuelve a calibrar.
+
+**Por qué hubo recalibración.** El kappa de estado de ES2015 salió en 0,094 (13 de 29
+decisiones coinciden). 14 de los 16 desacuerdos son de umbral: `gm` puso `decision` donde `gv`
+puso `no_decision` (6) o `sin_soporte` (8), y el manual no tenía ningún criterio para esos
+casos. El procedimiento exige corregir la guía y volver a calibrar, así que:
+
+1. Tras adjudicar ES2015, `jss`, `gv` y `gm` hacen una sesión conjunta sobre los 16
+   desacuerdos para alinear criterios (permitida: ES2015 ya está adjudicada; material en
+   [`../calibracion/ES2015-sesion-conjunta.md`](../calibracion/ES2015-sesion-conjunta.md)).
+   El manual recoge el resultado.
+2. Se recalibra sobre **TS3009**: serie de desarrollo (ADR 0005), 24 decisiones y 4 pares
+   candidatos, sin ningún ejemplo en el manual y de otro sitio de grabación. Se descartó
+   IS1004 porque el ejemplo trabajado del manual (§3) resuelve `IS1004c.d02`, `IS1004d.d12`
+   e `IS1004.p003` y toca `IS1004.p004`.
+3. TS3009 se adjudica antes de abrir la Fase 2. Su kappa también es diagnóstico y no se
+   reporta. La serie sigue en el conjunto de referencia: ahora con doble anotación y
+   adjudicada, en lugar de una sola anotación de `gm`.
 
 ### Fase 2 — Series de control (ambos anotadores)
 
@@ -124,13 +142,13 @@ salgan: un kappa bajo es el resultado que OE1 se propuso medir, no un fracaso a 
 
 ### Fase 3 — Reparto individual (una sola anotación por serie)
 
-Las nueve series restantes se reparten. Cada una la anota **una sola persona**; no hay
+Las ocho series restantes se reparten. Cada una la anota **una sola persona**; no hay
 segunda anotación ni kappa.
 
 | | Series (en orden de ejecución) | Decisiones | Candidatos |
 |---|---|---:|---:|
 | **Germán (`gv`)** | IS1004, IS1006, IS1009, TS3003, ES2002 | 120 | 21 |
-| **Gustavo (`gm`)** | TS3009, TS3011, IS1008, ES2014 | 83 | 31 |
+| **Gustavo (`gm`)** | TS3011, IS1008, ES2014 | 59 | 27 |
 
 **Por qué Gustavo lleva menos decisiones.** Porque además escribe el **banco de preguntas**:
 mínimo 100 preguntas (25 por estrato, `docs/propuesta.md` §5.5) a un ritmo estimado de ~5
@@ -141,11 +159,11 @@ reparto equilibra horas totales, no filas.
 
 | | Decisiones | Candidatos | Además |
 |---|---:|---:|---|
-| **`gv`** | 260 | 61 | Tarea C (200 pares: 4 series × 50) + validación del banco (≥100 preguntas) |
+| **`gv`** | 284 | 65 | Tarea C (200 pares: 4 series × 50) + validación del banco (≥100 preguntas) |
 | **`gm`** | 223 | 71 | Escritura del banco (≥100 preguntas) |
-| **`jss`** | 0 | 0 | Adjudicación de las 5 series dobles, los CSV de adjudicación, notebooks 04–06 (uno por fase de anotación) |
+| **`jss`** | 0 | 0 | Adjudicación de las 6 series dobles, los CSV de adjudicación, notebooks 04–06 (uno por fase de anotación) |
 
-(260 = 29 de Fase 1 + 111 de Fase 2 + 120 de Fase 3. 223 = 29 + 111 + 83.)
+(284 = 53 de Fase 1 + 111 de Fase 2 + 120 de Fase 3. 223 = 53 + 111 + 59.)
 
 ---
 
@@ -153,14 +171,15 @@ reparto equilibra horas totales, no filas.
 
 > **Después de cada serie de doble anotación, no al final.**
 
-Es decir: se cierra ES2015, se adjudica ES2015, y solo entonces empieza ES2016. Se cierra
-ES2016, se adjudica ES2016, y solo entonces empieza IS1003. Y así con las cinco series de
-doble anotación, en orden: **ES2015 → ES2016 → IS1003 → TS3005 → ES2008**.
+Es decir: se cierra ES2015, se adjudica ES2015, y solo entonces empieza TS3009. Se cierra
+TS3009, se adjudica TS3009, y solo entonces empieza ES2016. Se cierra
+ES2016, se adjudica ES2016, y solo entonces empieza IS1003. Y así con las seis series de
+doble anotación, en orden: **ES2015 → TS3009 → ES2016 → IS1003 → TS3005 → ES2008**.
 
 **La razón.** Un malentendido sistemático de la guía —dos personas que interpretan `refina`
 de forma distinta, o que discrepan sobre cuándo una frase es `compuesta`— no se manifiesta
 en una fila: se manifiesta en un patrón. Adjudicar al final significa descubrir ese patrón
-**después** de haber anotado dos veces las 140 decisiones de las cinco series dobles, y
+**después** de haber anotado dos veces las 164 decisiones de las seis series dobles, y
 tener que rehacerlas. Adjudicar por serie lo descubre después de la primera, cuando corregir
 cuesta 29 filas.
 

@@ -326,7 +326,7 @@ uv run jupyter lab
 | 01 | `01-jss-viabilidad-e3.ipynb` | Estimación provisional de viabilidad del estrato de evolución |
 | 02 | `02-jss-transcripciones.ipynb` | De AMI a transcripciones legibles y congeladas |
 | 03 | `03-jss-eda.ipynb` | Análisis exploratorio de datos de AFG2: calidad, faltantes, atípicos, relaciones, estructura multivariada y temporal, e implicancias para el modelado |
-| 04 | `04-jss-anotacion-f1-calibracion.ipynb` | Anotación humana, Fase 1: calibración sobre ES2015 (acuerdo diagnóstico) |
+| 04 | `04-jss-anotacion-f1-calibracion.ipynb` | Anotación humana, Fase 1: calibración sobre ES2015 y recalibración sobre TS3009 (acuerdo diagnóstico) |
 | 05 | `05-jss-anotacion-f2-control.ipynb` | *(pendiente)* anotación humana, Fase 2: series de control, kappa reportable |
 | 06 | `06-jss-anotacion-f3-referencia.ipynb` | *(pendiente)* anotación humana, Fase 3: conjunto de referencia final |
 | 07 | `07-jss-experimento-a.ipynb` | *(pendiente)* OE2 — calidad de la extracción automática |
