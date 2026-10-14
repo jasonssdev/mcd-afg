@@ -160,6 +160,38 @@ class TestLoader:
             load_calibration_items(path)
 
 
+def test_labeling_file_has_the_excerpt_and_transcript_file_columns() -> None:
+    assert "pasaje_transcripcion" in COLUMNS and "archivos_transcripcion" in COLUMNS
+    header = TEMPLATE_PATH.read_text(encoding="utf-8").splitlines()[0]
+    assert tuple(header.split(",")) == COLUMNS
+
+
+def test_a_file_without_the_excerpt_columns_still_loads(tmp_path: Path) -> None:
+    # HEADER above is the older layout (no excerpt columns): they are for the labeler only.
+    assert len(load_calibration_items(_write(tmp_path, E1))) == 1
+
+
+class TestStoredExcerpt:
+    def test_the_stored_excerpt_is_read_when_the_column_exists(self, tmp_path: Path) -> None:
+        header = HEADER.replace(
+            "answer_text,", "answer_text,pasaje_transcripcion,archivos_transcripcion,"
+        )
+        path = tmp_path / "with.csv"
+        path.write_text(
+            header
+            + 'c1,ES2015,E1_point_fact,q,r,ES2015a:ES2015a.A.dialog-act.x.1,a,"[ES2015a]\nPM: hi",'
+            "t.md,false,,,,,,false\n" + "c2,ES2015,E4_unanswerable,q,,,a,,,true,,,,,,false\n",
+            encoding="utf-8",
+        )
+        first, second = load_calibration_items(path)
+        assert first.transcript_excerpt == "[ES2015a]\nPM: hi"
+        assert second.transcript_excerpt == ""
+
+    def test_the_excerpt_is_none_for_files_without_the_column(self, tmp_path: Path) -> None:
+        (item,) = load_calibration_items(_write(tmp_path, E1))
+        assert item.transcript_excerpt is None
+
+
 def test_shipped_template_is_header_only_and_loadable() -> None:
     assert load_calibration_items(TEMPLATE_PATH) == []
 

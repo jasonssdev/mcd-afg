@@ -9,11 +9,13 @@ from typing import Any
 
 import pytest
 
+from afg.domain.decision import EvidenceSpan
 from afg.domain.question import Answer, Question, QuestionStratum
 from afg.evaluation.judge import (
     JudgeConfigurationError,
     JudgeFailure,
     JudgeVerdict,
+    MissingTranscriptExcerptError,
     OllamaJudgeBackend,
     judge_answer,
     require_distinct_model_families,
@@ -125,6 +127,81 @@ class TestJudgeAnswer:
         assert a.index("REFERENCE-TEXT") < a.index("ANSWER-TEXT")
         assert b.index("ANSWER-TEXT") < b.index("REFERENCE-TEXT")
         assert "QUESTION-TEXT" in a and "QUESTION-TEXT" in b
+
+    def test_transcript_excerpt_is_a_section_with_a_fixed_position(self) -> None:
+        reference_first, answer_first = FakeBackend(), FakeBackend()
+        _judge(reference_first, order="reference_first", transcript_excerpt="EXCERPT-TEXT")
+        _judge(answer_first, order="answer_first", transcript_excerpt="EXCERPT-TEXT")
+        for call in (reference_first.calls[0], answer_first.calls[0]):
+            user = call["user"]
+            assert "Transcript excerpt:\nEXCERPT-TEXT" in user
+            assert user.index("QUESTION-TEXT") < user.index("EXCERPT-TEXT")
+            assert user.index("EXCERPT-TEXT") < user.index("REFERENCE-TEXT")
+            assert user.index("EXCERPT-TEXT") < user.index("ANSWER-TEXT")
+        assert (
+            reference_first.calls[0]["user"].split("EXCERPT-TEXT")[0]
+            == (answer_first.calls[0]["user"].split("EXCERPT-TEXT")[0])
+        )
+
+    @pytest.mark.parametrize("excerpt", [None, ""])
+    def test_missing_excerpt_is_stated_not_left_blank(self, excerpt: str | None) -> None:
+        backend = FakeBackend()
+        _judge(backend, transcript_excerpt=excerpt)
+        user = backend.calls[0]["user"]
+        assert "Transcript excerpt:\nNone: the material contains no answer" in user
+
+    @pytest.mark.parametrize("excerpt", [None, "", "   "])
+    def test_answerable_question_with_evidence_needs_an_excerpt(self, excerpt: str | None) -> None:
+        backend = FakeBackend()
+        question = _question().model_copy(
+            update={
+                "reference_evidence": (
+                    EvidenceSpan(
+                        meeting_id="ES2015a", dialogue_act_ids=("ES2015a.A.dialog-act.x.1",)
+                    ),
+                )
+            }
+        )
+        with pytest.raises(MissingTranscriptExcerptError, match="q1"):
+            judge_answer(
+                question,
+                _answer(),
+                judge_model="m",
+                generative_model="qwen3:8b",
+                backend=backend,
+                transcript_excerpt=excerpt,
+            )
+        assert backend.calls == []
+
+    def test_answerable_question_with_an_excerpt_is_judged(self) -> None:
+        question = _question().model_copy(
+            update={
+                "reference_evidence": (
+                    EvidenceSpan(
+                        meeting_id="ES2015a", dialogue_act_ids=("ES2015a.A.dialog-act.x.1",)
+                    ),
+                )
+            }
+        )
+        backend = FakeBackend()
+        judge_answer(
+            question,
+            _answer(),
+            judge_model="m",
+            generative_model="qwen3:8b",
+            backend=backend,
+            transcript_excerpt="EXCERPT-TEXT",
+        )
+        assert "Transcript excerpt:\nEXCERPT-TEXT" in backend.calls[0]["user"]
+
+    def test_system_prompt_defines_both_fields_against_the_right_sources(self) -> None:
+        backend = FakeBackend()
+        _judge(backend)
+        system = backend.calls[0]["system"]
+        assert "transcript excerpt" in system.lower()
+        assert "agrees with the reference answer" in system
+        assert "supported by the transcript excerpt" in system
+        assert "only if" in system and "abstains" in system
 
     def test_condition_is_not_leaked_to_the_judge(self) -> None:
         backend = FakeBackend()

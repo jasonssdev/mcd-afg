@@ -16,11 +16,16 @@ from typing import Any, Literal, Protocol
 
 from pydantic import BaseModel, ConfigDict, ValidationError
 
-from afg.domain.question import Answer, Question
+from afg.domain.question import Answer, Question, QuestionStratum
 
 
 class JudgeConfigurationError(ValueError):
     """Raised when the judge and extractor models are not from different families."""
+
+
+class MissingTranscriptExcerptError(ValueError):
+    """Raised when an answerable question with reference evidence reaches the judge without
+    a transcript excerpt: judging it as "no answer in the material" would be wrong."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -155,8 +160,17 @@ def _system_prompt() -> str:
     return path.read_bytes().decode("utf-8")
 
 
-def _user_prompt(question: Question, answer: Answer, order: PresentationOrder) -> str:
-    """Render the material to judge. The condition id is never shown (anonymization)."""
+def _user_prompt(
+    question: Question,
+    answer: Answer,
+    order: PresentationOrder,
+    transcript_excerpt: str | None,
+) -> str:
+    """Render the material to judge. The condition id is never shown (anonymization).
+
+    The transcript excerpt sits right after the question in every order; only the reference
+    and the candidate swap places.
+    """
     reference = question.reference_answer or _NO_REFERENCE_TEXT
     candidate = answer.text
     if answer.abstained:
@@ -167,7 +181,8 @@ def _user_prompt(question: Question, answer: Answer, order: PresentationOrder) -
     }
     if order not in blocks:
         raise ValueError(f"unknown presentation order {order!r}; expected {sorted(blocks)}")
-    parts = [f"Question:\n{question.text}"]
+    excerpt = (transcript_excerpt or "").strip() or _NO_REFERENCE_TEXT
+    parts = [f"Question:\n{question.text}", f"Transcript excerpt:\n{excerpt}"]
     parts.extend(f"{title}:\n{body}" for title, body in blocks[order])
     return "\n\n".join(parts)
 
@@ -182,6 +197,7 @@ def judge_answer(
     order: PresentationOrder = "reference_first",
     seed: int = DEFAULT_SEED,
     temperature: float = 0.0,
+    transcript_excerpt: str | None = None,
 ) -> JudgeVerdict | JudgeFailure:
     """Judge one answer against its reference, per thesis section 5.7.
 
@@ -192,14 +208,27 @@ def judge_answer(
 
     ``order`` controls whether the reference or the candidate is shown first, for the
     position-bias check (Wang et al., 2024); randomizing it across a batch is the caller's
-    job. ``citation_correct`` is always ``None``: the judge sees no source text, so it
-    cannot verify citations; :func:`afg.evaluation.citation.citation_correct` decides it
-    deterministically instead.
+    job. ``transcript_excerpt`` is the passage around the reference evidence
+    (:func:`afg.evaluation.passage.judge_evidence_passage`); the caller builds it, so this
+    function does no file IO. ``None`` or empty means the material has no answer (E4 or no
+    reference evidence); for an answerable question with reference evidence it raises
+    :class:`MissingTranscriptExcerptError` instead.
+    ``citation_correct`` is always ``None``: the judge does not check which sources the answer
+    cites; :func:`afg.evaluation.citation.citation_correct` decides it deterministically.
     """
     require_distinct_model_families(judge_model, generative_model)
+    if (
+        question.stratum is not QuestionStratum.E4_UNANSWERABLE
+        and question.reference_evidence
+        and not (transcript_excerpt or "").strip()
+    ):
+        raise MissingTranscriptExcerptError(
+            f"question {question.id!r} is answerable and has reference evidence, but no "
+            "transcript excerpt was given; the judge cannot check evidence_supported."
+        )
     raw = backend.complete(
         _system_prompt(),
-        _user_prompt(question, answer, order),
+        _user_prompt(question, answer, order, transcript_excerpt),
         model=judge_model,
         seed=seed,
         temperature=temperature,

@@ -6,6 +6,7 @@ stubbed; every path is redirected to ``tmp_path``.
 
 from __future__ import annotations
 
+import csv
 import json
 from pathlib import Path
 from typing import Any
@@ -183,7 +184,8 @@ class TestAnswers:
         write_worksheet(paths["worksheet"], _selected_rows())
         result = _invoke("calibration-answers")
         assert result.exit_code == 0, result.output
-        lines = paths["calibration"].read_text(encoding="utf-8").splitlines()
+        with paths["calibration"].open(newline="", encoding="utf-8") as handle:
+            lines = list(csv.reader(handle))
         assert len(lines) == 1 + 2 * MIN_SELECTED
         assert "correct" in lines[0] and "evidence_supported" in lines[0]
         assert "si/no" in _out(result)
@@ -238,6 +240,119 @@ class TestRun:
         result = _invoke("calibration-run")
         assert result.exit_code == 1
         assert "1 de 1" in _out(result) or "sin etiquetas" in _out(result)
+
+    def test_judge_candidates_get_the_stored_excerpt_the_labeler_saw(
+        self, paths: dict[str, Path], tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        from afg.evaluation.judge_calibration_set import COLUMNS as SET_COLUMNS
+
+        transcripts = tmp_path / "transcripts"
+        transcripts.mkdir()
+        (transcripts / "ES2015a.jsonl").write_text(
+            json.dumps(
+                {
+                    "meeting_id": "ES2015a",
+                    "turn_index": 0,
+                    "speaker": "A",
+                    "role": "PM",
+                    "text": "twenty five euros",
+                    "start": 0.0,
+                    "end": 1.0,
+                    "char_start": 0,
+                    "char_end": 1,
+                    "dialogue_act_ids": ["ES2015a.A.dialog-act.x.1"],
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        monkeypatch.setattr(afg_cli, "TRANSCRIPTS_DIR", transcripts)
+        row = dict.fromkeys(SET_COLUMNS, "")
+        row.update(
+            id="ES2015.q001.grounded",
+            series_id="ES2015",
+            stratum="E1_point_fact",
+            question="q",
+            reference_answer="r",
+            reference_evidence="ES2015a:ES2015a.A.dialog-act.x.1",
+            answer_text="a",
+            pasaje_transcripcion="STORED PASSAGE",
+            answer_abstained="false",
+            correct="si",
+            evidence_supported="si",
+            adjudicated="false",
+        )
+        paths["calibration"].write_text(
+            ",".join(SET_COLUMNS) + "\n" + ",".join(row[c] for c in SET_COLUMNS) + "\n",
+            encoding="utf-8",
+        )
+        seen: dict[str, Any] = {}
+
+        def fake_run(items: Any, **kwargs: Any) -> CalibrationResult:
+            seen["excerpt"] = kwargs["excerpt_for"](items[0])
+            return _run_result()
+
+        monkeypatch.setattr(afg_cli, "run_calibration", fake_run)
+        result = _invoke("calibration-run")
+        assert result.exit_code == 0
+        assert seen["excerpt"] == "STORED PASSAGE"
+        assert "sin pasaje guardado" not in _out(result)
+
+    def test_older_files_without_the_excerpt_column_get_it_rebuilt_and_the_cli_says_so(
+        self, paths: dict[str, Path], tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        from afg.evaluation.judge_calibration_set import LOADED_COLUMNS as SET_COLUMNS
+
+        transcripts = tmp_path / "transcripts"
+        transcripts.mkdir()
+        (transcripts / "ES2015a.jsonl").write_text(
+            json.dumps(
+                {
+                    "meeting_id": "ES2015a",
+                    "turn_index": 0,
+                    "speaker": "A",
+                    "role": "PM",
+                    "text": "twenty five euros",
+                    "start": 0.0,
+                    "end": 1.0,
+                    "char_start": 0,
+                    "char_end": 1,
+                    "dialogue_act_ids": ["ES2015a.A.dialog-act.x.1"],
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        monkeypatch.setattr(afg_cli, "TRANSCRIPTS_DIR", transcripts)
+        row = dict.fromkeys(SET_COLUMNS, "")
+        row.update(
+            id="ES2015.q001.grounded",
+            series_id="ES2015",
+            stratum="E1_point_fact",
+            question="q",
+            reference_answer="r",
+            reference_evidence="ES2015a:ES2015a.A.dialog-act.x.1",
+            answer_text="a",
+            answer_abstained="false",
+            correct="si",
+            evidence_supported="si",
+            adjudicated="false",
+        )
+        paths["calibration"].write_text(
+            ",".join(SET_COLUMNS) + "\n" + ",".join(row[c] for c in SET_COLUMNS) + "\n",
+            encoding="utf-8",
+        )
+        seen: dict[str, Any] = {}
+
+        def fake_run(items: Any, **kwargs: Any) -> CalibrationResult:
+            seen["excerpt"] = kwargs["excerpt_for"](items[0])
+            return _run_result()
+
+        monkeypatch.setattr(afg_cli, "run_calibration", fake_run)
+        result = _invoke("calibration-run")
+        assert result.exit_code == 0
+        assert "sin pasaje guardado" in _out(result)
+        assert seen["excerpt"] == "[ES2015a]\nPM: twenty five euros"
 
     def test_runs_and_stores_the_results(
         self, paths: dict[str, Path], monkeypatch: pytest.MonkeyPatch

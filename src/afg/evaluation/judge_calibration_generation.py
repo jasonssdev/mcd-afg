@@ -48,6 +48,12 @@ from afg.evaluation.judge_calibration_set import (
     load_variants,
     variants_path,
 )
+from afg.evaluation.passage import (
+    evidence_passage,
+    judge_evidence_passage,
+    render_turns,
+    transcript_files_text,
+)
 from afg.shared.config import load_experiments_config
 from afg.shared.csvio import open_csv_writer
 from afg.shared.paths import JUDGE_CALIBRATION_DIR, TRANSCRIPTS_DIR
@@ -204,10 +210,6 @@ def load_calibration_questions(path: Path) -> list[CalibrationQuestion]:
 # --- passages --------------------------------------------------------------------------------
 
 
-def _render_turns(meeting_id: str, turns: Sequence[FrozenTurn]) -> str:
-    return "\n".join([f"[{meeting_id}]", *(f"{t.role}: {t.text}" for t in turns)])
-
-
 def grounded_passage(
     question: CalibrationQuestion,
     *,
@@ -216,27 +218,15 @@ def grounded_passage(
 ) -> str:
     """The transcript passage covering the reference acts, padded by ``context_turns``.
 
-    One block per cited meeting: the turns from the first to the last one that contains a
-    reference act, plus ``context_turns`` turns on each side.
+    The windowing is shared with the judge's excerpt (:func:`afg.evaluation.passage.
+    evidence_passage`); only the padding differs.
 
     Raises:
         ValueError: if a reference act does not appear in its meeting's frozen transcript.
     """
-    acts_by_meeting: dict[str, set[str]] = {}
-    for span in question.reference_evidence:
-        acts_by_meeting.setdefault(span.meeting_id, set()).update(span.dialogue_act_ids)
-    blocks: list[str] = []
-    for meeting_id, acts in acts_by_meeting.items():
-        turns = load_frozen_turns(meeting_id, transcripts_dir)
-        hits = [i for i, t in enumerate(turns) if acts.intersection(t.dialogue_act_ids)]
-        found = {a for t in turns for a in t.dialogue_act_ids}
-        absent = sorted(acts - found)
-        if absent:
-            raise ValueError(f"dialogue acts {absent} are not in the transcript of {meeting_id}.")
-        low = max(hits[0] - context_turns, 0)
-        high = min(hits[-1] + context_turns + 1, len(turns))
-        blocks.append(_render_turns(meeting_id, turns[low:high]))
-    return "\n\n".join(blocks)
+    return evidence_passage(
+        question.reference_evidence, context_turns=context_turns, transcripts_dir=transcripts_dir
+    )
 
 
 def ungrounded_passage(
@@ -270,7 +260,7 @@ def ungrounded_passage(
             f"question {question.id!r} (window of {window_turns} turns)."
         )
     meeting_id, window = random.Random(f"{seed}:{question.id}").choice(windows)
-    return _render_turns(meeting_id, window)
+    return render_turns(meeting_id, window)
 
 
 # --- answers ---------------------------------------------------------------------------------
@@ -371,6 +361,10 @@ def generate_calibration_set(
             top_p=float(budget["top_p"]),
             transcripts_dir=transcripts_dir,
         )
+        excerpt = judge_evidence_passage(
+            question.reference_evidence, transcripts_dir=transcripts_dir
+        )
+        files = transcript_files_text(question.reference_evidence, transcripts_dir=transcripts_dir)
         for answer in answers:
             new_variants[f"{question.id}.{answer.variant}"] = answer.variant
             new_rows.append(
@@ -383,6 +377,8 @@ def generate_calibration_set(
                     "reference_answer": question.reference_answer or "",
                     "reference_evidence": format_reference_evidence(question.reference_evidence),
                     "answer_text": answer.text,
+                    "pasaje_transcripcion": excerpt,
+                    "archivos_transcripcion": files,
                     "answer_abstained": str(answer.abstained).lower(),
                     "adjudicated": "false",
                 }

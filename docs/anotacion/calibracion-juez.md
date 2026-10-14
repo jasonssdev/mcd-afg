@@ -90,13 +90,24 @@ recomendado es 20 y sigue. Termina con cuántas preguntas hay por estrato. Corri
 
 ### Paso 5. Etiqueta las respuestas
 
-`calibracion-juez.csv` tiene dos respuestas por pregunta. Por cada fila lee la pregunta
-(`question`), la respuesta de referencia (`reference_answer`) y la respuesta del sistema
-(`answer_text`), y llena **solo dos columnas** con `si` o `no`:
+`calibracion-juez.csv` tiene dos respuestas por pregunta. Se etiqueta con el **mismo método que
+el juez automático y que la anotación** (ver [`manual-anotacion-oe1.md`](manual-anotacion-oe1.md)):
+se lee la evidencia y, si no basta, la transcripción. Por cada fila lee:
 
-- `correct`: la respuesta del sistema dice lo mismo que la de referencia. Una abstención
+- `question`, `reference_answer` y `answer_text`;
+- `pasaje_transcripcion`: el fragmento de la transcripción alrededor de la evidencia, el mismo
+  que lee el juez. Si no alcanza para decidir, abre la transcripción completa de la reunión
+  (ruta en `archivos_transcripcion`, archivo `.md` legible) y busca ahí.
+
+Después llena **solo dos columnas** con `si` o `no`:
+
+- `correct`: la respuesta del sistema coincide con la de referencia. Una abstención
   ("The material does not contain enough information…") es correcta solo en una pregunta E4.
-- `evidence_supported`: lo que la respuesta afirma tiene respaldo en el material.
+- `evidence_supported`: **cada afirmación** de la respuesta está respaldada por la transcripción
+  (el pasaje o, si hizo falta, la reunión). Una afirmación que la transcripción no dice, o que
+  contradice, la deja en `no` aunque sea verdad fuera de la reunión. Una abstención no afirma
+  nada, así que se respalda sola; en E4 ambas etiquetas son `si` solo si la respuesta se abstiene
+  (esas filas no traen pasaje: el material no tiene la respuesta).
 
 Se aceptan `si`, `sí`, `no`, `true`, `false`, `1` y `0`. Nada más se edita. Las etiquetas las
 pones tú, a ojo, sin preguntarle a ningún modelo; por eso el conjunto sirve de patrón. El

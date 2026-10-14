@@ -30,6 +30,7 @@ from afg.evaluation.judge_calibration_set import (
     load_calibration_items,
     variants_path,
 )
+from afg.evaluation.passage import judge_evidence_passage
 
 QUESTION_HEADER = "id,series_id,stratum,question,reference_answer,reference_evidence\n"
 
@@ -351,6 +352,28 @@ class TestGenerateCalibrationSet:
             "ES2015.q004.ungrounded": "ungrounded",
             "ES2015.q004.no_context": "no_context",
         }
+
+    def test_rows_carry_the_exact_excerpt_the_judge_reads_and_the_transcript_files(
+        self, tmp_path: Path, transcripts: Path
+    ) -> None:
+        target = tmp_path / "calibration.csv"
+        generate_calibration_set(
+            _write_questions(tmp_path, Q1, Q4),
+            target,
+            backend=FakeBackend(),
+            transcripts_dir=transcripts,
+        )
+        with target.open(newline="", encoding="utf-8") as handle:
+            rows = {r["id"]: r for r in csv.DictReader(handle)}
+        (question,) = load_calibration_questions(_write_questions(tmp_path, Q1))
+        expected = judge_evidence_passage(question.reference_evidence, transcripts_dir=transcripts)
+        for variant in ("grounded", "ungrounded"):
+            row = rows[f"ES2015.q001.{variant}"]
+            assert row["pasaje_transcripcion"] == expected != ""
+            assert row["archivos_transcripcion"].endswith("ES2015a.md")
+        for variant in ("ungrounded", "no_context"):
+            row = rows[f"ES2015.q004.{variant}"]
+            assert row["pasaje_transcripcion"] == "" and row["archivos_transcripcion"] == ""
 
     def test_variant_is_kept_out_of_the_labeling_file_and_written_to_a_sidecar(
         self, tmp_path: Path, transcripts: Path

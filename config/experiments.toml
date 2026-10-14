@@ -45,6 +45,13 @@ human_validation_fraction = 0.20      # thesis section 5.7: >=20% human validati
 model = ""  # set via AFG_JUDGE_MODEL; left blank here so the config never silently reuses
             # the generative model above.
 must_differ_from_generative_model = true
+# Transcript excerpt the judge reads to decide `evidence_supported`: this many speaker turns
+# before and after the turns holding the reference dialogue acts (windows that overlap are
+# merged). AMI turns are short, so 5 turns each side is roughly one minute of talk: enough to
+# see the discussion around a decision (who proposed it, whether it was agreed) without
+# flooding the prompt. One value for every candidate, fixed before any result is seen; the
+# labelers read the same excerpt.
+evidence_window_turns = 5
 
 [judge.calibration]
 # Pre-registered acceptance thresholds for choosing the judge model. Fixed BEFORE any

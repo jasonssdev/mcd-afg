@@ -3,18 +3,21 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from typing import Any
 
 import pytest
 
+from afg.domain.decision import EvidenceSpan
 from afg.domain.question import QuestionStratum
-from afg.evaluation.judge import JudgeConfigurationError
+from afg.evaluation.judge import JudgeConfigurationError, MissingTranscriptExcerptError
 from afg.evaluation.judge_calibration import CalibrationThresholds
 from afg.evaluation.judge_calibration_runner import (
     load_candidates,
     pad_to_double_length,
     run_calibration,
     run_candidate,
+    stored_excerpt_for,
 )
 from afg.evaluation.judge_calibration_set import CalibrationItem, CalibrationSetError
 
@@ -115,6 +118,78 @@ def _run(backend: FakeBackend, **kwargs: Any) -> Any:
         n_resamples=50,
         **kwargs,
     )
+
+
+def _evidence_item(excerpt: str | None) -> CalibrationItem:
+    return _item(0, good=True).model_copy(
+        update={
+            "reference_evidence": (
+                EvidenceSpan(meeting_id="ES2015a", dialogue_act_ids=("ES2015a.A.dialog-act.x.1",)),
+            ),
+            "transcript_excerpt": excerpt,
+        }
+    )
+
+
+class TestStoredExcerpt:
+    def test_the_stored_excerpt_wins_over_rebuilding(self, tmp_path: Path) -> None:
+        item = _evidence_item("[ES2015a]\nPM: what the labeler saw")
+        assert stored_excerpt_for(item, transcripts_dir=tmp_path) == item.transcript_excerpt
+
+    def test_it_is_built_from_the_transcript_only_when_the_column_is_absent(
+        self, tmp_path: Path
+    ) -> None:
+        (tmp_path / "ES2015a.jsonl").write_text(
+            json.dumps(
+                {
+                    "meeting_id": "ES2015a",
+                    "turn_index": 0,
+                    "speaker": "A",
+                    "role": "PM",
+                    "text": "built",
+                    "start": 0.0,
+                    "end": 1.0,
+                    "char_start": 0,
+                    "char_end": 1,
+                    "dialogue_act_ids": ["ES2015a.A.dialog-act.x.1"],
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        assert stored_excerpt_for(_evidence_item(None), transcripts_dir=tmp_path) == (
+            "[ES2015a]\nPM: built"
+        )
+
+    def test_an_empty_stored_excerpt_on_an_answerable_item_makes_the_run_fail(self) -> None:
+        items = [_evidence_item(""), *_items()[1:]]
+        with pytest.raises(MissingTranscriptExcerptError):
+            run_candidate(
+                items,
+                judge_model="judge:1",
+                generative_model="qwen3:8b",
+                backend=FakeBackend(),
+                thresholds=THRESHOLDS,
+                n_resamples=50,
+            )
+
+
+class TestExcerpt:
+    def test_every_call_gets_the_item_excerpt_in_both_orders_and_in_the_padded_probe(
+        self,
+    ) -> None:
+        backend = FakeBackend()
+        _run(backend, excerpt_for=lambda item: f"EXCERPT-OF-{item.id}")
+        assert len(backend.calls) == 10 * 2 * 3 + 5
+        for call in backend.calls:
+            user = call["user"]
+            item_id = user.split("question ")[1].split("\n")[0]
+            assert f"Transcript excerpt:\nEXCERPT-OF-i{item_id}" in user
+
+    def test_default_excerpt_is_built_from_the_reference_evidence(self) -> None:
+        backend = FakeBackend()
+        _run(backend)  # test items have no reference evidence
+        assert all("Transcript excerpt:\nNone:" in call["user"] for call in backend.calls)
 
 
 class TestPadding:

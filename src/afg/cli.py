@@ -59,7 +59,11 @@ from afg.evaluation.judge_calibration_generation import (
     generate_calibration_set,
 )
 from afg.evaluation.judge_calibration_results import RESULTS_PATH, save_calibration_results
-from afg.evaluation.judge_calibration_runner import load_candidates, run_calibration
+from afg.evaluation.judge_calibration_runner import (
+    load_candidates,
+    run_calibration,
+    stored_excerpt_for,
+)
 from afg.evaluation.judge_calibration_set import (
     CalibrationSetError,
     load_calibration_items,
@@ -1394,6 +1398,13 @@ def judge_calibration_run() -> None:
             f"`evidence_supported` (si/no) en {_short(CALIBRATION_PATH)}."
         )
         raise typer.Exit(code=1)
+    rebuilt = sum(1 for item in items if item.transcript_excerpt is None)
+    if rebuilt:
+        console.print(
+            f"[yellow]Aviso: {rebuilt} ítem(s) sin pasaje guardado (el archivo no tiene la "
+            "columna `pasaje_transcripcion`): el pasaje se reconstruye desde la transcripción "
+            "con la ventana actual, que puede no ser el que vio quien etiquetó.[/yellow]"
+        )
     console.print(f"Corriendo {len(load_candidates())} candidatos sobre {summary.n_items} ítems…")
     try:
         result = run_calibration(
@@ -1402,8 +1413,9 @@ def judge_calibration_run() -> None:
             generative_model=str(load_experiments_config()["shared_budget"]["generative_model"]),
             backend_for=lambda model: OllamaJudgeBackend(),
             thresholds=load_thresholds(),
+            excerpt_for=lambda item: stored_excerpt_for(item, transcripts_dir=TRANSCRIPTS_DIR),
         )
-    except (ValueError, RuntimeError) as exc:
+    except (ValueError, RuntimeError, FileNotFoundError) as exc:
         console.print(f"[bold red]{exc}[/bold red]")
         raise typer.Exit(code=1) from exc
     save_calibration_results(RESULTS_PATH, result, n_items=summary.n_items)

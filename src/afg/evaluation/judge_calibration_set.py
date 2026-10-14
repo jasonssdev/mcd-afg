@@ -37,6 +37,8 @@ COLUMNS: tuple[str, ...] = (
     "reference_answer",
     "reference_evidence",
     "answer_text",
+    "pasaje_transcripcion",
+    "archivos_transcripcion",
     "answer_abstained",
     "correct",
     "evidence_supported",
@@ -46,6 +48,11 @@ COLUMNS: tuple[str, ...] = (
     "adjudicated",
 )
 
+
+LABELER_ONLY_COLUMNS: frozenset[str] = frozenset({"pasaje_transcripcion", "archivos_transcripcion"})
+"""Columns written for the human labeler (the excerpt the judge also reads, and where to read
+more); the loader does not need them, so files from before they existed still load."""
+LOADED_COLUMNS: tuple[str, ...] = tuple(c for c in COLUMNS if c not in LABELER_ONLY_COLUMNS)
 
 VARIANT_COLUMNS: tuple[str, ...] = ("id", "answer_variant")
 
@@ -102,6 +109,11 @@ class CalibrationItem(BaseModel):
         "Never shown to the labelers or the judge.",
     )
     answer_text: str
+    transcript_excerpt: str | None = Field(
+        default=None,
+        description="The excerpt the labeler saw (column pasaje_transcripcion); None when the "
+        "file has no such column (older files), '' for E4.",
+    )
     answer_abstained: bool = False
     correct: bool | None = None
     evidence_supported: bool | None = None
@@ -174,7 +186,7 @@ def load_calibration_items(path: Path, *, require_labels: bool = False) -> list[
     variants = load_variants(path)
     with path.open(newline="", encoding="utf-8-sig") as handle:
         reader = csv.DictReader(handle)
-        missing = [c for c in COLUMNS if c not in (reader.fieldnames or [])]
+        missing = [c for c in LOADED_COLUMNS if c not in (reader.fieldnames or [])]
         if missing:
             raise CalibrationSetError(f"{path.name}: missing columns {missing}")
         items: list[CalibrationItem] = []
@@ -201,6 +213,11 @@ def load_calibration_items(path: Path, *, require_labels: bool = False) -> list[
                     reference_evidence=parse_reference_evidence(row["reference_evidence"] or ""),
                     answer_variant=variants.get(item_id) or None,
                     answer_text=row["answer_text"],
+                    transcript_excerpt=(
+                        row["pasaje_transcripcion"] or ""
+                        if "pasaje_transcripcion" in (reader.fieldnames or [])
+                        else None
+                    ),
                     answer_abstained=bool(
                         _parse_bool(
                             row["answer_abstained"], column="answer_abstained", item_id=item_id

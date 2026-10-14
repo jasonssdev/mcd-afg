@@ -20,6 +20,7 @@ from __future__ import annotations
 import time
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 
 from afg.domain.question import Answer, Question, QuestionStratum
 from afg.evaluation.judge import (
@@ -46,7 +47,9 @@ from afg.evaluation.judge_calibration import (
 )
 from afg.evaluation.judge_calibration_set import CalibrationItem, CalibrationSetError
 from afg.evaluation.metrics import BootstrapCI
+from afg.evaluation.passage import judge_evidence_passage
 from afg.shared.config import load_experiments_config
+from afg.shared.paths import TRANSCRIPTS_DIR
 
 _CONDITION = "CAL"
 """Placeholder condition id: the judge never sees it (anonymization)."""
@@ -94,6 +97,7 @@ def _question(item: CalibrationItem) -> Question:
         stratum=item.stratum,
         text=item.question,
         reference_answer=item.reference_answer,
+        reference_evidence=item.reference_evidence,
     )
 
 
@@ -128,6 +132,26 @@ def _evidence(outcomes: Sequence[Outcome]) -> list[Label]:
     return [o.evidence_supported if isinstance(o, JudgeVerdict) else None for o in outcomes]
 
 
+ExcerptFor = Callable[[CalibrationItem], str]
+"""Builds the transcript excerpt the judge reads for an item; injectable for tests."""
+
+
+def stored_excerpt_for(item: CalibrationItem, *, transcripts_dir: Path = TRANSCRIPTS_DIR) -> str:
+    """The excerpt the judge reads for ``item``.
+
+    It is the stored ``pasaje_transcripcion`` (the exact text the labeler saw), so the judge
+    and the human work from the same passage even if the window setting changed afterwards.
+    Only when the file has no such column (older files) is it rebuilt from the frozen
+    transcripts with the current window.
+    """
+    if item.transcript_excerpt is not None:
+        return item.transcript_excerpt
+    return judge_evidence_passage(item.reference_evidence, transcripts_dir=transcripts_dir)
+
+
+default_excerpt_for: ExcerptFor = stored_excerpt_for
+
+
 def run_candidate(
     items: Sequence[CalibrationItem],
     *,
@@ -138,6 +162,7 @@ def run_candidate(
     temperature: float = 0.0,
     n_resamples: int | None = None,
     clock: Callable[[], float] = time.perf_counter,
+    excerpt_for: ExcerptFor = default_excerpt_for,
 ) -> CandidateRun:
     """Judge every labeled item with one candidate and build its :class:`CandidateMetrics`.
 
@@ -154,6 +179,7 @@ def run_candidate(
     if not any(item.correct is False for item in items):
         raise ValueError("the calibration set needs at least one answer labeled incorrect.")
     seeds = thresholds.seeds
+    excerpts = {item.id: excerpt_for(item) for item in items}
     elapsed: list[float] = []
     outcomes: list[Outcome] = []
 
@@ -168,6 +194,7 @@ def run_candidate(
             order=order,
             seed=seed,
             temperature=temperature,
+            transcript_excerpt=excerpts[item.id],
         )
         elapsed.append(clock() - started)
         outcomes.append(outcome)
@@ -240,6 +267,7 @@ def run_calibration(
     temperature: float = 0.0,
     n_resamples: int | None = None,
     clock: Callable[[], float] = time.perf_counter,
+    excerpt_for: ExcerptFor = default_excerpt_for,
 ) -> CalibrationResult:
     """Run every candidate, then apply the pre-registered decision rule."""
     runs = tuple(
@@ -252,6 +280,7 @@ def run_calibration(
             temperature=temperature,
             n_resamples=n_resamples,
             clock=clock,
+            excerpt_for=excerpt_for,
         )
         for model in candidates
     )
