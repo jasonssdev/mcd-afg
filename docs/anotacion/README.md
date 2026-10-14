@@ -17,8 +17,8 @@ leer el código.
 
 | Persona | Rol | Tareas |
 |---|---|---|
-| Germán Vega (`gv`) | Anotador | Tareas A, B, C y D |
-| Gustavo Martínez (`gm`) | Anotador | Tareas A, B, C y D |
+| Germán Vega (`gv`) | Anotador; valida el banco de preguntas | Tareas A, B, C y D |
+| Gustavo Martínez (`gm`) | Anotador; escribe el banco de preguntas | Tareas A, B y D (la Tarea C es solo de `gv`) |
 | Jason Sepúlveda (`jss`) | Adjudicador | Resuelve los desacuerdos de la Tarea D; no anota |
 
 Las dos personas que anotan lo hacen **de forma independiente**: nadie ve las etiquetas de
@@ -43,7 +43,8 @@ C3 tendría errores de extracción por construcción y el objetivo OE4 dejaría 
 
 | Series | Qué son | Qué puedes hacer |
 |---|---|---|
-| ES2015, IS1004, TS3009 | Desarrollo | Leer todo; aquí se practica y se ajustan criterios |
+| ES2015, IS1004 | Desarrollo | Leer todo; aquí se practica y se ajustan criterios |
+| TS3009 | Desarrollo (recalibración) | La anotan `gv` y `gm` por separado: no se lee ni se comenta antes de anotarla, y su contenido se abre en común solo cuando `jss` anuncie su adjudicación |
 | ES2008, ES2016, IS1003, TS3005 | Control (doble anotación) | Anotar ambas personas, por separado |
 | ES2002, ES2014, IS1006, IS1008, IS1009, TS3003, TS3011 | Evaluación | Anotar; **no** leer su contenido fuera de la anotación |
 
@@ -91,9 +92,10 @@ mira una reunión posterior para etiquetar una anterior.
 
 ## Tres reglas que evitan los errores más comunes
 
-1. **Lee `evidence_text` antes de llenar nada.** Si la evidencia no dice lo que dice la frase
-   del resumen, el `status` es `sin_soporte`, aunque la frase suene razonable. El resumen
-   oficial de AMI ya tiene al menos un error demostrado (el botón turbo, manual §3).
+1. **Lee `evidence_text` antes de llenar nada; si no alcanza, lee la transcripción de la
+   misma reunión.** `sin_soporte` solo si la transcripción contradice la frase o no la
+   contiene, nunca por una evidencia corta; jamás se leen reuniones posteriores. El resumen
+   oficial de AMI ya tiene al menos un error demostrado (el botón turbo). Detalle: manual §2.
 2. **`evidence_da_count = 0` es sospecha inmediata.** Busca la evidencia con
    `uv run afg gold evidence --meeting <ID> --term <palabra>` antes de decidir.
 3. **La dirección importa.** En un par, la decisión posterior actúa sobre la anterior: "la de

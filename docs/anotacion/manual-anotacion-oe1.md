@@ -44,17 +44,21 @@ decides **qué dice**.
 > **Estado de implementación (2026-09-20).** Todos los comandos que usa este manual están
 > implementados y con tests (ver `README.md`, sección "Comandos del proyecto").
 
+**Quien anota corre solo `setup`, `prepare`, `validate` y `evidence`** (y `status`, de solo
+lectura). `build` y `candidates` los corre quien mantiene el repositorio, ya los corrió, y
+volver a correrlos sobrescribe el insumo. La tabla de abajo los lista como referencia.
+
 | Comando | Para qué |
 |---|---|
 | `uv run afg corpus download` | Descarga el corpus (una sola vez por máquina) |
 | `uv run afg corpus inventory` | Verifica que el corpus está completo |
-| `uv run afg gold build --series <ID>` | Genera el CSV de decisiones de la Tarea A |
-| `uv run afg gold candidates --series <ID>` | Genera el CSV de pares candidatos de la Tarea B |
-| `uv run afg gold recall-sample --series <ID> --n 50 --seed 42` | Genera la muestra de la Tarea C |
+| `uv run afg gold build --series <ID>` | (mantenedor) Genera el CSV de decisiones de la Tarea A |
+| `uv run afg gold candidates --series <ID>` | (mantenedor) Genera el CSV de pares candidatos de la Tarea B |
+| `uv run afg gold recall-sample --series <ID> --n 50 --seed 42` | (mantenedor) Genera la muestra de la Tarea C |
 | `uv run afg gold evidence --meeting <ID> --term <palabra>` | Busca evidencia en la transcripción cuando `evidence_da_count` es 0 |
-| `uv run afg gold agreement --series <ID>` | Calcula el kappa de la Tarea D |
+| `uv run afg gold agreement --series <ID>` | (adjudicador) Calcula el kappa de la Tarea D |
 
-Para una serie, el flujo es:
+Para una serie, el flujo del mantenedor (no el tuyo) fue:
 
 ```bash
 uv run afg gold build      --series IS1004   # -> data/processed/decisions/IS1004.decisions.csv
@@ -79,8 +83,15 @@ tus iniciales. **Nunca edites `IS1004.decisions.csv`** (el archivo sin iniciales
 insumo limpio que genera `afg gold build`. Si anotas ahí, `afg gold prepare` no lo detecta
 —solo mira si tu propio `<serie>.decisions.<iniciales>.csv` ya tiene anotación— y genera tu
 copia con las columnas humanas vacías: el trabajo desaparece sin ningún error en pantalla.
-**Herramienta:** cualquier editor de hojas de cálculo, o el editor de texto que prefieras.
+**Herramienta:** un editor de texto o de hojas de cálculo (ver el recuadro de abajo).
 **Ritmo esperado:** ~30 segundos por fila.
+
+> **Editar el CSV.** Editores recomendados: VS Code o LibreOffice Calc. Excel sirve solo si
+> guardas con **«CSV UTF-8 (delimitado por comas)»**; nunca con «CSV» a secas, que rompe las
+> tildes. El separador debe ser la **coma**. Si `afg gold validate` falla en la primera
+> columna, casi siempre es la codificación o el separador (por ejemplo, el archivo quedó con
+> `;`): vuelve a guardarlo con comas y UTF-8. Un BOM al inicio del archivo (lo que escribe
+> Excel con «CSV UTF-8») se acepta.
 
 ### Columnas
 
@@ -276,7 +287,8 @@ Marcas la original `compuesta` y creas cinco filas:
 La herramienta te ofrece las ocurrencias de los términos del objeto en la transcripción de
 esa reunión. Para "turbo" en `IS1004d` hay ocho. La relevante es esta:
 
-> **`words/IS1004d.B.words.xml`, cerca de `IS1004d.B.words1560`** (hablante B):
+> **Transcripción `data/interim/transcripts/IS1004d.md`** (hablante B; la encuentras con
+> `uv run afg gold evidence --meeting IS1004d --term turbo`):
 >
 > *"…instead of a turbo button but you know the turbo button does add that extra class.
 > You know. So I mean if we're **if we're over budget then maybe we could we could rethink
@@ -304,9 +316,9 @@ decision_id      : IS1004d.d12
 status           : sin_soporte
 decision_object  : botón turbo
 decision_content : (vacío — la frase afirma una eliminación que la evidencia contradice)
-annotator        : JD
+annotator        : gv
 notes            : El resumen abstractivo afirma la eliminación. La transcripción
-                   (IS1004d.B.words1560 y siguientes) muestra que se planteó como
+                   (IS1004d, intervención del hablante B) muestra que se planteó como
                    condicional a estar sobre presupuesto, se verificó que NO lo estaban,
                    y el ajuste se hizo cambiando goma por plástico. El botón se mantiene.
                    Última mención de "turbo" en la reunión. Error del resumen de origen.
@@ -536,9 +548,11 @@ fracaso a esconder: es el resultado que OE1 se propuso *medir* en vez de asumir.
 Marca solo lo verificado. Cada ítem corresponde a algo revisable después.
 
 ### Tarea A — decisiones
-- [ ] Toda fila de `<serie>.decisions.csv` tiene `status` no vacío
+- [ ] Toda fila de `<serie>.decisions.<ini>.csv` (tu copia, no el archivo base) tiene `status` no vacío
 - [ ] Toda fila con `status = decision` tiene `decision_object` **y** `decision_content`
 - [ ] Toda fila `compuesta` tiene sus filas hijas `-1`, `-2`, … creadas
+- [ ] Cada `compuesta` es realmente separable (una parte podría cambiar sin la otra); atributos y razones no se dividen
+- [ ] Todo duplicado dentro de la reunión está marcado `descartar`, con `notes` indicando qué fila duplica
 - [ ] Ninguna fila hija quedó con `status = compuesta`
 - [ ] **Toda fila con `evidence_da_count = 0` fue revisada contra la transcripción**
 - [ ] **Toda fila `sin_soporte` fue revisada contra la transcripción de su reunión**, no solo
@@ -548,7 +562,7 @@ Marca solo lo verificado. Cada ítem corresponde a algo revisable después.
 - [ ] `annotator` está en todas las filas
 
 ### Tarea B — relaciones
-- [ ] Toda fila de `<serie>.candidates.csv` tiene `relation` del conjunto cerrado
+- [ ] Toda fila de `<serie>.candidates.<ini>.csv` (tu copia, no el archivo base) tiene `relation` del conjunto cerrado
 - [ ] `direction_ok` está en todas las filas
 - [ ] Ninguna relación distinta de `no_relacionada` apunta a una decisión
       `sin_soporte`, `descartar` o `no_decision`
