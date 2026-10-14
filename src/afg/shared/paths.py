@@ -30,6 +30,7 @@ PROCESSED_DIR: Path = DATA_DIR / "processed"
 GOLD_DECISIONS_DIR: Path = PROCESSED_DIR / "decisions"
 GOLD_RELATIONS_DIR: Path = PROCESSED_DIR / "relations"
 QUESTIONS_DIR: Path = PROCESSED_DIR / "questions"
+JUDGE_CALIBRATION_DIR: Path = PROCESSED_DIR / "judge-calibration"
 EXTERNAL_DIR: Path = DATA_DIR / "external"
 
 # --- reports/ --------------------------------------------------------------------------
@@ -48,6 +49,7 @@ _WRITABLE_DIRS: tuple[Path, ...] = (
     GOLD_DECISIONS_DIR,
     GOLD_RELATIONS_DIR,
     QUESTIONS_DIR,
+    JUDGE_CALIBRATION_DIR,
     EXTERNAL_DIR,
     FIGURES_DIR,
     TABLES_DIR,
