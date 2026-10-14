@@ -193,7 +193,8 @@ def judge_answer(
     ``order`` controls whether the reference or the candidate is shown first, for the
     position-bias check (Wang et al., 2024); randomizing it across a batch is the caller's
     job. ``citation_correct`` is always ``None``: the judge sees no source text, so it
-    cannot verify citations.
+    cannot verify citations; :func:`afg.evaluation.citation.citation_correct` decides it
+    deterministically instead.
     """
     require_distinct_model_families(judge_model, generative_model)
     raw = backend.complete(
