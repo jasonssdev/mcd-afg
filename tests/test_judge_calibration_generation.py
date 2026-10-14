@@ -28,6 +28,7 @@ from afg.evaluation.judge_calibration_set import (
     COLUMNS,
     DevelopmentSplitError,
     load_calibration_items,
+    variants_path,
 )
 
 QUESTION_HEADER = "id,series_id,stratum,question,reference_answer,reference_evidence\n"
@@ -235,6 +236,9 @@ class TestGenerateAnswers:
         )
         assert all(a.abstained and a.text == ABSTENTION_TEXT for a in answers)
 
+    def test_abstention_text_is_english_like_the_answers_and_the_judge_prompt(self) -> None:
+        assert ABSTENTION_TEXT == "The material does not contain enough information to answer."
+
     def test_reasoning_block_is_stripped(self, transcripts: Path) -> None:
         answers = generate_answers(
             _question(),
@@ -300,6 +304,23 @@ class TestGenerateCalibrationSet:
         assert report.questions_processed == 0
         assert "no questions" in report.summary().lower()
 
+    def test_questions_can_be_passed_directly_instead_of_a_file(
+        self, tmp_path: Path, transcripts: Path
+    ) -> None:
+        target = tmp_path / "calibration.csv"
+        report = generate_calibration_set(
+            tmp_path / "does-not-exist.csv",
+            target,
+            backend=FakeBackend(),
+            transcripts_dir=transcripts,
+            questions=[_question()],
+        )
+        assert report.questions_processed == 1 and report.rows_written == 2
+        assert sorted(i.id for i in load_calibration_items(target)) == [
+            "ES2015.q001.grounded",
+            "ES2015.q001.ungrounded",
+        ]
+
     def test_writes_two_unlabeled_rows_per_question_that_the_loader_accepts(
         self, tmp_path: Path, transcripts: Path
     ) -> None:
@@ -313,21 +334,66 @@ class TestGenerateCalibrationSet:
         assert report.questions_processed == 2 and report.rows_written == 4
         assert not target.read_bytes().startswith(b"\xef\xbb\xbf")
         items = load_calibration_items(target)
-        assert [i.id for i in items] == [
+        assert sorted(i.id for i in items) == [
             "ES2015.q001.grounded",
             "ES2015.q001.ungrounded",
-            "ES2015.q004.ungrounded",
             "ES2015.q004.no_context",
+            "ES2015.q004.ungrounded",
         ]
         assert all(i.correct is None and i.evidence_supported is None for i in items)
         assert all(not i.labelers and not i.adjudicated for i in items)
-        assert items[0].reference_evidence and items[2].reference_evidence == ()
-        assert [i.answer_variant for i in items] == [
-            "grounded",
-            "ungrounded",
-            "ungrounded",
-            "no_context",
-        ]
+        by_id = {i.id: i for i in items}
+        assert by_id["ES2015.q001.grounded"].reference_evidence
+        assert by_id["ES2015.q004.ungrounded"].reference_evidence == ()
+        assert {i.id: i.answer_variant for i in items} == {
+            "ES2015.q001.grounded": "grounded",
+            "ES2015.q001.ungrounded": "ungrounded",
+            "ES2015.q004.ungrounded": "ungrounded",
+            "ES2015.q004.no_context": "no_context",
+        }
+
+    def test_variant_is_kept_out_of_the_labeling_file_and_written_to_a_sidecar(
+        self, tmp_path: Path, transcripts: Path
+    ) -> None:
+        target = tmp_path / "calibration.csv"
+        generate_calibration_set(
+            _write_questions(tmp_path, Q1, Q4),
+            target,
+            backend=FakeBackend(),
+            transcripts_dir=transcripts,
+        )
+        assert "answer_variant" not in target.read_text(encoding="utf-8").splitlines()[0]
+        sidecar = variants_path(target)
+        assert sidecar.name == "calibration.variantes.csv"
+        with sidecar.open(newline="", encoding="utf-8") as handle:
+            rows = list(csv.DictReader(handle))
+        assert {r["id"]: r["answer_variant"] for r in rows} == {
+            "ES2015.q001.grounded": "grounded",
+            "ES2015.q001.ungrounded": "ungrounded",
+            "ES2015.q004.ungrounded": "ungrounded",
+            "ES2015.q004.no_context": "no_context",
+        }
+
+    def test_item_order_is_shuffled_deterministically_with_the_seed(
+        self, tmp_path: Path, transcripts: Path
+    ) -> None:
+        q = [_question(qid=f"ES2015.q{n:03d}") for n in range(1, 9)]
+        orders = []
+        for name in ("a", "b"):
+            target = tmp_path / f"{name}.csv"
+            generate_calibration_set(
+                tmp_path / "unused.csv",
+                target,
+                backend=FakeBackend(),
+                transcripts_dir=transcripts,
+                questions=q,
+            )
+            orders.append([i.id for i in load_calibration_items(target)])
+        generation_order = [f"{x.id}.{v}" for x in q for v in ("grounded", "ungrounded")]
+        assert orders[0] == orders[1]
+        assert sorted(orders[0]) == sorted(generation_order)
+        assert orders[0] != generation_order
+        assert orders[0] != sorted(orders[0])
 
     def test_rerun_skips_questions_already_generated_and_keeps_labels(
         self, tmp_path: Path, transcripts: Path
@@ -339,6 +405,7 @@ class TestGenerateCalibrationSet:
         )
         with target.open(newline="", encoding="utf-8") as handle:
             rows = list(csv.DictReader(handle))
+        labeled_id = rows[0]["id"]
         rows[0]["correct"], rows[0]["labeler_a"] = "true", "jss"
         with target.open("w", newline="", encoding="utf-8") as handle:
             writer = csv.DictWriter(handle, fieldnames=list(COLUMNS), lineterminator="\n")
@@ -354,7 +421,9 @@ class TestGenerateCalibrationSet:
         assert len(backend.calls) == 2  # only Q4
         items = load_calibration_items(target)
         assert len(items) == 4
-        assert items[0].correct is True and items[0].labelers == ("jss",)
+        kept = next(i for i in items if i.id == labeled_id)
+        assert kept.correct is True and kept.labelers == ("jss",)
+        assert {i.answer_variant for i in items} == {"grounded", "ungrounded", "no_context"}
 
     def test_uses_the_shared_budget_from_the_config(
         self, tmp_path: Path, transcripts: Path

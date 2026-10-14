@@ -10,6 +10,7 @@ from pydantic import ValidationError
 from afg.domain.decision import EvidenceSpan
 from afg.domain.question import QuestionStratum
 from afg.evaluation.judge_calibration_set import (
+    COLUMNS,
     TEMPLATE_PATH,
     CalibrationItem,
     CalibrationSetError,
@@ -17,29 +18,32 @@ from afg.evaluation.judge_calibration_set import (
     calibration_series,
     load_calibration_items,
     summarize_calibration_set,
+    variants_path,
 )
 
 HEADER = (
-    "id,series_id,stratum,question,reference_answer,reference_evidence,answer_variant,"
+    "id,series_id,stratum,question,reference_answer,reference_evidence,"
     "answer_text,answer_abstained,correct,evidence_supported,citation_correct,"
     "labeler_a,labeler_b,adjudicated\n"
 )
 
 
-def _write(tmp_path: Path, *rows: str) -> Path:
+def _write(tmp_path: Path, *rows: str, variants: dict[str, str] | None = None) -> Path:
     path = tmp_path / "set.csv"
     path.write_text(HEADER + "".join(row + "\n" for row in rows), encoding="utf-8")
+    if variants is not None:
+        variants_path(path).write_text(
+            "id,answer_variant\n" + "".join(f"{k},{v}\n" for k, v in variants.items()),
+            encoding="utf-8",
+        )
     return path
 
 
 E1 = (
-    "c1,ES2015,E1_point_fact,¿Precio?,25 euros,ES2015a:ES2015a.A.dialog-act.x.1,grounded,"
+    "c1,ES2015,E1_point_fact,¿Precio?,25 euros,ES2015a:ES2015a.A.dialog-act.x.1,"
     "25 euros,false,true,true,,gm,gv,true"
 )
-E4 = (
-    "c2,ES2015,E4_unanswerable,¿Garantía?,,,no_context,No hay información.,"
-    "true,true,true,,gm,gv,false"
-)
+E4 = "c2,ES2015,E4_unanswerable,¿Garantía?,,,No hay información.,true,true,true,,gm,gv,false"
 
 
 class TestSchema:
@@ -68,7 +72,8 @@ class TestSchema:
 
 class TestLoader:
     def test_reads_rows_and_parses_types(self, tmp_path: Path) -> None:
-        items = load_calibration_items(_write(tmp_path, E1, E4))
+        variants = {"c1": "grounded", "c2": "no_context"}
+        items = load_calibration_items(_write(tmp_path, E1, E4, variants=variants))
         assert [i.id for i in items] == ["c1", "c2"]
         assert items[0].correct is True and items[0].citation_correct is None
         assert items[0].adjudicated is True and items[1].adjudicated is False
@@ -82,7 +87,7 @@ class TestLoader:
         assert items[1].reference_evidence == ()
 
     def test_rejects_evaluation_series(self, tmp_path: Path) -> None:
-        row = "c3,ES2016,E1_point_fact,q,r,,,a,false,true,true,,gm,gv,true"
+        row = "c3,ES2016,E1_point_fact,q,r,,a,false,true,true,,gm,gv,true"
         with pytest.raises(DevelopmentSplitError, match="ES2016"):
             load_calibration_items(_write(tmp_path, E1, row))
 
@@ -91,7 +96,7 @@ class TestLoader:
     ) -> None:
         # IS1004 is a development series, but its annotations are still pending (issue #82),
         # so the calibration set may not touch it.
-        row = "c3,IS1004,E1_point_fact,q,r,,,a,false,true,true,,gm,gv,true"
+        row = "c3,IS1004,E1_point_fact,q,r,,a,false,true,true,,gm,gv,true"
         with pytest.raises(DevelopmentSplitError, match="IS1004"):
             load_calibration_items(_write(tmp_path, E1, row))
 
@@ -103,21 +108,46 @@ class TestLoader:
     def test_unlabeled_rows_load_by_default_but_fail_when_labels_required(
         self, tmp_path: Path
     ) -> None:
-        row = "c4,ES2015,E1_point_fact,q,r,,,a,false,,,,,,false"
+        row = "c4,ES2015,E1_point_fact,q,r,,a,false,,,,,,false"
         path = _write(tmp_path, row)
         assert load_calibration_items(path)[0].correct is None
         with pytest.raises(CalibrationSetError, match="c4"):
             load_calibration_items(path, require_labels=True)
 
     def test_malformed_evidence_names_the_row(self, tmp_path: Path) -> None:
-        row = "c6,ES2015,E1_point_fact,q,r,no-colon-here,grounded,a,false,,,,,,false"
+        row = "c6,ES2015,E1_point_fact,q,r,no-colon-here,a,false,,,,,,false"
         with pytest.raises(CalibrationSetError, match="c6"):
             load_calibration_items(_write(tmp_path, row))
 
     def test_bad_boolean_names_the_row(self, tmp_path: Path) -> None:
-        row = "c5,ES2015,E1_point_fact,q,r,,,a,maybe,true,true,,gm,gv,true"
+        row = "c5,ES2015,E1_point_fact,q,r,,a,maybe,true,true,,gm,gv,true"
         with pytest.raises(CalibrationSetError, match="c5"):
             load_calibration_items(_write(tmp_path, row))
+
+    @pytest.mark.parametrize(
+        ("cell", "expected"),
+        [("si", True), ("Sí", True), ("SI", True), ("no", False), ("No", False), ("TRUE", True)],
+    )
+    def test_spreadsheet_friendly_booleans(self, tmp_path: Path, cell: str, expected: bool) -> None:
+        row = (
+            "c7,ES2015,E1_point_fact,q,r,ES2015a:ES2015a.A.dialog-act.x.1,a,false,"
+            f"{cell},{cell},,gm,,false"
+        )
+        (item,) = load_calibration_items(_write(tmp_path, row))
+        assert item.correct is expected
+        assert item.evidence_supported is expected
+
+    def test_variant_is_not_a_column_of_the_labeling_file(self) -> None:
+        assert "answer_variant" not in COLUMNS
+
+    def test_items_without_a_sidecar_have_no_variant(self, tmp_path: Path) -> None:
+        (item,) = load_calibration_items(_write(tmp_path, E1))
+        assert item.answer_variant is None
+
+    def test_variants_path_sits_next_to_the_calibration_file(self, tmp_path: Path) -> None:
+        assert variants_path(tmp_path / "calibracion-juez.csv") == (
+            tmp_path / "calibracion-juez.variantes.csv"
+        )
 
     def test_duplicate_ids_rejected(self, tmp_path: Path) -> None:
         with pytest.raises(CalibrationSetError, match="duplicate"):
@@ -163,8 +193,9 @@ class TestSummary:
         assert (summary.n_items, summary.n_labeled, summary.ready) == (0, 0, False)
 
     def test_counts_labels_variants_and_strata(self, tmp_path: Path) -> None:
-        unlabeled = "c4,ES2015,E1_point_fact,q,r,,ungrounded,a,false,,,,,,false"
-        items = load_calibration_items(_write(tmp_path, E1, E4, unlabeled))
+        unlabeled = "c4,ES2015,E1_point_fact,q,r,,a,false,,,,,,false"
+        variants = {"c1": "grounded", "c2": "no_context", "c4": "ungrounded"}
+        items = load_calibration_items(_write(tmp_path, E1, E4, unlabeled, variants=variants))
         summary = summarize_calibration_set(items)
         assert (summary.n_items, summary.n_labeled) == (3, 2)
         assert summary.by_variant == {"grounded": 1, "no_context": 1, "ungrounded": 1}

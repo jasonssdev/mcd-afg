@@ -12,9 +12,12 @@ similar proportion:
 * E4 (unanswerable) questions have no reference acts: they get the ``ungrounded`` passage
   and a ``no_context`` answer instead.
 
-The variant that produced each answer is recorded in ``answer_variant`` and never shown to
-the judge. The human labels (``correct``, ``evidence_supported``) are left empty: labels
-are always human. Temperature, seed and top-p come from ``[shared_budget]``.
+The variant that produced each answer is recorded in a sidecar file (``id,answer_variant``,
+see :func:`afg.evaluation.judge_calibration_set.variants_path`) and never shown to the labelers
+or the judge; the rows of the labeling file are shuffled with ``[shared_budget].seed`` so
+neither the variant nor the pairing of the two answers can be read from the order.
+The human labels (``correct``, ``evidence_supported``) are left empty: labels are always human.
+Temperature, seed and top-p come from ``[shared_budget]``.
 """
 
 from __future__ import annotations
@@ -38,9 +41,12 @@ from afg.domain.question import (
 )
 from afg.evaluation.judge_calibration_set import (
     COLUMNS,
+    VARIANT_COLUMNS,
     CalibrationSetError,
     DevelopmentSplitError,
     calibration_series,
+    load_variants,
+    variants_path,
 )
 from afg.shared.config import load_experiments_config
 from afg.shared.csvio import open_csv_writer
@@ -60,8 +66,9 @@ QUESTION_COLUMNS: tuple[str, ...] = (
 )
 
 ABSTAIN_MARKER = "NO_ANSWER"
-ABSTENTION_TEXT = "El material no contiene información suficiente para responder."
-"""Stored as the answer text when the model abstains; the questions are in Spanish."""
+ABSTENTION_TEXT = "The material does not contain enough information to answer."
+"""Stored as the answer text when the model abstains; questions, answers and the judge prompt
+are in English, like the question bank."""
 
 _NO_CONTEXT = "(none)"
 _THINK_BLOCK = re.compile(r"<think>.*?</think>", re.DOTALL)
@@ -330,15 +337,18 @@ def generate_calibration_set(
     *,
     backend: GenerationBackend,
     transcripts_dir: Path = TRANSCRIPTS_DIR,
+    questions: Sequence[CalibrationQuestion] | None = None,
 ) -> GenerationReport:
     """Generate the answers of every new question and append them to the calibration CSV.
 
     Rows already in the CSV (possibly labeled) are kept byte-for-byte in meaning and are
     never regenerated: a question is skipped when any of its answer ids exists. The label
     columns of new rows stay empty. Nothing is written, and the backend is never called,
-    when the question file has no questions. The file is written as UTF-8 without a BOM.
+    when there are no questions. The file is written as UTF-8 without a BOM. ``questions``
+    replaces the question file when given (the worksheet bridge passes them directly).
     """
-    questions = load_calibration_questions(questions_path)
+    if questions is None:
+        questions = load_calibration_questions(questions_path)
     if not questions:
         return GenerationReport(0, 0, 0)
     budget = load_experiments_config()["shared_budget"]
@@ -346,6 +356,7 @@ def generate_calibration_set(
     existing = _read_rows(calibration_path)
     taken = {row["id"] for row in existing}
     new_rows: list[dict[str, str]] = []
+    new_variants: dict[str, str] = {}
     processed = skipped = 0
     for question in questions:
         if any(row_id.startswith(f"{question.id}.") for row_id in taken):
@@ -361,6 +372,7 @@ def generate_calibration_set(
             transcripts_dir=transcripts_dir,
         )
         for answer in answers:
+            new_variants[f"{question.id}.{answer.variant}"] = answer.variant
             new_rows.append(
                 {
                     **dict.fromkeys(COLUMNS, ""),
@@ -370,7 +382,6 @@ def generate_calibration_set(
                     "question": question.question,
                     "reference_answer": question.reference_answer or "",
                     "reference_evidence": format_reference_evidence(question.reference_evidence),
-                    "answer_variant": answer.variant,
                     "answer_text": answer.text,
                     "answer_abstained": str(answer.abstained).lower(),
                     "adjudicated": "false",
@@ -378,9 +389,18 @@ def generate_calibration_set(
             )
         processed += 1
     if new_rows:
+        variants = {**load_variants(calibration_path), **new_variants}
+        # Shuffle (deterministically) so the two answers of a question are not adjacent and
+        # their order does not reveal which one is grounded.
+        rows = sorted([*existing, *new_rows], key=lambda row: row["id"])
+        random.Random(int(budget["seed"])).shuffle(rows)
         calibration_path.parent.mkdir(parents=True, exist_ok=True)
         with open_csv_writer(calibration_path, encoding="utf-8") as writer:
             writer.writerow(COLUMNS)
-            for row in [*existing, *new_rows]:
+            for row in rows:
                 writer.writerow([row[c] for c in COLUMNS])
+        with open_csv_writer(variants_path(calibration_path), encoding="utf-8") as writer:
+            writer.writerow(VARIANT_COLUMNS)
+            for row_id in sorted(variants):
+                writer.writerow([row_id, variants[row_id]])
     return GenerationReport(processed, skipped, len(new_rows))

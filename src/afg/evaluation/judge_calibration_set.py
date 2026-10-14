@@ -7,8 +7,9 @@ content of the evaluation series is never read to choose the judge, so the loade
 any other series instead of trusting whoever wrote the file.
 
 The CSV is read with ``utf-8-sig`` because the spreadsheet tools the team edits it with
-add a BOM. Labels may be empty while answers are still being generated; pass
-``require_labels=True`` when the set is used for scoring.
+add a BOM. Boolean cells accept ``si``/``no`` (what people type) as well as ``true``/``false``.
+Labels may be empty while answers are still being generated; pass ``require_labels=True`` when
+the set is used for scoring.
 """
 
 from __future__ import annotations
@@ -35,7 +36,6 @@ COLUMNS: tuple[str, ...] = (
     "question",
     "reference_answer",
     "reference_evidence",
-    "answer_variant",
     "answer_text",
     "answer_abstained",
     "correct",
@@ -45,6 +45,30 @@ COLUMNS: tuple[str, ...] = (
     "labeler_b",
     "adjudicated",
 )
+
+
+VARIANT_COLUMNS: tuple[str, ...] = ("id", "answer_variant")
+
+
+def variants_path(calibration_path: Path) -> Path:
+    """The sidecar with how each answer was produced, next to the labeling file.
+
+    The variant (grounded, ungrounded, no_context) predicts the expected label, so it is kept
+    out of the file the humans label and out of what the judge sees.
+    """
+    return calibration_path.with_suffix(".variantes.csv")
+
+
+def load_variants(calibration_path: Path) -> dict[str, str]:
+    """``id -> answer_variant`` from the sidecar; empty when there is no sidecar."""
+    path = variants_path(calibration_path)
+    if not path.exists():
+        return {}
+    with path.open(newline="", encoding="utf-8-sig") as handle:
+        return {
+            (row["id"] or "").strip(): (row["answer_variant"] or "").strip()
+            for row in csv.DictReader(handle)
+        }
 
 
 class CalibrationSetError(ValueError):
@@ -73,8 +97,9 @@ class CalibrationItem(BaseModel):
     )
     answer_variant: str | None = Field(
         default=None,
-        description="How the answer was produced (grounded, ungrounded, no_context); "
-        "recorded so the set can be checked for balance. Never shown to the judge.",
+        description="How the answer was produced (grounded, ungrounded, no_context), read "
+        "from the sidecar file (:func:`variants_path`) so the set can be checked for balance. "
+        "Never shown to the labelers or the judge.",
     )
     answer_text: str
     answer_abstained: bool = False
@@ -104,9 +129,9 @@ def _parse_bool(value: str, *, column: str, item_id: str) -> bool | None:
     text = value.strip().lower()
     if not text:
         return None
-    if text in {"true", "1"}:
+    if text in {"true", "1", "si", "sí", "yes"}:
         return True
-    if text in {"false", "0"}:
+    if text in {"false", "0", "no"}:
         return False
     raise CalibrationSetError(f"item {item_id!r}: column {column!r} is not a boolean: {value!r}")
 
@@ -146,6 +171,7 @@ def load_calibration_items(path: Path, *, require_labels: bool = False) -> list[
     development split, so an evaluation series can never get through.
     """
     allowed = calibration_series()
+    variants = load_variants(path)
     with path.open(newline="", encoding="utf-8-sig") as handle:
         reader = csv.DictReader(handle)
         missing = [c for c in COLUMNS if c not in (reader.fieldnames or [])]
@@ -173,7 +199,7 @@ def load_calibration_items(path: Path, *, require_labels: bool = False) -> list[
                     question=row["question"],
                     reference_answer=reference,
                     reference_evidence=parse_reference_evidence(row["reference_evidence"] or ""),
-                    answer_variant=(row["answer_variant"] or "").strip() or None,
+                    answer_variant=variants.get(item_id) or None,
                     answer_text=row["answer_text"],
                     answer_abstained=bool(
                         _parse_bool(
