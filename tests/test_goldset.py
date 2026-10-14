@@ -75,9 +75,7 @@ class TestRenderWordElement:
         root = _words_root(f'<nite:root {_WORDS_NS}><w nite:id="w1">Hello</w></nite:root>')
         assert render_word_element(root[0]) == "Hello"
 
-    @pytest.mark.parametrize(
-        "tag", ["vocalsound", "disfmarker", "pause", "gap", "nonvocalsound"]
-    )
+    @pytest.mark.parametrize("tag", ["vocalsound", "disfmarker", "pause", "gap", "nonvocalsound"])
     def test_no_text_tags_render_literally(self, tag: str) -> None:
         root = _words_root(f'<nite:root {_WORDS_NS}><{tag} nite:id="x1"/></nite:root>')
         assert render_word_element(root[0]) == f"<{tag}>"

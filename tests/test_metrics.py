@@ -179,9 +179,7 @@ class TestWilsonInterval:
         assert round(lower) == 17
         assert round(upper) == 58
 
-    @pytest.mark.parametrize(
-        ("successes", "trials"), [(0, 0), (-1, 10), (11, 10)]
-    )
+    @pytest.mark.parametrize(("successes", "trials"), [(0, 0), (-1, 10), (11, 10)])
     def test_rejects_invalid_counts(self, successes: int, trials: int) -> None:
         with pytest.raises(ValueError):
             wilson_interval(successes, trials)

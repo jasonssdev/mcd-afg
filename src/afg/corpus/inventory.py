@@ -93,10 +93,10 @@ class MeetingInventory(BaseModel):
     # a previous decision. Summing them destroys the distinction the whole E3 stratum
     # depends on.
     external_flag_count: int = Field(
-        default=0, description="Count of DDS <decision> elements with external=\"true\"."
+        default=0, description='Count of DDS <decision> elements with external="true".'
     )
     recap_flag_count: int = Field(
-        default=0, description="Count of DDS <decision> elements with recap=\"true\"."
+        default=0, description='Count of DDS <decision> elements with recap="true".'
     )
 
     @property

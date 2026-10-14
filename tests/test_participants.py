@@ -207,11 +207,7 @@ class TestCorpusBackedNativeLanguageRecords:
         records = load_native_language_records(AMI_DIR)
         by_id = {r.participant_id: r.native_language for r in records}
         # Exact ids carrying the dirty spellings, verified against the real corpus.
-        chines_or_mandarin = {
-            pid: lang
-            for pid, lang in by_id.items()
-            if lang == "Chinese"
-        }
+        chines_or_mandarin = {pid: lang for pid, lang in by_id.items() if lang == "Chinese"}
         assert len(chines_or_mandarin) == 5  # "Chinese" x3, "Chines" x1, "Mandarin Chinese" x1
         czech_entries = [lang for lang in by_id.values() if lang == "Czech"]
         assert len(czech_entries) == 4  # "Czech" x2, "Czeque" x2
