@@ -30,13 +30,21 @@ Ejemplo: `00-jss-corpus-y-auditoria.ipynb`
 | 01 | `01-jss-viabilidad-e3.ipynb` | Estimación **provisional** de la tasa de positivos del filtro y verificación de las relaciones identificadas a ojo. Decide si el estrato E3 se sostiene | ✅ |
 | 02 | `02-jss-transcripciones.ipynb` | Del AMI Meeting Corpus (anotación *stand-off* NXT) a transcripciones legibles y congeladas: decisiones de render, los dos artefactos por reunión, cobertura del corpus y el manifiesto verificable | ✅ |
 | 03 | `03-jss-eda.ipynb` | Análisis exploratorio de datos de AFG2 sobre las 14 series: proveniencia, calidad, faltantes, atípicos, relaciones, estructura multivariada y temporal, preguntas dirigidas e implicancias para el modelado. Solo estadísticas agregadas (ADR 0005) | ✅ |
-| 04 | `04-jss-anotacion-oe1.ipynb` | Ejecución de la anotación **humana**: acuerdo entre anotadores, kappa, adjudicación, el conjunto de referencia resultante | pendiente |
-| 05 | `05-jss-experimento-a.ipynb` | OE2 — calidad de la extracción automática contra la referencia | pendiente |
-| 06 | `06-jss-experimento-b.ipynb` | OE3/OE4 — C1 vs C2 vs C3 y atribución del error a su etapa | pendiente |
+| 04 | `04-jss-anotacion-f1-calibracion.ipynb` | Anotación **humana**, Fase 1: calibración sobre ES2015 (doble anotación `gm`/`gv`, adjudicación de `jss`). Acuerdo **diagnóstico**, no reportable; vacíos de la guía que reveló | ✅ |
+| 05 | `05-jss-anotacion-f2-control.ipynb` | Anotación humana, Fase 2: las cuatro series de control con doble anotación. El kappa **reportable** de OE1 | pendiente |
+| 06 | `06-jss-anotacion-f3-referencia.ipynb` | Anotación humana, Fase 3: reparto individual y conjunto de referencia final de las 13 series | pendiente |
+| 07 | `07-jss-experimento-a.ipynb` | OE2 — calidad de la extracción automática contra la referencia | pendiente |
+| 08 | `08-jss-experimento-b.ipynb` | OE3/OE4 — C1 vs C2 vs C3 y atribución del error a su etapa | pendiente |
 
-> **Por qué 01 y 04 están separados.** El 01 contiene etiquetas puestas por una máquina, con
-> fines de planificación. El 04 contendrá el conjunto de referencia real, hecho a mano.
-> Mezclarlos invitaría a que alguien cite las provisionales como si fueran la referencia.
+> **Por qué 01 y 04–06 están separados.** El 01 contiene etiquetas puestas por una máquina, con
+> fines de planificación. Los 04–06 contienen la anotación real, hecha a mano, y el conjunto de
+> referencia resultante. Mezclarlos invitaría a que alguien cite las provisionales como si
+> fueran la referencia.
+>
+> **Por qué un notebook por fase de anotación.** Cada fase responde una pregunta distinta con
+> un estatus distinto: la Fase 1 es diagnóstico (su kappa no se reporta), la Fase 2 produce el
+> kappa reportable y la Fase 3 el conjunto de referencia. Un solo notebook mezclaría cifras
+> que se citan con cifras que no.
 
 ## Regla de arquitectura: el notebook no calcula
 

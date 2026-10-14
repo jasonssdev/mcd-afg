@@ -122,6 +122,112 @@ def _read_candidate_rows(path: Path) -> dict[str, dict[str, str]]:
     return rows
 
 
+@dataclass(frozen=True, slots=True)
+class _AlignedLabels:
+    """The three labelings of two annotators over their common pairs, in ``pair_id`` order."""
+
+    existence_a: list[str]
+    existence_b: list[str]
+    direction_a: list[str]
+    direction_b: list[str]
+    type_ids: list[str]
+    type_a: list[str]
+    type_b: list[str]
+
+
+def _existence(relation: str) -> str:
+    return "exists" if relation and relation != _NO_RELATION_LABEL else "no_relation"
+
+
+def _aligned_labels(
+    rows_a: dict[str, dict[str, str]], rows_b: dict[str, dict[str, str]], common_ids: list[str]
+) -> _AlignedLabels:
+    """Derive existence, direction and type labels (manual section 6) for matched pairs.
+
+    The single place that applies the derivation rules, shared by the kappa computation
+    and by :func:`series_axis_profiles` so both always describe the same labels.
+    """
+    labels = _AlignedLabels([], [], [], [], [], [], [])
+    for pair_id in common_ids:
+        row_a, row_b = rows_a[pair_id], rows_b[pair_id]
+        relation_a = (row_a.get("relation") or "").strip()
+        relation_b = (row_b.get("relation") or "").strip()
+        exists_a, exists_b = _existence(relation_a), _existence(relation_b)
+        labels.existence_a.append(exists_a)
+        labels.existence_b.append(exists_b)
+        labels.direction_a.append((row_a.get("direction_ok") or "").strip().lower())
+        labels.direction_b.append((row_b.get("direction_ok") or "").strip().lower())
+        if exists_a == "exists" and exists_b == "exists":
+            labels.type_ids.append(pair_id)
+            labels.type_a.append(relation_a)
+            labels.type_b.append(relation_b)
+    return labels
+
+
+def _common_rows(
+    paths: Sequence[Path],
+) -> tuple[Path, Path, dict[str, dict[str, str]], dict[str, dict[str, str]], list[str]]:
+    paths = [p for p in paths if annotator_initials(p) != ADJUDICATED_SUFFIX]
+    if len(paths) < 2:
+        raise AgreementInputError(
+            f"Need at least 2 annotator files to compute agreement, found {len(paths)}."
+        )
+    path_a, path_b = sorted(paths)[:2]
+    rows_a = _read_candidate_rows(path_a)
+    rows_b = _read_candidate_rows(path_b)
+    common_ids = sorted(set(rows_a) & set(rows_b))
+    if not common_ids:
+        raise AgreementInputError(
+            f"Annotator files {path_a.name!r} and {path_b.name!r} share no pair_id in common."
+        )
+    return path_a, path_b, rows_a, rows_b, common_ids
+
+
+@dataclass(frozen=True, slots=True)
+class AxisProfile:
+    """How an axis was used, which explains whether its kappa is defined.
+
+    Cohen's kappa divides by ``1 - expected agreement``; when both annotators use one single
+    category on every item that denominator is zero and kappa is undefined (``nan``), even
+    though raw agreement is 100%. With very few items the statistic is also unstable.
+    """
+
+    axis: str
+    n_items: int
+    percent_agreement: float | None
+    labels_a: tuple[str, ...]
+    labels_b: tuple[str, ...]
+    categories_used: int
+    kappa_defined: bool
+
+
+def series_axis_profiles(paths: Sequence[Path]) -> tuple[AxisProfile, ...]:
+    """Raw agreement and category use for the existence, type and direction axes."""
+    _, _, rows_a, rows_b, common_ids = _common_rows(paths)
+    labels = _aligned_labels(rows_a, rows_b, common_ids)
+    profiles = []
+    for axis, a, b in (
+        ("existence", labels.existence_a, labels.existence_b),
+        ("type", labels.type_a, labels.type_b),
+        ("direction", labels.direction_a, labels.direction_b),
+    ):
+        used = sorted(set(a) | set(b))
+        profiles.append(
+            AxisProfile(
+                axis=axis,
+                n_items=len(a),
+                percent_agreement=(sum(x == y for x, y in zip(a, b, strict=True)) / len(a))
+                if a
+                else None,
+                labels_a=tuple(sorted(set(a))),
+                labels_b=tuple(sorted(set(b))),
+                categories_used=len(used),
+                kappa_defined=len(used) > 1,
+            )
+        )
+    return tuple(profiles)
+
+
 def compute_series_agreement(paths: Sequence[Path]) -> SeriesAgreementResult:
     """Compute the three independent kappas (manual section 6) from annotator CSV files.
 
@@ -146,61 +252,27 @@ def compute_series_agreement(paths: Sequence[Path]) -> SeriesAgreementResult:
         AgreementInputError: fewer than two input files, or the two selected files share no
             ``pair_id`` in common.
     """
-    paths = [p for p in paths if annotator_initials(p) != ADJUDICATED_SUFFIX]
-    if len(paths) < 2:
-        raise AgreementInputError(
-            f"Need at least 2 annotator files to compute agreement, found {len(paths)}."
-        )
-
-    path_a, path_b = sorted(paths)[:2]
+    path_a, path_b, rows_a, rows_b, common_ids = _common_rows(paths)
     annotator_a = annotator_initials(path_a)
     annotator_b = annotator_initials(path_b)
-    rows_a = _read_candidate_rows(path_a)
-    rows_b = _read_candidate_rows(path_b)
 
-    common_ids = sorted(set(rows_a) & set(rows_b))
-    if not common_ids:
-        raise AgreementInputError(
-            f"Annotator files {path_a.name!r} and {path_b.name!r} share no pair_id in common."
-        )
-
-    existence_a: list[str] = []
-    existence_b: list[str] = []
-    existence_disagreements: list[str] = []
-    direction_a: list[str] = []
-    direction_b: list[str] = []
-    direction_disagreements: list[str] = []
-    type_a: list[str] = []
-    type_b: list[str] = []
-    type_disagreements: list[str] = []
-
-    for pair_id in common_ids:
-        row_a, row_b = rows_a[pair_id], rows_b[pair_id]
-        relation_a = (row_a.get("relation") or "").strip()
-        relation_b = (row_b.get("relation") or "").strip()
-        exists_a = "exists" if relation_a and relation_a != _NO_RELATION_LABEL else "no_relation"
-        exists_b = "exists" if relation_b and relation_b != _NO_RELATION_LABEL else "no_relation"
-        existence_a.append(exists_a)
-        existence_b.append(exists_b)
-        if exists_a != exists_b:
-            existence_disagreements.append(pair_id)
-
-        direction_value_a = (row_a.get("direction_ok") or "").strip().lower()
-        direction_value_b = (row_b.get("direction_ok") or "").strip().lower()
-        direction_a.append(direction_value_a)
-        direction_b.append(direction_value_b)
-        if direction_value_a != direction_value_b:
-            direction_disagreements.append(pair_id)
-
-        if exists_a == "exists" and exists_b == "exists":
-            type_a.append(relation_a)
-            type_b.append(relation_b)
-            if relation_a != relation_b:
-                type_disagreements.append(pair_id)
-
-    existence_kappa = cohen_kappa(existence_a, existence_b)
-    direction_kappa = cohen_kappa(direction_a, direction_b)
-    type_kappa = cohen_kappa(type_a, type_b) if type_a else None
+    labels = _aligned_labels(rows_a, rows_b, common_ids)
+    existence_kappa = cohen_kappa(labels.existence_a, labels.existence_b)
+    direction_kappa = cohen_kappa(labels.direction_a, labels.direction_b)
+    type_kappa = cohen_kappa(labels.type_a, labels.type_b) if labels.type_a else None
+    existence_disagreements = [
+        i
+        for i, a, b in zip(common_ids, labels.existence_a, labels.existence_b, strict=True)
+        if a != b
+    ]
+    direction_disagreements = [
+        i
+        for i, a, b in zip(common_ids, labels.direction_a, labels.direction_b, strict=True)
+        if a != b
+    ]
+    type_disagreements = [
+        i for i, a, b in zip(labels.type_ids, labels.type_a, labels.type_b, strict=True) if a != b
+    ]
 
     return SeriesAgreementResult(
         series_id=path_a.name.split(".", 1)[0],
@@ -209,7 +281,7 @@ def compute_series_agreement(paths: Sequence[Path]) -> SeriesAgreementResult:
         n_items=len(common_ids),
         existence_kappa=existence_kappa,
         existence_disagreements=tuple(existence_disagreements),
-        n_type_items=len(type_a),
+        n_type_items=len(labels.type_a),
         type_kappa=type_kappa,
         type_disagreements=tuple(type_disagreements),
         direction_kappa=direction_kappa,

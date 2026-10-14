@@ -3,7 +3,7 @@
 > **Tu papel es distinto.** No anotas ninguna fila. Generas los insumos, adjudicas los
 > desacuerdos de la doble anotación en los CSV de adjudicación, verificas que
 > ninguna etiqueta de máquina se coló en el conjunto de referencia, y cierras OE1 con el
-> notebook 04. Que quien adjudica no anote es una regla del diseño
+> notebooks 04–06. Que quien adjudica no anote es una regla del diseño
 > (`CONTRIBUTING.md` §1): si adjudicaras tus propias etiquetas, las finales quedarían
 > sesgadas hacia uno de los tres.
 
@@ -327,25 +327,33 @@ la fila lleva razón **y** la guía recibe un PR de corrección.
 
 ---
 
-## 7. Notebook 04 — el cierre de OE1
+## 7. Notebooks 04–06 — un notebook por fase de anotación
 
-`notebooks/04-jss-anotacion-oe1.ipynb` está pendiente (`notebooks/README.md`). Es el registro
-académico de la anotación humana: acuerdo, kappa, adjudicación y el conjunto de referencia
-resultante.
+Cada fase tiene su notebook, porque cada una responde una pregunta distinta con un estatus
+distinto (`notebooks/README.md`):
 
-- **El notebook no calcula** (`CONTRIBUTING.md` §7.1, `notebooks/README.md`). Toda cifra
+| Notebook | Fase | Estado |
+|---|---|---|
+| `04-jss-anotacion-f1-calibracion.ipynb` | Fase 1: calibración sobre ES2015, kappa **diagnóstico** | abierto con ES2015 |
+| `05-jss-anotacion-f2-control.ipynb` | Fase 2: cuatro series de control, kappa **reportable** | pendiente |
+| `06-jss-anotacion-f3-referencia.ipynb` | Fase 3: reparto individual y conjunto de referencia final de las 13 series | pendiente |
+
+Son el registro académico de la anotación humana: acuerdo, kappa, adjudicación y el conjunto
+de referencia resultante. El 06 es el que cierra OE1.
+
+- **Los notebooks no calculan** (`CONTRIBUTING.md` §7.1, `notebooks/README.md`). Toda cifra
   viene de una función testeada de `src/afg/`; el notebook importa, llama y explica. Si al
   escribirlo aparece una cifra que no tiene función detrás, la función se escribe primero,
   con su prueba.
-- **Va separado del 01** a propósito: el 01 contiene etiquetas puestas por una máquina con
-  fines de planificación, y el 04 contendrá el conjunto de referencia real, hecho a mano.
+- **Van separados del 01** a propósito: el 01 contiene etiquetas puestas por una máquina con
+  fines de planificación, y los 04–06 contienen el conjunto de referencia real, hecho a mano.
   Mezclarlos invitaría a citar las provisionales como si fueran la referencia.
 - **Se versiona con sus outputs y se re-ejecuta antes de entregarlo.** Un notebook con
   outputs obsoletos miente con autoridad.
 
 ```bash
-uv run jupyter nbconvert --to notebook --execute --inplace \
-  --ExecutePreprocessor.timeout=900 notebooks/04-jss-anotacion-oe1.ipynb
+uv run --group notebooks jupyter nbconvert --to notebook --execute --inplace \
+  --ExecutePreprocessor.timeout=900 notebooks/04-jss-anotacion-f1-calibracion.ipynb   # o el 05, el 06
 ```
 
 Si al escribirlo una cifra cambia respecto de lo ya publicado, hay que decir **dónde más

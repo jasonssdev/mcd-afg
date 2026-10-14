@@ -16,6 +16,7 @@ from afg.annotation.agreement import (
     AgreementInputError,
     SeriesAgreementResult,
     compute_series_agreement,
+    series_axis_profiles,
     write_agreement_csv,
 )
 
@@ -154,9 +155,7 @@ class TestComputeSeriesAgreementIndependence:
         assert result.type_kappa is None
         assert result.n_type_items == 0
 
-    def test_uses_two_lexicographically_first_files_when_more_present(
-        self, tmp_path: Path
-    ) -> None:
+    def test_uses_two_lexicographically_first_files_when_more_present(self, tmp_path: Path) -> None:
         rows = [_row("p1", "revierte", "si")]
         path_aa = _write_candidates_csv(tmp_path / "IS1004.candidates.aa.csv", rows)
         path_bb = _write_candidates_csv(tmp_path / "IS1004.candidates.bb.csv", rows)
@@ -192,3 +191,39 @@ class TestWriteAgreementCsv:
         assert by_axis["existence"]["kappa"] == "1.0"
         assert by_axis["type"]["disagreeing_pair_ids"] == "p3"
         assert by_axis["direction"]["disagreeing_pair_ids"] == "p3"
+
+
+class TestSeriesAxisProfiles:
+    """Why a kappa is (or is not) defined: category use and raw agreement per axis."""
+
+    def _paths(self, tmp_path: Path, rows_a: list, rows_b: list) -> list[Path]:
+        return [
+            _write_candidates_csv(tmp_path / "ES2015.candidates.aa.csv", rows_a),
+            _write_candidates_csv(tmp_path / "ES2015.candidates.bb.csv", rows_b),
+        ]
+
+    def test_constant_axis_has_undefined_kappa_and_full_agreement(self, tmp_path: Path) -> None:
+        rows = [_row("p1", "refina", "si"), _row("p2", "reafirma", "si")]
+        profiles = {p.axis: p for p in series_axis_profiles(self._paths(tmp_path, rows, rows))}
+        existence = profiles["existence"]
+        assert existence.n_items == 2
+        assert existence.percent_agreement == 1.0
+        assert existence.categories_used == 1
+        assert existence.kappa_defined is False
+
+    def test_type_axis_reports_partial_agreement(self, tmp_path: Path) -> None:
+        rows_a = [_row("p1", "refina", "si"), _row("p2", "reafirma", "si")]
+        rows_b = [_row("p1", "refina", "si"), _row("p2", "refina", "si")]
+        profiles = {p.axis: p for p in series_axis_profiles(self._paths(tmp_path, rows_a, rows_b))}
+        type_axis = profiles["type"]
+        assert type_axis.percent_agreement == 0.5
+        assert type_axis.labels_a == ("reafirma", "refina")
+        assert type_axis.labels_b == ("refina",)
+        assert type_axis.kappa_defined is True
+
+    def test_empty_type_axis_when_no_pair_exists(self, tmp_path: Path) -> None:
+        rows = [_row("p1", "no_relacionada", "si")]
+        profiles = {p.axis: p for p in series_axis_profiles(self._paths(tmp_path, rows, rows))}
+        assert profiles["type"].n_items == 0
+        assert profiles["type"].percent_agreement is None
+        assert profiles["type"].kappa_defined is False
