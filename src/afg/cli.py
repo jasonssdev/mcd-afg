@@ -51,8 +51,54 @@ from afg.corpus.participants import (
 )
 from afg.corpus.render import discover_meeting_ids, render_meetings
 from afg.domain.decision import Decision
-from afg.shared.config import get_settings, load_corpus_config
-from afg.shared.logging import configure_logging, get_logger
+from afg.evaluation.judge import OllamaJudgeBackend, list_installed_models, missing_models
+from afg.evaluation.judge_calibration import load_thresholds
+from afg.evaluation.judge_calibration_agreement import (
+    AGREEMENT_PATH,
+    DEFAULT_SAMPLE_SEED,
+    DEFAULT_SAMPLE_SIZE,
+    SECOND_SHEET_PATH,
+    AgreementError,
+    SecondSheetLabeledError,
+    compute_human_agreement,
+    read_label_rows,
+    save_agreement,
+    select_second_sheet_rows,
+    write_second_sheet,
+)
+from afg.evaluation.judge_calibration_checkpoint import CandidateCheckpoints, calibration_key
+from afg.evaluation.judge_calibration_generation import (
+    CALIBRATION_PATH,
+    OllamaGenerationBackend,
+    generate_calibration_set,
+)
+from afg.evaluation.judge_calibration_results import RESULTS_PATH, save_calibration_results
+from afg.evaluation.judge_calibration_runner import (
+    CandidateRun,
+    load_candidates,
+    load_think_settings,
+    run_calibration,
+    stored_excerpt_for,
+)
+from afg.evaluation.judge_calibration_set import (
+    CalibrationSetError,
+    load_calibration_items,
+    summarize_calibration_set,
+)
+from afg.evaluation.judge_calibration_worksheet import (
+    E4_BLANK_ROWS,
+    WORKSHEET_PATH,
+    WorksheetError,
+    WorksheetNotEmptyError,
+    build_worksheet_rows,
+    load_worksheet,
+    make_act_resolver,
+    validate_worksheet,
+    worksheet_questions,
+    write_worksheet,
+)
+from afg.shared.config import get_settings, load_corpus_config, load_experiments_config
+from afg.shared.logging import configure_logging, get_logger, quiet_http_logs
 from afg.shared.paths import (
     AMI_DIR,
     GOLD_DECISIONS_DIR,
@@ -78,12 +124,16 @@ app = typer.Typer(
 corpus_app = typer.Typer(help="AMI corpus download and paso-cero inventory (thesis section 5.0).")
 biblio_app = typer.Typer(help="Bibliography coverage and stats (bibliography/refs.bib).")
 gold_app = typer.Typer(help="OE1: build the gold decision/relation set (thesis section 3).")
+judge_app = typer.Typer(
+    help="Selección del modelo juez: preguntas, respuestas y calibración (issue #82)."
+)
 experiment_app = typer.Typer(help="OE2/OE3: run Experiment A / Experiment B (thesis section 3).")
 skills_app = typer.Typer(help="Install, verify and link skills under .agents/skills/.")
 
 app.add_typer(corpus_app, name="corpus")
 app.add_typer(biblio_app, name="biblio")
 app.add_typer(gold_app, name="gold")
+app.add_typer(judge_app, name="judge")
 app.add_typer(experiment_app, name="experiment")
 app.add_typer(skills_app, name="skills")
 
@@ -1198,6 +1248,339 @@ def gold_questions_init(
         "se tocan. En E4 la respuesta de referencia va vacía a propósito: ese estrato mide "
         "abstención."
     )
+
+
+# --- judge calibration (issue #82) ---------------------------------------------------------
+
+
+_CALIBRATION_SERIES = "ES2015"
+
+
+def _load_valid_worksheet_or_exit() -> list[dict[str, str]]:
+    """The worksheet rows, or a clear message and exit 1 when missing or invalid."""
+    if not WORKSHEET_PATH.exists():
+        console.print(
+            f"[bold red]No existe {_short(WORKSHEET_PATH)}.[/bold red] "
+            "Créala con `uv run afg judge calibration-init`."
+        )
+        raise typer.Exit(code=1)
+    try:
+        rows = load_worksheet(WORKSHEET_PATH)
+    except WorksheetError as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    report = validate_worksheet(rows)
+    for warning in report.warnings:
+        console.print(f"[yellow]Aviso: {warning}[/yellow]")
+    if report.errors:
+        console.print(
+            f"[bold red]{len(report.errors)} problema(s) en {_short(WORKSHEET_PATH)}:[/bold red]"
+        )
+        for error in report.errors:
+            console.print(f"  - {error}")
+        for line in report.summary_lines():
+            console.print(line)
+        raise typer.Exit(code=1)
+    return rows
+
+
+@judge_app.command("calibration-init")
+def judge_calibration_init(
+    force: bool = typer.Option(
+        False, "--force", help="Regenera aunque la hoja ya tenga celdas llenadas."
+    ),
+) -> None:
+    """Crea la hoja de preguntas de la calibración, prellenada desde ES2015.
+
+    Una fila por decisión adjudicada y por par con relación, con la evidencia ya resuelta a
+    actos de diálogo, más filas en blanco para E4. Quien escribe solo llena `usar`,
+    `stratum`, `pregunta` y `respuesta_referencia`.
+    """
+    decisions_path = GOLD_DECISIONS_DIR / f"{_CALIBRATION_SERIES}.decisions.adjudicated.csv"
+    relations_path = GOLD_RELATIONS_DIR / f"{_CALIBRATION_SERIES}.candidates.adjudicated.csv"
+    for needed in (decisions_path, relations_path):
+        if not needed.exists():
+            console.print(
+                f"[bold red]Falta {_short(needed)}: la serie no está adjudicada.[/bold red]"
+            )
+            raise typer.Exit(code=1)
+    ami_root = get_settings().ami_root or AMI_DIR
+    if not ami_root.exists():
+        console.print(
+            f"[bold red]No se encontró el corpus AMI en {ami_root}. "
+            "Ejecuta primero `uv run afg corpus download`.[/bold red]"
+        )
+        raise typer.Exit(code=1)
+    try:
+        rows = build_worksheet_rows(
+            decisions_path,
+            relations_path,
+            resolve_acts=make_act_resolver(ami_root, TRANSCRIPTS_DIR),
+        )
+        write_worksheet(WORKSHEET_PATH, rows, force=force)
+    except FileNotFoundError as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    except WorksheetNotEmptyError as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+
+    n_pairs = sum(1 for r in rows if r["origen"].startswith(f"{_CALIBRATION_SERIES}.p"))
+    n_decisions = len(rows) - n_pairs - E4_BLANK_ROWS
+    unresolved = sum(1 for r in rows if r["origen"] != "E4" and not r["reference_evidence"])
+    console.print(
+        f"Escrito {_short(WORKSHEET_PATH)}: {n_decisions} decisiones, {n_pairs} pares con "
+        f"relación y {E4_BLANK_ROWS} filas E4 en blanco."
+    )
+    console.print(
+        f"Evidencia sin resolver: {unresolved} fila(s) (ver la columna `aviso_evidencia`)."
+    )
+    console.print(
+        "Abre el archivo en una hoja de cálculo y llena solo las cuatro primeras columnas "
+        "(`usar`, `stratum`, `pregunta`, `respuesta_referencia`). Luego: "
+        "`uv run afg judge calibration-validate`."
+    )
+
+
+@judge_app.command("calibration-validate")
+def judge_calibration_validate() -> None:
+    """Revisa la selección de la hoja de preguntas y muestra cuántas hay por estrato."""
+    rows = _load_valid_worksheet_or_exit()
+    report = validate_worksheet(rows)
+    console.print("[bold green]La hoja está lista.[/bold green]")
+    for line in report.summary_lines():
+        console.print(line)
+    console.print("Siguiente paso: `uv run afg judge calibration-answers`.")
+
+
+@judge_app.command("calibration-answers")
+def judge_calibration_answers() -> None:
+    """Genera con el modelo generativo dos respuestas por cada pregunta seleccionada.
+
+    Usa Ollama (`qwen3:8b`). Las preguntas que ya tienen respuestas no se regeneran, así que
+    las etiquetas ya puestas se conservan.
+    """
+    rows = _load_valid_worksheet_or_exit()
+    quiet_http_logs()
+    try:
+        questions = worksheet_questions(rows)
+        report = generate_calibration_set(
+            WORKSHEET_PATH,
+            CALIBRATION_PATH,
+            backend=OllamaGenerationBackend(),
+            transcripts_dir=TRANSCRIPTS_DIR,
+            questions=questions,
+            on_progress=lambda done, total: console.print(f"Pregunta {done}/{total} lista."),
+        )
+    except (WorksheetError, CalibrationSetError, FileNotFoundError, ValueError) as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    except RuntimeError as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    console.print(
+        f"Se generaron {report.rows_written} respuestas para {report.questions_processed} "
+        f"preguntas ({report.questions_skipped} ya tenían respuestas y no se tocaron)."
+    )
+    console.print(
+        f"Etiqueta ahora {_short(CALIBRATION_PATH)}: llena `correct` y `evidence_supported` "
+        "con si/no en cada fila (las demás columnas no se tocan). Luego: "
+        "`uv run afg judge calibration-run`."
+    )
+
+
+@judge_app.command("calibration-run")
+def judge_calibration_run() -> None:
+    """Corre los modelos candidatos sobre el conjunto etiquetado y guarda los resultados.
+
+    Llama a cada candidato (Ollama) en ambos órdenes y con cada semilla; tarda. Los
+    resultados quedan en `reports/judge-calibration/resultados.json` y el notebook 05 los
+    lee, sin volver a calcular.
+    """
+    if not CALIBRATION_PATH.exists():
+        console.print(
+            f"[bold red]No existe {_short(CALIBRATION_PATH)}.[/bold red] "
+            "Genéralo con `uv run afg judge calibration-answers`."
+        )
+        raise typer.Exit(code=1)
+    quiet_http_logs()
+    try:
+        items = load_calibration_items(CALIBRATION_PATH)
+    except CalibrationSetError as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    summary = summarize_calibration_set(items)
+    if not summary.ready:
+        console.print(
+            f"[bold red]Faltan etiquetas: {summary.n_items - summary.n_labeled} de "
+            f"{summary.n_items} ítems sin etiquetas.[/bold red] Llena `correct` y "
+            f"`evidence_supported` (si/no) en {_short(CALIBRATION_PATH)}."
+        )
+        raise typer.Exit(code=1)
+    rebuilt = sum(1 for item in items if item.transcript_excerpt is None)
+    if rebuilt:
+        console.print(
+            f"[yellow]Aviso: {rebuilt} ítem(s) sin pasaje guardado (el archivo no tiene la "
+            "columna `pasaje_transcripcion`): el pasaje se reconstruye desde la transcripción "
+            "con la ventana actual, que puede no ser el que vio quien etiquetó.[/yellow]"
+        )
+    candidates = load_candidates()
+    try:
+        absent = missing_models(candidates, list_installed_models())
+    except (RuntimeError, ConnectionError, OSError) as exc:
+        console.print(
+            f"[bold red]No se pudo consultar los modelos instalados en Ollama: {exc}[/bold red] "
+            "Comprueba que Ollama esté corriendo."
+        )
+        raise typer.Exit(code=1) from exc
+    if absent:
+        console.print(
+            f"[bold red]Faltan {len(absent)} modelo(s) candidato(s) en Ollama; no se corrió "
+            "nada:[/bold red]"
+        )
+        for model in absent:
+            console.print(f"  - {model}: `ollama pull {model}`")
+        raise typer.Exit(code=1)
+
+    thresholds = load_thresholds()
+    think = load_think_settings()
+    generative_model = str(load_experiments_config()["shared_budget"]["generative_model"])
+    try:
+        excerpts = {
+            item.id: stored_excerpt_for(item, transcripts_dir=TRANSCRIPTS_DIR) for item in items
+        }
+    except (ValueError, FileNotFoundError) as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    checkpoints = CandidateCheckpoints(
+        RESULTS_PATH.parent / "candidatos",
+        key_for=lambda model: calibration_key(
+            items=items,
+            excerpts=excerpts,
+            thresholds=thresholds,
+            model=model,
+            generative_model=generative_model,
+            think=think.get(model),
+        ),
+    )
+
+    def report_progress(model: str, done: int, total: int) -> None:
+        step = max(total // 10, 1)
+        if done == total or done % step == 0:
+            console.print(f"  {model}: {done}/{total} llamadas")
+
+    def report_done(model: str, run: CandidateRun, reused: bool) -> None:
+        metrics = run.metrics
+        suffix = " (ya calculado, se reutiliza)" if reused else ""
+        console.print(
+            f"{model}: kappa {metrics.kappa_correct.point_estimate:.2f}, "
+            f"posición {metrics.position_consistency:.2f}, "
+            f"latencia {metrics.latency_seconds:.1f} s/llamada, "
+            f"{run.calls} llamadas, {run.failures} fallos{suffix}"
+        )
+
+    console.print(f"Corriendo {len(candidates)} candidatos sobre {summary.n_items} ítems…")
+    try:
+        result = run_calibration(
+            items,
+            candidates=candidates,
+            generative_model=generative_model,
+            backend_for=lambda model: OllamaJudgeBackend(think=think),
+            thresholds=thresholds,
+            excerpt_for=lambda item: excerpts[item.id],
+            progress=report_progress,
+            load_run=checkpoints.load,
+            save_run=checkpoints.save,
+            on_done=report_done,
+        )
+    except (ValueError, RuntimeError, FileNotFoundError) as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        console.print("Lo ya terminado quedó guardado; al repetir el comando se reanuda desde ahí.")
+        raise typer.Exit(code=1) from exc
+    save_calibration_results(RESULTS_PATH, result, n_items=summary.n_items)
+    console.print(f"Resultados guardados en {_short(RESULTS_PATH)}.")
+    console.print(
+        "Vuelve a ejecutar el notebook 05 (`uv run jupyter nbconvert --to notebook --execute "
+        "--inplace notebooks/05-jss-seleccion-juez.ipynb`) para ver la decisión."
+    )
+
+
+@judge_app.command("calibration-second-sheet")
+def judge_calibration_second_sheet(
+    n: int = typer.Option(DEFAULT_SAMPLE_SIZE, "--n", help="Ítems de la muestra."),
+    seed: int = typer.Option(DEFAULT_SAMPLE_SEED, "--seed", help="Semilla del muestreo."),
+    force: bool = typer.Option(
+        False, "--force", help="Sobrescribe aunque la hoja ya tenga etiquetas."
+    ),
+) -> None:
+    """Crea la hoja sin etiquetas para la segunda persona que etiqueta.
+
+    La muestra es determinista (ids ordenados, barajados con la semilla). Si la hoja ya tiene
+    etiquetas, no se toca salvo con `--force`.
+    """
+    if not CALIBRATION_PATH.exists():
+        console.print(f"[bold red]No existe {_short(CALIBRATION_PATH)}.[/bold red]")
+        raise typer.Exit(code=1)
+    try:
+        rows = select_second_sheet_rows(read_label_rows(CALIBRATION_PATH), n=n, seed=seed)
+        write_second_sheet(SECOND_SHEET_PATH, rows, force=force)
+    except SecondSheetLabeledError as exc:
+        console.print(
+            f"[bold red]{_short(SECOND_SHEET_PATH)} ya tiene etiquetas; no se sobrescribió "
+            "nada.[/bold red] Usa `--force` solo si se quiere descartarlas."
+        )
+        raise typer.Exit(code=1) from exc
+    except AgreementError as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    console.print(
+        f"Escrito {_short(SECOND_SHEET_PATH)} con {len(rows)} ítems sin etiquetas (semilla "
+        f"{seed}). La segunda persona llena `correct` y `evidence_supported` con si/no, sin "
+        "mirar las etiquetas de la primera ni el sufijo del `id`. Luego: "
+        "`uv run afg judge calibration-agreement`."
+    )
+
+
+@judge_app.command("calibration-agreement")
+def judge_calibration_agreement(
+    primary: str = typer.Option("jss", "--primary", help="Quien etiquetó el conjunto."),
+    second: str = typer.Option("gm", "--second", help="Quien etiquetó la muestra aparte."),
+) -> None:
+    """Calcula el acuerdo (kappa) entre las dos personas que etiquetan, por columna.
+
+    Compara la hoja de la segunda persona con el conjunto de calibración, por `id`, y guarda
+    el resultado en `reports/judge-calibration/acuerdo-humano.json` para el notebook 05.
+    """
+    for needed in (CALIBRATION_PATH, SECOND_SHEET_PATH):
+        if not needed.exists():
+            hint = (
+                " Créala con `uv run afg judge calibration-second-sheet`."
+                if needed == SECOND_SHEET_PATH
+                else ""
+            )
+            console.print(f"[bold red]No existe {_short(needed)}.[/bold red]{hint}")
+            raise typer.Exit(code=1)
+    min_kappa = load_thresholds().min_kappa_correct
+    try:
+        agreements = compute_human_agreement(
+            read_label_rows(CALIBRATION_PATH),
+            read_label_rows(SECOND_SHEET_PATH),
+            min_kappa=min_kappa,
+        )
+    except AgreementError as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    save_agreement(AGREEMENT_PATH, agreements, min_kappa=min_kappa, labelers=(primary, second))
+    console.print(f"Acuerdo {primary} vs {second} (kappa mínimo {min_kappa:.2f}):")
+    for item in agreements:
+        kappa = "indefinido" if item.kappa is None else f"{item.kappa:.3f}"
+        verdict = "[green]cumple[/green]" if item.passes else "[red]no cumple[/red]"
+        console.print(
+            f"  {item.column}: {item.n_agree}/{item.n_items} coinciden, kappa {kappa}, {verdict}"
+        )
+        if item.disagreements:
+            console.print(f"    discrepancias: {', '.join(item.disagreements)}")
+    console.print(f"Guardado en {_short(AGREEMENT_PATH)}.")
 
 
 # --- experiment (OE2/OE3) ------------------------------------------------------------------

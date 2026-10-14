@@ -335,7 +335,7 @@ la fila lleva razón **y** la guía recibe un PR de corrección.
 
 ---
 
-## 7. Notebooks 04–06 — un notebook por fase de anotación
+## 7. Notebooks de anotación — un notebook por fase
 
 Cada fase tiene su notebook, porque cada una responde una pregunta distinta con un estatus
 distinto (`notebooks/README.md`):
@@ -343,11 +343,12 @@ distinto (`notebooks/README.md`):
 | Notebook | Fase | Estado |
 |---|---|---|
 | `04-jss-anotacion-f1-calibracion.ipynb` | Fase 1: calibración sobre ES2015 y recalibración sobre TS3009, kappas **diagnósticos** | abierto con ES2015; la sección de TS3009 se añade tras su adjudicación |
-| `05-jss-anotacion-f2-control.ipynb` | Fase 2: cuatro series de control, kappa **reportable** | pendiente |
-| `06-jss-anotacion-f3-referencia.ipynb` | Fase 3: reparto individual y conjunto de referencia final de las 13 series | pendiente |
+| `NN-jss-anotacion-f2-control.ipynb` | Fase 2: cuatro series de control, kappa **reportable** | pendiente |
+| `NN-jss-anotacion-f3-referencia.ipynb` | Fase 3: reparto individual y conjunto de referencia final de las 13 series | pendiente |
 
 Son el registro académico de la anotación humana: acuerdo, kappa, adjudicación y el conjunto
-de referencia resultante. El 06 es el que cierra OE1.
+de referencia resultante. El de la Fase 3 es el que cierra OE1. Los pendientes toman el
+siguiente número libre de `notebooks/` al crearse.
 
 - **Los notebooks no calculan** (`CONTRIBUTING.md` §7.1, `notebooks/README.md`). Toda cifra
   viene de una función testeada de `src/afg/`; el notebook importa, llama y explica. Si al

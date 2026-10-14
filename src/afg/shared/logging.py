@@ -28,6 +28,12 @@ def configure_logging(level: str = "INFO") -> None:
     _CONFIGURED = True
 
 
+def quiet_http_logs() -> None:
+    """Silence the per-request INFO lines of the HTTP client used by the model backends."""
+    for name in ("httpx", "httpcore"):
+        logging.getLogger(name).setLevel(logging.WARNING)
+
+
 def get_logger(name: str) -> logging.Logger:
     """Return a module-level logger. Call :func:`configure_logging` once beforehand."""
     return logging.getLogger(name)

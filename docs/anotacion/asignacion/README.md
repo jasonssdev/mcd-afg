@@ -299,5 +299,5 @@ persona; `afg gold validate` verifica el resultado.
 | `reports/tables/<serie>.agreement.csv` | `afg gold agreement` | Tras cada serie doble |
 | `data/processed/questions/banco-preguntas.csv` | `afg gold questions-init` crea, `gm` escribe, `gv` valida | Banco de preguntas |
 | `notebooks/04-jss-anotacion-f1-calibracion.ipynb` | `jss` | Al cerrar la Fase 1 (hecho) |
-| `notebooks/05-jss-anotacion-f2-control.ipynb` | `jss` | Al cerrar la Fase 2 |
-| `notebooks/06-jss-anotacion-f3-referencia.ipynb` | `jss` | Al cerrar la Fase 3 (cierre de OE1) |
+| `notebooks/NN-jss-anotacion-f2-control.ipynb` (siguiente número libre) | `jss` | Al cerrar la Fase 2 |
+| `notebooks/NN-jss-anotacion-f3-referencia.ipynb` (siguiente número libre) | `jss` | Al cerrar la Fase 3 (cierre de OE1) |

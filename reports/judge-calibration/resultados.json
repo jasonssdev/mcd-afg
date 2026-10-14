@@ -1,0 +1,62 @@
+{
+  "n_items": 42,
+  "candidates": [
+    {
+      "model": "mistral-small3.2:24b",
+      "kappa": 0.951048951048951,
+      "kappa_lower": 0.8428927680798005,
+      "kappa_upper": 1.0,
+      "position_consistency": 0.9523809523809523,
+      "seed_consistency": 1.0,
+      "e4_accuracy": 1.0,
+      "json_valid_rate": 1.0,
+      "verbosity_flip_rate": 0.05555555555555555,
+      "latency_seconds": 5.499351320573704,
+      "evidence_kappa": 0.23357664233576647,
+      "calls": 270,
+      "failures": 0
+    },
+    {
+      "model": "atla/selene-mini:q8_0",
+      "kappa": 0.48529411764705876,
+      "kappa_lower": 0.22222222222222232,
+      "kappa_upper": 0.7381546134663342,
+      "position_consistency": 0.7380952380952381,
+      "seed_consistency": 1.0,
+      "e4_accuracy": 1.0,
+      "json_valid_rate": 1.0,
+      "verbosity_flip_rate": 0.0,
+      "latency_seconds": 3.0039571177257502,
+      "evidence_kappa": 0.043165467625899345,
+      "calls": 270,
+      "failures": 0
+    },
+    {
+      "model": "gpt-oss:20b",
+      "kappa": 0.951048951048951,
+      "kappa_lower": 0.8428927680798005,
+      "kappa_upper": 1.0,
+      "position_consistency": 0.9523809523809523,
+      "seed_consistency": 1.0,
+      "e4_accuracy": 1.0,
+      "json_valid_rate": 1.0,
+      "verbosity_flip_rate": 0.0,
+      "latency_seconds": 3.224117731355741,
+      "evidence_kappa": 0.8055555555555556,
+      "calls": 270,
+      "failures": 0
+    }
+  ],
+  "decision": {
+    "outcome": "selected",
+    "selected": "gpt-oss:20b",
+    "failures": {
+      "mistral-small3.2:24b": [],
+      "atla/selene-mini:q8_0": [
+        "kappa_correct",
+        "position_consistency"
+      ],
+      "gpt-oss:20b": []
+    }
+  }
+}

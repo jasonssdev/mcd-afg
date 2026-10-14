@@ -42,6 +42,50 @@ human_validation_fraction = 0.20      # thesis section 5.7: >=20% human validati
 [judge]
 # Thesis section 5.7: the judge model MUST be a different family than the extractor to
 # avoid self-preference bias (Panickssery et al., 2024).
-model = ""  # set via AFG_JUDGE_MODEL; left blank here so the config never silently reuses
-            # the generative model above.
+# Chosen by the calibration on ES2015 (notebook 05, reports/judge-calibration/resultados.json):
+# it meets every pre-registered threshold and is the fastest of the candidates that do. A
+# different family from the generative model (OpenAI open-weight vs Qwen).
+model = "gpt-oss:20b"
 must_differ_from_generative_model = true
+# Transcript excerpt the judge reads to decide `evidence_supported`: this many speaker turns
+# before and after the turns holding the reference dialogue acts (windows that overlap are
+# merged). AMI turns are short, so 5 turns each side is roughly one minute of talk: enough to
+# see the discussion around a decision (who proposed it, whether it was agreed) without
+# flooding the prompt. One value for every candidate, fixed before any result is seen; the
+# labelers read the same excerpt.
+evidence_window_turns = 5
+
+[judge.calibration]
+# Pre-registered acceptance thresholds for choosing the judge model. Fixed BEFORE any
+# candidate was run; do not tune them after looking at results. Read by
+# `afg.evaluation.judge_calibration`, never repeated in code.
+min_kappa_correct = 0.70             # Cohen's kappa vs human labels on `correct`; same bar as the 20% check (06-jss-metodologia)
+min_position_consistency = 0.90      # same verdict after swapping reference/answer order
+min_seed_consistency = 0.95          # same verdict across all seeds
+min_e4_accuracy = 0.80               # accuracy on the E4_unanswerable stratum
+min_json_valid_rate = 0.99           # share of outputs that parse and validate
+max_verbosity_flip_rate = 0.10       # verdict changes when a wrong answer is padded
+series = ["ES2015"]                  # the calibration set draws only from these series
+# ES2015 is annotated and adjudicated, so reading questions about it breaks no pending
+# annotation. IS1004 (annotated independently in Phase 3, issue #30) and TS3009
+# (recalibration not finished) are development series too, but exposing their content
+# before those annotations close would break annotator independence. Must stay a subset of
+# `development_series` in corpus.toml; the loader fails otherwise.
+candidates = [                       # judge models to calibrate, primary first; none is a Qwen or
+    "mistral-small3.2:24b",          # Gemma model (openkos families), see notebook 05
+    "atla/selene-mini:q8_0",
+    "gpt-oss:20b",
+]
+seeds = [42, 43, 44]                 # seeds for the self-consistency check (3 runs)
+
+[judge.calibration.think]
+# Reasoning setting sent to Ollama per candidate; a model that is not listed gets no `think`
+# parameter at all, i.e. its own default. Reasoning models (gpt-oss) otherwise think at length
+# before the JSON verdict, which would make a run of hundreds of calls impractical, so their
+# reasoning is bounded here. gpt-oss only accepts levels ("low", "medium", "high"), not
+# `false`; other models accept `true`/`false`. The same value applies to every item of that
+# candidate, and it is part of the cache key of its stored result.
+"gpt-oss:20b" = "low"
+
+# Bootstrap resamples and confidence level come from [evaluation]; the bootstrap seed from
+# [shared_budget].seed.

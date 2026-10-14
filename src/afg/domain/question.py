@@ -72,3 +72,32 @@ class Answer(BaseModel):
     abstained: bool = Field(
         default=False, description="True if the system declined to answer rather than fabricate."
     )
+
+
+def parse_reference_evidence(cell: str) -> tuple[EvidenceSpan, ...]:
+    """Parse a ``reference_evidence`` CSV cell of the question bank.
+
+    Format: ``meeting:da_id;da_id|meeting:da_id``. Spans are separated by ``|``, the
+    dialogue acts of one span by ``;``. An empty cell means no evidence (E4 questions).
+
+    Raises:
+        ValueError: if a span has no ``meeting:`` prefix, no meeting, or no dialogue act.
+    """
+    text = cell.strip()
+    if not text:
+        return ()
+    spans: list[EvidenceSpan] = []
+    for raw in text.split("|"):
+        meeting, separator, acts = raw.strip().partition(":")
+        act_ids = tuple(a.strip() for a in acts.split(";") if a.strip())
+        if not separator or not meeting.strip() or not act_ids:
+            raise ValueError(
+                f"malformed reference_evidence span {raw!r}: expected 'meeting:da_id;da_id'."
+            )
+        spans.append(EvidenceSpan(meeting_id=meeting.strip(), dialogue_act_ids=act_ids))
+    return tuple(spans)
+
+
+def format_reference_evidence(spans: tuple[EvidenceSpan, ...]) -> str:
+    """Inverse of :func:`parse_reference_evidence`."""
+    return "|".join(f"{s.meeting_id}:{';'.join(s.dialogue_act_ids)}" for s in spans)

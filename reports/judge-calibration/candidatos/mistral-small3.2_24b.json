@@ -1,0 +1,27 @@
+{
+  "model": "mistral-small3.2:24b",
+  "key": "ec596109f02effbb8802e9c4cdf62b97d71e01c065c84780b30f81a42e8e9326",
+  "metrics": {
+    "model": "mistral-small3.2:24b",
+    "kappa_correct": {
+      "point_estimate": 0.951048951048951,
+      "lower": 0.8428927680798005,
+      "upper": 1.0,
+      "confidence_level": 0.95,
+      "n_resamples": 10000
+    },
+    "position_consistency": 0.9523809523809523,
+    "seed_consistency": 1.0,
+    "e4_accuracy": 1.0,
+    "json_valid_rate": 1.0,
+    "verbosity_flip_rate": 0.05555555555555555,
+    "latency_seconds": 5.499351320573704
+  },
+  "evidence_supported": {
+    "kappa": 0.23357664233576647,
+    "accuracy": 0.6428571428571429,
+    "n": 42
+  },
+  "calls": 270,
+  "failures": 0
+}

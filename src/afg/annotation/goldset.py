@@ -325,6 +325,20 @@ def _summlinks_by_sentence(ami_root: Path, meeting_id: str) -> dict[str, list[st
     return result
 
 
+def summlink_dialogue_act_ids(ami_root: Path, meeting_id: str) -> dict[str, list[str]]:
+    """Map each decision-sentence id to the ids of the dialogue acts that support it.
+
+    The same ``summlink`` chain as :func:`build_gold_decisions`, stopped before the words are
+    rendered: the dialogue-act ids are the ones the frozen transcripts carry in
+    ``dialogue_act_ids``, so the answer can be used as ``reference_evidence``. Order is file
+    order (not chronological); callers that need transcript order sort it themselves.
+    """
+    return {
+        sentence_id: [parse_nite_href(href)[1] for href in hrefs]
+        for sentence_id, hrefs in _summlinks_by_sentence(ami_root, meeting_id).items()
+    }
+
+
 def _decision_sentences(ami_root: Path, meeting_id: str) -> list[tuple[str, str]]:
     """``(sentence_id, sentence_text)`` pairs from ``<decisions>``, in document order."""
     sentences: list[tuple[str, str]] = []

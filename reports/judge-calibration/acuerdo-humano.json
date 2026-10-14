@@ -1,0 +1,27 @@
+{
+  "min_kappa": 0.7,
+  "labelers": [
+    "jss",
+    "gm"
+  ],
+  "columns": [
+    {
+      "column": "correct",
+      "n_items": 15,
+      "n_agree": 15,
+      "kappa": 1.0,
+      "disagreements": [],
+      "passes": true
+    },
+    {
+      "column": "evidence_supported",
+      "n_items": 15,
+      "n_agree": 14,
+      "kappa": 0.8648648648648649,
+      "disagreements": [
+        "ES2015.q008.grounded"
+      ],
+      "passes": true
+    }
+  ]
+}
