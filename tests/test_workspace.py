@@ -688,6 +688,34 @@ class TestValidateProgress:
         assert all(p.decisions_filled == 0 for p in report.series)
         assert all(p.decisions_total == 2 for p in report.series)
 
+    def test_file_saved_with_a_bom_is_read_and_validated(
+        self, plan: AnnotationPlan, sources: WorkspacePaths
+    ) -> None:
+        """Excel's "CSV UTF-8" prepends a BOM; the first header must still be decision_id."""
+        _prepared(plan, sources)
+        for kind, directory in (
+            ("decisions", sources.decisions_dir),
+            ("candidates", sources.relations_dir),
+        ):
+            target = directory / f"ES2015.{kind}.gv.csv"
+            target.write_bytes(b"\xef\xbb\xbf" + target.read_bytes())
+        report = validate_annotator(plan, "gv", paths=sources, series="ES2015")
+        assert report.ok, [i.message for i in report.issues]
+        assert report.series[0].decisions_total == 2
+
+    def test_semicolon_separated_file_gets_a_clear_spanish_error(
+        self, plan: AnnotationPlan, sources: WorkspacePaths
+    ) -> None:
+        _prepared(plan, sources)
+        target = sources.decisions_dir / "ES2015.decisions.gv.csv"
+        lines = target.read_text(encoding="utf-8").splitlines()
+        header = lines[0].replace(",", ";")
+        target.write_text(header + "\n" + "\n".join(lines[1:]) + "\n", encoding="utf-8")
+        report = validate_annotator(plan, "gv", paths=sources, series="ES2015")
+        assert not report.ok
+        messages = " ".join(i.message for i in report.issues)
+        assert "separador" in messages and "`;`" in messages and "comas" in messages
+
     def test_counts_filled_rows(self, plan: AnnotationPlan, sources: WorkspacePaths) -> None:
         _prepared(plan, sources)
         _fill_decisions(sources.decisions_dir / "ES2015.decisions.gv.csv")

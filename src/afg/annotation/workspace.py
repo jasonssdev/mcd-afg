@@ -359,8 +359,12 @@ class WorkspaceFile:
 
 
 def _read_rows(path: Path) -> tuple[list[str], list[dict[str, str]]]:
-    """Read a CSV as ``(fieldnames, rows)``; missing cells normalise to ``""``."""
-    with path.open(newline="", encoding="utf-8") as handle:
+    """Read a CSV as ``(fieldnames, rows)``; missing cells normalise to ``""``.
+
+    Read as ``utf-8-sig`` so a leading BOM (Excel's "CSV UTF-8") never reaches the first
+    header. Writers stay plain ``utf-8``.
+    """
+    with path.open(newline="", encoding="utf-8-sig") as handle:
         reader = csv.DictReader(handle)
         fieldnames = list(reader.fieldnames or ())
         rows = [{name: (row.get(name) or "") for name in fieldnames} for row in reader]
@@ -936,7 +940,25 @@ def _validate_file(
             ],
         )
 
-    _, rows = _read_rows(path)
+    fieldnames, rows = _read_rows(path)
+    if len(fieldnames) == 1 and ";" in fieldnames[0]:
+        return (
+            0,
+            0,
+            [
+                ValidationIssue(
+                    path=path,
+                    row_id="-",
+                    column="-",
+                    value="",
+                    message=(
+                        f"{path.name}: el archivo parece guardado con `;` como separador. "
+                        "Guárdalo con comas (en Excel: «CSV UTF-8 (delimitado por comas)»; "
+                        "ver «Editar el CSV» en docs/anotacion/asignacion/EMPIEZA-AQUI.md)."
+                    ),
+                )
+            ],
+        )
     _, reference_rows = _read_rows(source)
     id_column = _row_id_column_for(kind)
     reference = {row[id_column]: row for row in reference_rows if row.get(id_column, "").strip()}

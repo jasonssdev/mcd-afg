@@ -6,6 +6,35 @@
 > documento dice **qué te toca y cómo lo entregas**; los criterios de etiquetado están allí y
 > solo allí.
 
+## Próximos pasos (estado al 2026-10-13)
+
+ES2015 ya está adjudicada. Lo que sigue, en este orden:
+
+1. **Sesión conjunta sobre ES2015** con `jss` y gv
+   ([`../calibracion/ES2015-sesion-conjunta.md`](../calibracion/ES2015-sesion-conjunta.md)).
+   Se habla **solo de ES2015**: no leas ni anotes TS3009 antes.
+2. **Cuando `jss` lo indique**, anotas TS3009 (recalibración):
+   ```bash
+   git switch main && git pull
+   git switch -c data/anotacion-TS3009-gm
+   uv run afg gold prepare --annotator gm
+   ```
+   Abre `data/processed/decisions/TS3009.decisions.gm.csv` (Tarea A) y luego
+   `data/processed/relations/TS3009.candidates.gm.csv` (Tarea B), en orden de reunión
+   `a → b → c → d`. Aplica la regla de oro nueva (manual §2): si `evidence_text` no alcanza,
+   lee la transcripción de **la misma reunión**. Al terminar:
+   ```bash
+   uv run afg gold validate --annotator gm --series TS3009
+   ```
+   y entrega con la convención de §9 (rama `data/anotacion-TS3009-gm`, commit
+   `data(anotacion): tareas A y B de TS3009 (gm)`, un PR). El issue de recalibración de
+   TS3009 asignado a ti (#79) sigue ese avance.
+3. **Independencia:** no abras el PR, la rama ni el CSV de Germán, ni comenten casos de
+   TS3009, hasta que `jss` anuncie la adjudicación de TS3009.
+4. **Espera la adjudicación de TS3009.** Después sigue ES2016 con la misma receta (§9).
+
+---
+
 ## Tu encargo en una frase
 
 Anotar las Tareas A y B en nueve series (223 decisiones y 71 pares candidatos) y escribir el
@@ -198,7 +227,9 @@ que se mide todo lo demás.
 | Leer la transcripción de la reunión que estás anotando | Leer reuniones posteriores a la que anotas (§4) |
 | Usar `afg gold evidence` para buscar un término | Leer series que no te tocan |
 | Leer los insumos de tus series | Comentar contenido de evaluación fuera del flujo de anotación |
-| Leer cualquier cosa de ES2015, IS1004 o TS3009 (desarrollo) | Abrir el XML del corpus (no hace falta nunca) |
+| Leer cualquier cosa de ES2015 o IS1004 (desarrollo) | Abrir el XML del corpus (no hace falta nunca) |
+
+**TS3009 es una serie que anotas tú**, aunque sea de desarrollo: no la leas antes de anotarla, más allá de lo que la propia anotación exige, ni la comentes con la otra persona hasta que `jss` anuncie su adjudicación.
 
 ---
 
@@ -231,6 +262,13 @@ Sí pueden, en cualquier momento: preguntarle a `jss` una duda de procedimiento,
 una corrección de la guía **después** de una adjudicación.
 
 En la Fase 3 no aplica: cada serie la anota una sola persona.
+
+### Sesión conjunta
+
+La excepción es la **sesión conjunta** con `jss` y Germán: solo vale para series **ya
+adjudicadas** (hoy, ES2015), porque allí las etiquetas ya no son independientes y comparar no
+daña ninguna medición. Nunca se usa para una serie que aún se anota: TS3009 queda fuera hasta
+que `jss` anuncie su adjudicación. Lo mismo vale para cada serie siguiente.
 
 ---
 
@@ -438,6 +476,11 @@ git add data/processed/decisions/ES2015.decisions.gm.csv \
 git commit -m "data(anotacion): tareas A y B de ES2015 (gm)"
 git push -u origin data/anotacion-ES2015-gm                 # sube la rama al repositorio del equipo
 ```
+
+Para TS3009 (y cada serie siguiente) es el mismo patrón con otra serie: rama
+`data/anotacion-TS3009-gm`, `validate --series TS3009`, `git add` de
+`TS3009.decisions.gm.csv` y `TS3009.candidates.gm.csv`, y mensaje de commit
+`data(anotacion): tareas A y B de TS3009 (gm)`.
 
 `origin` es el repositorio del equipo (`jasonssdev/mcd-afg`), el único remoto que hace falta.
 Esto es seguro porque `main` está protegida (`CONTRIBUTING.md` §3): con permiso de escritura

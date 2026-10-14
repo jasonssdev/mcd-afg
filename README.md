@@ -188,11 +188,13 @@ Antes de crear una rama nueva, trae los cambios que el equipo ya fusionó a `mai
 ```bash
 git checkout main                                    # vuelve a la rama main
 git pull                                              # trae los commits que ya se fusionaron
-git checkout -b data/anotacion-is1004                 # crea y cambia a una rama nueva desde main actualizado
+git checkout -b data/anotacion-<serie>-<ini>          # p. ej. data/anotacion-TS3009-gv: rama nueva desde main actualizado
 # ... trabajas ...
-uv run pytest -q && uv run ruff check . && uv run mypy src/afg
-git add -A && git commit -m "data(oe1): anotar Tarea A de IS1004"
-git push -u origin data/anotacion-is1004              # sube la rama al repositorio del equipo (origin)
+uv run afg gold validate --annotator <ini> --series <serie>   # tiene que salir sin errores
+git add data/processed/decisions/<serie>.decisions.<ini>.csv \
+        data/processed/relations/<serie>.candidates.<ini>.csv
+git commit -m "data(anotacion): tareas A y B de <serie> (<ini>)"
+git push -u origin data/anotacion-<serie>-<ini>       # sube la rama al repositorio del equipo (origin)
 ```
 
 `origin` es el repositorio del equipo, no una copia personal. Eso es seguro: `main` está
@@ -223,7 +225,7 @@ git pull
 función y mantenerla solo acumula ruido:
 
 ```bash
-git branch -d data/anotacion-is1004
+git branch -d data/anotacion-<serie>-<ini>
 ```
 
 **Si `git pull` trae conflictos**, no se resuelven a ciegas: son señal de que dos cambios

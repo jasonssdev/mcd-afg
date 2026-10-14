@@ -112,7 +112,7 @@ def annotator_csvs(directory: Path, series_id: str, kind: str) -> list[Path]:
 
 
 def _read_candidate_rows(path: Path) -> dict[str, dict[str, str]]:
-    with path.open(newline="", encoding="utf-8") as handle:
+    with path.open(newline="", encoding="utf-8-sig") as handle:
         reader = csv.DictReader(handle)
         rows: dict[str, dict[str, str]] = {}
         for row in reader:

@@ -1,5 +1,7 @@
 # Empieza aquí — anotación OE1
 
+**Estado actual: ver «Próximos pasos» en tu `tareas-<iniciales>.md`.**
+
 Para quien nunca ha abierto este repositorio y le toca anotar. Una página; si necesitas más
 detalle, cada paso enlaza adonde está.
 
@@ -51,7 +53,8 @@ ruta exacta del primer archivo que debes abrir — anótala, la usas en el paso 
 
 ## 4. Llena solo las columnas humanas
 
-Con la primera serie que te indicó `afg gold setup` (Fase 1 primero):
+Con la serie que toque según tus «Próximos pasos» en `tareas-<iniciales>.md` (el orden de las
+fases está en [`README.md`](README.md) §2):
 
 - **Tarea A** (`<serie>.decisions.<iniciales>.csv`): `status`, `decision_object`,
   `decision_content`, `notes` si hace falta.
@@ -60,6 +63,12 @@ Con la primera serie que te indicó `afg gold setup` (Fase 1 primero):
 
 `annotator` ya viene puesto. Ninguna columna de máquina se toca; los valores permitidos de
 cada columna están en tu documento personal, §2.
+
+> **Editar el CSV.** Usa VS Code o LibreOffice Calc. Excel sirve solo si guardas con
+> **«CSV UTF-8 (delimitado por comas)»**; nunca con «CSV» a secas, que rompe las tildes. El
+> separador es la **coma**, no `;`. Si `afg gold validate` falla ya en la primera columna,
+> casi seguro es la codificación o el separador: vuelve a guardar con comas y UTF-8 (un BOM
+> al inicio se acepta).
 
 ## 5. Valida antes de abrir el PR
 

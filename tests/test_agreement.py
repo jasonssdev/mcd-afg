@@ -77,6 +77,18 @@ class TestComputeSeriesAgreementInputErrors:
             compute_series_agreement([path_a, path_b])
 
 
+class TestComputeSeriesAgreementBom:
+    def test_files_saved_with_a_bom_are_read(self, tmp_path: Path) -> None:
+        paths = []
+        for ini in ("aa", "bb"):
+            path = _write_candidates_csv(
+                tmp_path / f"IS1004.candidates.{ini}.csv", [_row("p1", "revierte", "si")]
+            )
+            path.write_bytes(b"\xef\xbb\xbf" + path.read_bytes())
+            paths.append(path)
+        compute_series_agreement(paths)
+
+
 class TestComputeSeriesAgreementIndependence:
     """The core Task-D claim: existence, type, and direction are independent numbers."""
 

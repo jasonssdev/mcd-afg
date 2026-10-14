@@ -80,7 +80,8 @@ uv run afg gold build      --series <ID>   # -> data/processed/decisions/<ID>.de
 uv run afg gold candidates --series <ID>   # -> data/processed/relations/<ID>.candidates.csv
 ```
 
-No hay nada que hacer en esta fase. Si alguien vuelve a correr estos comandos sobre una
+Son comandos de mantenimiento: quien anota no los corre (solo `setup`, `prepare`, `validate`
+y `evidence`). No hay nada que hacer en esta fase. Si alguien vuelve a correr estos comandos sobre una
 serie que ya tiene archivos de anotador con trabajo cargado, `afg gold build` y `afg gold
 candidates` se niegan a regenerar la base: perder la división de una fila `compuesta` o
 desalinear las columnas de máquina que `afg gold validate` compara contra la base rompería
@@ -171,7 +172,8 @@ reparto equilibra horas totales, no filas.
 
 > **Después de cada serie de doble anotación, no al final.**
 
-Es decir: se cierra ES2015, se adjudica ES2015, y solo entonces empieza TS3009. Se cierra
+Es decir: se cierra ES2015, se adjudica ES2015, se hace la sesión conjunta de criterios sobre
+sus desacuerdos (permitida porque ES2015 ya está adjudicada) y solo entonces empieza TS3009. Se cierra
 TS3009, se adjudica TS3009, y solo entonces empieza ES2016. Se cierra
 ES2016, se adjudica ES2016, y solo entonces empieza IS1003. Y así con las seis series de
 doble anotación, en orden: **ES2015 → TS3009 → ES2016 → IS1003 → TS3005 → ES2008**.
@@ -205,8 +207,10 @@ propio procedimiento de anotación: cuanto más tarde se detecta, más caro sale
 
 Estas valen para `gv` y `gm` por igual, en las tres fases.
 
-1. **La evidencia antes que el resumen.** Se lee `evidence_text` antes de llenar nada. Si la
-   evidencia no dice lo que dice `sentence_text`, el `status` es `sin_soporte` (manual §2).
+1. **La evidencia antes que el resumen.** Se lee `evidence_text` antes de llenar nada; si no
+   alcanza para juzgar la frase, se lee la transcripción de la misma reunión (nunca de
+   reuniones posteriores). `sin_soporte` solo si la transcripción contradice la frase o no la
+   contiene (manual §2, «La regla de oro»).
 2. **`evidence_da_count = 0` es sospecha inmediata**, no un hueco menor. Se busca la
    evidencia con `uv run afg gold evidence --meeting <ID> --term <palabra>` antes de decidir.
 3. **Orden cronológico dentro de la serie: `a → b → c → d`.** Al juzgar una decisión no se
