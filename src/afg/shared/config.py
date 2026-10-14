@@ -16,7 +16,7 @@ import tomllib
 from pathlib import Path
 from typing import Any
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from afg.shared.paths import CONFIG_DIR, ENV_PATH
@@ -35,7 +35,11 @@ class Settings(BaseSettings):
     ami_root: Path | None = Field(default=None, description="Root of the extracted AMI corpus.")
     ollama_host: str = Field(default="http://localhost:11434")
     generative_model: str = Field(default="qwen3:8b")
-    judge_model: str = Field(default="")
+    judge_model: str = Field(
+        default="",
+        description="Judge model. Blank means the one pinned in ``[judge].model`` of "
+        "``config/experiments.toml``, chosen by the calibration (notebook 05).",
+    )
     embedding_model: str = Field(default="bge-m3")
     openkos_workspace: str | None = Field(default=None)
     skill_assets_dir: Path | None = Field(
@@ -44,6 +48,11 @@ class Settings(BaseSettings):
     )
     seed: int = Field(default=42)
     log_level: str = Field(default="INFO")
+
+    @field_validator("judge_model", mode="after")
+    @classmethod
+    def _default_to_configured_judge(cls, value: str) -> str:
+        return value or str(load_experiments_config()["judge"]["model"])
 
 
 def get_settings() -> Settings:
