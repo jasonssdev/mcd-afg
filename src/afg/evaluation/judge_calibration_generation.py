@@ -77,6 +77,11 @@ ABSTENTION_TEXT = "The material does not contain enough information to answer."
 """Stored as the answer text when the model abstains; questions, answers and the judge prompt
 are in English, like the question bank."""
 
+ANSWER_MAX_TOKENS = 256
+"""Cap on each generated answer. Answers are at most three sentences; without a cap, and with
+reasoning left on, a model told to answer without the evidence reasoned for minutes on a
+single question. Reasoning is switched off for the same reason (``think=False``)."""
+
 _NO_CONTEXT = "(none)"
 _THINK_BLOCK = re.compile(r"<think>.*?</think>", re.DOTALL)
 
@@ -168,7 +173,13 @@ class OllamaGenerationBackend:
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
-            options={"temperature": temperature, "seed": seed, "top_p": top_p},
+            options={
+                "temperature": temperature,
+                "seed": seed,
+                "top_p": top_p,
+                "num_predict": ANSWER_MAX_TOKENS,
+            },
+            think=False,
         )
         return str(response.message.content or "")
 

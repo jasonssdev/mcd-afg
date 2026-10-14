@@ -16,6 +16,7 @@ from afg.domain.question import QuestionStratum
 from afg.evaluation.judge_calibration_generation import (
     ABSTAIN_MARKER,
     ABSTENTION_TEXT,
+    ANSWER_MAX_TOKENS,
     QUESTIONS_TEMPLATE_PATH,
     CalibrationQuestion,
     OllamaGenerationBackend,
@@ -485,8 +486,35 @@ class TestOllamaGenerationBackend:
             "SYS", "USR", model="m", seed=3, temperature=0.1, top_p=0.9
         )
         assert out == "out" and seen["host"] == "http://h:1"
-        assert seen["options"] == {"temperature": 0.1, "seed": 3, "top_p": 0.9}
+        assert seen["options"] == {
+            "temperature": 0.1,
+            "seed": 3,
+            "top_p": 0.9,
+            "num_predict": ANSWER_MAX_TOKENS,
+        }
         assert seen["messages"][0] == {"role": "system", "content": "SYS"}
+
+    def test_reasoning_is_disabled_and_length_is_capped(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        # A model told to answer without the evidence can reason for minutes before replying;
+        # calibration answers are at most three sentences, so neither is needed.
+        seen: dict[str, Any] = {}
+
+        class FakeClient:
+            def __init__(self, host: str) -> None:
+                pass
+
+            def chat(self, **kwargs: Any) -> Any:
+                seen.update(kwargs)
+                return types.SimpleNamespace(message=types.SimpleNamespace(content="out"))
+
+        monkeypatch.setitem(sys.modules, "ollama", types.SimpleNamespace(Client=FakeClient))
+        OllamaGenerationBackend(host="http://h:1").generate(
+            "SYS", "USR", model="m", seed=3, temperature=0.1, top_p=0.9
+        )
+        assert seen["think"] is False
+        assert 0 < seen["options"]["num_predict"] <= 512
 
     def test_missing_llm_extra_gives_actionable_error(
         self, monkeypatch: pytest.MonkeyPatch
