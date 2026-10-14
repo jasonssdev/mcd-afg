@@ -45,3 +45,17 @@ human_validation_fraction = 0.20      # thesis section 5.7: >=20% human validati
 model = ""  # set via AFG_JUDGE_MODEL; left blank here so the config never silently reuses
             # the generative model above.
 must_differ_from_generative_model = true
+
+[judge.calibration]
+# Pre-registered acceptance thresholds for choosing the judge model. Fixed BEFORE any
+# candidate was run; do not tune them after looking at results. Read by
+# `afg.evaluation.judge_calibration`, never repeated in code.
+min_kappa_correct = 0.60             # Cohen's kappa vs human labels on `correct`
+min_position_consistency = 0.90      # same verdict after swapping reference/answer order
+min_seed_consistency = 0.95          # same verdict across all seeds
+min_e4_accuracy = 0.80               # accuracy on the E4_unanswerable stratum
+min_json_valid_rate = 0.99           # share of outputs that parse and validate
+max_verbosity_flip_rate = 0.10       # verdict changes when a wrong answer is padded
+seeds = [42, 43, 44]                 # seeds for the self-consistency check (3 runs)
+# Bootstrap resamples and confidence level come from [evaluation]; the bootstrap seed from
+# [shared_budget].seed.
