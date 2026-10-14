@@ -212,8 +212,7 @@ def load_native_language_records(ami_root: Path) -> list[NativeLanguageRecord]:
         root = parse_xml(resources_path)
     except NxtParseError:
         logger.warning(
-            "Corpus resources file at %s failed to parse; returning no native-language "
-            "records.",
+            "Corpus resources file at %s failed to parse; returning no native-language records.",
             resources_path,
         )
         return []

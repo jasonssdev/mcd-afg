@@ -448,9 +448,7 @@ class TestTopicDecisionBoundaryOverlap:
 @requires_corpus
 class TestBlockerSensitivity:
     def test_columns_and_dtypes(self) -> None:
-        df = blocker_sensitivity(
-            AMI_DIR, _oe1_series(), thresholds=[0.30], min_overlaps=[1, 2]
-        )
+        df = blocker_sensitivity(AMI_DIR, _oe1_series(), thresholds=[0.30], min_overlaps=[1, 2])
         _assert_columns_and_dtypes(
             df,
             {
@@ -468,9 +466,7 @@ class TestBlockerSensitivity:
         )
 
         def _cell(threshold: float, min_overlap: int) -> pd.Series:
-            row = df[
-                (df["threshold"] == threshold) & (df["min_overlap_tokens"] == min_overlap)
-            ]
+            row = df[(df["threshold"] == threshold) & (df["min_overlap_tokens"] == min_overlap)]
             assert len(row) == 1
             return row.iloc[0]
 
@@ -481,14 +477,10 @@ class TestBlockerSensitivity:
         assert int(_cell(0.30, 3)["n_candidates"]) == 29
 
     def test_turbo_button_survives_only_within_the_bounded_operating_region(self) -> None:
-        df = blocker_sensitivity(
-            AMI_DIR, ["IS1004"], thresholds=[0.30, 0.50], min_overlaps=[2, 3]
-        )
+        df = blocker_sensitivity(AMI_DIR, ["IS1004"], thresholds=[0.30, 0.50], min_overlaps=[2, 3])
 
         def _survives(threshold: float, min_overlap: int) -> bool:
-            row = df[
-                (df["threshold"] == threshold) & (df["min_overlap_tokens"] == min_overlap)
-            ]
+            row = df[(df["threshold"] == threshold) & (df["min_overlap_tokens"] == min_overlap)]
             return bool(row.iloc[0]["turbo_button_survives"])
 
         assert _survives(0.30, 2) is True

@@ -183,9 +183,7 @@ class ProportionCI:
         )
 
 
-def wilson_interval(
-    successes: int, trials: int, confidence_level: float = 0.95
-) -> ProportionCI:
+def wilson_interval(successes: int, trials: int, confidence_level: float = 0.95) -> ProportionCI:
     """Wilson score interval for a binomial proportion.
 
     Used instead of the normal (Wald) approximation because the samples this project
@@ -208,9 +206,7 @@ def wilson_interval(
     p = successes / trials
     denominator = 1.0 + z * z / trials
     centre = (p + z * z / (2 * trials)) / denominator
-    half_width = (
-        z * math.sqrt(p * (1 - p) / trials + z * z / (4 * trials * trials)) / denominator
-    )
+    half_width = z * math.sqrt(p * (1 - p) / trials + z * z / (4 * trials * trials)) / denominator
     return ProportionCI(
         successes=successes,
         trials=trials,

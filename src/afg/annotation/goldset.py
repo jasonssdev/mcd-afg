@@ -240,8 +240,7 @@ def _build_corpus_cache(ami_root: Path) -> _CorpusCache:
         f.path.name: f.path for f in discover_layer_files(ami_root, AnnotationLayer.WORDS)
     }
     dact_paths = {
-        f.path.name: f.path
-        for f in discover_layer_files(ami_root, AnnotationLayer.DIALOGUE_ACTS)
+        f.path.name: f.path for f in discover_layer_files(ami_root, AnnotationLayer.DIALOGUE_ACTS)
     }
     return _CorpusCache(words_paths_by_name=words_paths, dact_paths_by_name=dact_paths)
 
