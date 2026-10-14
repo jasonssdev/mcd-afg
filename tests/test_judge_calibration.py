@@ -29,7 +29,7 @@ def _verdict(correct: bool = True) -> JudgeVerdict:
 class TestThresholds:
     def test_loaded_from_config(self) -> None:
         t = load_thresholds()
-        assert t.min_kappa_correct == 0.60
+        assert t.min_kappa_correct == 0.70
         assert t.min_position_consistency == 0.90
         assert t.min_seed_consistency == 0.95
         assert t.min_e4_accuracy == 0.80
@@ -160,7 +160,7 @@ class TestDecision:
         t = load_thresholds()
         m = _metrics(
             "a",
-            kappa_correct=_ci(0.60, 0.5, 0.7),
+            kappa_correct=_ci(0.70, 0.6, 0.8),
             position_consistency=0.90,
             seed_consistency=0.95,
             e4_accuracy=0.80,

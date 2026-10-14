@@ -50,7 +50,7 @@ must_differ_from_generative_model = true
 # Pre-registered acceptance thresholds for choosing the judge model. Fixed BEFORE any
 # candidate was run; do not tune them after looking at results. Read by
 # `afg.evaluation.judge_calibration`, never repeated in code.
-min_kappa_correct = 0.60             # Cohen's kappa vs human labels on `correct`
+min_kappa_correct = 0.70             # Cohen's kappa vs human labels on `correct`; same bar as the 20% check (06-jss-metodologia)
 min_position_consistency = 0.90      # same verdict after swapping reference/answer order
 min_seed_consistency = 0.95          # same verdict across all seeds
 min_e4_accuracy = 0.80               # accuracy on the E4_unanswerable stratum
