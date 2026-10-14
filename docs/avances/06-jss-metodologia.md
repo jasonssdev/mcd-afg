@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 06 — Metodología |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 2.2 |
+| **Versión** | 3.0 |
 | **Fecha** | 2026-10-13 |
 | **Estado** | Vigente |
 
@@ -19,6 +19,7 @@
 | 2.0 | 2026-10-13 | Se agregan el detalle del filtro léxico y sus sesgos con su plan de medición (§2), el cálculo de los intervalos de confianza (§7–8), el criterio de éxito principal del proyecto (D16, §1), la acumulación de reuniones por serie (D15, §1) y el riesgo de C2 observado en una prueba sobre ES2015 (§7–8). | Retroalimentación del profesor sobre la metodología (AFG1/avance): faltaba el detalle del filtro y sus sesgos, el cálculo de los intervalos, las métricas de éxito y la definición de cuántas reuniones acumula cada evaluación. |
 | 2.1 | 2026-10-13 | Se actualiza el estado de la Tarea C (§2): la muestra de recall pasa de una serie (IS1004) a cuatro, IS1004 más una serie de evaluación por sitio (ES2016, IS1003, TS3005), generadas con la misma semilla y sin anotar todavía. Cambio de estado y redacción; no altera cifras ni umbrales. | Poder reportar el recall del filtro por sitio, como pide la retroalimentación del profesor sobre el sesgo del filtro. |
 | 2.2 | 2026-10-13 | La primera mención de la Tarea C en §2 dice "50 pares por serie". | La redacción de la versión 2.1 podía leerse como 50 pares en total. |
+| 3.0 | 2026-10-13 | Se agrega la calibración de la anotación y su resultado (§5–6): la calibración sobre ES2015 dio un acuerdo bajo, se corrigió la guía de anotación (leer la transcripción de la reunión cuando la evidencia enlazada no alcanza, y un criterio para decidir qué cuenta como decisión) y se agrega una recalibración sobre TS3009 antes de las series de control. TS3009 pasa a doble anotación: las series doblemente anotadas pasan de 5 a 6. El 36,4 % de doble anotación de la evaluación no cambia. | Resultado de la calibración sobre ES2015: kappa de estado 0,094 (13 de 29 filas en acuerdo); 14 de los 16 desacuerdos eran de umbral. El protocolo exige corregir la guía y volver a calibrar antes de tocar una serie de evaluación ([`../../notebooks/04-jss-anotacion-f1-calibracion.ipynb`](../../notebooks/04-jss-anotacion-f1-calibracion.ipynb)). |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -266,6 +267,24 @@ qué dirección?) y se reporta el acuerdo en cada una, porque una sola cifra ocu
 está el desacuerdo. Adjudicar es que una tercera persona, que no anotó, resuelva cada
 desacuerdo y deje escrito por qué.
 
+**Calibración antes de anotar lo que se reporta.** Antes de las series de control, las dos
+personas que anotan trabajan por separado sobre una serie de desarrollo, ES2015, que no entra
+en la evaluación. Su único fin es comprobar que ambas entienden la guía igual; su acuerdo es
+un diagnóstico y no se reporta en la tesis. El resultado fue bajo: coincidieron en 13 de 29
+decisiones (kappa de 0,094, apenas sobre el azar), y 14 de los 16 desacuerdos tenían la misma
+forma: una persona aceptaba la frase como decisión y la otra la rechazaba por falta de
+respaldo. La causa estaba en la guía, no en las personas. La guía pedía juzgar cada frase solo
+con el fragmento de diálogo que el corpus enlaza a ella, que a menudo es muy corto; quien la
+aplicó al pie de la letra rechazaba frases que la conversación completa sí respaldaba. La guía
+se corrigió en tres puntos: si ese fragmento no alcanza, se lee la transcripción de la misma
+reunión (nunca de reuniones posteriores); una frase se rechaza por falta de respaldo solo si
+la conversación la contradice o no la contiene; y se agregó un criterio para decidir cuándo
+una propuesta llegó a ser decisión. Como lo exige el protocolo, se vuelve a calibrar antes
+de tocar una serie de evaluación: las dos personas anotan otra serie de desarrollo, TS3009,
+con la guía corregida, y solo después comienzan las series de control. TS3009 sigue en el
+conjunto de referencia, ahora con doble anotación; las series doblemente anotadas pasan de
+cinco a seis, y la proporción de doble anotación sobre la evaluación (36,4 %) no cambia.
+
 ## 7–8. Análisis de errores y operación
 
 *Fase 4: dónde nace cada error, y qué significaría usar esto de verdad.*
@@ -353,6 +372,8 @@ serie de evaluación, trabajo humano todavía pendiente.
 | Wilson | Método para calcular el IC de una proporción con pocos casos; no produce límites fuera de 0 y 1. |
 | Bootstrap | Método para calcular un IC remuestreando con reemplazo los datos observados muchas veces y recalculando la métrica. |
 | Sesgo | Desviación sistemática: del filtro (pierde cierto tipo de pares), de la fuente (el corpus ya favorece a ciertos roles) o del sistema (agrega una desviación propia). |
+| Kappa | Medida de acuerdo entre dos personas que descuenta el acuerdo que se daría por azar: 1 es acuerdo total y 0 es lo mismo que el azar. |
+| Calibración | Anotación de prueba sobre una serie que no se evalúa, para comprobar que las personas entienden la guía igual antes de anotar lo que se reporta. |
 | Recall (cobertura) | De lo que realmente existe, qué proporción logra encontrar un filtro o un sistema. |
 
 ## Principios rectores
@@ -389,4 +410,5 @@ riesgo de C2; la numeración de secciones no cambia.
 | Wilson y bootstrap percentil | [`../../notebooks/01-jss-viabilidad-e3.ipynb`](../../notebooks/01-jss-viabilidad-e3.ipynb) §2; `src/afg/evaluation/metrics.py` (`wilson_interval`, `bootstrap_ci`); [`../../config/experiments.toml`](../../config/experiments.toml) |
 | Acumulación por serie (D15) y criterio de éxito (D16) | [`../decisions/README.md`](../decisions/README.md), decisiones D15 y D16 |
 | Riesgo de C2 (4 frente a 29 decisiones en ES2015) | `jasonssdev/openkos#1348`, `#1349`, `#1350`; [`../decisions/0005-adr-development-evaluation-split.md`](../decisions/0005-adr-development-evaluation-split.md); [`../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md`](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) |
+| Calibración: kappa 0,094 en ES2015, guía corregida y recalibración sobre TS3009 | [`../../notebooks/04-jss-anotacion-f1-calibracion.ipynb`](../../notebooks/04-jss-anotacion-f1-calibracion.ipynb); [`../anotacion/manual-anotacion-oe1.md`](../anotacion/manual-anotacion-oe1.md) §2 y §6; [`../anotacion/asignacion/README.md`](../anotacion/asignacion/README.md) (Fase 1) |
 | Las cuatro fases y su aporte | [`03-jss-objetivos.md`](03-jss-objetivos.md), objetivos específicos OE1–OE4 |
