@@ -114,6 +114,21 @@ copia con las columnas humanas vacías: el trabajo desaparece sin ningún error 
 `source_sentence_id` y `evidence_text`. Cada fila nueva lleva su propio
 `decision_object` / `decision_content` y su `status`.
 
+**Cuándo una frase es `compuesta`.** Cuando reúne **decisiones separables sobre objetos
+distintos**. La prueba: *¿podría una reunión posterior cambiar o revertir una parte sin tocar
+la otra?* Si sí, se divide, porque cada parte puede tener su propia relación con otras
+reuniones (el caso del turbo en §3: en `d` se elimina solo el botón turbo). Si no, es una
+sola decisión. No se dividen:
+
+- los **atributos** de un mismo objeto ("botón turbo, posiblemente en la cara inferior" es
+  una decisión: la existencia del botón; la ubicación va a `notes`);
+- la **razón** de una decisión ("goma, por comodidad" es una decisión);
+- una frase larga con un solo objeto: el criterio es la separabilidad, no la longitud.
+
+Ejemplo de calibración (ES2015): *"Casing will be interchangeable and color schemes will be
+named and colored after fruits and vegetables"* se divide en dos —carcasa intercambiable y
+nombres y colores de los esquemas— porque una puede cambiar sin la otra.
+
 **Una decisión repetida dentro de la misma reunión se anota una sola vez.** Si dos filas de
 la misma reunión describen la misma decisión (por ejemplo, una frase propia y la hija de una
 `compuesta`), conservas la fila cuya frase la enuncia de forma explícita y marcas la otra
@@ -273,6 +288,13 @@ insumo limpio que genera `afg gold candidates`, igual que en la Tarea A.
 | `revierte` | La posterior deja sin efecto la anterior |
 | `reemplaza` | La posterior sustituye la anterior por una alternativa distinta |
 | `no_relacionada` | El blocker se equivocó: no hay relación |
+
+**`reafirma` o `refina`: la pregunta es si cambió el contenido.** `refina` exige que la
+posterior cambie lo decidido: lo acota, lo precisa, le agrega un elemento o excluye opciones
+que la anterior dejaba abiertas. Si la posterior solo repite lo decidido y agrega una
+**razón** o un motivo ("plástico y goma, la goma por comodidad"), el contenido no cambió y es
+`reafirma`. Una posterior menos específica que la anterior ("plástico y goma" frente a
+"plástico recubierto de goma") también es `reafirma`.
 
 ### ⚠️ La convención de dirección — léela dos veces
 
