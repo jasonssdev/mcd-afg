@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 06 — Metodología |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 3.0 |
-| **Fecha** | 2026-10-13 |
+| **Versión** | 3.1 |
+| **Fecha** | 2026-10-14 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -20,6 +20,7 @@
 | 2.1 | 2026-10-13 | Se actualiza el estado de la Tarea C (§2): la muestra de recall pasa de una serie (IS1004) a cuatro, IS1004 más una serie de evaluación por sitio (ES2016, IS1003, TS3005), generadas con la misma semilla y sin anotar todavía. Cambio de estado y redacción; no altera cifras ni umbrales. | Poder reportar el recall del filtro por sitio, como pide la retroalimentación del profesor sobre el sesgo del filtro. |
 | 2.2 | 2026-10-13 | La primera mención de la Tarea C en §2 dice "50 pares por serie". | La redacción de la versión 2.1 podía leerse como 50 pares en total. |
 | 3.0 | 2026-10-13 | Se agrega la calibración de la anotación y su resultado (§5–6): la calibración sobre ES2015 dio un acuerdo bajo, se corrigió la guía de anotación (leer la transcripción de la reunión cuando la evidencia enlazada no alcanza, y un criterio para decidir qué cuenta como decisión) y se agrega una recalibración sobre TS3009 antes de las series de control. TS3009 pasa a doble anotación: las series doblemente anotadas pasan de 5 a 6. El 36,4 % de doble anotación de la evaluación no cambia. | Resultado de la calibración sobre ES2015: kappa de estado 0,094 (13 de 29 filas en acuerdo); 14 de los 16 desacuerdos eran de umbral. El protocolo exige corregir la guía y volver a calibrar antes de tocar una serie de evaluación ([`../../notebooks/04-jss-anotacion-f1-calibracion.ipynb`](../../notebooks/04-jss-anotacion-f1-calibracion.ipynb)). |
+| 3.1 | 2026-10-14 | Se registra la elección del juez automático (§5–6): `gpt-oss:20b`, elegido entre tres candidatos con una calibración propia sobre ES2015 y umbrales fijados antes de ver resultados. Se declara una limitación de esa calibración. No cambian cifras previas ni umbrales. | La metodología preveía un juez automático sin nombrarlo; la calibración ([`../../notebooks/05-jss-seleccion-juez.ipynb`](../../notebooks/05-jss-seleccion-juez.ipynb)) ya permite fijarlo. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -285,6 +286,35 @@ con la guía corregida, y solo después comienzan las series de control. TS3009 
 conjunto de referencia, ahora con doble anotación; las series doblemente anotadas pasan de
 cinco a seis, y la proporción de doble anotación sobre la evaluación (36,4 %) no cambia.
 
+**El juez automático, elegido con evidencia propia.** El Experimento B produce unas 900
+respuestas, demasiadas para calificarlas a mano. Las califica un juez automático: un segundo
+modelo que lee la pregunta, la respuesta de referencia, la respuesta del sistema y el pasaje de
+la transcripción donde está la evidencia, y decide si la respuesta es correcta y si cada
+afirmación está respaldada por la transcripción. Para no favorecer sus propias respuestas, el
+juez no puede ser de la familia de ningún modelo que use OpenKOS (ni Qwen ni Gemma). Ningún
+ranking público mide esta tarea, así que se eligió con una prueba propia: una persona del
+equipo escribió 21 preguntas sobre ES2015 y etiquetó a mano 42 respuestas, y cada uno de los
+tres candidatos calificó esas mismas respuestas. Los requisitos se fijaron antes de correr
+ningún candidato: acuerdo con las personas de kappa 0,70 o más, el mismo veredicto al cambiar
+el orden en que se presentan las respuestas, el mismo veredicto con distintas semillas, no
+premiar las respuestas por ser largas y reconocer cuándo la pregunta no tiene respuesta.
+
+`gpt-oss:20b` y `mistral-small3.2:24b` cumplieron todos los requisitos, con el mismo acuerdo
+(kappa 0,95); la regla fijada de antemano desempata por rapidez y `gpt-oss:20b` tarda 3,2
+segundos por respuesta frente a 5,5. `atla/selene-mini`, un modelo pequeño entrenado para evaluar, no los cumplió:
+cambiaba de veredicto según el orden de presentación. Para comprobar que las etiquetas humanas
+son confiables, una segunda persona etiquetó 15 de las respuestas por separado: coincidieron en
+15 de 15 sobre si la respuesta es correcta (kappa 1,00) y en 14 de 15 sobre si está respaldada
+(kappa 0,87).
+
+La calibración tiene una limitación que se declara: el identificador de cada respuesta dejaba
+ver cómo se había generado (con o sin la evidencia), de modo que quienes etiquetaron podían
+saberlo. El equipo decidió declararlo en lugar de volver a etiquetar; los casos en que las
+etiquetas contradicen ese identificador indican que se etiquetó por el contenido, pero el
+acuerdo podría estar algo inflado. Como protección adicional, el Experimento B mantiene la
+verificación humana sobre el 20 % de las respuestas (§1): si el acuerdo con el juez cae bajo
+0,70, el juicio automático se descarta.
+
 ## 7–8. Análisis de errores y operación
 
 *Fase 4: dónde nace cada error, y qué significaría usar esto de verdad.*
@@ -411,4 +441,5 @@ riesgo de C2; la numeración de secciones no cambia.
 | Acumulación por serie (D15) y criterio de éxito (D16) | [`../decisions/README.md`](../decisions/README.md), decisiones D15 y D16 |
 | Riesgo de C2 (4 frente a 29 decisiones en ES2015) | `jasonssdev/openkos#1348`, `#1349`, `#1350`; [`../decisions/0005-adr-development-evaluation-split.md`](../decisions/0005-adr-development-evaluation-split.md); [`../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md`](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) |
 | Calibración: kappa 0,094 en ES2015, guía corregida y recalibración sobre TS3009 | [`../../notebooks/04-jss-anotacion-f1-calibracion.ipynb`](../../notebooks/04-jss-anotacion-f1-calibracion.ipynb); [`../anotacion/manual-anotacion-oe1.md`](../anotacion/manual-anotacion-oe1.md) §2 y §6; [`../anotacion/asignacion/README.md`](../anotacion/asignacion/README.md) (Fase 1) |
+| Juez automático: `gpt-oss:20b`, kappa 0,95; acuerdo humano 1,00 y 0,87; limitación del identificador | [`../../notebooks/05-jss-seleccion-juez.ipynb`](../../notebooks/05-jss-seleccion-juez.ipynb); [`../../config/experiments.toml`](../../config/experiments.toml), sección `[judge]`; [`../anotacion/calibracion-juez.md`](../anotacion/calibracion-juez.md) |
 | Las cuatro fases y su aporte | [`03-jss-objetivos.md`](03-jss-objetivos.md), objetivos específicos OE1–OE4 |
