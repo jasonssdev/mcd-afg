@@ -16,7 +16,9 @@ revisor de la universidad pueda seguir el razonamiento sin leer el código fuent
 NN-{autor}-{nombre}.ipynb
 ```
 
-- `NN` — dos dígitos, el orden de la narrativa del proyecto.
+- `NN` — dos dígitos, correlativo: cada notebook nuevo toma el siguiente número libre al
+  crearse. No se reservan números para fases o experimentos futuros; los pendientes se listan
+  sin número.
 - `{autor}` — iniciales. `jss` = Jason Sepúlveda S.
 - `{nombre}` — tema, en minúsculas y con guiones.
 
@@ -31,13 +33,15 @@ Ejemplo: `00-jss-corpus-y-auditoria.ipynb`
 | 02 | `02-jss-transcripciones.ipynb` | Del AMI Meeting Corpus (anotación *stand-off* NXT) a transcripciones legibles y congeladas: decisiones de render, los dos artefactos por reunión, cobertura del corpus y el manifiesto verificable | ✅ |
 | 03 | `03-jss-eda.ipynb` | Análisis exploratorio de datos de AFG2 sobre las 14 series: proveniencia, calidad, faltantes, atípicos, relaciones, estructura multivariada y temporal, preguntas dirigidas e implicancias para el modelado. Solo estadísticas agregadas (ADR 0005) | ✅ |
 | 04 | `04-jss-anotacion-f1-calibracion.ipynb` | Anotación **humana**, Fase 1: calibración sobre ES2015 y recalibración sobre TS3009 (doble anotación `gm`/`gv`, adjudicación de `jss`). Acuerdo **diagnóstico**, no reportable; vacíos de la guía que reveló | ES2015 ✅; TS3009 pendiente |
-| 05 | `05-jss-anotacion-f2-control.ipynb` | Anotación humana, Fase 2: las cuatro series de control con doble anotación. El kappa **reportable** de OE1 | pendiente |
-| 06 | `06-jss-anotacion-f3-referencia.ipynb` | Anotación humana, Fase 3: reparto individual y conjunto de referencia final de las 13 series | pendiente |
-| 07 | `07-jss-experimento-a.ipynb` | OE2 — calidad de la extracción automática contra la referencia | pendiente |
-| 08 | `08-jss-experimento-b.ipynb` | OE3/OE4 — C1 vs C2 vs C3 y atribución del error a su etapa | pendiente |
+| 05 | `05-jss-seleccion-juez.ipynb` | Selección del modelo juez de §5.7: criterios tomados de la literatura, umbrales prerregistrados y calibración de los candidatos contra etiquetas humanas sobre series de desarrollo | en curso |
+| — | `NN-jss-anotacion-f2-control.ipynb` | Anotación humana, Fase 2: las cuatro series de control con doble anotación. El kappa **reportable** de OE1 | pendiente |
+| — | `NN-jss-anotacion-f3-referencia.ipynb` | Anotación humana, Fase 3: reparto individual y conjunto de referencia final de las 13 series | pendiente |
+| — | `NN-jss-experimento-a.ipynb` | OE2 — calidad de la extracción automática contra la referencia | pendiente |
+| — | `NN-jss-experimento-b.ipynb` | OE3/OE4 — C1 vs C2 vs C3 y atribución del error a su etapa | pendiente |
 
-> **Por qué 01 y 04–06 están separados.** El 01 contiene etiquetas puestas por una máquina, con
-> fines de planificación. Los 04–06 contienen la anotación real, hecha a mano, y el conjunto de
+> **Por qué el 01 y los notebooks de anotación están separados.** El 01 contiene etiquetas
+> puestas por una máquina, con fines de planificación. Los de anotación (el 04 y los de las
+> Fases 2 y 3) contienen la anotación real, hecha a mano, y el conjunto de
 > referencia resultante. Mezclarlos invitaría a que alguien cite las provisionales como si
 > fueran la referencia.
 >
