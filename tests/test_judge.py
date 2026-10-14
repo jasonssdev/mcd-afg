@@ -355,3 +355,18 @@ class TestInstalledModels:
         assert missing_models(["bge-m3"], ["bge-m3:latest"]) == []
         assert missing_models(["bge-m3:latest"], ["bge-m3"]) == []
         assert missing_models(["bge-m3:q8"], ["bge-m3:latest"]) == ["bge-m3:q8"]
+
+
+def test_configured_judge_is_the_one_selected_by_calibration() -> None:
+    """``[judge].model`` pins the model that the calibration chose (notebook 05)."""
+    from afg.evaluation.judge_calibration_results import load_calibration_results
+    from afg.shared.config import load_experiments_config
+    from afg.shared.paths import REPORTS_DIR
+
+    config = load_experiments_config()
+    stored = load_calibration_results(REPORTS_DIR / "judge-calibration" / "resultados.json")
+    assert stored.selected is not None
+    assert config["judge"]["model"] == stored.selected
+    require_distinct_model_families(
+        config["judge"]["model"], config["shared_budget"]["generative_model"]
+    )
