@@ -252,7 +252,7 @@ class AnnotationPlan:
 
     @property
     def double_annotated_series(self) -> tuple[str, ...]:
-        """Phase 1 plus phase 2: the five series that produce a kappa and an adjudication."""
+        """Phase 1 plus phase 2: the six series that produce a kappa and an adjudication."""
         return self.phase1_series + self.phase2_series
 
 

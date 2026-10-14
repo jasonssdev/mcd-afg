@@ -19,13 +19,19 @@ adjudicator = "jss"
 # kappas are reported. Both are double-annotated; phase 3 is single annotation, split
 # per person below.
 #
+# Phase 1 has TWO series. ES2015 gave a low status kappa (13/29 agree, kappa 0.094) because
+# the manual had no threshold criterion, so the guide was revised and the calibration was
+# repeated on TS3009 (a development series, no worked example in the manual, a different
+# recording site) before any control series. Its kappa is diagnostic and is not reported;
+# phase 2 waits for TS3009 to be adjudicated.
+#
 # EVERY series list in this file is in EXECUTION order, not alphabetical. `afg gold setup`
 # prints them in this order and the annotator works down that list, so the order is an
 # instruction, not a formatting choice. Phase 2 climbs 4 -> 8 -> 11 -> 14 candidate pairs:
 # the annotator meets the cheapest control series first and the costliest last. Sorting
 # these lists alphabetically hands them ES2008, the heaviest, on day one -- which is why
 # tests/test_workspace.py pins the order by volume rather than by name.
-phase1_series = ["ES2015"]
+phase1_series = ["ES2015", "TS3009"]
 phase2_series = ["ES2016", "IS1003", "TS3005", "ES2008"]
 
 [annotation.recall_sample]
@@ -60,8 +66,9 @@ role = "annotator"
 # GitHub login (sin `@`), para asignar issues/pull requests y mostrar el handle en
 # `afg gold status`.
 github = "Vega-German"
-# 120 decisions, 21 candidate pairs in phase 3. Fewer extra duties than raw counts
-# suggest: `gv` also does Tarea C and validates the >=100-question bank.
+# 120 decisions, 21 candidate pairs in phase 3 (284 decisions, 65 pairs over all three
+# phases). Fewer extra duties than raw counts suggest: `gv` also does Tarea C and validates
+# the >=100-question bank.
 phase3_series = ["IS1004", "IS1006", "IS1009", "TS3003", "ES2002"]
 
 [[annotation.annotators]]
@@ -71,10 +78,11 @@ role = "annotator"
 # GitHub login (sin `@`), para asignar issues/pull requests y mostrar el handle en
 # `afg gold status`.
 github = "gmartinezbMCD"
-# 83 decisions, 31 candidate pairs in phase 3 -- 37 decisions fewer than `gv` because
-# `gm` also writes the whole question bank (~5 min per question, >=100 questions). The
-# split balances total hours, not rows.
-phase3_series = ["TS3009", "TS3011", "IS1008", "ES2014"]
+# 59 decisions, 27 candidate pairs in phase 3 (223 decisions, 71 pairs over all three
+# phases) -- 61 decisions fewer than `gv` in phase 3 because `gm` also writes the whole
+# question bank (~5 min per question, >=100 questions). TS3009 moved from here to phase 1
+# (recalibration, annotated by both). The split balances total hours, not rows.
+phase3_series = ["TS3011", "IS1008", "ES2014"]
 
 [[annotation.annotators]]
 initials = "jss"
@@ -83,6 +91,6 @@ role = "maintainer"
 # GitHub login (sin `@`), para asignar issues/pull requests y mostrar el handle en
 # `afg gold status`.
 github = "jasonssdev"
-# Adjudicates the five double-annotated series and writes their adjudication CSVs.
+# Adjudicates the six double-annotated series and writes their adjudication CSVs.
 # Annotates nothing, by design.
 phase3_series = []

@@ -138,9 +138,22 @@ consigo misma.
 
 ### La regla de oro
 
-> **Lee `evidence_text` antes de llenar nada. Si la evidencia no dice lo que dice
-> `sentence_text`, el status es `sin_soporte` — aunque la frase suene perfectamente
-> razonable.**
+> **Lee `evidence_text` antes de llenar nada. Si no alcanza para juzgar la frase, lee la
+> transcripción de esa misma reunión. El status es `sin_soporte` solo si la transcripción
+> de la reunión contradice lo que dice `sentence_text` o no lo contiene — aunque la frase
+> suene perfectamente razonable.**
+
+`evidence_text` son solo los actos de diálogo que AMI enlazó a la frase, y a menudo es un
+fragmento corto que no dice mucho. Que la evidencia sea pobre **no** es, por sí solo, falta
+de soporte: antes de marcar `sin_soporte`, busca el pasaje completo.
+
+- **Dónde está la transcripción:** `data/interim/transcripts/<reunión>.md` (por ejemplo,
+  `ES2015d.md`). Para buscar un término dentro de ella:
+  `uv run afg gold evidence --meeting <ID> --term <palabra>`.
+- **Qué puedes leer:** lo que se dice antes y después en **la misma reunión**. Nunca
+  reuniones posteriores de la serie (regla anti-fuga, §4).
+- **Qué escribes:** en `notes`, qué encontraste en la transcripción y dónde, sobre todo si
+  marcas `sin_soporte`.
 
 El resumen abstractivo de AMI es una anotación humana, y las anotaciones humanas tienen
 errores. Todo el §1.3 de la tesis trata sobre el costo de persistir un error; eso aplica
@@ -151,6 +164,61 @@ también a los errores que vienen en el material de origen.
 **`evidence_da_count == 0` es sospecha inmediata, no un hueco menor.** Significa que los
 propios anotadores de AMI no pudieron anclar esa frase a ningún acto de diálogo. En el
 piloto, esa señal predijo exactamente la frase que resultó no tener soporte.
+
+### Criterio de umbral: ¿`decision`, `no_decision` o `sin_soporte`?
+
+> **De dónde sale este criterio.** De la calibración sobre ES2015: 14 de los 16 desacuerdos
+> entre `gm` y `gv` fueron de umbral (`gm` puso `decision` donde `gv` puso `no_decision` o
+> `sin_soporte`). El criterio concreta la guía conceptual a partir de cómo `jss` resolvió
+> esos casos al adjudicar; no la amplía. Los casos se revisan en la sesión conjunta
+> ([`calibracion/ES2015-sesion-conjunta.md`](calibracion/ES2015-sesion-conjunta.md)). Los
+> ejemplos son de ES2015, serie de desarrollo, y por eso pueden citarse.
+
+**Primero, el método.** Todo lo que sigue se juzga con la transcripción de la reunión, no
+solo con `evidence_text` (regla de oro, arriba): se lee lo que se dice **antes y después en la
+misma reunión**, nunca en reuniones posteriores. Es lo mismo que hace el ejemplo de §3 con el
+botón turbo.
+
+**(a) ¿Cuándo una propuesta cuenta como aceptada (`decision`)?** Es `decision` cuando, en la
+misma reunión, el equipo la adopta o la usa como ya resuelta, aunque la frase original sea
+tentativa:
+
+- Otro participante la **confirma o reafirma** ("el PM expone y los demás reafirman"):
+  `ES2015c.d02`, `ES2015d.d04`, `ES2015d.d05`.
+- El diálogo **posterior la cierra**: una frase que suena a sugerencia es decisión si las
+  líneas siguientes la adoptan (`ES2015b.d02`, `ES2015b.d05`).
+- Se **recuerda como ya decidida**, incluso con tono de pregunta de confirmación ("we decided
+  on kinetic, right?"): `ES2015c.d04`, `ES2015c.d05`.
+- Se enuncia **como un hecho** del producto ("we're using plastic and rubber"):
+  `ES2015d.d04`, `ES2015d.d06`. También cuando define qué producto se hace (`ES2015a.d01`).
+
+Es `no_decision` cuando lo que hay es:
+
+- Un **compromiso de investigar o una decisión que se pospone**: `ES2015b.d09` ("se pospone
+  la decisión del impacto ambiental"; la evidencia dice *"we'll have to do more research"*).
+- Una **meta o aspiración** y no una elección de diseño: `ES2015a.d03` (la meta de ganancia
+  de cincuenta millones, "es una meta financiera").
+
+**(b) ¿Cuándo la evidencia basta y la fila NO es `sin_soporte`?** `sin_soporte` es para cuando
+el pasaje **contradice** la frase o **no contiene** lo que afirma. No lo es por que la
+evidencia use otras palabras o cubra solo una parte de la frase:
+
+- La evidencia expresa lo central con otras palabras o sin nombrar todos los elementos: la
+  doble curvatura sin nombrar el control (`ES2015d.d05`), "tendremos dos colores" cuando la
+  frase añade carcasa y botones, que se tratan en la reunión (`ES2015d.d03`).
+- El detalle que falta en `evidence_text` aparece **más adelante en la reunión**
+  (`ES2015b.d06`, "más adelante se habla de los tipos de luz que podría tener").
+- La evidencia está en forma de pregunta de confirmación (`ES2015c.d04`, `ES2015c.d05`): eso
+  no es falta de soporte; el criterio de (a) decide si es decisión.
+
+`sin_soporte` se mantiene cuando el contenido de la frase **choca** con lo dicho. El caso de
+referencia es `ES2015d.d07`: la frase dice 1,20 euros y la transcripción, *"twelve twenty"*
+(12,20); ambas personas la marcaron `sin_soporte`. Mismo criterio que la regla de oro y que
+el botón turbo de §3.
+
+**Cuando dudes entre `decision` y `no_decision`, la prueba práctica:** ¿alguien en esa reunión
+trata el asunto como ya resuelto (lo confirma, lo usa, lo da por hecho)? Si sí, `decision`;
+si lo único que hay es "habrá que investigar", "se verá" o un deseo, `no_decision`.
 
 ---
 
@@ -395,6 +463,68 @@ Exigido por OE1: **mínimo 25 % de las series, anotadas de forma independiente.*
    `data/processed/decisions/IS1004.decisions.adjudicated.csv`): par, etiqueta de cada
    anotador, etiqueta final, razón.
 
+### Qué es el kappa de Cohen y cómo leerlo
+
+**Qué mide.** El kappa de Cohen (κ) mide cuánto coinciden dos personas que etiquetan los
+mismos ítems **descontando la coincidencia que se esperaría por azar**. Dos personas que
+etiquetan casi todo igual, con una categoría dominante, coinciden mucho aunque no entiendan
+la guía; el kappa corrige eso.
+
+**Fórmula.**
+
+> κ = (p_o − p_e) / (1 − p_e)
+
+- **p_o** (acuerdo observado): la fracción de ítems en que las dos personas pusieron la misma
+  etiqueta.
+- **p_e** (acuerdo esperado por azar): para cada categoría, se multiplica la fracción de
+  ítems que le dio una persona por la que le dio la otra, y se suman esos productos.
+
+**Ejemplo con números chicos.** Diez pares, eje de existencia. Las dos personas ven un
+enlace en 7 pares y ninguno en 1; en otro par `gv` ve enlace y `gm` no, y en otro `gm` ve
+enlace y `gv` no.
+
+- p_o = (7 + 1) / 10 = 0,80.
+- Cada persona vio enlace en 8 de 10 pares (0,8) y ninguno en 2 de 10 (0,2), así que
+  p_e = 0,8 × 0,8 + 0,2 × 0,2 = 0,68.
+- κ = (0,80 − 0,68) / (1 − 0,68) = 0,375.
+
+Un 80 % de coincidencia suena alto, pero con una categoría que domina el azar ya explica
+casi todo: el kappa lo dice con 0,375.
+
+**Cómo leer el valor.** κ = 1 es acuerdo perfecto, κ = 0 es lo que daría el azar y κ < 0
+es peor que el azar. Como ayuda de lectura, y solo como eso, se suelen citar las bandas de
+Landis y Koch (1977): menos de 0 pobre; 0,00–0,20 leve; 0,21–0,40 regular; 0,41–0,60
+moderado; 0,61–0,80 sustancial; 0,81–1,00 casi perfecto. **El proyecto no fija ningún
+umbral de aceptación del kappa**: se reporta tal como salga, y un kappa bajo es un hallazgo
+y no un fracaso a esconder (avance 06, tabla de umbrales operativos, fila del kappa de la
+anotación). Las bandas no sustituyen esa regla.
+
+**Cuándo no existe (`NaN`).** Si las dos personas usan **la misma categoría única** en todos
+los ítems, p_e = 1 y el denominador se anula: el kappa queda indefinido aunque el acuerdo
+crudo sea del 100 %. No es un error de cálculo y no se reemplaza por 1 ni por 0; se reporta
+como indefinido (notebook 04, §3.4). Con pocos ítems, además, el valor es muy inestable: un
+solo par que cambie lo mueve mucho.
+
+**Sobre qué filas se calcula cada eje** (`src/afg/annotation/agreement.py`, función
+`compute_series_agreement`). Los tres se calculan sobre los pares cuyo `pair_id` está en los
+dos archivos de anotador:
+
+| Eje | Etiqueta que se compara | Filas que entran |
+|---|---|---|
+| **Existencia** | `exists` si `relation` tiene valor y no es `no_relacionada`; si no, `no_relation` | Todos los pares emparejados |
+| **Tipo** | El valor de `relation` | Solo los pares donde **las dos** personas marcaron que existe un enlace. Si no hay ninguno, el kappa de tipo no se calcula |
+| **Dirección** | El valor de `direction_ok` (sin espacios, en minúsculas) | Todos los pares emparejados, también los `no_relacionada`, porque el manual pide llenar esa columna en cada fila. Una celda vacía cuenta como un valor más |
+
+**El kappa de estado de la Tarea A (solo diagnóstico).** Los tres kappas anteriores salen de
+los CSV de pares. Para la calibración de la Fase 1 existe además un kappa sobre el `status`
+de la Tarea A (`decision_agreement`, en `src/afg/annotation/calibration.py`): compara el
+`status` de cada persona en las **filas base** del CSV de adjudicación (las filas hijas de
+una `compuesta` no entran, porque cada persona puede dividir la frase de forma distinta),
+con las cinco categorías de `status` como etiquetas y la misma función de kappa. Junto con
+él se informa el acuerdo crudo y el número de filas con `acuerdo = si`, que es más estricto
+porque en las `compuesta` exige además la misma división. Es solo diagnóstico de
+calibración y no se reporta en la tesis. Un ejemplo calculado está en el notebook 04, §2.
+
 **El kappa se reporta tal como salga.** El §1.4 de la tesis existe porque dos equipos
 competentes obtuvieron kappa negativo sobre este mismo corpus. Un kappa bajo no es un
 fracaso a esconder: es el resultado que OE1 se propuso *medir* en vez de asumir.
@@ -411,7 +541,9 @@ Marca solo lo verificado. Cada ítem corresponde a algo revisable después.
 - [ ] Toda fila `compuesta` tiene sus filas hijas `-1`, `-2`, … creadas
 - [ ] Ninguna fila hija quedó con `status = compuesta`
 - [ ] **Toda fila con `evidence_da_count = 0` fue revisada contra la transcripción**
-- [ ] Toda fila `sin_soporte` explica en `notes` qué dice la evidencia
+- [ ] **Toda fila `sin_soporte` fue revisada contra la transcripción de su reunión**, no solo
+      contra `evidence_text`
+- [ ] Toda fila `sin_soporte` explica en `notes` qué dice la transcripción y dónde
 - [ ] Las `no_decision` se conservaron (no se borró ninguna fila)
 - [ ] `annotator` está en todas las filas
 

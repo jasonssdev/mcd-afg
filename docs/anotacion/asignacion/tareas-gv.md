@@ -8,7 +8,7 @@
 
 ## Tu encargo en una frase
 
-Anotar las Tareas A y B en diez series (260 decisiones y 61 pares candidatos), adjudicar la
+Anotar las Tareas A y B en once series (284 decisiones y 65 pares candidatos), adjudicar la
 muestra de recall de la Tarea C, y validar el banco de preguntas que escribe Gustavo.
 
 ## Tu día a día en tres comandos
@@ -35,17 +35,22 @@ avance, serie por serie, sin abrir un CSV.
 
 ## 1. Tus series, en orden
 
-Haz las fases en orden. No empieces la Fase 2 sin que ES2015 esté adjudicada.
+Haz las fases en orden. No empieces la Fase 2 sin que ES2015 y TS3009 estén adjudicadas.
 
-### Fase 1 — Calibración (doble anotación con `gm`)
+### Fase 1 — Calibración y recalibración (doble anotación con `gm`)
 
-| Serie | Decisiones | Candidatos |
-|---|---:|---:|
-| ES2015 | 29 | 3 |
+| Serie | Decisiones | Candidatos | Para qué |
+|---|---:|---:|---|
+| ES2015 | 29 | 3 | calibración |
+| TS3009 | 24 | 4 | recalibración |
+| **Total** | **53** | **7** | |
 
-Serie de **desarrollo**, elegida a propósito: no se quema una serie de control aprendiendo
-la guía. Este kappa es diagnóstico y no se reporta en la tesis
-([`README.md`](README.md) §2).
+Series de **desarrollo**, elegidas a propósito: no se quema una serie de control aprendiendo
+la guía. Los kappas son diagnósticos y no se reportan en la tesis
+([`README.md`](README.md) §2). ES2015 va primero. El acuerdo en ES2015 salió bajo, así que
+tras la sesión conjunta de criterios se vuelve a calibrar sobre TS3009 antes de tocar
+ninguna serie de control. **TS3009 no se empieza hasta que Jason lo indique** (después de la
+sesión conjunta y de la actualización del manual).
 
 ### Fase 2 — Series de control (doble anotación con `gm`), en este orden
 
@@ -76,7 +81,7 @@ trabajado (§3), ya está contaminada, y equivocarse ahí no cuesta nada.
 
 ### Tu carga total
 
-**260 decisiones y 61 pares candidatos** (29 + 111 + 120 y 3 + 37 + 21), más la Tarea C (200 pares: cuatro muestras de 50) y la
+**284 decisiones y 65 pares candidatos** (53 + 111 + 120 y 7 + 37 + 21), más la Tarea C (200 pares: cuatro muestras de 50) y la
 validación del banco.
 
 ---
@@ -162,7 +167,7 @@ confidence    : alta | media | baja
 > `no_relacionada` no es un valor vacío: significa *"el bloqueador se equivocó, aquí no hay
 > relación"*, y el cálculo de acuerdo lo trata exactamente así
 > (`agreement.py`, `_NO_RELATION_LABEL`). Una celda vacía y un `no_relacionada` no son lo
-> mismo. Llena las 61 filas; `afg gold validate` marca como "a medio llenar" cualquier fila
+> mismo. Llena las 65 filas; `afg gold validate` marca como "a medio llenar" cualquier fila
 > donde `relation`, `direction_ok` y `confidence` no estén las tres puestas.
 
 ---

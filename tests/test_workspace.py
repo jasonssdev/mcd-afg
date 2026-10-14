@@ -224,10 +224,11 @@ class TestLoadAnnotationPlan:
         real_plan = load_annotation_plan()
         gv = real_plan.annotator("gv")
         gm = real_plan.annotator("gm")
-        assert gv.phase1_series == ("ES2015",)
+        assert gv.phase1_series == ("ES2015", "TS3009")
         assert gv.phase2_series == ("ES2016", "IS1003", "TS3005", "ES2008")
         assert gv.phase3_series == ("IS1004", "IS1006", "IS1009", "TS3003", "ES2002")
-        assert gm.phase3_series == ("TS3009", "TS3011", "IS1008", "ES2014")
+        assert gm.phase1_series == ("ES2015", "TS3009")
+        assert gm.phase3_series == ("TS3011", "IS1008", "ES2014")
         assert real_plan.recall_sample.owner == "gv"
         assert real_plan.recall_sample.series_ids == ("IS1004", "ES2016", "IS1003", "TS3005")
         assert (real_plan.recall_sample.n, real_plan.recall_sample.seed) == (50, 42)
@@ -277,6 +278,32 @@ class TestLoadAnnotationPlan:
             "`afg gold setup` names first would no longer be the cheapest control series"
         )
 
+    def test_phase1_is_calibration_then_recalibration_in_that_order(self, tmp_path: Path) -> None:
+        """Phase 1 is ES2015 (calibration) and then TS3009 (recalibration), for both people.
+
+        The ES2015 kappa was low, so the guide was fixed and a second development series
+        was added before any evaluation series. Both annotators must meet them in that
+        order, and `expected_files` (what `afg gold setup` walks) must preserve it.
+        """
+        real_plan = load_annotation_plan()
+        assert real_plan.phase1_series == ("ES2015", "TS3009")
+        paths = WorkspacePaths(
+            decisions_dir=tmp_path / "decisions",
+            relations_dir=tmp_path / "relations",
+            questions_dir=tmp_path / "questions",
+        )
+        for initials in ("gv", "gm"):
+            person = real_plan.annotator(initials)
+            files = expected_files(real_plan, person, paths)
+            phase1_in_file_order = tuple(dict.fromkeys(f.series_id for f in files if f.phase == 1))
+            assert phase1_in_file_order == ("ES2015", "TS3009")
+            assert "TS3009" not in person.phase3_series
+
+    def test_six_series_are_double_annotated(self) -> None:
+        real_plan = load_annotation_plan()
+        assert len(real_plan.double_annotated_series) == 6
+        assert len(set(real_plan.double_annotated_series)) == 6
+
     def test_every_series_is_covered_exactly_once_across_the_team(self) -> None:
         real_plan = load_annotation_plan()
         phase3 = [s for a in real_plan.annotators for s in a.phase3_series]
@@ -293,6 +320,7 @@ class TestLoadAnnotationPlan:
     def test_phases_are_shared_by_every_annotator(self, plan: AnnotationPlan) -> None:
         assert plan.annotator("gv").phase1_series == ("ES2015",)
         assert plan.annotator("gm").phase1_series == ("ES2015",)
+        assert plan.annotator("gv").phase1_series == plan.annotator("gm").phase1_series
 
     def test_maintainer_has_no_assignments(self, plan: AnnotationPlan) -> None:
         assert plan.annotator("jss").assignments == ()
