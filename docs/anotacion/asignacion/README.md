@@ -143,7 +143,7 @@ reparto equilibra horas totales, no filas.
 |---|---:|---:|---|
 | **`gv`** | 260 | 61 | Tarea C (200 pares: 4 series × 50) + validación del banco (≥100 preguntas) |
 | **`gm`** | 223 | 71 | Escritura del banco (≥100 preguntas) |
-| **`jss`** | 0 | 0 | Adjudicación de las 5 series dobles, los CSV de adjudicación, notebook 04 |
+| **`jss`** | 0 | 0 | Adjudicación de las 5 series dobles, los CSV de adjudicación, notebooks 04–06 (uno por fase de anotación) |
 
 (260 = 29 de Fase 1 + 111 de Fase 2 + 120 de Fase 3. 223 = 29 + 111 + 83.)
 
@@ -237,7 +237,9 @@ verifica columna por columna.
 Verificado de nuevo en `src/afg/annotation/agreement.py`: `compute_series_agreement` deriva
 sus tres ejes —existencia, tipo, dirección— exclusivamente de las columnas `relation` y
 `direction_ok` de `<serie>.candidates.<iniciales>.csv`. No hay ninguna función equivalente
-para la columna `status` de la Tarea A: no existe un kappa de `status`.
+para la columna `status` de la Tarea A: no existía un kappa de `status` para reportar. Desde el notebook 04 hay uno
+(`afg.annotation.calibration.decision_agreement`), solo diagnóstico de la Fase 1, que no se
+reporta.
 
 **Consecuencia operativa:** ya no hace falta leer los dos archivos de decisiones en paralelo.
 `afg gold adjudicate` alinea la Tarea A por `decision_id` base en
@@ -273,4 +275,6 @@ persona; `afg gold validate` verifica el resultado.
 | `data/processed/decisions/<serie>.decisions.adjudicated.csv` y `data/processed/relations/<serie>.candidates.adjudicated.csv` | `afg gold adjudicate` escribe, `jss` completa | Tras cada serie doble |
 | `reports/tables/<serie>.agreement.csv` | `afg gold agreement` | Tras cada serie doble |
 | `data/processed/questions/banco-preguntas.csv` | `afg gold questions-init` crea, `gm` escribe, `gv` valida | Banco de preguntas |
-| `notebooks/04-jss-anotacion-oe1.ipynb` | `jss` | Al cerrar OE1 |
+| `notebooks/04-jss-anotacion-f1-calibracion.ipynb` | `jss` | Al cerrar la Fase 1 (hecho) |
+| `notebooks/05-jss-anotacion-f2-control.ipynb` | `jss` | Al cerrar la Fase 2 |
+| `notebooks/06-jss-anotacion-f3-referencia.ipynb` | `jss` | Al cerrar la Fase 3 (cierre de OE1) |
