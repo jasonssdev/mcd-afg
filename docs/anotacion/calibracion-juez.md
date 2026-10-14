@@ -110,14 +110,29 @@ Después llena **solo dos columnas** con `si` o `no`:
   (esas filas no traen pasaje: el material no tiene la respuesta).
 
 Se aceptan `si`, `sí`, `no`, `true`, `false`, `1` y `0`. Nada más se edita. Las etiquetas las
-pones tú, a ojo, sin preguntarle a ningún modelo; por eso el conjunto sirve de patrón. El
-archivo no dice cómo se generó cada respuesta, y las filas están **barajadas a propósito**: las
-dos respuestas de una pregunta no quedan juntas y su orden no delata cuál es la buena. Etiqueta
-cada fila por lo que dice, sin intentar adivinar de dónde viene.
+pones tú, a ojo, sin preguntarle a ningún modelo; por eso el conjunto sirve de patrón. Las
+filas están **barajadas a propósito**: las dos respuestas de una pregunta no quedan juntas y su
+orden no delata cuál es la buena. Con una salvedad: el `id` termina en `.grounded` o
+`.ungrounded`, de modo que sí revela cómo se generó la respuesta (el archivo auxiliar con la
+variante no se muestra, pero el sufijo la delata). **Ignora el sufijo del `id`** y etiqueta
+cada fila por lo que dice, sin intentar adivinar de dónde viene. Esta fuga afectó a las dos
+personas que etiquetaron y se declara como limitación en el notebook 05.
 
 Si agregas preguntas después, `calibration-answers` solo genera las nuevas y no toca las
-etiquetas que ya pusiste (las filas se vuelven a barajar, pero cada una conserva su `id`). Una segunda persona (`gm` o `gv`) etiqueta 15 ítems por separado
-para comprobar que la etiqueta humana es confiable; eso se coordina aparte (issue #82).
+etiquetas que ya pusiste (las filas se vuelven a barajar, pero cada una conserva su `id`).
+
+## Segunda etiqueta
+
+Una segunda persona (`gm` o `gv`) etiqueta 15 ítems por separado para comprobar que la etiqueta
+humana es confiable:
+
+1. `uv run afg judge calibration-second-sheet` crea la hoja sin etiquetas
+   (`calibracion-juez.segunda-etiqueta.csv`, muestra determinista con semilla 42). No
+   sobrescribe una hoja que ya tenga etiquetas.
+2. La segunda persona llena `correct` y `evidence_supported` sin ver las etiquetas de la primera.
+3. `uv run afg judge calibration-agreement` calcula el kappa por columna, lo compara con el
+   umbral de `[judge.calibration]` y guarda `reports/judge-calibration/acuerdo-humano.json`,
+   que lee el notebook 05.
 
 ## Lo que no se hace
 

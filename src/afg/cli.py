@@ -53,6 +53,19 @@ from afg.corpus.render import discover_meeting_ids, render_meetings
 from afg.domain.decision import Decision
 from afg.evaluation.judge import OllamaJudgeBackend, list_installed_models, missing_models
 from afg.evaluation.judge_calibration import load_thresholds
+from afg.evaluation.judge_calibration_agreement import (
+    AGREEMENT_PATH,
+    DEFAULT_SAMPLE_SEED,
+    DEFAULT_SAMPLE_SIZE,
+    SECOND_SHEET_PATH,
+    AgreementError,
+    SecondSheetLabeledError,
+    compute_human_agreement,
+    read_label_rows,
+    save_agreement,
+    select_second_sheet_rows,
+    write_second_sheet,
+)
 from afg.evaluation.judge_calibration_checkpoint import CandidateCheckpoints, calibration_key
 from afg.evaluation.judge_calibration_generation import (
     CALIBRATION_PATH,
@@ -1490,6 +1503,84 @@ def judge_calibration_run() -> None:
         "Vuelve a ejecutar el notebook 05 (`uv run jupyter nbconvert --to notebook --execute "
         "--inplace notebooks/05-jss-seleccion-juez.ipynb`) para ver la decisión."
     )
+
+
+@judge_app.command("calibration-second-sheet")
+def judge_calibration_second_sheet(
+    n: int = typer.Option(DEFAULT_SAMPLE_SIZE, "--n", help="Ítems de la muestra."),
+    seed: int = typer.Option(DEFAULT_SAMPLE_SEED, "--seed", help="Semilla del muestreo."),
+    force: bool = typer.Option(
+        False, "--force", help="Sobrescribe aunque la hoja ya tenga etiquetas."
+    ),
+) -> None:
+    """Crea la hoja sin etiquetas para la segunda persona que etiqueta.
+
+    La muestra es determinista (ids ordenados, barajados con la semilla). Si la hoja ya tiene
+    etiquetas, no se toca salvo con `--force`.
+    """
+    if not CALIBRATION_PATH.exists():
+        console.print(f"[bold red]No existe {_short(CALIBRATION_PATH)}.[/bold red]")
+        raise typer.Exit(code=1)
+    try:
+        rows = select_second_sheet_rows(read_label_rows(CALIBRATION_PATH), n=n, seed=seed)
+        write_second_sheet(SECOND_SHEET_PATH, rows, force=force)
+    except SecondSheetLabeledError as exc:
+        console.print(
+            f"[bold red]{_short(SECOND_SHEET_PATH)} ya tiene etiquetas; no se sobrescribió "
+            "nada.[/bold red] Usa `--force` solo si se quiere descartarlas."
+        )
+        raise typer.Exit(code=1) from exc
+    except AgreementError as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    console.print(
+        f"Escrito {_short(SECOND_SHEET_PATH)} con {len(rows)} ítems sin etiquetas (semilla "
+        f"{seed}). La segunda persona llena `correct` y `evidence_supported` con si/no, sin "
+        "mirar las etiquetas de la primera ni el sufijo del `id`. Luego: "
+        "`uv run afg judge calibration-agreement`."
+    )
+
+
+@judge_app.command("calibration-agreement")
+def judge_calibration_agreement(
+    primary: str = typer.Option("jss", "--primary", help="Quien etiquetó el conjunto."),
+    second: str = typer.Option("gm", "--second", help="Quien etiquetó la muestra aparte."),
+) -> None:
+    """Calcula el acuerdo (kappa) entre las dos personas que etiquetan, por columna.
+
+    Compara la hoja de la segunda persona con el conjunto de calibración, por `id`, y guarda
+    el resultado en `reports/judge-calibration/acuerdo-humano.json` para el notebook 05.
+    """
+    for needed in (CALIBRATION_PATH, SECOND_SHEET_PATH):
+        if not needed.exists():
+            hint = (
+                " Créala con `uv run afg judge calibration-second-sheet`."
+                if needed == SECOND_SHEET_PATH
+                else ""
+            )
+            console.print(f"[bold red]No existe {_short(needed)}.[/bold red]{hint}")
+            raise typer.Exit(code=1)
+    min_kappa = load_thresholds().min_kappa_correct
+    try:
+        agreements = compute_human_agreement(
+            read_label_rows(CALIBRATION_PATH),
+            read_label_rows(SECOND_SHEET_PATH),
+            min_kappa=min_kappa,
+        )
+    except AgreementError as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    save_agreement(AGREEMENT_PATH, agreements, min_kappa=min_kappa, labelers=(primary, second))
+    console.print(f"Acuerdo {primary} vs {second} (kappa mínimo {min_kappa:.2f}):")
+    for item in agreements:
+        kappa = "indefinido" if item.kappa is None else f"{item.kappa:.3f}"
+        verdict = "[green]cumple[/green]" if item.passes else "[red]no cumple[/red]"
+        console.print(
+            f"  {item.column}: {item.n_agree}/{item.n_items} coinciden, kappa {kappa}, {verdict}"
+        )
+        if item.disagreements:
+            console.print(f"    discrepancias: {', '.join(item.disagreements)}")
+    console.print(f"Guardado en {_short(AGREEMENT_PATH)}.")
 
 
 # --- experiment (OE2/OE3) ------------------------------------------------------------------
