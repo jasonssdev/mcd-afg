@@ -14,7 +14,9 @@ Choices fixed here:
   index, and it is the text the C1 baseline sees too.
 * ``--event-date`` is passed only when the caller knows the date of a meeting. The frozen
   transcripts do not carry it (it lives in the AMI ``meetings.xml``), so by default it is
-  left out.
+  left out; :func:`~afg.extraction.openkos.event_dates.attach_event_dates` fills it for the
+  four meetings of a series (ADR 0008) and the manifest records, per meeting, whether the
+  time is real or synthetic.
 * Generation seed of run ``r`` is ``base_seed + r``, as in the Experiment B runner.
 * Exit codes of ``openkos ingest``: 0 ok, 1 refusal (fails), 3 drift (retried once).
 """
@@ -79,11 +81,17 @@ class OpenKosRunSettings:
 
 @dataclass(frozen=True, slots=True)
 class MeetingSource:
-    """One file to ingest; ``event_date`` is ``YYYY-MM-DD[THH:MM[:SS]]`` or ``None``."""
+    """One file to ingest; ``event_date`` is ``YYYY-MM-DD[THH:MM[:SS]]`` or ``None``.
+
+    ``time_source`` says where the clock time of ``event_date`` comes from (``"ami"`` for the
+    recorded start time, ``"synthetic"`` for the order-preserving stand-in of
+    :mod:`~afg.extraction.openkos.event_dates`); ``None`` when no date is passed.
+    """
 
     meeting_id: str
     path: Path
     event_date: str | None = None
+    time_source: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -242,6 +250,15 @@ def run_series_workspace(
         },
         "meetings": [source.meeting_id for source in ordered],
         "event_dates_passed": any(s.event_date is not None for s in ordered),
+        "event_dates": [
+            {
+                "meeting_id": s.meeting_id,
+                "event_date": s.event_date,
+                "time_source": s.time_source,
+            }
+            for s in ordered
+            if s.event_date is not None
+        ],
         "failed_meeting": None,
         "error": None,
     }
