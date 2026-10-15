@@ -966,6 +966,29 @@ class TestValidateMachineColumns:
 # --- question bank ---------------------------------------------------------------------
 
 
+class TestQuestionBankAssignment:
+    def test_shipped_config_gives_e3_forty_rows_and_a_derived_total(self) -> None:
+        bank = load_annotation_plan().question_bank
+        assert bank.questions_per_stratum == 25
+        assert bank.rows_for(QuestionStratum.E1_POINT_FACT) == 25
+        assert bank.rows_for(QuestionStratum.E3_EVOLUTION) == 40
+        assert bank.total_questions == 115
+
+    def test_override_below_the_base_is_rejected(self) -> None:
+        config = copy.deepcopy(_PLAN_CONFIG)
+        config["annotation"]["question_bank"]["rows_per_stratum"] = {  # type: ignore[index]
+            "E3_evolution": 10
+        }
+        with pytest.raises(ValueError, match="E3_evolution"):
+            load_annotation_plan(config)
+
+    def test_override_of_an_unknown_stratum_is_rejected(self) -> None:
+        config = copy.deepcopy(_PLAN_CONFIG)
+        config["annotation"]["question_bank"]["rows_per_stratum"] = {"E9": 30}  # type: ignore[index]
+        with pytest.raises(ValueError, match="E9"):
+            load_annotation_plan(config)
+
+
 class TestQuestionBank:
     def test_writes_100_rows_25_per_stratum(self, paths: WorkspacePaths) -> None:
         out_path = write_question_bank_template(paths.questions_dir / "banco-preguntas.csv")
@@ -976,6 +999,40 @@ class TestQuestionBank:
         for row in rows:
             per_stratum[row["stratum"]] = per_stratum.get(row["stratum"], 0) + 1
         assert per_stratum == {stratum.value: 25 for stratum in QuestionStratum}
+
+    def test_rows_per_stratum_gives_e3_more_rows_with_global_sequential_ids(
+        self, paths: WorkspacePaths
+    ) -> None:
+        out_path = write_question_bank_template(
+            paths.questions_dir / "banco-preguntas.csv",
+            rows_per_stratum={QuestionStratum.E3_EVOLUTION: 40},
+        )
+        rows = list(csv.DictReader(out_path.open(newline="", encoding="utf-8")))
+
+        assert len(rows) == 115
+        by_stratum: dict[str, list[str]] = {}
+        for row in rows:
+            by_stratum.setdefault(row["stratum"], []).append(row["id"])
+        assert {k: len(v) for k, v in by_stratum.items()} == {
+            "E1_point_fact": 25,
+            "E2_current_state": 25,
+            "E3_evolution": 40,
+            "E4_unanswerable": 25,
+        }
+        assert by_stratum["E1_point_fact"][0] == "q001"
+        assert by_stratum["E2_current_state"][0] == "q026"
+        assert by_stratum["E3_evolution"][0] == "q051"
+        assert by_stratum["E3_evolution"][-1] == "q090"
+        assert by_stratum["E4_unanswerable"][0] == "q091"
+        assert rows[-1]["id"] == "q115"
+
+    def test_total_must_match_the_per_stratum_rows(self, paths: WorkspacePaths) -> None:
+        with pytest.raises(ValueError, match="no cuadra"):
+            write_question_bank_template(
+                paths.questions_dir / "banco-preguntas.csv",
+                total=100,
+                rows_per_stratum={QuestionStratum.E3_EVOLUTION: 40},
+            )
 
     def test_ids_are_prenumbered_and_unique(self, paths: WorkspacePaths) -> None:
         out_path = write_question_bank_template(paths.questions_dir / "banco-preguntas.csv")

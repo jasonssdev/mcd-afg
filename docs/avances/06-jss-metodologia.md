@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 06 — Metodología |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 3.5 |
+| **Versión** | 3.6 |
 | **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
@@ -25,6 +25,7 @@
 | 3.3 | 2026-10-15 | Se define la citación correcta (§1): una respuesta cuenta como bien citada cuando al menos una de sus fuentes citadas contiene alguna de las intervenciones que las personas marcaron como evidencia de la pregunta; además se informa, como cifra secundaria, qué fracción de lo citado es pertinente. Se declara el riesgo de que la regla favorezca a quien cita fragmentos grandes y el compromiso de revisarlo con los primeros datos de C2, antes de evaluar. No cambian otras cifras ni umbrales. | Análisis de la regla sobre la corrida de humo de ES2015: exigir que todas las fuentes coincidieran castigaba respuestas correctas con una cita válida más un repaso posterior ([ADR 0009](../decisions/0009-adr-regla-de-citacion-correcta.md), [notebook 09](../../notebooks/09-jss-regla-de-citacion.ipynb)). |
 | 3.4 | 2026-10-15 | Se registran cuatro decisiones del análisis del Experimento B antes de correr cualquier evaluación (§1, §5–6, §7–8). (1) Criterio D16: el criterio principal pasa a ser que el intervalo bootstrap del 95 % de la **diferencia pareada** C2 − C1 en E3 quede por encima de 0; la no superposición de los intervalos independientes, que era la redacción de la versión 2.0, se conserva como cifra de robustez. Es una enmienda de un criterio prerregistrado el 2026-10-13, hecha antes de que exista cualquier corrida de evaluación. (2) Verificación humana del juez: el veredicto es por etiqueta (la corrección decide el juicio automático de la métrica principal; el soporte de evidencia tiene su propia marca de confiable o no confiable) y siempre se informan el acuerdo observado y la prevalencia junto al kappa. (3) Un kappa indefinido sigue contando como «no cumple». (4) La muestra humana toma una corrida sorteada por pregunta y condición, con el 20 % de las respuestas juzgadas como tamaño. No cambian otros umbrales ni cifras. | El criterio D16 se probó con una simulación de potencia con datos sintéticos: con las 25 preguntas mínimas de E3 y una mejora verdadera de 15 a 20 puntos, el criterio pareado declara respaldada la hipótesis en 58 % a 80 % de los experimentos y el de no solapamiento en 10 % a 28 % (con dificultad compartida moderada entre condiciones), con falsos positivos de a lo más 4,5 % y 0,8 % ([ADR 0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md), [notebook 10](../../notebooks/10-jss-potencia-criterio-d16.ipynb)). Las otras tres decisiones se apoyan en razones de principio, expuestas en el mismo ADR. |
 | 3.5 | 2026-10-15 | Se registran dos decisiones provisionales de la puntuación del Experimento A (§1) y se declara una limitación de los intervalos. (1) Ámbito de la alineación: una decisión extraída solo puede emparejarse con una decisión de referencia cuya reunión esté entre las reuniones de origen de la extraída; la alineación sobre toda la serie se calcula aparte, como análisis de sensibilidad. (2) Rol de una decisión con evidencia de varias personas: el rol que más habló es el principal; contar la decisión en cada rol involucrado es el análisis de sensibilidad. Ambas decisiones son provisionales y se confirman o cambian con un análisis sobre la primera extracción real de una serie de desarrollo. No cambian otras cifras ni umbrales. | La decisión extraída puede reunir en un solo concepto una decisión repetida en varias reuniones, y la referencia de ES2015 tiene 9 de 27 decisiones con evidencia de más de un rol; sin extracción real no hay datos para elegir con evidencia (issue #99, bloqueado por #95). |
+| 3.6 | 2026-10-15 | Se declara que el banco admite hasta 40 preguntas de E3 (§1, umbral del estrato E3). El mínimo prerregistrado de 25 por estrato no cambia; las filas de E3 sobre ese mínimo son opcionales y quedan vacías si el material de evolución no alcanza. | Aumentar la probabilidad de detectar una mejora real más pequeña en E3: la simulación de potencia da alrededor de 57 % con 25 preguntas y 76 % con 40 para una mejora de 15 puntos ([notebook 10](../../notebooks/10-jss-potencia-criterio-d16.ipynb)); el tope lo fija el material disponible ([notebook 01](../../notebooks/01-jss-viabilidad-e3.ipynb)). |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -107,7 +108,7 @@ datos y cualquier cambio se registra en `docs/decisions/`.
 |---|---|---|
 | Concordancia del alineamiento automático con el emparejamiento manual (100 pares) | ≥ 0,80 | Se revisa la grilla de τ y se repite la validación |
 | Concordancia juez automático – humano (20 % de las respuestas, una corrida por pregunta y condición), por etiqueta | kappa ≥ 0,70 | Si falla la corrección de respuesta, se descarta el juicio automático de la métrica principal y se reporta solo la evaluación humana; si falla el soporte de evidencia, esa métrica se reporta solo con evaluación humana o marcada como no confiable |
-| Tamaño del estrato E3 | ≥ 25 preguntas | E3 se reformula como análisis de casos con reporte cualitativo |
+| Tamaño del estrato E3 | ≥ 25 preguntas (el banco admite hasta 40) | E3 se reformula como análisis de casos con reporte cualitativo |
 | Diferencia entre condiciones (criterio principal D16) | Intervalo bootstrap del 95 % de la diferencia pareada C2 − C1 por encima de 0 | No se afirma diferencia; se reporta como no concluyente |
 | Kappa de la anotación (existencia, tipo, dirección) | Sin umbral de aceptación, por diseño | Se reporta tal como salga; un kappa bajo es un hallazgo (documento 01, §3) |
 
@@ -456,6 +457,14 @@ estar la cifra real dado lo poco que se ha visto; con 11 casos, es ancho. E3 exi
 preguntas: el valor central alcanza, **la cota inferior del intervalo no**. Sigue siendo
 **plausible, no demostrado** — la resolución final requiere adjudicar a mano al menos una
 serie de evaluación, trabajo humano todavía pendiente.
+
+El mínimo de E3 sigue siendo 25, pero el banco admite hasta 40 preguntas de ese estrato: se
+escriben tantas como el material permita, para aumentar la probabilidad de detectar una mejora
+más pequeña (con 25 preguntas una mejora real de 15 puntos se detecta alrededor de 57 % de las
+veces; con 40, alrededor de 76 %, según el
+[notebook 10](../../notebooks/10-jss-potencia-criterio-d16.ipynb)). El tope lo fija el material
+de evolución disponible (~37 relaciones proyectadas, [notebook 01](../../notebooks/01-jss-viabilidad-e3.ipynb)),
+no el esfuerzo; si se queda corto de 40, se declara como limitación de potencia.
 
 ## Glosario breve
 

@@ -1,10 +1,15 @@
 """Loader and validator of the real question bank (thesis section 5.5).
 
-The bank is ``data/processed/questions/banco-preguntas.csv``: 100 rows pre-numbered
-(``q001``..``q100``) and pre-stratified, written by one person and validated by another
-(CONTRIBUTING.md section 1). While it is being written most rows are *pending*; the loader
-therefore works on partial banks: only rows validated by someone other than the author become
-:class:`~afg.domain.question.Question` objects, and the rest are reported, not loaded.
+The bank is ``data/processed/questions/banco-preguntas.csv``: 115 rows pre-numbered
+(``q001``..``q115``; E3 has room for 40 questions, the other strata for 25) and pre-stratified,
+written by one person and validated by another (CONTRIBUTING.md section 1). While it is
+being written most rows are *pending*; the loader therefore works on partial banks: only rows
+validated by someone other than the author become :class:`~afg.domain.question.Question`
+objects, and the rest are reported, not loaded.
+
+Rows beyond a stratum's minimum that are still completely blank (no text, answer, evidence,
+series or notes, and no validator) are *optional*: they are reported as unused, never block,
+and are ignored by the Experiment B loader.
 
 Validation never stops at the first problem. It returns a :class:`QuestionBankReport` with
 one :class:`QuestionBankIssue` per problem and row. Blocking errors make a bank unfit to run;
@@ -62,6 +67,7 @@ class QuestionBankReport:
 
     usable: tuple[Question, ...]
     pending_ids: tuple[str, ...]
+    optional_ids: tuple[str, ...]
     issues: tuple[QuestionBankIssue, ...]
     usable_per_stratum: dict[QuestionStratum, int]
     total_rows: int
@@ -84,6 +90,14 @@ def is_question_bank(path: Path) -> bool:
     with path.open(newline="", encoding="utf-8-sig") as handle:
         header = next(csv.reader(handle), [])
     return "text" in header and "validated_by" in header
+
+
+_HUMAN_COLUMNS = ("text", "reference_answer", "reference_evidence", "series_id", "validation_notes")
+
+
+def _is_blank(row: dict[str, str]) -> bool:
+    """Whether no human has typed anything in the row (machine columns aside)."""
+    return not any(row[column].strip() for column in _HUMAN_COLUMNS)
 
 
 def _meeting_belongs(meeting_id: str, series: str, letters: Collection[str]) -> bool:
@@ -156,6 +170,11 @@ def load_question_bank(
     The per-stratum minimum counts validated rows: a warning on a partial bank (the bank is
     still being written), a blocking error with ``require_complete``.
 
+    With a positive ``min_per_stratum``, a completely blank unvalidated row of a stratum that
+    already reached the minimum is *optional* (an unused extra row): it is listed in
+    ``optional_ids``, is neither pending nor an error, and is never loaded. Below the minimum
+    the same row stays pending (or a blocking error with ``require_complete``).
+
     Raises:
         ValueError: if the file lacks a bank column.
         FileNotFoundError: if ``path`` does not exist.
@@ -170,6 +189,7 @@ def load_question_bank(
     issues: list[QuestionBankIssue] = []
     usable: list[Question] = []
     pending: list[str] = []
+    blank_rows: list[tuple[str, str, QuestionStratum]] = []
     seen: set[str] = set()
     counts: Counter[QuestionStratum] = Counter()
 
@@ -200,6 +220,9 @@ def load_question_bank(
         is_pending = not validator
         spans: tuple[EvidenceSpan, ...] = ()
         if is_pending:
+            if min_per_stratum > 0 and stratum is not None and _is_blank(row) and not found:
+                blank_rows.append((row_id, label, stratum))
+                continue
             if require_complete:
                 found.append((Severity.ERROR, "sin validar (falta validated_by)."))
             else:
@@ -239,6 +262,16 @@ def load_question_bank(
             )
 
     per_stratum = {s: counts.get(s, 0) for s in QuestionStratum}
+    optional: list[str] = []
+    for row_id, label, row_stratum in blank_rows:
+        if per_stratum[row_stratum] >= min_per_stratum:
+            optional.append(row_id)
+        elif require_complete:
+            issues.append(
+                QuestionBankIssue(label, Severity.ERROR, "sin validar (falta validated_by).")
+            )
+        else:
+            pending.append(row_id)
     severity = Severity.ERROR if require_complete else Severity.WARNING
     for stratum_value, count in per_stratum.items():
         if count < min_per_stratum:
@@ -253,6 +286,7 @@ def load_question_bank(
     return QuestionBankReport(
         usable=tuple(usable),
         pending_ids=tuple(pending),
+        optional_ids=tuple(optional),
         issues=tuple(issues),
         usable_per_stratum=per_stratum,
         total_rows=len(rows),

@@ -1261,7 +1261,7 @@ def gold_questions_init(
         False, "--force", help="Regenera aunque el banco ya tenga preguntas escritas."
     ),
 ) -> None:
-    """Crea el banco de preguntas con 100 filas numeradas y vacías, 25 por estrato.
+    """Crea el banco de preguntas con filas numeradas y vacías: 25 por estrato, 40 en E3.
 
     Quien escribe el banco llena texto en filas que ya existen: nunca inventa un id ni
     escribe un estrato, que es lo que hacía que un estrato corto se descubriera contando
@@ -1277,6 +1277,7 @@ def gold_questions_init(
             out_path,
             total=bank.total_questions,
             per_stratum=bank.questions_per_stratum,
+            rows_per_stratum={s: bank.rows_for(s) for s in QuestionStratum},
             author=bank.author,
             force=force,
         )
@@ -1286,7 +1287,13 @@ def gold_questions_init(
 
     console.print(
         f"Escrito {_short(out_path)}: {bank.total_questions} filas, "
-        f"{bank.questions_per_stratum} por estrato (E1, E2, E3, E4)."
+        f"{bank.questions_per_stratum} por estrato (E1, E2, E3, E4), salvo "
+        + ", ".join(
+            f"{s.value} con {bank.rows_for(s)}"
+            for s in QuestionStratum
+            if bank.rows_for(s) != bank.questions_per_stratum
+        )
+        + ". Las filas de más sobre el mínimo pueden quedar vacías."
     )
     console.print(
         f"Escribe `{bank.author}`, valida `{bank.validator}`. Llena `series_id`, `text`, "
@@ -1300,7 +1307,8 @@ def _print_question_bank_report(report: QuestionBankReport) -> None:
     """Counts per stratum, then every error and warning, one line each."""
     console.print(
         f"{report.total_rows} filas: {len(report.usable)} validada(s) y sin errores, "
-        f"{len(report.pending_ids)} pendiente(s)."
+        f"{len(report.pending_ids)} pendiente(s), {len(report.optional_ids)} opcional(es) "
+        "sin usar (filas vacías sobre el mínimo del estrato)."
     )
     for stratum, count in report.usable_per_stratum.items():
         console.print(f"  {stratum.value}: {count} validada(s)")
@@ -1320,7 +1328,10 @@ def gold_questions_check(
         bool,
         typer.Option(
             "--complete",
-            help="Exige las 100 filas validadas y el mínimo por estrato (cierre del banco).",
+            help=(
+                "Exige el mínimo validado por estrato y ninguna fila escrita sin validar; "
+                "las filas vacías sobre el mínimo son opcionales (cierre del banco)."
+            ),
         ),
     ] = False,
 ) -> None:

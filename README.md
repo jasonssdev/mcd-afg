@@ -300,8 +300,8 @@ uv run afg gold agreement --series IS1004          # kappa: existencia / tipo / 
 uv run afg gold validate --annotator <iniciales>   # verifica tu trabajo antes de abrir el PR
 uv run afg gold status                             # panel del mantenedor: una fila por anotador y serie
 uv run afg gold adjudicate --series ES2015         # escribe los dos CSV de adjudicación (prellenados donde hay acuerdo)
-uv run afg gold questions-init                     # crea el banco de 100 preguntas, vacío, 25 por estrato
-uv run afg gold questions-check                   # revisa el banco de preguntas fila por fila, sin correr nada (--complete exige las 100 validadas)
+uv run afg gold questions-init                     # crea el banco vacío: 25 filas por estrato y 40 en E3 (115 en total)
+uv run afg gold questions-check                   # revisa el banco de preguntas fila por fila, sin correr nada (--complete exige el mínimo validado por estrato)
 uv run afg gold link                               # sin implementar: sale con código 2 y explica qué falta
 
 uv run afg skills sync-assets deck-uc   # copia los assets UC desde la carpeta compartida y verifica su SHA-256

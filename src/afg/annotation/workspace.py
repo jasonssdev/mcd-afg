@@ -44,7 +44,7 @@ from __future__ import annotations
 
 import csv
 from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
 from typing import Any
@@ -218,8 +218,17 @@ class QuestionBankAssignment:
 
     author: str
     validator: str
-    total_questions: int
     questions_per_stratum: int
+    rows_per_stratum: Mapping[str, int] = field(default_factory=dict)
+
+    def rows_for(self, stratum: QuestionStratum) -> int:
+        """Rows the bank holds for ``stratum``: the base, or its override."""
+        return int(self.rows_per_stratum.get(stratum.value, self.questions_per_stratum))
+
+    @property
+    def total_questions(self) -> int:
+        """Rows in the whole bank, derived from the per-stratum counts."""
+        return sum(self.rows_for(stratum) for stratum in QuestionStratum)
 
 
 @dataclass(frozen=True, slots=True)
@@ -289,6 +298,17 @@ def load_annotation_plan(raw: Mapping[str, Any] | None = None) -> AnnotationPlan
     # a bare string is the original single-series form; a list covers several series
     recall_series_ids = (recall_series,) if isinstance(recall_series, str) else tuple(recall_series)
     bank = section["question_bank"]
+    base_rows = int(bank["questions_per_stratum"])
+    overrides = {str(k): int(v) for k, v in dict(bank.get("rows_per_stratum", {})).items()}
+    known = {stratum.value for stratum in QuestionStratum}
+    for name, rows in overrides.items():
+        if name not in known:
+            raise ValueError(f"rows_per_stratum: estrato desconocido {name!r}.")
+        if rows < base_rows:
+            raise ValueError(
+                f"rows_per_stratum: {name} tiene {rows} filas, menos que las "
+                f"{base_rows} por estrato del mínimo."
+            )
     return AnnotationPlan(
         annotators=tuple(annotators),
         adjudicator=section["adjudicator"],
@@ -303,8 +323,8 @@ def load_annotation_plan(raw: Mapping[str, Any] | None = None) -> AnnotationPlan
         question_bank=QuestionBankAssignment(
             author=bank["author"],
             validator=bank["validator"],
-            total_questions=int(bank["total_questions"]),
-            questions_per_stratum=int(bank["questions_per_stratum"]),
+            questions_per_stratum=base_rows,
+            rows_per_stratum=overrides,
         ),
     )
 
@@ -1071,17 +1091,21 @@ def question_bank_is_empty(path: Path) -> bool:
 def write_question_bank_template(
     out_path: Path,
     *,
-    total: int = 100,
+    total: int | None = None,
     per_stratum: int = 25,
+    rows_per_stratum: Mapping[QuestionStratum, int] | None = None,
     author: str = "",
     force: bool = False,
 ) -> Path:
     """Write the question bank pre-numbered and pre-stratified, with every text empty.
 
-    ``total`` rows, ``per_stratum`` of each :class:`~afg.domain.question.QuestionStratum`,
-    in thesis-table order (E1, E2, E3, E4). The author types question text into rows that
-    already exist; he never invents an id and never types a stratum, which is what used to
-    make an under-filled stratum discoverable only by counting at the end.
+    ``per_stratum`` rows for each :class:`~afg.domain.question.QuestionStratum`, in
+    thesis-table order (E1, E2, E3, E4), except the strata named in ``rows_per_stratum``,
+    which get that many (E3 gets room for 40 questions; only the 25 minimum are required).
+    ``total``, when given, must equal the sum of the per-stratum rows. The author types
+    question text into rows that already exist; he never invents an id and never types a
+    stratum, which is what used to make an under-filled stratum discoverable only by
+    counting at the end.
 
     ``id`` is ``q001``..``q<total>`` and carries NO series prefix, unlike the worked
     examples in ``_plantilla-banco-preguntas.csv`` (``ES2015.q001``). The series is not
@@ -1092,13 +1116,15 @@ def write_question_bank_template(
     Raises:
         QuestionBankNotEmptyError: the bank already holds written questions and ``force``
             is not set.
-        ValueError: ``total`` is not ``per_stratum`` times the number of strata.
+        ValueError: ``total`` is not the sum of the per-stratum rows.
     """
-    expected_total = per_stratum * len(QuestionStratum)
-    if total != expected_total:
+    overrides = rows_per_stratum or {}
+    counts = {stratum: overrides.get(stratum, per_stratum) for stratum in QuestionStratum}
+    expected_total = sum(counts.values())
+    if total is not None and total != expected_total:
         raise ValueError(
-            f"total={total} no cuadra con {per_stratum} preguntas por cada uno de los "
-            f"{len(QuestionStratum)} estratos (serían {expected_total})."
+            f"total={total} no cuadra con las filas por estrato {list(counts.values())} "
+            f"(serían {expected_total})."
         )
     if not force and not question_bank_is_empty(out_path):
         raise QuestionBankNotEmptyError(
@@ -1108,8 +1134,8 @@ def write_question_bank_template(
 
     rows: list[dict[str, str]] = []
     number = 0
-    for stratum in QuestionStratum:
-        for _ in range(per_stratum):
+    for stratum, stratum_rows in counts.items():
+        for _ in range(stratum_rows):
             number += 1
             rows.append(
                 {
