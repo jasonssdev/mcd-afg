@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 06 — Metodología |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 3.1 |
-| **Fecha** | 2026-10-14 |
+| **Versión** | 3.2 |
+| **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -21,6 +21,7 @@
 | 2.2 | 2026-10-13 | La primera mención de la Tarea C en §2 dice "50 pares por serie". | La redacción de la versión 2.1 podía leerse como 50 pares en total. |
 | 3.0 | 2026-10-13 | Se agrega la calibración de la anotación y su resultado (§5–6): la calibración sobre ES2015 dio un acuerdo bajo, se corrigió la guía de anotación (leer la transcripción de la reunión cuando la evidencia enlazada no alcanza, y un criterio para decidir qué cuenta como decisión) y se agrega una recalibración sobre TS3009 antes de las series de control. TS3009 pasa a doble anotación: las series doblemente anotadas pasan de 5 a 6. El 36,4 % de doble anotación de la evaluación no cambia. | Resultado de la calibración sobre ES2015: kappa de estado 0,094 (13 de 29 filas en acuerdo); 14 de los 16 desacuerdos eran de umbral. El protocolo exige corregir la guía y volver a calibrar antes de tocar una serie de evaluación ([`../../notebooks/04-jss-anotacion-f1-calibracion.ipynb`](../../notebooks/04-jss-anotacion-f1-calibracion.ipynb)). |
 | 3.1 | 2026-10-14 | Se registra la elección del juez automático (§5–6): `gpt-oss:20b`, elegido entre tres candidatos con una calibración propia sobre ES2015 y umbrales fijados antes de ver resultados. Se declara una limitación de esa calibración. No cambian cifras previas ni umbrales. | La metodología preveía un juez automático sin nombrarlo; la calibración ([`../../notebooks/05-jss-seleccion-juez.ipynb`](../../notebooks/05-jss-seleccion-juez.ipynb)) ya permite fijarlo. |
+| 3.2 | 2026-10-15 | Se registra el ajuste de la línea base C1 (§3–4): se ajustó sobre ES2015 con una regla fijada antes de correr, midiendo la evidencia sobre el texto que realmente llega al modelo; resultado de 1.200 caracteres por fragmento, 1 turno de solapamiento y 5 fragmentos. Se declara que las fechas de las reuniones llevan hora (§7–8): real cuando AMI la trae (6 de 14 series) y sintética, solo para preservar el orden, cuando no (8 de 14). La versión de OpenKOS a fijar queda abierta mientras se corrige (se suma `jasonssdev/openkos#1384` al plan). No cambian otras cifras ni umbrales. | El ajuste de C1 y la decisión sobre las fechas ya tienen evidencia propia ([ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md) y su enmienda, [notebook 06](../../notebooks/06-jss-ajuste-c1.ipynb); [ADR 0008](../decisions/0008-adr-fechas-de-reunion-para-openkos.md), [notebook 08](../../notebooks/08-jss-fechas-de-reunion.ipynb)). |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -193,7 +194,18 @@ por el modelo.
   débil hace que cualquier propuesta parezca buena. Por eso los parámetros de segmentación
   y el número de fragmentos recuperados se ajustan sobre el conjunto de desarrollo (77
   decisiones, 11 candidatos), no se fijan arbitrariamente. Una línea base debilitada
-  invalida el experimento completo.
+  invalida el experimento completo. El ajuste se hizo sobre la serie de desarrollo ES2015,
+  con una regla fijada antes de correr y con una medida precisa: el recall de evidencia
+  (qué parte de los pasajes que respaldan la respuesta aparece entre lo recuperado), contado
+  sobre el texto que de verdad le llega al modelo una vez aplicado el límite de contexto de
+  OpenKOS, y no sobre los fragmentos completos, que el modelo no llega a leer enteros. El
+  resultado son fragmentos de a lo más 1.200 caracteres, con 1 turno de solapamiento (el
+  último turno de un fragmento se repite al inicio del siguiente) y K = 5 fragmentos
+  recuperados. Como las tres condiciones recortan el contexto con las mismas funciones, las
+  tres reciben a lo más el mismo contexto, unos 7.400 caracteres, por construcción. La
+  evidencia está en el [ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md)
+  (con su enmienda del 2026-10-15) y en el
+  [notebook 06](../../notebooks/06-jss-ajuste-c1.ipynb).
 - **C2 — Compilación automática.** Extracción con modelo local, persistencia con
   procedencia (cada decisión guardada con la reunión y el pasaje de donde salió), consulta
   sobre los objetos compilados.
@@ -343,12 +355,26 @@ transcripción; OpenKOS ordena las decisiones solo por fecha de calendario, y la
 reuniones de ES2015 comparten la misma fecha; y aplicar una revisión detectada exige una
 confirmación humana por cada par. Con esa versión, C2 no podría responder E2 ni E3, y la
 comparación C2 frente a C3 mediría sobre todo decisiones ausentes. Es una serie y una
-corrida, con la versión 0.5.2 y no con la 0.5.4 que fija el ADR 0006; la medición se repite
-con la versión que finalmente se fije. El plan: corregir OpenKOS (extracción a nivel de decisión, orden dentro de un mismo
-día, aplicación automática opcional de revisiones dirigidas; `jasonssdev/openkos#1348`,
-`#1349`, `#1350`), medir cada corrección sobre series de desarrollo contra la anotación
-adjudicada y fijar una versión publicada antes de tocar cualquier serie de evaluación
-(coherente con los ADR 0005 y 0006). Si no se alcanza ese nivel a tiempo, OE2 reporta el
+corrida, con la versión 0.5.2; la medición se repite con la versión que finalmente se
+fije. La versión a fijar queda abierta mientras OpenKOS se corrige. El plan: corregir OpenKOS
+(extracción a nivel de decisión, orden dentro de un mismo día, aplicación automática opcional
+de revisiones dirigidas, y la pérdida de la marca de atribución `USED:` cuando se escribe al
+final de una oración, que afecta solo la tasa de citación; `jasonssdev/openkos#1348`,
+`#1349`, `#1350` y `#1384`), medir cada corrección sobre series de desarrollo contra la
+anotación adjudicada y fijar una versión publicada antes de tocar cualquier serie de
+evaluación, registrándola en cada corrida (coherente con los ADR 0005 y 0006).
+
+El orden dentro de un mismo día ya tiene una solución en el lado del proyecto. Importa porque
+de él depende qué decisión se considera posterior a cuál, es decir, cuál reemplaza a cuál, y
+con eso la respuesta a las preguntas del estrato E3 (cómo cambió una decisión). Por eso la
+fecha de cada reunión que se entrega a OpenKOS ahora lleva hora: la hora real de inicio del
+corpus AMI cuando existe (6 de las 14 series) y, cuando no existe (8 de las 14), una hora
+sintética que solo preserva el orden de las reuniones a, b, c y d, que es el del escenario de
+AMI. Esas horas sintéticas son una desviación declarada: no ocurrieron y no sirven para medir
+tiempos ni intervalos entre reuniones. Los resultados se podrán comparar por origen de la hora
+para comprobar que la diferencia no mueve las cifras. El detalle está en el
+[ADR 0008](../decisions/0008-adr-fechas-de-reunion-para-openkos.md) y en el
+[notebook 08](../../notebooks/08-jss-fechas-de-reunion.ipynb). Si no se alcanza ese nivel a tiempo, OE2 reporta el
 resultado de extracción tal como sea y OE3 declara la limitación de C2; una C2 en ese estado
 no se presenta como una comparación justa.
 
@@ -439,7 +465,9 @@ riesgo de C2; la numeración de secciones no cambia.
 | Filtro léxico: sesgos, comparación por sitio y Tarea C | [`../../notebooks/00-jss-corpus-y-auditoria.ipynb`](../../notebooks/00-jss-corpus-y-auditoria.ipynb) §4.1; `src/afg/annotation/blocking.py` |
 | Wilson y bootstrap percentil | [`../../notebooks/01-jss-viabilidad-e3.ipynb`](../../notebooks/01-jss-viabilidad-e3.ipynb) §2; `src/afg/evaluation/metrics.py` (`wilson_interval`, `bootstrap_ci`); [`../../config/experiments.toml`](../../config/experiments.toml) |
 | Acumulación por serie (D15) y criterio de éxito (D16) | [`../decisions/README.md`](../decisions/README.md), decisiones D15 y D16 |
-| Riesgo de C2 (4 frente a 29 decisiones en ES2015) | `jasonssdev/openkos#1348`, `#1349`, `#1350`; [`../decisions/0005-adr-development-evaluation-split.md`](../decisions/0005-adr-development-evaluation-split.md); [`../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md`](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) |
+| Ajuste de C1: 1.200 caracteres, 1 turno de solapamiento, K = 5; contexto de unos 7.400 caracteres | [`../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md`](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md) (enmienda 2026-10-15); [`../../notebooks/06-jss-ajuste-c1.ipynb`](../../notebooks/06-jss-ajuste-c1.ipynb) |
+| Fechas de reunión: hora real en 6 de 14 series, sintética en 8 | [`../decisions/0008-adr-fechas-de-reunion-para-openkos.md`](../decisions/0008-adr-fechas-de-reunion-para-openkos.md); [`../../notebooks/08-jss-fechas-de-reunion.ipynb`](../../notebooks/08-jss-fechas-de-reunion.ipynb) |
+| Riesgo de C2 (4 frente a 29 decisiones en ES2015) | `jasonssdev/openkos#1348`, `#1349`, `#1350`, `#1384`; [`../decisions/0005-adr-development-evaluation-split.md`](../decisions/0005-adr-development-evaluation-split.md); [`../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md`](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) |
 | Calibración: kappa 0,094 en ES2015, guía corregida y recalibración sobre TS3009 | [`../../notebooks/04-jss-anotacion-f1-calibracion.ipynb`](../../notebooks/04-jss-anotacion-f1-calibracion.ipynb); [`../anotacion/manual-anotacion-oe1.md`](../anotacion/manual-anotacion-oe1.md) §2 y §6; [`../anotacion/asignacion/README.md`](../anotacion/asignacion/README.md) (Fase 1) |
 | Juez automático: `gpt-oss:20b`, kappa 0,95; acuerdo humano 1,00 y 0,87; limitación del identificador | [`../../notebooks/05-jss-seleccion-juez.ipynb`](../../notebooks/05-jss-seleccion-juez.ipynb); [`../../config/experiments.toml`](../../config/experiments.toml), sección `[judge]`; [`../anotacion/calibracion-juez.md`](../anotacion/calibracion-juez.md) |
 | Las cuatro fases y su aporte | [`03-jss-objetivos.md`](03-jss-objetivos.md), objetivos específicos OE1–OE4 |
