@@ -28,6 +28,7 @@ from afg.bibliography.audit import render_table as render_biblio_table
 from afg.bibliography.audit import run_audit
 from afg.bibliography.audit import write_csv as write_biblio_csv
 from afg.bibliography.library import load_library
+from afg.conditions.base import Condition
 from afg.conditions.c1_document_rag import (
     ChatError,
     DocumentRagCondition,
@@ -70,7 +71,13 @@ from afg.corpus.participants import (
 from afg.corpus.render import discover_meeting_ids, render_meetings
 from afg.domain.decision import Decision
 from afg.domain.question import Question, QuestionStratum
-from afg.evaluation.judge import OllamaJudgeBackend, list_installed_models, missing_models
+from afg.evaluation.judge import (
+    JudgeConfigurationError,
+    OllamaJudgeBackend,
+    PresentationOrder,
+    list_installed_models,
+    missing_models,
+)
 from afg.evaluation.judge_calibration import load_thresholds
 from afg.evaluation.judge_calibration_agreement import (
     AGREEMENT_PATH,
@@ -116,10 +123,21 @@ from afg.evaluation.judge_calibration_worksheet import (
     worksheet_questions,
     write_worksheet,
 )
+from afg.experiments.questions import load_experiment_questions
+from afg.experiments.runner import (
+    ManifestMismatchError,
+    RunAbortedError,
+    RunSettings,
+    configured_partition_of,
+    current_git_commit,
+    default_excerpt_for,
+    run_experiment_b,
+)
 from afg.shared.config import get_settings, load_corpus_config, load_experiments_config
 from afg.shared.logging import configure_logging, get_logger, quiet_http_logs
 from afg.shared.paths import (
     AMI_DIR,
+    EXPERIMENT_B_DIR,
     GOLD_DECISIONS_DIR,
     GOLD_RELATIONS_DIR,
     PROJECT_ROOT,
@@ -1801,16 +1819,141 @@ def experiment_a() -> None:
     raise typer.Exit(code=2)
 
 
-@experiment_app.command("b")
-def experiment_b() -> None:
-    """Experiment B: C1 vs C2 vs C3 over the question bank (OE3). Requires all three
-    conditions and the question bank."""
-    console.print(
-        "[yellow]Not yet implemented: requires all three conditions "
-        "(src/afg/conditions/) and the question bank (thesis section 5.5). "
-        "See thesis section 3, OE3.[/yellow]"
+JUDGE_ORDER: PresentationOrder = "reference_first"
+JUDGE_TEMPERATURE = 0.0
+"""The judge configuration of the calibration's primary run (reference first, temperature 0)."""
+
+EXPERIMENT_B_CONDITIONS: tuple[str, ...] = ("c1", "c2", "c3")
+"""Condition ids ``--conditions`` knows; only those in :func:`make_experiment_b_condition` run."""
+
+
+def make_judge_backend() -> OllamaJudgeBackend:
+    """The production judge backend, with the reasoning setting of ``[judge.calibration.think]``."""
+    return OllamaJudgeBackend(think=load_think_settings())
+
+
+def make_experiment_b_condition(condition_id: str) -> Condition:
+    """The condition ``condition_id`` wired from the config (only C1 exists so far)."""
+    if condition_id == "c1":
+        return make_c1_condition()
+    raise ValueError(
+        f"La condición {condition_id.upper()} no está disponible todavía: C2 y C3 dependen de "
+        "OpenKOS y de la anotación de oro (tesis, sección 5.3)."
     )
-    raise typer.Exit(code=2)
+
+
+@experiment_app.command("b")
+def experiment_b(
+    questions: Annotated[
+        Path,
+        typer.Option(
+            "--questions",
+            help="CSV de preguntas: la hoja `ES2015.preguntas.csv` o el CSV de preguntas de "
+            "calibración (el banco real aún no tiene cargador).",
+        ),
+    ],
+    conditions: Annotated[
+        str, typer.Option("--conditions", help="Condiciones separadas por coma; hoy solo `c1`.")
+    ] = "c1",
+    runs: Annotated[
+        int | None,
+        typer.Option("--runs", min=1, help="Corridas por pregunta (por defecto runs_per_config)."),
+    ] = None,
+    run_name: Annotated[
+        str | None,
+        typer.Option(
+            "--run-name",
+            help="Nombre de la carpeta en reports/experiment-b/. Repetir un nombre reanuda.",
+        ),
+    ] = None,
+    limit_questions: Annotated[
+        int | None, typer.Option("--limit-questions", min=1, help="Solo las N primeras preguntas.")
+    ] = None,
+) -> None:
+    """Experimento B: preguntas x condiciones x corridas, con juicio y citación (OE3).
+
+    Por cada combinación obtiene la respuesta, la juzga con el modelo de `\\[judge]`, calcula la
+    corrección de las citas y agrega un registro a `respuestas.jsonl`. Si se interrumpe, al
+    repetir el comando con el mismo `--run-name` continúa donde quedó; los registros con error
+    se reintentan. La semilla de generación de la corrida r es `seed + r`.
+    """
+    from datetime import UTC, datetime
+
+    quiet_http_logs()
+    wanted = [c.strip().lower() for c in conditions.split(",") if c.strip()]
+    unknown = [c for c in wanted if c not in EXPERIMENT_B_CONDITIONS]
+    if not wanted or unknown:
+        console.print(
+            f"[bold red]Condición desconocida: {', '.join(unknown) or '(vacía)'}. "
+            f"Opciones: {', '.join(EXPERIMENT_B_CONDITIONS)}.[/bold red]"
+        )
+        raise typer.Exit(code=1)
+    try:
+        built = {c.upper(): make_experiment_b_condition(c) for c in dict.fromkeys(wanted)}
+        bank = load_experiment_questions(questions, limit=limit_questions)
+    except (ValueError, FileNotFoundError, CalibrationSetError) as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+
+    config = load_experiments_config()
+    budget = config["shared_budget"]
+    settings = RunSettings(
+        generative_model=str(budget["generative_model"]),
+        temperature=float(budget["temperature"]),
+        base_seed=int(budget["seed"]),
+        runs=runs if runs is not None else int(budget["runs_per_config"]),
+        judge_model=get_settings().judge_model,
+        judge_order=JUDGE_ORDER,
+        judge_seed=int(budget["seed"]),
+        judge_temperature=JUDGE_TEMPERATURE,
+    )
+    try:
+        needed = [settings.generative_model, settings.judge_model, configured_embedding_model()]
+        absent = missing_models(needed, list_installed_models())
+    except (RuntimeError, ConnectionError, OSError) as exc:
+        console.print(
+            f"[bold red]No se pudo consultar los modelos instalados en Ollama: {exc}[/bold red] "
+            "Comprueba que Ollama esté corriendo."
+        )
+        raise typer.Exit(code=1) from exc
+    if absent:
+        for name in absent:
+            console.print(
+                f"[bold red]Falta el modelo {name} en Ollama:[/bold red] `ollama pull {name}`"
+            )
+        raise typer.Exit(code=1)
+
+    name = run_name or datetime.now(UTC).strftime("b-%Y%m%d-%H%M%S")
+    run_dir = EXPERIMENT_B_DIR / name
+
+    def report(done: int, total: int) -> None:
+        step = max(total // 10, 1)
+        if done == total or done % step == 0:
+            console.print(f"  {done}/{total} registros")
+
+    console.print(
+        f"{len(bank)} preguntas x {len(built)} condición(es) x {settings.runs} corridas "
+        f"-> {_short(run_dir)}"
+    )
+    try:
+        summary = run_experiment_b(
+            bank,
+            built,
+            settings=settings,
+            judge_backend=make_judge_backend(),
+            run_dir=run_dir,
+            partition_of=configured_partition_of(),
+            excerpt_for=default_excerpt_for,
+            git_commit=current_git_commit(),
+            progress=report,
+        )
+    except (JudgeConfigurationError, ManifestMismatchError, RunAbortedError, ValueError) as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    console.print(
+        f"{summary.written} registros nuevos, {summary.skipped} ya hechos, "
+        f"{summary.errors} con error. Manifiesto en {_short(run_dir / 'manifest.json')}."
+    )
 
 
 # --- report ---------------------------------------------------------------------------------

@@ -36,6 +36,7 @@ EXTERNAL_DIR: Path = DATA_DIR / "external"
 # --- reports/ --------------------------------------------------------------------------
 FIGURES_DIR: Path = REPORTS_DIR / "figures"
 TABLES_DIR: Path = REPORTS_DIR / "tables"
+EXPERIMENT_B_DIR: Path = REPORTS_DIR / "experiment-b"
 
 # Directories that this project writes to at runtime. Anything not writable (config/,
 # bibliography/ source files, docs/) is deliberately excluded: those are
