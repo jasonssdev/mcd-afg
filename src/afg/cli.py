@@ -28,6 +28,11 @@ from afg.bibliography.audit import render_table as render_biblio_table
 from afg.bibliography.audit import run_audit
 from afg.bibliography.audit import write_csv as write_biblio_csv
 from afg.bibliography.library import load_library
+from afg.conditions.c1_document_rag import (
+    ChatError,
+    DocumentRagCondition,
+    GenerationSettings,
+)
 from afg.conditions.c1_retrieval import OllamaEmbedder, configured_embedding_model
 from afg.conditions.c1_tuning import (
     RESULTS_PATH as C1_TUNING_RESULTS_PATH,
@@ -64,6 +69,7 @@ from afg.corpus.participants import (
 )
 from afg.corpus.render import discover_meeting_ids, render_meetings
 from afg.domain.decision import Decision
+from afg.domain.question import Question, QuestionStratum
 from afg.evaluation.judge import OllamaJudgeBackend, list_installed_models, missing_models
 from afg.evaluation.judge_calibration import load_thresholds
 from afg.evaluation.judge_calibration_agreement import (
@@ -1604,6 +1610,72 @@ def judge_calibration_agreement(
 def make_c1_embedder() -> OllamaEmbedder:
     """The embedder C1 retrieval uses (model from the config, host from ``OLLAMA_HOST``)."""
     return OllamaEmbedder.from_config()
+
+
+def make_c1_condition() -> DocumentRagCondition:
+    """C1 wired from ``config/experiments.toml`` and the local Ollama."""
+    return DocumentRagCondition.from_config(TRANSCRIPTS_DIR)
+
+
+@c1_app.command("ask")
+def c1_ask(
+    question: Annotated[str, typer.Argument(help="Pregunta a responder.")],
+    series: Annotated[str, typer.Option("--series", help="Serie AMI a consultar, p. ej. ES2015.")],
+) -> None:
+    """Responde una pregunta con C1 como lo haría `openkos query`, con fragmentos de transcripción.
+
+    Recupera K fragmentos de toda la serie (D15), pregunta al modelo si alcanzan para responder
+    y, si es así, redacta la respuesta citando los fragmentos usados (ADR 0006). Sirve para
+    probar C1 a mano; no guarda nada.
+    """
+    import time
+
+    quiet_http_logs()
+    try:
+        model = GenerationSettings.from_config().model
+        needed = [model, configured_embedding_model()]
+        absent = missing_models(needed, list_installed_models())
+    except ValueError as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    except (RuntimeError, ConnectionError, OSError) as exc:
+        console.print(
+            f"[bold red]No se pudo consultar los modelos instalados en Ollama: {exc}[/bold red] "
+            "Comprueba que Ollama esté corriendo."
+        )
+        raise typer.Exit(code=1) from exc
+    if absent:
+        for name in absent:
+            console.print(
+                f"[bold red]Falta el modelo {name} en Ollama:[/bold red] `ollama pull {name}`"
+            )
+        raise typer.Exit(code=1)
+
+    item = Question(
+        id="c1-ask", series_id=series, stratum=QuestionStratum.E1_POINT_FACT, text=question
+    )
+    started = time.monotonic()
+    try:
+        condition = make_c1_condition()
+        answer, trace = condition.answer_with_trace(item)
+    except (ValueError, FileNotFoundError, ChatError, RuntimeError) as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    elapsed = time.monotonic() - started
+
+    console.print(f"[bold]Resultado:[/bold] {trace.outcome}")
+    console.print(f"[bold]Respuesta:[/bold] {answer.text}")
+    if answer.cited_evidence:
+        console.print("[bold]Citas:[/bold]")
+        for span in answer.cited_evidence:
+            console.print(f"  {span.meeting_id}: {', '.join(span.dialogue_act_ids)}")
+    else:
+        console.print("[bold]Citas:[/bold] ninguna")
+    console.print(
+        f"{len(trace.context_blocks)} fragmentos enviados, {len(trace.omitted)} omitidos por "
+        f"presupuesto, {sum(b.excerpted for b in trace.context_blocks)} recortados; "
+        f"{elapsed:.1f} s."
+    )
 
 
 @c1_app.command("tune")
