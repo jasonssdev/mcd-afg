@@ -29,6 +29,11 @@ class OpenKosAdapter(Extractor):
     workspace: str
     model: str
 
+    # TODO(T4): the series-level pieces (workspace orchestration, capability probe, quote
+    # to dialogue act mapping) live in :mod:`afg.extraction.openkos`. Reading the compiled
+    # bundle back into an :class:`~afg.extraction.protocol.ExtractionResult` waits for the
+    # OpenKOS release that fixes the bundle layout.
+
     def extract(self, meeting_id: str, transcript: str) -> ExtractionResult:
         """Run OpenKOS extraction over one meeting's transcript.
 

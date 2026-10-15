@@ -42,6 +42,10 @@ class Settings(BaseSettings):
     )
     embedding_model: str = Field(default="bge-m3")
     openkos_workspace: str | None = Field(default=None)
+    openkos_executable: str = Field(
+        default="openkos",
+        description="OpenKOS command line to run: a name looked up on PATH or an absolute path.",
+    )
     skill_assets_dir: Path | None = Field(
         default=None,
         description="Locally synced shared folder holding the non-versioned skill assets.",
