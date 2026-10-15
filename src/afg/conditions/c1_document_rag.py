@@ -21,6 +21,7 @@ schema v1 as far as it applies to chunks.
 
 from __future__ import annotations
 
+import dataclasses
 import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
@@ -392,6 +393,16 @@ class DocumentRagCondition:
             params=load_pinned_c1_params(),
             transcripts_dir=transcripts_dir,
         )
+
+    def with_seed(self, seed: int) -> DocumentRagCondition:
+        """A copy that generates with ``seed`` (a run index of Experiment B) and nothing else.
+
+        The retrieval indexes are shared with the original, so re-seeding between runs does
+        not embed the series again.
+        """
+        copy = dataclasses.replace(self, settings=dataclasses.replace(self.settings, seed=seed))
+        copy._indexes = self._indexes
+        return copy
 
     def _index(self, series: str) -> HybridRetriever:
         """The index of the whole series (D15), built once and cached."""

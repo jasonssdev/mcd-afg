@@ -464,3 +464,18 @@ def test_ollama_backend_raises_when_generation_is_capped() -> None:
     backend = OllamaChatBackend(client=FakeOllamaClient("cut", done_reason="length"))
     with pytest.raises(ChatError, match="length"):
         backend.chat([{"role": "user", "content": "u"}], model="m", options={})
+
+
+def test_with_seed_changes_only_the_seed_and_shares_the_index(transcripts: Path) -> None:
+    chat = ScriptedChat("quote", "answer\nUSED: 1", "quote", "answer\nUSED: 1")
+    embedder = CountingEmbedder()
+    base = _condition(transcripts, chat, embedder)
+    base.answer(_question())
+    embedded = len(embedder.calls)
+    reseeded = base.with_seed(SETTINGS.seed + 1)
+    answer, trace = reseeded.answer_with_trace(_question())
+    assert trace.seed == SETTINGS.seed + 1
+    assert chat.calls[-1]["options"]["seed"] == SETTINGS.seed + 1
+    assert base.settings.seed == SETTINGS.seed  # the original is untouched
+    assert len(embedder.calls) == embedded + 1  # only the new question is embedded
+    assert answer.condition == base.condition_id
