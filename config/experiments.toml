@@ -22,6 +22,23 @@ answer_limit = 5                     # blocks sent to the answer prompt; openkos
 rrf_k = 60                           # reciprocal rank fusion constant, as in openkos retrieval/fusion.py
 # Unweighted RRF over the lexical and dense channels, as in openkos retrieval/fusion.py.
 
+[retrieval.tuning]
+# C1 segmentation and answer-K tuning on development data (ADR 0005). Retrieval only: the
+# metric is evidence recall (fraction of the reference dialogue acts contained in the K
+# retrieved chunks), so no generative model is involved.
+# These values and the selection rule are pre-registered: committed before any result is seen.
+series = ["ES2015"]                  # development series whose whole meeting set is indexed (D15)
+max_chars = [800, 1200, 1600, 2400]  # chunk size cap, characters
+overlap_turns = [0, 1]               # turns shared between consecutive chunks
+k = [3, 5, 8, 10]                    # chunks sent to the answer prompt
+# Total context chars OpenKOS v0.5.4 measured for 5 bodies, fitting its 4096-token prompt
+# allowance (src/openkos/config.py PROMPT_CONTEXT_ALLOWANCE). A config is eligible only if
+# k * max_chars <= char_budget.
+char_budget = 13516
+# Winner: the eligible config with the highest mean recall; among eligible configs within
+# tie_margin of it, prefer smaller k, then smaller max_chars, then smaller overlap_turns.
+tie_margin = 0.02
+
 [alignment]
 # Thesis section 5.4: cosine-similarity candidates over (decision object, content) pairs,
 # one-to-one matching via the Hungarian algorithm, F1 reported as a curve over tau, never

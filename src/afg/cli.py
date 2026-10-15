@@ -28,6 +28,19 @@ from afg.bibliography.audit import render_table as render_biblio_table
 from afg.bibliography.audit import run_audit
 from afg.bibliography.audit import write_csv as write_biblio_csv
 from afg.bibliography.library import load_library
+from afg.conditions.c1_retrieval import OllamaEmbedder, configured_embedding_model
+from afg.conditions.c1_tuning import (
+    RESULTS_PATH as C1_TUNING_RESULTS_PATH,
+)
+from afg.conditions.c1_tuning import (
+    NoEligibleConfigError,
+    evaluate_grid,
+    load_tuning_config,
+    load_tuning_questions,
+    save_tuning_results,
+    select_winner,
+    series_meetings,
+)
 from afg.corpus.download import DownloadError, download_annotations
 from afg.corpus.inventory import (
     CorpusNotDownloadedError,
@@ -127,6 +140,7 @@ gold_app = typer.Typer(help="OE1: build the gold decision/relation set (thesis s
 judge_app = typer.Typer(
     help="Selección del modelo juez: preguntas, respuestas y calibración (issue #82)."
 )
+c1_app = typer.Typer(help="C1 (RAG sobre documentos): ajuste de la segmentación y de K (ADR 0005).")
 experiment_app = typer.Typer(help="OE2/OE3: run Experiment A / Experiment B (thesis section 3).")
 skills_app = typer.Typer(help="Install, verify and link skills under .agents/skills/.")
 
@@ -134,6 +148,7 @@ app.add_typer(corpus_app, name="corpus")
 app.add_typer(biblio_app, name="biblio")
 app.add_typer(gold_app, name="gold")
 app.add_typer(judge_app, name="judge")
+app.add_typer(c1_app, name="c1")
 app.add_typer(experiment_app, name="experiment")
 app.add_typer(skills_app, name="skills")
 
@@ -1584,6 +1599,111 @@ def judge_calibration_agreement(
 
 
 # --- experiment (OE2/OE3) ------------------------------------------------------------------
+
+
+def make_c1_embedder() -> OllamaEmbedder:
+    """The embedder C1 retrieval uses (model from the config, host from ``OLLAMA_HOST``)."""
+    return OllamaEmbedder.from_config()
+
+
+@c1_app.command("tune")
+def c1_tune() -> None:
+    """Mide el recall de evidencia de C1 sobre desarrollo y elige segmentación y K.
+
+    Solo recuperación (sin modelo generativo): para cada combinación de `max_chars`,
+    `overlap_turns` y K de `[retrieval.tuning]`, mide qué fracción de los actos de diálogo de
+    referencia caen en los K fragmentos recuperados. Indexa la serie completa (D15) y usa las
+    preguntas respondibles (E1-E3) del conjunto de calibración del juez. Los resultados quedan
+    en `reports/c1-tuning/resultados.json`.
+    """
+    from rich.table import Table
+
+    quiet_http_logs()
+    try:
+        config = load_tuning_config()
+    except ValueError as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    if not CALIBRATION_PATH.exists():
+        console.print(
+            f"[bold red]No existe {_short(CALIBRATION_PATH)}.[/bold red] "
+            "Las preguntas con evidencia salen de la calibración del juez "
+            "(`uv run afg judge calibration-answers`)."
+        )
+        raise typer.Exit(code=1)
+    try:
+        questions = load_tuning_questions(CALIBRATION_PATH, config.series)
+        meetings = [m for series in config.series for m in series_meetings(series, TRANSCRIPTS_DIR)]
+    except (CalibrationSetError, FileNotFoundError) as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    if not questions:
+        console.print("[bold red]No hay preguntas respondibles (E1-E3) en la serie.[/bold red]")
+        raise typer.Exit(code=1)
+
+    model = configured_embedding_model()
+    try:
+        absent = missing_models([model], list_installed_models())
+    except (RuntimeError, ConnectionError, OSError) as exc:
+        console.print(
+            f"[bold red]No se pudo consultar los modelos instalados en Ollama: {exc}[/bold red] "
+            "Comprueba que Ollama esté corriendo."
+        )
+        raise typer.Exit(code=1) from exc
+    if absent:
+        console.print(
+            f"[bold red]Falta el modelo de embeddings {model} en Ollama:[/bold red] "
+            f"`ollama pull {model}`"
+        )
+        raise typer.Exit(code=1)
+
+    n_configs = len(config.max_chars) * len(config.overlap_turns)
+    console.print(
+        f"{len(questions)} preguntas, {len(meetings)} reuniones ({', '.join(config.series)}), "
+        f"{n_configs} segmentaciones x {len(config.k)} valores de K."
+    )
+
+    def report(max_chars: int, overlap: int, done: int, total: int) -> None:
+        console.print(f"  [{done}/{total}] max_chars={max_chars}, overlap_turns={overlap}")
+
+    try:
+        results = evaluate_grid(
+            questions, meetings, config, make_c1_embedder(), TRANSCRIPTS_DIR, progress=report
+        )
+        selection = select_winner(results, config.tie_margin)
+    except NoEligibleConfigError as exc:
+        console.print(
+            "[bold red]Ninguna configuración cabe en el presupuesto de contexto "
+            f"({config.char_budget} caracteres); no se eligió nada.[/bold red] {exc}"
+        )
+        raise typer.Exit(code=1) from exc
+    except (ValueError, RuntimeError, FileNotFoundError) as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+
+    table = Table(title="Recall de evidencia por configuración")
+    for column in ("max_chars", "overlap", "K", "recall", "contexto (car.)", "elegible"):
+        table.add_column(column, justify="right")
+    for r in results:
+        table.add_row(
+            str(r.max_chars),
+            str(r.overlap_turns),
+            str(r.k),
+            f"{r.mean_recall:.3f}",
+            f"{r.mean_context_chars:.0f}",
+            "sí" if r.eligible else "no",
+        )
+    console.print(table)
+    win = selection.winner
+    console.print(
+        f"[bold green]Ganador:[/bold green] max_chars={win.max_chars}, "
+        f"overlap_turns={win.overlap_turns}, K={win.k} (recall {win.mean_recall:.3f}). "
+        f"{selection.reason}"
+    )
+    save_tuning_results(
+        C1_TUNING_RESULTS_PATH, results, selection, config=config, n_questions=len(questions)
+    )
+    console.print(f"Resultados guardados en {_short(C1_TUNING_RESULTS_PATH)}.")
 
 
 @experiment_app.command("a")
