@@ -44,6 +44,7 @@ estados, ni casillas, ni cifras que un comando produzca. Lo que está pendiente 
 | [0004](0004-adr-oe1-series-selection.md) | Selección de las **14 series** de OE1 sobre el marco de resúmenes abstractivos, balanceadas por sitio de grabación; TS3012 inelegible por `summlink` incompleto |
 | [0005](0005-adr-development-evaluation-split.md) | División **desarrollo (3) / evaluación (11)** y revisión de las cuatro series de control. Reemplaza parte del 0004 |
 | [0006](0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) | **C1 se construye en este proyecto**, separado de OpenKOS, y responde con los prompts de respuesta de OpenKOS copiados byte a byte; OpenKOS fijado a `==0.5.4` con `query --json` para OE4 |
+| [0007](0007-adr-ajuste-c1-y-presupuesto-de-contexto.md) | **C1 ajustado a 8 fragmentos de hasta 1.600 caracteres** con una regla prerregistrada sobre ES2015; las condiciones comparten el **presupuesto de texto**, no el número de bloques (C2 y C3 conservan `--limit 5`) |
 
 > **El ADR 0005 es el registro canónico del split desarrollo / evaluación.** La fila **D10**
 > dice lo mismo en una línea, y eso es deliberado: es su entrada de índice, no una segunda

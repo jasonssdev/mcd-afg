@@ -34,6 +34,7 @@ Ejemplo: `00-jss-corpus-y-auditoria.ipynb`
 | 03 | `03-jss-eda.ipynb` | Análisis exploratorio de datos de AFG2 sobre las 14 series: proveniencia, calidad, faltantes, atípicos, relaciones, estructura multivariada y temporal, preguntas dirigidas e implicancias para el modelado. Solo estadísticas agregadas (ADR 0005) | ✅ |
 | 04 | `04-jss-anotacion-f1-calibracion.ipynb` | Anotación **humana**, Fase 1: calibración sobre ES2015 y recalibración sobre TS3009 (doble anotación `gm`/`gv`, adjudicación de `jss`). Acuerdo **diagnóstico**, no reportable; vacíos de la guía que reveló | ES2015 ✅; TS3009 pendiente |
 | 05 | `05-jss-seleccion-juez.ipynb` | Selección del modelo juez de §5.7: criterios tomados de la literatura, umbrales prerregistrados y calibración de los candidatos contra etiquetas humanas sobre series de desarrollo | en curso |
+| 06 | `06-jss-ajuste-c1.ipynb` | Ajuste de la línea base C1 (§5.3) sobre ES2015: segmentación y número de fragmentos por recall de evidencia, con regla prerregistrada; presupuesto de texto compartido con C2 y C3 | ✅ |
 | — | `NN-jss-anotacion-f2-control.ipynb` | Anotación humana, Fase 2: las cuatro series de control con doble anotación. El kappa **reportable** de OE1 | pendiente |
 | — | `NN-jss-anotacion-f3-referencia.ipynb` | Anotación humana, Fase 3: reparto individual y conjunto de referencia final de las 13 series | pendiente |
 | — | `NN-jss-experimento-a.ipynb` | OE2 — calidad de la extracción automática contra la referencia | pendiente |

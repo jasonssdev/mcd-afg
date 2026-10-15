@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 import json
 from collections.abc import Sequence
 from pathlib import Path
@@ -426,3 +427,38 @@ def test_unreadable_results_raise(tmp_path: Path) -> None:
     path.write_text("{}", encoding="utf-8")
     with pytest.raises(ValueError, match=r"r\.json"):
         load_tuning_results(path)
+
+
+# --- derived figures and pinned parameters ---------------------------------------------
+
+
+def test_questions_with_any_hit_counts_non_null_ranks() -> None:
+    r = dataclasses.replace(
+        result(k=5, recall=0.5), first_hit_ranks={"a": 1, "b": None, "c": 4, "d": None}
+    )
+    assert c1_tuning.questions_with_any_hit(r) == 2
+
+
+def test_load_pinned_c1_params_reads_the_retrieval_c1_section() -> None:
+    experiments = {"retrieval": {"c1": {"max_chars": 1600, "overlap_turns": 0, "k": 8}}}
+    params = c1_tuning.load_pinned_c1_params(experiments)
+    assert (params.max_chars, params.overlap_turns, params.k) == (1600, 0, 8)
+
+
+def test_load_pinned_c1_params_rejects_missing_section() -> None:
+    with pytest.raises(ValueError, match=r"retrieval\.c1"):
+        c1_tuning.load_pinned_c1_params({"retrieval": {}})
+
+
+def test_pinned_c1_params_are_the_stored_winner() -> None:
+    """``[retrieval.c1]`` pins what the pre-registered rule chose (notebook 06, ADR 0007)."""
+    stored = load_tuning_results(c1_tuning.RESULTS_PATH)
+    pinned = c1_tuning.load_pinned_c1_params()
+    w = stored.winner
+    assert (pinned.max_chars, pinned.overlap_turns, pinned.k) == (
+        w.max_chars,
+        w.overlap_turns,
+        w.k,
+    )
+    assert w.eligible
+    assert pinned.k * pinned.max_chars <= stored.config.char_budget

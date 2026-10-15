@@ -117,6 +117,32 @@ def load_tuning_config(
     return config
 
 
+@dataclass(frozen=True, slots=True)
+class PinnedC1Params:
+    """The C1 segmentation and K chosen by the tuning (``[retrieval.c1]``)."""
+
+    max_chars: int
+    overlap_turns: int
+    k: int
+
+
+def load_pinned_c1_params(experiments: dict[str, Any] | None = None) -> PinnedC1Params:
+    """Read ``[retrieval.c1]``, the parameters C1 runs with (ADR 0007).
+
+    Raises:
+        ValueError: if the section or one of its keys is missing.
+    """
+    try:
+        section = (experiments or load_experiments_config())["retrieval"]["c1"]
+        return PinnedC1Params(
+            max_chars=int(section["max_chars"]),
+            overlap_turns=int(section["overlap_turns"]),
+            k=int(section["k"]),
+        )
+    except (KeyError, TypeError) as exc:
+        raise ValueError(f"[retrieval.c1] is missing or incomplete ({exc!r}).") from exc
+
+
 # --- questions -------------------------------------------------------------------------
 
 
@@ -177,6 +203,11 @@ class ConfigResult:
     mean_context_chars: float
     n_chunks: int
     eligible: bool
+
+
+def questions_with_any_hit(result: ConfigResult) -> int:
+    """Number of questions for which at least one retrieved chunk holds a reference act."""
+    return sum(1 for rank in result.first_hit_ranks.values() if rank is not None)
 
 
 ProgressFn = Callable[[int, int, int, int], None]
