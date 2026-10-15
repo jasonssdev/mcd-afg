@@ -8,7 +8,7 @@ paso cero (thesis section 5.0), and they say so instead of crashing with a stack
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Annotated
+from typing import TYPE_CHECKING, Annotated, Any
 
 import typer
 from rich.console import Console
@@ -2015,6 +2015,214 @@ def experiment_b(
         f"{summary.written} registros nuevos, {summary.skipped} ya hechos, "
         f"{summary.errors} con error. Manifiesto en {_short(run_dir / 'manifest.json')}."
     )
+
+
+def _load_run_records(run_name: str) -> tuple[Path, list[dict[str, Any]]]:
+    """The run folder and the latest record of each key; exits with a message when absent."""
+    from afg.experiments.runner import RECORDS_FILE, load_records
+
+    run_dir = EXPERIMENT_B_DIR / run_name
+    records = load_records(run_dir / RECORDS_FILE, latest_only=True)
+    if not records:
+        console.print(f"[bold red]No hay registros en {_short(run_dir / RECORDS_FILE)}.[/bold red]")
+        raise typer.Exit(code=1)
+    return run_dir, records
+
+
+@experiment_app.command("b-report")
+def experiment_b_report(
+    run_name: Annotated[
+        str, typer.Option("--run-name", help="Carpeta de la corrida en reports/experiment-b/.")
+    ],
+    descriptive: Annotated[
+        bool,
+        typer.Option(
+            "--descriptive",
+            help="Vista descriptiva (--descriptive) de registros de desarrollo o mixtos: "
+            "se guarda aparte y no es reportable.",
+        ),
+    ] = False,
+) -> None:
+    """Análisis del Experimento B: tasas, intervalos bootstrap y comparación D16 (OE3).
+
+    Agrega por condición y estrato con intervalos que remuestrean preguntas, y compara C2 con
+    C1 en E3 (criterio principal D16) y C2 con C3 (secundario). Se niega a producir tablas
+    reportables con registros de desarrollo o mixtos.
+    """
+    import json
+
+    from rich.table import Table
+
+    from afg.evaluation.scoring import DevelopmentResultError, interval_settings_from_config
+    from afg.experiments.analysis import CRITERION_NOTE, analyze_runs, report_to_dict
+
+    run_dir, records = _load_run_records(run_name)
+    config = load_experiments_config()
+    try:
+        report = analyze_runs(
+            records,
+            settings=interval_settings_from_config(),
+            min_questions=int(config["question_bank"]["min_questions"]),
+            min_runs=int(config["shared_budget"]["runs_per_config"]),
+            allow_development=descriptive,
+        )
+    except DevelopmentResultError as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+        console.print("Para explorar sin reportar, usar la opción --descriptive.")
+        raise typer.Exit(code=1) from exc
+
+    label = "reportable" if report.reportable else f"DESCRIPTIVO, partición {report.partition}"
+    table = Table(title=f"Experimento B, {run_name} ({label})")
+    for column in ("Condición", "Estrato", "Preguntas", "Correcta", "Soportada", "Cita", "Fallas"):
+        table.add_column(column)
+
+    def fmt(estimate: Any) -> str:
+        if estimate is None:
+            return "-"
+        return f"{estimate.point:.2f} [{estimate.lower:.2f}, {estimate.upper:.2f}]"
+
+    for cell in report.cells:
+        table.add_row(
+            cell.condition,
+            cell.stratum,
+            str(cell.questions),
+            fmt(cell.metrics.get("correct")),
+            fmt(cell.metrics.get("evidence_supported")),
+            fmt(cell.metrics.get("citation_correct")),
+            f"juez {cell.judge_failures}, error {cell.errors}",
+        )
+    console.print(table)
+    for comparison in report.comparisons:
+        if comparison.primary:
+            console.print(
+                f"[bold]Principal (D16)[/bold] C2 frente a C1 en E3: diferencia "
+                f"{comparison.difference:+.2f} [{comparison.difference_lower:+.2f}, "
+                f"{comparison.difference_upper:+.2f}] sobre {comparison.n_pairs} preguntas; "
+                f"intervalos {'solapados' if comparison.intervals_overlap else 'disjuntos'}: "
+                f"{comparison.criterion}."
+            )
+    console.print(f"[dim]{CRITERION_NOTE}[/dim]")
+    for warning in report.warnings:
+        console.print(f"[yellow]{escape(warning)}[/yellow]")
+
+    target = run_dir / ("analisis.json" if report.reportable else "analisis-descriptivo.json")
+    target.write_text(
+        json.dumps(report_to_dict(report), indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    console.print(f"Guardado en {_short(target)}.")
+
+
+HUMAN_SHEET_FILE = "muestra-juez.csv"
+HUMAN_KEY_FILE = "muestra-juez.clave.csv"
+HUMAN_CHECK_FILE = "juez-humano.json"
+
+
+@experiment_app.command("b-sample")
+def experiment_b_sample(
+    run_name: Annotated[
+        str, typer.Option("--run-name", help="Carpeta de la corrida en reports/experiment-b/.")
+    ],
+    questions: Annotated[
+        Path,
+        typer.Option(
+            "--questions",
+            help="CSV de preguntas de la corrida: aporta la respuesta de referencia y el pasaje "
+            "de transcripción que vio el juez. Es obligatorio.",
+        ),
+    ],
+    force: Annotated[
+        bool, typer.Option("--force", help="Sobrescribir una hoja que ya tiene etiquetas.")
+    ] = False,
+) -> None:
+    """Muestra estratificada del 20 % de las respuestas juzgadas para la verificación humana.
+
+    Escribe la hoja ciega (sin condición ni veredicto del juez) y, aparte, la clave con la
+    condición y el veredicto del juez. La semilla es `\\[shared_budget].seed`.
+    """
+    from afg.evaluation.judge_human_check import (
+        question_context_for,
+        select_human_sample,
+        write_human_sample,
+    )
+
+    run_dir, records = _load_run_records(run_name)
+    config = load_experiments_config()
+    try:
+        bank = load_experiment_questions(questions)
+        context_for = question_context_for(bank)
+    except (QuestionBankError, ValueError, FileNotFoundError, CalibrationSetError) as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    try:
+        sample = select_human_sample(
+            records,
+            fraction=float(config["evaluation"]["human_validation_fraction"]),
+            seed=int(config["shared_budget"]["seed"]),
+            reference_answers={q.id: q.reference_answer or "" for q in bank},
+            context_for=context_for,
+        )
+        write_human_sample(
+            run_dir / HUMAN_SHEET_FILE, run_dir / HUMAN_KEY_FILE, sample, force=force
+        )
+    except (ValueError, FileNotFoundError, SecondSheetLabeledError) as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    for (condition, stratum), (total, taken) in sample.per_cell.items():
+        console.print(f"  {condition} {stratum}: {taken} de {total} respuestas")
+    console.print(
+        f"{len(sample.sheet_rows)} filas. Hoja para la persona: "
+        f"{_short(run_dir / HUMAN_SHEET_FILE)}; clave (no compartir): "
+        f"{_short(run_dir / HUMAN_KEY_FILE)}."
+    )
+
+
+@experiment_app.command("b-human-check")
+def experiment_b_human_check(
+    run_name: Annotated[
+        str, typer.Option("--run-name", help="Carpeta de la corrida en reports/experiment-b/.")
+    ],
+) -> None:
+    """Acuerdo juez-humano (kappa de Cohen) sobre la hoja completada, con el umbral prerregistrado.
+
+    Si el kappa de `correct` no alcanza `\\[judge.calibration].min_kappa_correct`, se descarta el
+    juicio automático y se reporta solo la evaluación humana.
+    """
+    from afg.evaluation.judge_human_check import (
+        check_judge_against_humans,
+        read_csv_rows,
+        save_judge_human_check,
+    )
+
+    run_dir = EXPERIMENT_B_DIR / run_name
+    sheet, key = run_dir / HUMAN_SHEET_FILE, run_dir / HUMAN_KEY_FILE
+    for needed in (sheet, key):
+        if not needed.exists():
+            console.print(
+                f"[bold red]No existe {_short(needed)}.[/bold red] "
+                "Crearla con `uv run afg experiment b-sample`."
+            )
+            raise typer.Exit(code=1)
+    min_kappa = load_thresholds().min_kappa_correct
+    try:
+        check = check_judge_against_humans(
+            read_csv_rows(key), read_csv_rows(sheet), min_kappa=min_kappa
+        )
+    except (AgreementError, CalibrationSetError) as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    save_judge_human_check(run_dir / HUMAN_CHECK_FILE, check)
+    console.print(
+        f"Acuerdo juez-humano sobre {check.n_items} respuestas (kappa mínimo {min_kappa:.2f}):"
+    )
+    for column in check.columns:
+        kappa = "indefinido" if column.kappa is None else f"{column.kappa:.3f}"
+        verdict = "[green]cumple[/green]" if column.passes else "[red]no cumple[/red]"
+        console.print(
+            f"  {column.column}: {column.n_agree}/{column.n_items} coinciden, "
+            f"kappa {kappa}, {verdict}"
+        )
+    console.print(f"[bold]{check.decision}[/bold]")
+    console.print(f"Guardado en {_short(run_dir / HUMAN_CHECK_FILE)}.")
 
 
 # --- report ---------------------------------------------------------------------------------
