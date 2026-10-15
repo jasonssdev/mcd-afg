@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -179,20 +180,42 @@ def test_real_empty_bank_is_all_pending() -> None:
     assert not report.has_errors
 
 
-def test_load_experiment_questions_accepts_the_bank(tmp_path: Path) -> None:
-    path = write(tmp_path, GOOD_E1, "q003,,E2_current_state,,,,gm,,")
-    # Configured series do not include the fixture series, so use a real one.
-    path.write_text(
-        HEADER + "q001,ES2015,E1_point_fact,How much?,Twelve,ES2015a:d1,gm,gv,\n",
-        encoding="utf-8",
-    )
+_EVALUATION_ROW = "q001,ES2016,E1_point_fact,How much?,Twelve,ES2016a:ES2016a.x.1,gm,gv,\n"
+
+
+def _known_acts(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """One transcript for ES2016a holding the dialogue act the evaluation rows cite."""
+    transcripts = tmp_path / "transcripts"
+    transcripts.mkdir()
+    turn = {
+        "meeting_id": "ES2016a",
+        "turn_index": 0,
+        "speaker": "A",
+        "role": "PM",
+        "text": "hello",
+        "start": 0.0,
+        "end": 1.0,
+        "char_start": 0,
+        "char_end": 5,
+        "dialogue_act_ids": ["ES2016a.x.1"],
+    }
+    (transcripts / "ES2016a.jsonl").write_text(json.dumps(turn) + "\n", encoding="utf-8")
+    monkeypatch.setattr("afg.experiments.question_bank.TRANSCRIPTS_DIR", transcripts)
+
+
+def test_load_experiment_questions_accepts_the_bank(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _known_acts(monkeypatch, tmp_path)
+    path = tmp_path / "banco.csv"
+    path.write_text(HEADER + _EVALUATION_ROW + "q003,,E2_current_state,,,,gm,,\n", encoding="utf-8")
     questions = load_experiment_questions(path)
     assert [q.id for q in questions] == ["q001"]
     assert load_experiment_questions(path, limit=1)[0].id == "q001"
 
 
 def test_load_experiment_questions_refuses_blocking_errors(tmp_path: Path) -> None:
-    path = write(tmp_path, "q001,ES2015,E1_point_fact,,A,ES2015a:d1,gm,gv,")
+    path = write(tmp_path, "q001,ES2016,E1_point_fact,,A,ES2016a:d1,gm,gv,")
     with pytest.raises(QuestionBankError, match="q001"):
         load_experiment_questions(path)
 
@@ -239,14 +262,12 @@ def test_a_written_but_unvalidated_row_is_never_optional(tmp_path: Path) -> None
     assert any(r == "q003" and s is Severity.ERROR for r, s, _ in problems(complete))
 
 
-def test_optional_rows_are_ignored_by_the_experiment_loader(tmp_path: Path) -> None:
+def test_optional_rows_are_ignored_by_the_experiment_loader(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _known_acts(monkeypatch, tmp_path)
     path = tmp_path / "banco.csv"
-    path.write_text(
-        HEADER
-        + "q001,ES2015,E1_point_fact,How much?,Twelve,ES2015a:d1,gm,gv,\n"
-        + "q002,,E1_point_fact,,,,gm,,\n",
-        encoding="utf-8",
-    )
+    path.write_text(HEADER + _EVALUATION_ROW + "q002,,E1_point_fact,,,,gm,,\n", encoding="utf-8")
     assert [q.id for q in load_experiment_questions(path)] == ["q001"]
 
 

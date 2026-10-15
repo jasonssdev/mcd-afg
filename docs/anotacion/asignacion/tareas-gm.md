@@ -1,5 +1,8 @@
 # Tareas de Gustavo Martínez (`gm`)
 
+> **Antes de empezar:** instala `uv`, sincroniza el entorno y descarga el corpus siguiendo
+> [`README.md` §3](../../../README.md#3-tu-primer-día-paso-a-paso) y lee [`EMPIEZA-AQUI.md`](EMPIEZA-AQUI.md).
+
 > **Antes de la primera fila:** lee [`../annotation-guidelines.md`](../annotation-guidelines.md)
 > (qué cuenta como decisión, qué significa cada relación) y ten
 > [`../manual-anotacion-oe1.md`](../manual-anotacion-oe1.md) abierto al lado del CSV. Este
@@ -17,7 +20,7 @@ ES2015 ya está adjudicada. Lo que sigue, en este orden:
    ```bash
    git switch main && git pull
    git switch -c data/anotacion-TS3009-gm
-   uv run afg gold prepare --annotator gm
+   uv run afg gold setup --annotator gm
    ```
    Abre `data/processed/decisions/TS3009.decisions.gm.csv` (Tarea A) y luego
    `data/processed/relations/TS3009.candidates.gm.csv` (Tarea B), en orden de reunión
@@ -26,12 +29,12 @@ ES2015 ya está adjudicada. Lo que sigue, en este orden:
    ```bash
    uv run afg gold validate --annotator gm --series TS3009
    ```
-   y entrega con la convención de §9 (rama `data/anotacion-TS3009-gm`, commit
+   y entrega con la convención de §8 (rama `data/anotacion-TS3009-gm`, commit
    `data(anotacion): tareas A y B de TS3009 (gm)`, un PR). El issue de recalibración de
    TS3009 asignado a ti (#79) sigue ese avance.
 3. **Independencia:** no abras el PR, la rama ni el CSV de Germán, ni comenten casos de
    TS3009, hasta que `jss` anuncie la adjudicación de TS3009.
-4. **Espera la adjudicación de TS3009.** Después sigue ES2016 con la misma receta (§9).
+4. **Espera la adjudicación de TS3009.** Después sigue ES2016 con la misma receta (§8).
 
 ---
 
@@ -55,7 +58,7 @@ genera las transcripciones y crea, solo para las series ya abiertas, cada `<seri
 nunca copies ni renombres un CSV a mano. Termina diciéndote lo único que toca hacer
 ahora según el estado real (qué serie, qué archivo, o a quién esperas). Si vuelves a correrlo, salta lo que ya esté hecho y nunca borra tu trabajo: un
 archivo con anotación se respeta. Si alguna vez necesitas recrear un archivo puntual
-(por ejemplo porque su base cambió), sigue disponible `afg gold prepare --annotator gm`.
+(por ejemplo porque su base cambió), existe `afg gold prepare --annotator gm`: hace solo el último paso de `setup` (crear los archivos), sin descargar nada; es la única diferencia entre los dos.
 `validate` con `--series <ID>` revisa solo la serie cuyo PR vas a abrir; sin `--series`
 recorre todas tus series asignadas. Si hay un error sale con código distinto de cero y te
 dice fila y columna exactas. `status --annotator gm` es solo lectura; te muestra tu propio
@@ -132,12 +135,12 @@ trabajo fino.
 copia ya existe con el nombre correcto y las columnas de máquina llenas en cuanto corres:
 
 ```bash
-uv run afg gold prepare --annotator gm
+uv run afg gold setup --annotator gm
 ```
 
 El patrón `<serie>.decisions.<iniciales>.csv` es el que fija [`README.md`](README.md) §5.1,
 espejo del `<serie>.candidates.<iniciales>.csv` que el manual ya definía para la Tarea B.
-`prepare` lo aplica también en Fase 3, aunque anotes solo tú.
+`setup` lo aplica también en Fase 3, aunque anotes solo tú.
 
 | Columna | Quién | Regla |
 |---|---|---|
@@ -151,7 +154,7 @@ espejo del `<serie>.candidates.<iniciales>.csv` que el manual ya definía para l
 | **`status`** | **tú** | Valor del conjunto cerrado, ver abajo |
 | **`decision_object`** | **tú** | Qué se decide |
 | **`decision_content`** | **tú** | Qué se decidió al respecto |
-| **`annotator`** | **tú** | `gm`, ya puesto por `prepare` |
+| **`annotator`** | **tú** | `gm`, ya puesto por `setup` |
 | **`notes`** | **tú** | Solo si algo no es obvio; obligatorio en `sin_soporte` |
 
 **Valores permitidos de `status`:**
@@ -173,7 +176,7 @@ decision | no_decision | compuesta | sin_soporte | descartar
 
 ### Tarea B — `data/processed/relations/<serie>.candidates.gm.csv`
 
-Misma regla: la crea `afg gold prepare --annotator gm`, no una copia manual.
+Misma regla: la crea `afg gold setup --annotator gm`, no una copia manual.
 
 | Columna | Quién | Regla |
 |---|---|---|
@@ -185,7 +188,7 @@ Misma regla: la crea `afg gold prepare --annotator gm`, no una copia manual.
 | **`relation`** | **tú** | Valor del conjunto cerrado, ver abajo |
 | **`direction_ok`** | **tú** | `si` / `no` |
 | **`confidence`** | **tú** | `alta` / `media` / `baja` |
-| **`annotator`** | **tú** | `gm`, ya puesto por `prepare` |
+| **`annotator`** | **tú** | `gm`, ya puesto por `setup` |
 | **`notes`** | **tú** | Obligatorio si `direction_ok = no` |
 
 **Valores permitidos:**
@@ -286,7 +289,7 @@ documento que todo el equipo lee, es decir, contaminarla para siempre.
 
 ### 6.1 Tarea A — fila `ES2015c.d08`, una `compuesta`
 
-**Antes** (lo que deja `uv run afg gold prepare --annotator gm` en tu
+**Antes** (lo que deja `uv run afg gold setup --annotator gm` en tu
 `ES2015.decisions.gm.csv`; `annotator` ya viene puesto, el resto de lo tuyo está vacío):
 
 ```
@@ -339,7 +342,7 @@ son una sola decisión, y filas sin bandera que son tres.
 
 ### 6.2 Tarea B — par `ES2015.p002`
 
-**Antes** (lo que deja `prepare` en tu `ES2015.candidates.gm.csv`):
+**Antes** (lo que deja `setup` en tu `ES2015.candidates.gm.csv`):
 
 ```
 pair_id             : ES2015.p002
@@ -390,8 +393,9 @@ no» y no lo propone como siguiente paso. Las preguntas salen solo de series de 
 (ES2015, IS1004 y TS3009 quedan fuera, ADR 0005). E3 depende de relaciones ya adjudicadas, así
 que la mayoría llegará con la Fase 3.
 
-Mínimo **25 preguntas por estrato**, cuatro estratos, **≥100 en total**
-(`docs/propuesta.md` §5.5); para E3 la meta es **hasta 40** (ver más abajo). **El autor no valida y el validador no escribe**: tú no tocas
+Cada uno de los cuatro estratos necesita **al menos 25 preguntas** (obligatorio), así que el
+banco tiene **al menos 100 en total** (`docs/propuesta.md` §5.5). Solo E3 admite además hasta
+**40**: las filas de E3 entre la 26 y la 40 son opcionales (ver más abajo). **El autor no valida y el validador no escribe**: tú no tocas
 `validated_by`, y Germán no escribe preguntas. Es la misma regla de separación que hace que
 `jss` adjudique y no anote (`CONTRIBUTING.md` §1).
 
@@ -409,8 +413,9 @@ Los valores de `stratum` son literalmente los de
 
 ### Cuántas preguntas de E3: hasta 40, nunca inventadas
 
-El mínimo de cada estrato sigue siendo **25**. Para E3 el banco tiene además espacio para
-**hasta 40 preguntas**: escribe tantas como el material permita, hasta ese tope. La razón es
+El mínimo de cada estrato sigue siendo **25**, también en E3. Para E3 el banco tiene además
+espacio para **hasta 40 preguntas**: las que pasen de 25 son opcionales; escribe tantas como el
+material permita, hasta ese tope. La razón es
 estadística: E3 es el estrato donde se compara C2 con C1, y con más preguntas aumenta la
 probabilidad de detectar una mejora real pequeña. En la simulación de potencia del notebook 10,
 con 25 preguntas una mejora verdadera de 15 puntos se detecta en alrededor de 57 % de los
@@ -574,7 +579,7 @@ mantenedor revise exactamente esa serie antes de que entre.
 git checkout main                                          # vuelve a main
 git pull                                                    # trae lo que el equipo ya fusionó
 git checkout -b data/anotacion-ES2015-gm                    # crea la rama de esta serie
-uv run afg gold prepare --annotator gm
+uv run afg gold setup --annotator gm
 # ... anotas ...
 uv run afg gold validate --annotator gm --series ES2015     # tiene que salir sin errores
 git add data/processed/decisions/ES2015.decisions.gm.csv \

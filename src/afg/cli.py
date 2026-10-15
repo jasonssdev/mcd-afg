@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Any
 
 import typer
+import typer.rich_utils as typer_rich_utils
 from rich.console import Console
 from rich.markup import escape
 
@@ -162,33 +163,49 @@ from afg.shared.skills import SkillAssetsError, link_skill, sync_assets, verify_
 console = Console()
 logger = get_logger(__name__)
 
+# Section titles of ``--help`` in Spanish (typer reads these module constants at render time).
+typer_rich_utils.COMMANDS_PANEL_TITLE = "Comandos"
+typer_rich_utils.OPTIONS_PANEL_TITLE = "Opciones"
+typer_rich_utils.ARGUMENTS_PANEL_TITLE = "Argumentos"
+
+_PANEL_ANNOTATORS = "Para anotadores"
+_PANEL_MAINTENANCE = "Para mantenimiento (mantenedor)"
+
 app = typer.Typer(
     name="afg",
-    help="Evaluation harness: document RAG vs. compiled decision representations "
-    "over the AMI Meeting Corpus (thesis section 5).",
+    help="Banco de pruebas de la tesis: RAG sobre documentos frente a representaciones "
+    "compiladas de decisiones, sobre el corpus de reuniones AMI. Quien anota usa solo "
+    "`afg gold` (ver `afg gold --help`).",
     no_args_is_help=True,
 )
-corpus_app = typer.Typer(help="AMI corpus download and paso-cero inventory (thesis section 5.0).")
-biblio_app = typer.Typer(help="Bibliography coverage and stats (bibliography/refs.bib).")
-gold_app = typer.Typer(help="OE1: build the gold decision/relation set (thesis section 3).")
+corpus_app = typer.Typer(help="Descarga e inventario del corpus AMI (paso cero, sección 5.0).")
+biblio_app = typer.Typer(
+    help="Cobertura y estadísticas de la bibliografía (bibliography/refs.bib)."
+)
+gold_app = typer.Typer(
+    help="Conjunto de referencia de OE1: anotación de decisiones y relaciones. Quien anota "
+    "usa los comandos de «Para anotadores»; el resto es del mantenedor."
+)
 judge_app = typer.Typer(
     help="Selección del modelo juez: preguntas, respuestas y calibración (issue #82)."
 )
 c1_app = typer.Typer(help="C1 (RAG sobre documentos): ajuste de la segmentación y de K (ADR 0005).")
-experiment_app = typer.Typer(help="OE2/OE3: run Experiment A / Experiment B (thesis section 3).")
-skills_app = typer.Typer(help="Install, verify and link skills under .agents/skills/.")
+experiment_app = typer.Typer(
+    help="OE2/OE3: corre el Experimento A y el Experimento B (tesis, sección 3)."
+)
+skills_app = typer.Typer(help="Instala, verifica y enlaza las skills de .agents/skills/.")
 
-app.add_typer(corpus_app, name="corpus")
-app.add_typer(biblio_app, name="biblio")
 app.add_typer(gold_app, name="gold")
-app.add_typer(judge_app, name="judge")
-app.add_typer(c1_app, name="c1")
-app.add_typer(experiment_app, name="experiment")
-app.add_typer(skills_app, name="skills")
+app.add_typer(corpus_app, name="corpus", rich_help_panel=_PANEL_MAINTENANCE)
+app.add_typer(biblio_app, name="biblio", rich_help_panel=_PANEL_MAINTENANCE)
+app.add_typer(judge_app, name="judge", rich_help_panel=_PANEL_MAINTENANCE)
+app.add_typer(c1_app, name="c1", rich_help_panel=_PANEL_MAINTENANCE)
+app.add_typer(experiment_app, name="experiment", rich_help_panel=_PANEL_MAINTENANCE)
+app.add_typer(skills_app, name="skills", rich_help_panel=_PANEL_MAINTENANCE)
 
 
 @app.callback()
-def main(log_level: str = typer.Option("INFO", help="Logging level.")) -> None:
+def main(log_level: str = typer.Option("INFO", help="Nivel de registro (log).")) -> None:
     configure_logging(log_level)
     ensure_dirs()
 
@@ -489,9 +506,9 @@ def _refuse_or_warn_if_series_annotated(series: str, *, force: bool) -> None:
     )
 
 
-@gold_app.command("build")
+@gold_app.command("build", rich_help_panel=_PANEL_MAINTENANCE)
 def gold_build(
-    series: str = typer.Option(..., "--series", help="AMI series id, e.g. IS1004."),
+    series: str = typer.Option(..., "--series", help="Serie de AMI, p. ej. IS1004."),
     force: bool = typer.Option(
         False,
         "--force",
@@ -499,15 +516,17 @@ def gold_build(
         "Desalinea `afg gold validate` para todo el mundo.",
     ),
 ) -> None:
-    """Build the Task-A working file for a series (manual de anotacion secciones 2, 3).
+    """(Mantenedor) Genera el archivo base de la Tarea A de una serie (manual, secciones 2 y 3).
 
-    Writes ``data/processed/decisions/<series>.decisions.csv``. IMPORTANT: this is a
-    working file for a human annotator, not a finished gold set. ``machine_flags`` are
-    triage hints only, never a verdict -- ``status``, ``decision_object``,
-    ``decision_content``, ``annotator``, and ``notes`` are always written empty and must be
-    filled in by a human (see ``afg.annotation.goldset`` module docstring). Refuses to run
-    at all if a derived ``<series>.decisions.<iniciales>.csv`` or
-    ``<series>.candidates.<iniciales>.csv`` already holds annotation, unless ``--force``.
+    Escribe ``data/processed/decisions/<serie>.decisions.csv``. Es un
+    archivo de trabajo para quien anota, no un conjunto de referencia
+    terminado: ``machine_flags`` son solo pistas de triaje, nunca un
+    veredicto, y ``status``, ``decision_object``, ``decision_content``,
+    ``annotator`` y ``notes`` salen siempre vacías para que las llene una
+    persona. Se niega a correr si algún
+    ``<serie>.decisions.<iniciales>.csv`` o
+    ``<serie>.candidates.<iniciales>.csv`` derivado ya tiene anotación,
+    salvo con ``--force``.
     """
     from afg.annotation.goldset import build_gold_decisions, write_gold_decisions_csv
 
@@ -563,9 +582,9 @@ def gold_build(
     console.print(f"Wrote {out_path}")
 
 
-@gold_app.command("link")
+@gold_app.command("link", rich_help_panel=_PANEL_MAINTENANCE)
 def gold_link() -> None:
-    """Generate cross-meeting relation annotation candidates (thesis sections 3, 5.1)."""
+    """(Mantenedor) Pendiente: candidatos de relación entre reuniones (tesis, secciones 3 y 5.1)."""
     console.print(
         "[yellow]Requires a built gold decision set (`afg gold build`) as input. "
         "Once decisions exist, use afg.annotation.linking.chronological_candidate_pairs "
@@ -574,14 +593,15 @@ def gold_link() -> None:
     raise typer.Exit(code=2)
 
 
-@gold_app.command("agreement")
+@gold_app.command("agreement", rich_help_panel=_PANEL_MAINTENANCE)
 def gold_agreement(
-    series: str = typer.Option(..., "--series", help="AMI series id, e.g. IS1004."),
+    series: str = typer.Option(..., "--series", help="Serie de AMI, p. ej. IS1004."),
 ) -> None:
-    """Compute Cohen's kappa for existence/type/direction, separately (manual section 6).
+    """(Mantenedor) Calcula el kappa de Cohen de existencia, tipo y dirección (manual, sección 6).
 
-    Reads every ``data/processed/relations/<series>.candidates.<initials>.csv`` file
-    (one per independent annotator) and writes ``reports/tables/<series>.agreement.csv``.
+    Lee cada ``data/processed/relations/<serie>.candidates.<iniciales>.csv``
+    (uno por anotador independiente) y escribe
+    ``reports/tables/<serie>.agreement.csv``.
     """
     from afg.annotation.agreement import (
         AgreementInputError,
@@ -662,7 +682,7 @@ def gold_evidence(
     gold_evidencia(meeting=meeting, term=term, turns=None, decision=None)
 
 
-@gold_app.command("evidencia")
+@gold_app.command("evidencia", rich_help_panel=_PANEL_ANNOTATORS)
 def gold_evidencia(
     meeting: Annotated[
         str | None, typer.Option("--meeting", help="Reunión de AMI, p. ej. ES2015a.")
@@ -840,18 +860,18 @@ def _decisions_for_series_or_exit(ami_root: Path, series: str) -> list[Decision]
     return decisions
 
 
-@gold_app.command("candidates")
+@gold_app.command("candidates", rich_help_panel=_PANEL_MAINTENANCE)
 def gold_candidates(
-    series: str = typer.Option(..., "--series", help="AMI series id, e.g. IS1004."),
+    series: str = typer.Option(..., "--series", help="Serie de AMI, p. ej. IS1004."),
     threshold: float = typer.Option(
         0.30,
         "--threshold",
-        help="Overlap-coefficient blocking threshold (thesis manual section 4).",
+        help="Umbral de bloqueo por coeficiente de solapamiento (manual de la tesis, sección 4).",
     ),
     min_overlap: int = typer.Option(
         2,
         "--min-overlap",
-        help="Minimum absolute shared-token count (|A & B|), alongside --threshold.",
+        help="Mínimo absoluto de palabras compartidas (|A & B|), junto con --threshold.",
     ),
     force: bool = typer.Option(
         False,
@@ -860,13 +880,15 @@ def gold_candidates(
         "Desalinea `afg gold validate` para todo el mundo.",
     ),
 ) -> None:
-    """Generate cross-meeting candidate decision pairs for human adjudication (Tarea B).
+    """(Mantenedor) Genera el archivo base de la Tarea B: pares candidatos entre reuniones.
 
-    Provisional: candidates are built from raw abstractive DECISIONS sentences
-    (``afg.annotation.blocking.decisions_from_abstractive``), not yet P3's normalised gold
-    decisions. Writes ``data/processed/relations/<series>.candidates.csv``. Refuses to run
-    at all if a derived ``<series>.decisions.<iniciales>.csv`` or
-    ``<series>.candidates.<iniciales>.csv`` already holds annotation, unless ``--force``.
+    Provisional: los candidatos salen de las oraciones DECISIONS del resumen
+    abstractivo (``afg.annotation.blocking.decisions_from_abstractive``),
+    todavía no de las decisiones normalizadas del conjunto de referencia.
+    Escribe ``data/processed/relations/<serie>.candidates.csv``. Se niega a
+    correr si algún ``<serie>.decisions.<iniciales>.csv`` o
+    ``<serie>.candidates.<iniciales>.csv`` derivado ya tiene anotación,
+    salvo con ``--force``.
     """
     _refuse_or_warn_if_series_annotated(series, force=force)
 
@@ -888,35 +910,37 @@ def gold_candidates(
     console.print(f"Wrote {out_path}")
 
 
-@gold_app.command("recall-sample")
+@gold_app.command("recall-sample", rich_help_panel=_PANEL_MAINTENANCE)
 def gold_recall_sample(
-    series: str = typer.Option(..., "--series", help="AMI series id, e.g. IS1004."),
-    n: int = typer.Option(50, "--n", help="Number of rejected pairs to sample."),
-    seed: int = typer.Option(42, "--seed", help="Random seed for a reproducible sample."),
+    series: str = typer.Option(..., "--series", help="Serie de AMI, p. ej. IS1004."),
+    n: int = typer.Option(50, "--n", help="Cantidad de pares rechazados a muestrear."),
+    seed: int = typer.Option(42, "--seed", help="Semilla para que la muestra sea reproducible."),
     threshold: float = typer.Option(
         0.30,
         "--threshold",
-        help="Overlap-coefficient blocking threshold (thesis manual section 4).",
+        help="Umbral de bloqueo por coeficiente de solapamiento (manual de la tesis, sección 4).",
     ),
     min_overlap: int = typer.Option(
         2,
         "--min-overlap",
-        help="Minimum absolute shared-token count (|A & B|), alongside --threshold.",
+        help="Mínimo absoluto de palabras compartidas (|A & B|), junto con --threshold.",
     ),
     force: bool = typer.Option(
         False,
         "--force",
-        help="Overwrite an existing sample. Invalidates any annotation made on it.",
+        help="Sobrescribe una muestra existente. Invalida la anotación hecha sobre ella.",
     ),
 ) -> None:
-    """Sample rejected pairs for the blocker recall check (Tarea C).
+    """(Mantenedor) Muestrea pares rechazados para la Tarea C (recall del bloqueador).
 
-    Provisional: sampled from raw abstractive DECISIONS sentences, same caveat as
-    ``afg gold candidates``. Writes ``data/processed/relations/<series>.recall-sample.csv``.
+    Provisional: la muestra sale de las oraciones DECISIONS del resumen
+    abstractivo, con la misma salvedad que ``afg gold candidates``. Escribe
+    ``data/processed/relations/<serie>.recall-sample.csv``.
 
-    Refuses to overwrite an existing sample unless ``--force`` is given: the sample is
-    drawn once with a fixed seed, and one regenerated after seeing results is no longer
-    a valid estimate (docs/anotacion/asignacion/tareas-jss.md section 5).
+    Se niega a sobrescribir una muestra existente salvo con ``--force``: la
+    muestra se saca una sola vez con semilla fija, y una regenerada tras ver
+    resultados deja de ser una estimación válida
+    (docs/anotacion/asignacion/tareas-jss.md, sección 5).
     """
     out_path = GOLD_RELATIONS_DIR / f"{series}.recall-sample.csv"
     if out_path.exists() and not force:
@@ -980,7 +1004,7 @@ def _short(path: Path) -> str:
         return str(path)
 
 
-@gold_app.command("setup")
+@gold_app.command("setup", rich_help_panel=_PANEL_ANNOTATORS)
 def gold_setup(
     annotator: str = typer.Option(..., "--annotator", help="Iniciales del anotador, p. ej. gv."),
     yes: bool = typer.Option(
@@ -991,8 +1015,8 @@ def gold_setup(
 
     Corre, en orden, saltando lo que ya esté hecho: descarga el corpus AMI (pide
     confirmación explícita de la licencia CC BY 4.0 y del tamaño de la descarga, salvo
-    que pases --yes), genera las 171 transcripciones, y prepara tu espacio de trabajo --
-    nunca con --force, así que jamás borra anotación ya hecha. Termina diciendo
+    que pases --yes), genera las 171 transcripciones y prepara tu espacio de trabajo.
+    Nunca usa --force, así que jamás borra anotación ya hecha. Termina diciendo
     exactamente qué archivo abrir primero.
     """
     from afg.annotation.progress import NextKind
@@ -1129,7 +1153,7 @@ def gold_setup(
     )
 
 
-@gold_app.command("prepare")
+@gold_app.command("prepare", rich_help_panel=_PANEL_ANNOTATORS)
 def gold_prepare(
     annotator: str = typer.Option(..., "--annotator", help="Iniciales del anotador, p. ej. gv."),
     force: bool = typer.Option(
@@ -1219,7 +1243,7 @@ def gold_prepare(
     )
 
 
-@gold_app.command("validate")
+@gold_app.command("validate", rich_help_panel=_PANEL_ANNOTATORS)
 def gold_validate(
     annotator: str = typer.Option(..., "--annotator", help="Iniciales del anotador, p. ej. gv."),
     series: str | None = typer.Option(
@@ -1279,7 +1303,7 @@ def gold_validate(
     raise typer.Exit(code=1)
 
 
-@gold_app.command("status")
+@gold_app.command("status", rich_help_panel=_PANEL_ANNOTATORS)
 def gold_status(
     annotator: str | None = typer.Option(
         None, "--annotator", help="Muestra solo las series de esta persona, p. ej. gv."
@@ -1404,14 +1428,14 @@ def gold_status(
     console.print(f"Siguiente: {status.next_action.message}", markup=False, soft_wrap=True)
 
 
-@gold_app.command("adjudicate")
+@gold_app.command("adjudicate", rich_help_panel=_PANEL_MAINTENANCE)
 def gold_adjudicate(
     series: str = typer.Option(..., "--series", help="Serie de doble anotación, p. ej. ES2015."),
     force: bool = typer.Option(
         False, "--force", help="Regenera aunque los CSV ya tengan veredictos escritos."
     ),
 ) -> None:
-    """Escribe los dos CSV de adjudicación de una serie, con las respuestas lado a lado.
+    """(Mantenedor) Escribe los dos CSV de adjudicación de una serie, lado a lado.
 
     Genera `<serie>.decisions.adjudicated.csv` (una fila por decisión base) y
     `<serie>.candidates.adjudicated.csv` (una fila por par). Cada archivo trae las columnas
@@ -1442,11 +1466,11 @@ def gold_adjudicate(
     )
 
 
-@gold_app.command("validate-adjudication")
+@gold_app.command("validate-adjudication", rich_help_panel=_PANEL_MAINTENANCE)
 def gold_validate_adjudication(
     series: str = typer.Option(..., "--series", help="Serie de doble anotación, p. ej. ES2015."),
 ) -> None:
-    """Verifica que el adjudicador terminó los dos CSV de adjudicación de una serie.
+    """(Mantenedor) Verifica que el adjudicador terminó los dos CSV de adjudicación de una serie.
 
     Cada fila necesita un `final_*` legal, `razon` donde hubo desacuerdo o `sin_soporte`,
     y `adjudicator`; una fila `compuesta` necesita al menos dos filas hijas consecutivas.
@@ -1465,13 +1489,13 @@ def gold_validate_adjudication(
     raise typer.Exit(code=1)
 
 
-@gold_app.command("questions-init")
+@gold_app.command("questions-init", rich_help_panel=_PANEL_MAINTENANCE)
 def gold_questions_init(
     force: bool = typer.Option(
         False, "--force", help="Regenera aunque el banco ya tenga preguntas escritas."
     ),
 ) -> None:
-    """Crea el banco de preguntas con filas numeradas y vacías: 25 por estrato, 40 en E3.
+    """(Mantenedor) Crea el banco de preguntas: filas numeradas y vacías (25 por estrato, 40 en E3).
 
     Quien escribe el banco llena texto en filas que ya existen: nunca inventa un id ni
     escribe un estrato, que es lo que hacía que un estrato corto se descubriera contando
@@ -1545,7 +1569,7 @@ def _collapsed_issue_lines(issues: Sequence[QuestionBankIssue]) -> list[str]:
     return lines
 
 
-@gold_app.command("questions-check")
+@gold_app.command("questions-check", rich_help_panel=_PANEL_ANNOTATORS)
 def gold_questions_check(
     path: Annotated[
         Path | None,
@@ -1581,6 +1605,11 @@ def gold_questions_check(
     _print_question_bank_report(report)
     if report.has_errors:
         raise typer.Exit(code=1)
+
+
+# Annotator commands first in ``afg gold --help``; the sort is stable, so each group keeps the
+# order in which its commands are defined above.
+gold_app.registered_commands.sort(key=lambda c: c.rich_help_panel != _PANEL_ANNOTATORS)
 
 
 # --- judge calibration (issue #82) ---------------------------------------------------------
@@ -2143,7 +2172,8 @@ def experiment_b(
         typer.Option(
             "--questions",
             help="CSV de preguntas: el banco `banco-preguntas.csv` (corre solo las filas "
-            "validadas y se niega si hay errores bloqueantes), la hoja `ES2015.preguntas.csv` "
+            "validadas y se niega si hay errores bloqueantes, con las mismas verificaciones de "
+            "`afg gold questions-check`), la hoja `ES2015.preguntas.csv` "
             "o el CSV de preguntas de calibración.",
         ),
     ],
@@ -2186,7 +2216,7 @@ def experiment_b(
     try:
         built = {c.upper(): make_experiment_b_condition(c) for c in dict.fromkeys(wanted)}
         if questions.exists() and is_question_bank(questions):
-            bank_report = load_configured_question_bank(questions)
+            bank_report = load_configured_question_bank(questions, strict=True)
             if not bank_report.has_errors:
                 _print_question_bank_report(bank_report)
         bank = load_experiment_questions(questions, limit=limit_questions)
@@ -2478,9 +2508,9 @@ def experiment_b_human_check(
 # --- report ---------------------------------------------------------------------------------
 
 
-@app.command("report")
+@app.command("report", rich_help_panel=_PANEL_MAINTENANCE)
 def report() -> None:
-    """Regenerate reports/tables/*.csv from whatever data is currently available."""
+    """Regenera reports/tables/*.csv con los datos disponibles (mantenedor)."""
     console.print("Regenerating bibliography audit...")
     biblio_audit()
     console.print(

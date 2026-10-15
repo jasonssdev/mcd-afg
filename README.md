@@ -197,6 +197,9 @@ git commit -m "data(anotacion): tareas A y B de <serie> (<ini>)"
 git push -u origin data/anotacion-<serie>-<ini>       # sube la rama al repositorio del equipo (origin)
 ```
 
+Una serie, un PR. La Tarea C (solo `gv`, muestra de recall) va en un PR aparte por serie, con la
+rama `data/anotacion-recall-<SERIE>` (p. ej. `data/anotacion-recall-IS1004`).
+
 `origin` es el repositorio del equipo, no una copia personal. Eso es seguro: `main` está
 protegida, así que ese `push` solo puede subir la rama nueva, nunca `main`. Si `git push`
 intentara subir directo a `main`, GitHub lo rechaza — a `main` solo se llega por pull request

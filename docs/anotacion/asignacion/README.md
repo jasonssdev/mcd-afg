@@ -81,8 +81,8 @@ uv run afg gold build      --series <ID>   # -> data/processed/decisions/<ID>.de
 uv run afg gold candidates --series <ID>   # -> data/processed/relations/<ID>.candidates.csv
 ```
 
-Son comandos de mantenimiento: quien anota no los corre (solo `setup`, `prepare`, `validate`
-y `evidence`). No hay nada que hacer en esta fase. Si alguien vuelve a correr estos comandos sobre una
+Son comandos de mantenimiento: quien anota no los corre (solo `setup`, `validate`,
+`status` y `evidencia`). No hay nada que hacer en esta fase. Si alguien vuelve a correr estos comandos sobre una
 serie que ya tiene archivos de anotador con trabajo cargado, `afg gold build` y `afg gold
 candidates` se niegan a regenerar la base: perder la división de una fila `compuesta` o
 desalinear las columnas de máquina que `afg gold validate` compara contra la base rompería
@@ -227,7 +227,8 @@ Estas valen para `gv` y `gm` por igual, en las tres fases.
    sugerencia de triaje; `status` y `relation` no se copian de ahí nunca.
 7. **Una serie por PR.** Rama `data/anotacion-<serie>-<iniciales>` → PR contra `main`, revisado
    por el mantenedor (`CONTRIBUTING.md` §2 y §3). No se juntan varias series en un PR: un PR
-   por serie permite detectar deriva de criterio temprano, cuando corregirla es barata.
+   por serie permite detectar deriva de criterio temprano, cuando corregirla es barata. La
+   Tarea C (solo `gv`) va en PR aparte, uno por serie, en la rama `data/anotacion-recall-<SERIE>`.
 8. **Lo que no encaja se escribe, no se descarta en silencio.** Va a `notes` y a un issue con
    la plantilla "Hallazgo".
 
@@ -242,8 +243,8 @@ verificada de nuevo al escribir esto.
 ### 5.1 Resuelto: nombrar los archivos ya no es trabajo manual
 
 Antes no existía convención de nombre para la Tarea A y cada quien copiaba y renombraba a
-mano — tres oportunidades de escribirlo mal por archivo. Hoy `uv run afg gold prepare
---annotator <iniciales>` crea directamente:
+mano — tres oportunidades de escribirlo mal por archivo. Hoy `uv run afg gold setup
+--annotator <iniciales>` (que incluye `prepare`) crea directamente:
 
 ```
 data/processed/decisions/<serie>.decisions.<iniciales>.csv
@@ -288,7 +289,7 @@ mano, salvo `--force`. Decisión registrada en
 
 ## 6. Artefactos que produce este plan
 
-Las tres primeras filas las crea `afg gold prepare` (columnas humanas vacías); las llena la
+Las tres primeras filas las crea `afg gold setup` (columnas humanas vacías); las llena la
 persona; `afg gold validate` verifica el resultado.
 
 | Archivo | Quién | Cuándo |

@@ -78,7 +78,7 @@ def load_experiment_questions(path: Path, *, limit: int | None = None) -> list[Q
         FileNotFoundError: if ``path`` does not exist.
     """
     if is_question_bank(path):
-        questions = bank_questions(load_configured_question_bank(path))
+        questions = bank_questions(load_configured_question_bank(path, strict=True))
         return questions if limit is None else questions[:limit]
     if _is_worksheet(path):
         items = worksheet_questions(load_worksheet(path))

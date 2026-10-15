@@ -6,7 +6,7 @@ leer el código.
 
 | Documento | Qué es | Cuándo leerlo |
 |---|---|---|
-| [`asignacion/EMPIEZA-AQUI.md`](asignacion/EMPIEZA-AQUI.md) | Una página: clona, instala, `prepare`, llena, `validate`, PR | Si nunca has abierto este repositorio |
+| [`asignacion/EMPIEZA-AQUI.md`](asignacion/EMPIEZA-AQUI.md) | Una página: clona, instala, `setup`, llena, `validate`, PR | Si nunca has abierto este repositorio |
 | Este README | Quién hace qué, en qué orden, con qué archivos y cuánto toma | Primero |
 | [`annotation-guidelines.md`](annotation-guidelines.md) | Qué cuenta como decisión y qué significa cada una de las seis relaciones | Antes de anotar la primera fila |
 | [`manual-anotacion-oe1.md`](manual-anotacion-oe1.md) | El manual operativo: qué archivo abres, qué columna llenas, qué escribes, con un ejemplo real resuelto de punta a punta | Con el CSV abierto al lado |
@@ -15,6 +15,15 @@ leer el código.
 | [`plantilla-adjudicacion.md`](plantilla-adjudicacion.md) | **Reemplazada.** Describía el `<serie>.adjudication.md`, que ya no existe; la adjudicación son hoy los dos `*.adjudicated.csv` ([`asignacion/tareas-jss.md`](asignacion/tareas-jss.md) §3) | Solo como referencia histórica |
 
 ## Quién hace qué
+
+Cuatro tareas, cada una con su propio archivo:
+
+| Tarea | Qué es | Quién la hace |
+|---|---|---|
+| A | Etiquetar las decisiones de cada serie (`<serie>.decisions.<iniciales>.csv`) | `gv` y `gm` |
+| B | Etiquetar la relación entre pares de decisiones de reuniones distintas (`<serie>.candidates.<iniciales>.csv`) | `gv` y `gm` |
+| C | Adjudicar a mano una muestra de pares que el bloqueador rechazó, para medir cuántas relaciones se pierde (`<serie>.recall-sample.gv.csv`) | solo `gv` |
+| D | Doble anotación y kappa: `gv` y `gm` anotan por separado las series de control; `jss` calcula el acuerdo y adjudica cada desacuerdo (`*.adjudicated.csv`) | `gv` y `gm` anotan; `jss` adjudica (quien anota no adjudica) |
 
 | Persona | Rol | Tareas |
 |---|---|---|

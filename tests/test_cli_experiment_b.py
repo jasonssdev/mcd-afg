@@ -58,6 +58,7 @@ def env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
         lambda: frozenset({"ES2015"}),
     )
     monkeypatch.setattr(afg_cli, "default_excerpt_for", lambda q: "passage")
+    _strict_env(monkeypatch, tmp_path)
     return {"questions": questions, "out": tmp_path / "out", "condition": condition}
 
 
@@ -134,7 +135,7 @@ _BANK_HEADER = (
     "id,series_id,stratum,text,reference_answer,reference_evidence,author,validated_by,"
     "validation_notes\n"
 )
-_BANK_OK = "q001,ES2015,E1_point_fact,How much?,Twelve,ES2015a:d1,gm,gv,\n"
+_BANK_OK = "q001,ES2016,E1_point_fact,How much?,Twelve,ES2016a:ES2016a.A.dialog-act.x.1,gm,gv,\n"
 _BANK_PENDING = "q002,,E2_current_state,,,,gm,,\n"
 
 
@@ -152,10 +153,34 @@ def test_bank_runs_only_validated_rows_and_reports_pending(env: dict[str, Any]) 
 
 
 def test_bank_with_blocking_errors_is_refused_before_running(env: dict[str, Any]) -> None:
-    _bank(env, _BANK_OK, "q002,ES2015,E1_point_fact,,A,ES2015a:d1,gm,gv,\n")
+    _bank(env, _BANK_OK, "q002,ES2016,E1_point_fact,,A,ES2016a:ES2016a.A.dialog-act.x.1,gm,gv,\n")
     result = _invoke(env, "--run-name", "bad")
     assert result.exit_code == 1
     assert "q002" in _out(result)
+    assert not env["out"].exists()
+
+
+def test_bank_with_a_development_series_is_refused_before_running(env: dict[str, Any]) -> None:
+    _bank(env, "q001,ES2015,E1_point_fact,Q?,A,ES2015a:x.1,gm,gv,\n")
+    result = _invoke(env, "--run-name", "dev")
+    assert result.exit_code == 1
+    assert "desarrollo" in _out(result)
+    assert not env["out"].exists()
+
+
+def test_bank_with_unknown_dialogue_acts_is_refused_before_running(env: dict[str, Any]) -> None:
+    _bank(env, "q001,ES2016,E1_point_fact,Q?,A,ES2016a:ES2016a.A.dialog-act.zzz.9,gm,gv,\n")
+    result = _invoke(env, "--run-name", "acts")
+    assert result.exit_code == 1
+    assert "zzz" in _out(result)
+    assert not env["out"].exists()
+
+
+def test_bank_with_a_validator_that_is_not_an_annotator_is_refused(env: dict[str, Any]) -> None:
+    _bank(env, "q001,ES2016,E1_point_fact,Q?,A,ES2016a:ES2016a.A.dialog-act.x.1,gm,jss,\n")
+    result = _invoke(env, "--run-name", "who")
+    assert result.exit_code == 1
+    assert "jss" in _out(result)
     assert not env["out"].exists()
 
 
@@ -233,7 +258,7 @@ def test_questions_check_explains_a_semicolon_file(env: dict[str, Any]) -> None:
 
 def _strict_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     transcripts = tmp_path / "transcripts"
-    transcripts.mkdir()
+    transcripts.mkdir(exist_ok=True)
     turn = {
         "meeting_id": "ES2016a",
         "turn_index": 0,

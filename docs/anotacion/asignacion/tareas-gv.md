@@ -1,5 +1,8 @@
 # Tareas de Germán Vega (`gv`)
 
+> **Antes de empezar:** instala `uv`, sincroniza el entorno y descarga el corpus siguiendo
+> [`README.md` §3](../../../README.md#3-tu-primer-día-paso-a-paso) y lee [`EMPIEZA-AQUI.md`](EMPIEZA-AQUI.md).
+
 > **Antes de la primera fila:** lee [`../annotation-guidelines.md`](../annotation-guidelines.md)
 > (qué cuenta como decisión, qué significa cada relación) y ten
 > [`../manual-anotacion-oe1.md`](../manual-anotacion-oe1.md) abierto al lado del CSV. Este
@@ -17,7 +20,7 @@ ES2015 ya está adjudicada. Lo que sigue, en este orden:
    ```bash
    git switch main && git pull
    git switch -c data/anotacion-TS3009-gv
-   uv run afg gold prepare --annotator gv
+   uv run afg gold setup --annotator gv
    ```
    Abre `data/processed/decisions/TS3009.decisions.gv.csv` (Tarea A) y luego
    `data/processed/relations/TS3009.candidates.gv.csv` (Tarea B), en orden de reunión
@@ -56,7 +59,7 @@ genera las transcripciones y crea, solo para las series ya abiertas, cada `<seri
 nunca copies ni renombres un CSV a mano. Termina diciéndote lo único que toca hacer
 ahora según el estado real (qué serie, qué archivo, o a quién esperas). Si vuelves a correrlo, salta lo que ya esté hecho y nunca borra tu trabajo: un
 archivo con anotación se respeta. Si alguna vez necesitas recrear un archivo puntual
-(por ejemplo porque su base cambió), sigue disponible `afg gold prepare --annotator gv`.
+(por ejemplo porque su base cambió), existe `afg gold prepare --annotator gv`: hace solo el último paso de `setup` (crear los archivos), sin descargar nada; es la única diferencia entre los dos.
 `validate` con `--series <ID>` revisa solo la serie cuyo PR vas a abrir; sin `--series`
 recorre todas tus series asignadas. Si hay un error sale con código distinto de cero y te
 dice fila y columna exactas. `status --annotator gv` es solo lectura; te muestra tu propio
@@ -130,12 +133,12 @@ validación del banco.
 copia ya existe con el nombre correcto y las columnas de máquina llenas en cuanto corres:
 
 ```bash
-uv run afg gold prepare --annotator gv
+uv run afg gold setup --annotator gv
 ```
 
 El patrón `<serie>.decisions.<iniciales>.csv` es el que fija [`README.md`](README.md) §5.1,
 espejo del `<serie>.candidates.<iniciales>.csv` que el manual ya definía para la Tarea B.
-`prepare` lo aplica también en Fase 3, aunque anotes solo tú.
+`setup` lo aplica también en Fase 3, aunque anotes solo tú.
 
 | Columna | Quién | Regla |
 |---|---|---|
@@ -149,7 +152,7 @@ espejo del `<serie>.candidates.<iniciales>.csv` que el manual ya definía para l
 | **`status`** | **tú** | Valor del conjunto cerrado, ver abajo |
 | **`decision_object`** | **tú** | Qué se decide |
 | **`decision_content`** | **tú** | Qué se decidió al respecto |
-| **`annotator`** | **tú** | `gv`, ya puesto por `prepare` |
+| **`annotator`** | **tú** | `gv`, ya puesto por `setup` |
 | **`notes`** | **tú** | Solo si algo no es obvio; obligatorio en `sin_soporte` |
 
 **Valores permitidos de `status`:**
@@ -171,7 +174,7 @@ decision | no_decision | compuesta | sin_soporte | descartar
 
 ### Tarea B — `data/processed/relations/<serie>.candidates.gv.csv`
 
-Misma regla: la crea `afg gold prepare --annotator gv`, no una copia manual.
+Misma regla: la crea `afg gold setup --annotator gv`, no una copia manual.
 
 | Columna | Quién | Regla |
 |---|---|---|
@@ -183,7 +186,7 @@ Misma regla: la crea `afg gold prepare --annotator gv`, no una copia manual.
 | **`relation`** | **tú** | Valor del conjunto cerrado, ver abajo |
 | **`direction_ok`** | **tú** | `si` / `no` |
 | **`confidence`** | **tú** | `alta` / `media` / `baja` |
-| **`annotator`** | **tú** | `gv`, ya puesto por `prepare` |
+| **`annotator`** | **tú** | `gv`, ya puesto por `setup` |
 | **`notes`** | **tú** | Obligatorio si `direction_ok = no` |
 
 **Valores permitidos:**
@@ -284,7 +287,7 @@ documento que todo el equipo lee, es decir, contaminarla para siempre.
 
 ### 6.1 Tarea A — fila `ES2015b.d01`
 
-**Antes** (lo que deja `uv run afg gold prepare --annotator gv` en tu
+**Antes** (lo que deja `uv run afg gold setup --annotator gv` en tu
 `ES2015.decisions.gv.csv`; `annotator` ya viene puesto, el resto de lo tuyo está vacío):
 
 ```
@@ -329,7 +332,7 @@ decisión desde tres ángulos, no tres decisiones distintas.
 
 ### 6.2 Tarea B — par `ES2015.p001`
 
-**Antes** (lo que deja `prepare` en tu `ES2015.candidates.gv.csv`):
+**Antes** (lo que deja `setup` en tu `ES2015.candidates.gv.csv`):
 
 ```
 pair_id             : ES2015.p001
@@ -376,7 +379,7 @@ filas por archivo, con la semilla ya registrada). No las regeneres: `afg gold re
 se niega a sobrescribir una muestra que ya existe, y forzarlo con `--force` es decisión de
 `jss`, no tuya.
 
-`uv run afg gold prepare --annotator gv` crea tus cuatro copias,
+`uv run afg gold setup --annotator gv` crea tus cuatro copias,
 `<serie>.recall-sample.gv.csv`, junto con el resto de tus archivos. Mismas columnas y
 **mismas reglas que la Tarea B**: mismo conjunto cerrado de `relation`, mismo `direction_ok`,
 misma `confidence`. `afg gold validate --annotator gv --series <serie>` revisa cada una con
@@ -464,7 +467,7 @@ mantenedor revise exactamente esa serie antes de que entre.
 git checkout main                                          # vuelve a main
 git pull                                                    # trae lo que el equipo ya fusionó
 git checkout -b data/anotacion-ES2015-gv                    # crea la rama de esta serie
-uv run afg gold prepare --annotator gv
+uv run afg gold setup --annotator gv
 # ... anotas ...
 uv run afg gold validate --annotator gv --series ES2015     # tiene que salir sin errores
 git add data/processed/decisions/ES2015.decisions.gv.csv \

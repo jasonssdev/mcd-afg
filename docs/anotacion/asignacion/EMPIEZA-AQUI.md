@@ -88,11 +88,18 @@ recorre todas tus series asignadas.
 ## 6. Abre el PR
 
 Una serie, un PR — instrucciones exactas (rama, mensaje de commit, a quién le toca revisar)
-en la sección "Cómo entregas" de tu documento personal.
+en la sección "Cómo entregas" de tu documento personal. Las Tareas A y B de una serie van en
+la rama `data/anotacion-<serie>-<iniciales>`.
+
+La **Tarea C** (solo `gv`: adjudicar la muestra de recall del bloqueador, archivo
+`<serie>.recall-sample.gv.csv`) va en un PR aparte, uno por serie, con la rama
+`data/anotacion-recall-<SERIE>` (p. ej. `data/anotacion-recall-IS1004`); los detalles están en
+[`tareas-gv.md`](tareas-gv.md) §7 y §9.
 
 ---
 
 El mantenedor sigue el avance de todo el equipo con `uv run afg gold status`, sin abrir un
 solo archivo. El reparto completo — quién anota qué, en qué orden, cuándo se adjudica — está
 en [`README.md`](README.md). Si alguna vez necesitas recrear un archivo puntual en vez de todo
-el flujo, `afg gold prepare --annotator <iniciales>` sigue disponible.
+el flujo, existe `afg gold prepare --annotator <iniciales>`: hace solo el último paso de
+`setup` (crear los archivos), sin descargar nada.
