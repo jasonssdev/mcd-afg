@@ -1,10 +1,11 @@
 """Analysis of the correct-citation rule over an Experiment B run (thesis sections 5.6, 6.2).
 
-Descriptive helpers for deciding whether the current rule (every cited span must hit the
-reference evidence) measures what section 5.6 says the metric measures. They never change the
-rule: :mod:`afg.evaluation.citation` stays the one that scores runs. The variants themselves
-are defined in :mod:`afg.evaluation.citation_variants`; here they are applied to the record
-dictionaries written by :mod:`afg.experiments.runner` and tallied.
+Descriptive helpers behind ADR 0009, which replaced "every cited span must hit the reference
+evidence" by "at least one does" as the rule of section 5.6. They never score runs:
+:mod:`afg.evaluation.citation` does. The variants are defined in
+:mod:`afg.evaluation.citation_variants`; here they are applied to the record dictionaries
+written by :mod:`afg.experiments.runner` and tallied, and :func:`rescore_citation` brings
+records written under an older rule up to the current one.
 """
 
 from __future__ import annotations
@@ -16,6 +17,7 @@ from typing import Any
 
 from afg.domain.decision import EvidenceSpan
 from afg.domain.question import Answer, Question, QuestionStratum
+from afg.evaluation.citation import citation_correct, citation_precision
 from afg.evaluation.citation_variants import citation_variants
 from afg.experiments.summary import has_inline_used_marker
 
@@ -53,6 +55,30 @@ def reference_sizes(questions: Iterable[Question]) -> list[ReferenceSize]:
             )
         )
     return sizes
+
+
+def rescore_citation(
+    records: Iterable[Mapping[str, Any]], questions: Mapping[str, Question]
+) -> list[dict[str, Any]]:
+    """Copies of ``records`` with the citation fields recomputed under the current rule.
+
+    ``citation_correct`` and ``citation_precision`` are derived from the stored answer and the
+    question, so records written under an older rule (schema version 1) are read without
+    rewriting the run files. A record without an answer (a failed key) is copied unchanged.
+
+    Raises:
+        KeyError: if a record with an answer refers to a question not in ``questions``.
+    """
+    rescored = []
+    for record in records:
+        copy = dict(record)
+        if record.get("answer") is not None:
+            question = questions[str(record["question_id"])]
+            answer = Answer.model_validate(record["answer"])
+            copy["citation_correct"] = citation_correct(question, answer)
+            copy["citation_precision"] = citation_precision(question, answer)
+        rescored.append(copy)
+    return rescored
 
 
 @dataclass(frozen=True, slots=True)

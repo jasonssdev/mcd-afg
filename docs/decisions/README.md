@@ -46,6 +46,7 @@ estados, ni casillas, ni cifras que un comando produzca. Lo que está pendiente 
 | [0006](0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) | **C1 se construye en este proyecto**, separado de OpenKOS, y responde con los prompts de respuesta de OpenKOS copiados byte a byte; OpenKOS fijado a `==0.5.4` con `query --json` para OE4 |
 | [0007](0007-adr-ajuste-c1-y-presupuesto-de-contexto.md) | **C1 ajustado con una regla prerregistrada sobre ES2015** (enmendado el 2026-10-15 al medir el texto que llega al modelo: 5 fragmentos de hasta 1.200 caracteres con 1 turno de solape); las condiciones comparten el **presupuesto de texto**, no el número de bloques (C2 y C3 conservan `--limit 5`) |
 | [0008](0008-adr-fechas-de-reunion-para-openkos.md) | **Fecha de evento de cada reunión para `openkos ingest --event-date`**: fecha real de AMI y hora real si existe; en las 8 series de 14 sin hora, hora sintética (09:00, 10:00, 11:00, 12:00) que solo preserva el orden a→d, declarada y registrada por reunión en el manifiesto |
+| [0009](0009-adr-regla-de-citacion-correcta.md) | **Citación correcta = al menos una cita toca la evidencia de referencia** (§5.6), con la **precisión de las citas** como cifra secundaria; sin citas = falla (§6.2). Riesgo declarado de granularidad entre condiciones, a revisar con los primeros datos de C2 antes de evaluar |
 
 > **El ADR 0005 es el registro canónico del split desarrollo / evaluación.** La fila **D10**
 > dice lo mismo en una línea, y eso es deliberado: es su entrada de índice, no una segunda

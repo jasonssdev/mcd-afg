@@ -100,13 +100,11 @@ def test_an_answer_without_citation_fails_every_variant() -> None:
         (_question(QuestionStratum.E1_POINT_FACT), _answer(_span("ES2015c", "da.10"))),
     ],
 )
-def test_variants_do_not_apply_where_the_current_rule_does_not(
-    question: Question, answer: Answer
-) -> None:
+def test_variants_do_not_apply_where_the_rule_does_not(question: Question, answer: Answer) -> None:
     assert citation_variants(question, answer) is None
 
 
-def test_all_hit_agrees_with_the_current_rule() -> None:
+def test_any_hit_is_the_adopted_rule_and_all_hit_stays_available_for_comparison() -> None:
     answers = [
         _answer(),
         _answer(_span("ES2015c", "da.11")),
@@ -116,4 +114,4 @@ def test_all_hit_agrees_with_the_current_rule() -> None:
     for answer in answers:
         variants = citation_variants(QUESTION, answer)
         assert variants is not None
-        assert variants.all_hit is citation_correct(QUESTION, answer)
+        assert variants.any_hit is citation_correct(QUESTION, answer)

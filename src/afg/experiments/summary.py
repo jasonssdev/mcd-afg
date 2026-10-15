@@ -30,6 +30,7 @@ class RecordRow:
     correct: bool | None
     evidence_supported: bool | None
     citation_correct: bool | None
+    citation_precision: float | None
     cited_chunks: int
     answer_seconds: float
     judge_seconds: float
@@ -60,6 +61,7 @@ class CitationTally:
     incorrect: int
     incorrect_with_inline_marker: int
     incorrect_with_correct_answer: int
+    mean_precision: float
 
     @property
     def incorrect_rate(self) -> float:
@@ -100,6 +102,7 @@ def record_row(record: Mapping[str, Any]) -> RecordRow:
         correct=verdict.get("correct"),
         evidence_supported=verdict.get("evidence_supported"),
         citation_correct=record.get("citation_correct"),
+        citation_precision=record.get("citation_precision"),
         cited_chunks=len(trace.get("cited_chunk_ids") or []),
         answer_seconds=float(record.get("answer_seconds") or 0.0),
         judge_seconds=float(record.get("judge_seconds") or 0.0),
@@ -166,10 +169,13 @@ def stratum_summary(records: Iterable[Mapping[str, Any]]) -> list[StratumSummary
 def citation_tally(records: Sequence[Mapping[str, Any]]) -> CitationTally:
     """Tally the deterministic citation outcome of answered records with at least one citation."""
     correct = incorrect = with_marker = with_correct_answer = 0
+    precisions: list[float] = []
     for record in records:
         row = record_row(record)
         if row.outcome != ANSWERED_OUTCOME or not row.cited_chunks:
             continue
+        if row.citation_precision is not None:
+            precisions.append(row.citation_precision)
         if row.citation_correct is True:
             correct += 1
         elif row.citation_correct is False:
@@ -182,6 +188,7 @@ def citation_tally(records: Sequence[Mapping[str, Any]]) -> CitationTally:
         incorrect=incorrect,
         incorrect_with_inline_marker=with_marker,
         incorrect_with_correct_answer=with_correct_answer,
+        mean_precision=sum(precisions) / len(precisions) if precisions else 0.0,
     )
 
 

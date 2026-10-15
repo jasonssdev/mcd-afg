@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import pytest
+
 from afg.domain.decision import EvidenceSpan
 from afg.domain.question import Answer, Question, QuestionStratum
-from afg.evaluation.citation import citation_correct
+from afg.evaluation.citation import citation_correct, citation_precision
 
 
 def _span(meeting: str, *ids: str) -> EvidenceSpan:
@@ -44,10 +46,18 @@ def test_same_act_id_in_another_meeting_does_not_count() -> None:
     assert citation_correct(ANSWERABLE, _answer(_span("ES2015d", "da.11"))) is False
 
 
-def test_every_cited_span_must_be_supported() -> None:
+def test_one_supported_span_is_enough_even_if_others_are_not() -> None:
+    # ADR 0009: the failure to detect is "no cited source supports the answer", so a valid
+    # citation next to an unrelated one is still correct.
     supported = _span("ES2015c", "da.10")
     unsupported = _span("ES2015a", "da.3")
-    assert citation_correct(ANSWERABLE, _answer(supported, unsupported)) is False
+    assert citation_correct(ANSWERABLE, _answer(supported, unsupported)) is True
+    assert citation_correct(ANSWERABLE, _answer(unsupported, supported)) is True
+
+
+def test_no_supported_span_among_several_is_incorrect() -> None:
+    cited = (_span("ES2015a", "da.3"), _span("ES2015c", "da.40"), _span("ES2015d", "da.11"))
+    assert citation_correct(ANSWERABLE, _answer(*cited)) is False
 
 
 def test_any_reference_span_can_support_a_citation() -> None:
@@ -74,3 +84,38 @@ def test_unanswerable_question_is_not_applicable() -> None:
 def test_answerable_question_without_reference_evidence_is_not_applicable() -> None:
     question = _question(QuestionStratum.E1_POINT_FACT)
     assert citation_correct(question, _answer(_span("ES2015c", "da.11"))) is None
+
+
+def test_precision_is_the_fraction_of_cited_spans_that_hit() -> None:
+    cited = (_span("ES2015c", "da.10"), _span("ES2015a", "da.3"), _span("ES2015c", "da.40"))
+    assert citation_precision(ANSWERABLE, _answer(*cited)) == pytest.approx(1 / 3)
+    assert citation_precision(ANSWERABLE, _answer(_span("ES2015c", "da.11"))) == 1.0
+    assert citation_precision(ANSWERABLE, _answer(_span("ES2015d", "da.11"))) == 0.0
+
+
+def test_precision_of_an_unsourced_answer_is_zero() -> None:
+    # Consistent with section 6.2 and with citation_correct being False: the answer is
+    # scored, and it has nothing supported.
+    assert citation_precision(ANSWERABLE, _answer()) == 0.0
+
+
+def test_precision_is_not_applicable_where_the_rate_is_not() -> None:
+    cited = _span("ES2015c", "da.11")
+    assert citation_precision(ANSWERABLE, _answer(cited, abstained=True)) is None
+    unanswerable = _question(QuestionStratum.E4_UNANSWERABLE)
+    assert citation_precision(unanswerable, _answer(cited)) is None
+    no_reference = _question(QuestionStratum.E1_POINT_FACT)
+    assert citation_precision(no_reference, _answer(cited)) is None
+
+
+def test_correct_citation_iff_precision_is_positive() -> None:
+    answers = [
+        _answer(),
+        _answer(_span("ES2015c", "da.11")),
+        _answer(_span("ES2015c", "da.11"), _span("ES2015a", "da.3")),
+        _answer(_span("ES2015a", "da.3")),
+    ]
+    for answer in answers:
+        precision = citation_precision(ANSWERABLE, answer)
+        assert precision is not None
+        assert citation_correct(ANSWERABLE, answer) is (precision > 0)

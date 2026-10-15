@@ -132,6 +132,8 @@ def test_record_fields_and_citation(tmp_path: Path) -> None:
     assert record["verdict"]["correct"] is True
     assert record["judge_failure"] is None
     assert record["citation_correct"] is True
+    assert record["citation_precision"] == 1.0
+    assert record["schema_version"] == 2
     assert record["error"] is None
     assert record["partition"] == "development"
     assert record["series_id"] == "ES2015"
@@ -167,6 +169,7 @@ def test_condition_without_with_seed_marks_seed_not_applied(tmp_path: Path) -> N
     assert record["seed_applied"] is False
     assert record["trace"] is None
     assert record["citation_correct"] is None  # abstention
+    assert record["citation_precision"] is None
 
 
 def test_trace_serialized_when_condition_offers_it(tmp_path: Path) -> None:
