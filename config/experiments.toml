@@ -18,9 +18,36 @@ top_p = 0.9
 runs_per_config = 3                  # thesis section 5.8: minimum 3 runs, report mean + dispersion
 
 [retrieval]
-answer_limit = 5                     # blocks sent to the answer prompt; openkos query --limit default (ADR 0006)
+answer_limit = 5                     # `--limit` of `openkos query` for C2 and C3 (OpenKOS default, ADR 0006). Kept on purpose: the three conditions share a TEXT budget, not an equal K (ADR 0007). C1 uses [retrieval.c1].k
 rrf_k = 60                           # reciprocal rank fusion constant, as in openkos retrieval/fusion.py
 # Unweighted RRF over the lexical and dense channels, as in openkos retrieval/fusion.py.
+
+[retrieval.tuning]
+# C1 segmentation and answer-K tuning on development data (ADR 0005). Retrieval only: the
+# metric is evidence recall (fraction of the reference dialogue acts contained in the K
+# retrieved chunks), so no generative model is involved.
+# These values and the selection rule are pre-registered: committed before any result is seen.
+series = ["ES2015"]                  # development series whose whole meeting set is indexed (D15)
+max_chars = [800, 1200, 1600, 2400]  # chunk size cap, characters
+overlap_turns = [0, 1]               # turns shared between consecutive chunks
+k = [3, 5, 8, 10]                    # chunks sent to the answer prompt
+# Total context chars OpenKOS v0.5.4 measured for 5 bodies, fitting its 4096-token prompt
+# allowance (src/openkos/config.py PROMPT_CONTEXT_ALLOWANCE). A config is eligible only if
+# k * max_chars <= char_budget.
+char_budget = 13516
+# Winner: the eligible config with the highest mean recall; among eligible configs within
+# tie_margin of it, prefer smaller k, then smaller max_chars, then smaller overlap_turns.
+tie_margin = 0.02
+
+[retrieval.c1]
+# Parameters C1 runs with, chosen by the pre-registered rule above on ES2015 (development
+# data, ADR 0005). Result: reports/c1-tuning/resultados.json; reasoning: notebook 06 and
+# ADR 0007. A test checks these equal the stored winner. K=8 chunks of at most 1600 characters
+# is ~12,000 characters of context, comparable to the ~13,500 that `openkos query --limit 5`
+# sends (equal text budget, not equal K).
+max_chars = 1600                     # chunk size cap, characters
+overlap_turns = 0                    # turns shared between consecutive chunks
+k = 8                                # chunks sent to the answer prompt
 
 [alignment]
 # Thesis section 5.4: cosine-similarity candidates over (decision object, content) pairs,
