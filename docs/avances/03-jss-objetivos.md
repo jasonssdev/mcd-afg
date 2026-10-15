@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 03 — Objetivos |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 2.2 |
-| **Fecha** | 2026-10-01 |
+| **Versión** | 2.3 |
+| **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -16,6 +16,7 @@
 | 2.0 | 2026-09-20 | Alcance por curso y cambios de H3 | Plan realista para tres cursos y reconciliación de la escala de modelo configurada |
 | 2.1 | 2026-09-20 | Aporte propositivo explícito; origen de la observación de H3; punto de decisión de AFG2; nota de sincronización del plan | Revisión final de AFG1 |
 | 2.2 | 2026-10-01 | Reescritura completa de la redacción: cada objetivo se presenta desde la pregunta que responde, cada término técnico se explica al aparecer y se agrega un glosario breve. El objetivo general, los objetivos específicos, los criterios de cumplimiento, las hipótesis y las cifras no cambian. | Retroalimentación de la revisión entre equipos de la semana 8: el problema y la metodología no se entendían, menos aún para una audiencia no técnica. |
+| 2.3 | 2026-10-15 | Se agrega, en cada objetivo específico, un párrafo «Cómo se mide» que remite a la sección correspondiente del [documento 08](08-jss-metricas-y-criterio-de-exito.md), y una subsección sobre el criterio de éxito del experimento (D16). El objetivo general, los objetivos específicos, los criterios de cumplimiento, las hipótesis y las cifras no cambian. | Retroalimentación del profesor sobre las métricas: faltaba ver, objetivo por objetivo, qué se mide y con qué regla se lee el resultado. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -113,6 +114,12 @@ mezclar las tres preguntas en una sola cifra ocultaría dónde está el desacuer
 decisiones, 92 pares candidatos adjudicados), con kappa reportado en los tres niveles y
 adjudicación documentada para todo desacuerdo.
 
+**Cómo se mide.** Con kappa de Cohen, un valor por cada eje (existencia, tipo y dirección), sobre
+4 series de control con doble anotación, más 2 series de calibración. No tiene umbral de
+aceptación por diseño: un kappa bajo se reporta como hallazgo. El detalle está en el
+[documento 08, §4.1](08-jss-metricas-y-criterio-de-exito.md#41-oe1-el-conjunto-de-referencia-y-su-confiabilidad); el recall del filtro que selecciona los pares a anotar, en el
+[documento 08, §4.2](08-jss-metricas-y-criterio-de-exito.md#42-el-filtro-léxico-y-su-recall).
+
 ### OE2 — Medir la calidad de la extracción automática (Experimento A)
 
 **La pregunta.** Cuando un modelo de lenguaje lee una transcripción, ¿encuentra las mismas
@@ -142,6 +149,13 @@ extraer decisiones y sus relaciones temporales, contra el conjunto de referencia
 **Criterio de cumplimiento:** P/R/F1 a nivel decisión reportados como curva sobre τ;
 exactitud de tipo y de dirección reportadas por separado; desglose por rol publicado aunque
 no se detecte diferencia.
+
+**Cómo se mide.** Precisión, cobertura y F1 tras emparejar decisiones con una regla fija, con el
+F1 reportado como curva sobre τ (de 0,50 a 0,90) y cada corrida repetida al menos tres veces.
+La exactitud de tipo y de dirección se reportan por separado. Por ahora no existe un criterio
+de éxito para OE2 ni una regla para elegir τ; el documento 08 lo declara como decisión abierta
+([§4.3](08-jss-metricas-y-criterio-de-exito.md#43-oe2-la-extracción-automática) y
+[§7, A](08-jss-metricas-y-criterio-de-exito.md#a-no-hay-criterio-de-éxito-para-oe1-y-oe2-ni-regla-para-elegir-τ)).
 
 ### OE3 — Medir la utilidad funcional en tres condiciones (Experimento B)
 
@@ -188,6 +202,12 @@ reportados para cada métrica. El *bootstrap* es un procedimiento que repite el 
 veces sobre muestras tomadas al azar del mismo banco, para saber cuánto podría variar el
 resultado con otras preguntas parecidas.
 
+**Cómo se mide.** La métrica principal es la corrección de la respuesta en el estrato E3
+(evolución), calificada por un juez automático validado con personas. Las demás (soporte de
+evidencia, citación correcta, corrección del rechazo y costo amortizado) son descriptivas. El
+resultado se lee con el criterio de éxito D16, explicado más abajo, y el detalle está en el
+[documento 08, §4.4](08-jss-metricas-y-criterio-de-exito.md#44-oe3-la-utilidad-funcional-experimento-b).
+
 ### OE4 — Atribuir el error final a su etapa de origen
 
 **La pregunta.** Cuando C2 responde mal, ¿dónde nació el error? Saberlo cambia qué conviene
@@ -207,6 +227,21 @@ una de las tres categorías, con la proporción atribuible a extracción reporta
 principal (documento 05, principio de responsabilidad). Esa proporción es la cifra
 principal porque es el error que se escribe una vez y se lee muchas veces: el riesgo propio
 de construir una base.
+
+**Cómo se mide.** Con reglas fijas aplicadas en orden (extracción, recuperación, síntesis), de
+modo que cada respuesta fallida cae en una sola categoría. Es un resultado descriptivo: dice
+dónde conviene invertir, no si el proyecto funcionó. Detalle en el
+[documento 08, §4.5](08-jss-metricas-y-criterio-de-exito.md#45-oe4-la-atribución-del-error).
+
+### Cómo se decide si el experimento tuvo éxito
+
+El éxito del experimento no se juzga con todas las métricas a la vez, sino con una sola
+comparación fijada de antemano (criterio D16): la corrección de respuesta en las preguntas de
+evolución (E3), de C2 frente a C1, mediante el intervalo de confianza de la diferencia por
+pregunta. Si el intervalo queda completamente por encima de 0, la hipótesis queda respaldada;
+si incluye el 0, el resultado es no concluyente y nunca se reporta como éxito; si queda
+completamente por debajo, es contrario. Las tres lecturas, y por qué se eligió la diferencia
+pareada, están en el [documento 08, §6](08-jss-metricas-y-criterio-de-exito.md#6-cómo-sabremos-si-el-experimento-tuvo-éxito).
 
 ## Alcance por curso
 
@@ -324,3 +359,4 @@ mismos de la versión 2.1.
 | Viabilidad de E3: 45,5 % (5/11), IC [21,3 % – 72,0 %], proyección ~37 [17–58] | [`../../notebooks/01-jss-viabilidad-e3.ipynb`](../../notebooks/01-jss-viabilidad-e3.ipynb) |
 | Plan por curso | README.md, sección Plan por curso; programa del curso (objetivos de AFG1, AFG2, AFG3) |
 | Botón turbo como ejemplo de respuesta desactualizada | [`02-jss-fuente-de-datos.md`](02-jss-fuente-de-datos.md) §5 |
+| Cómo se mide cada objetivo y criterio de éxito D16 | [`08-jss-metricas-y-criterio-de-exito.md`](08-jss-metricas-y-criterio-de-exito.md) §4 y §6 |

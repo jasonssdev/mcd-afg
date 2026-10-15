@@ -1,7 +1,8 @@
 # docs/avances/
 
 Los **documentos vivos** del proyecto: el problema, la fuente de datos, los objetivos, la
-bibliografía, los aspectos éticos y la metodología.
+bibliografía, los aspectos éticos, la metodología, el análisis exploratorio, las métricas y los
+modelos.
 
 > **Por qué "avances" y no "entregables".** Estos documentos **cambian a medida que el
 > proyecto avanza**. No son lo que se entrega: son el contenido del que se construye lo que
@@ -16,6 +17,9 @@ bibliografía, los aspectos éticos y la metodología.
 | [`04-jss-bibliografia.md`](04-jss-bibliografia.md) | Referencias en APA 7, con los preprints marcados |
 | [`05-jss-aspectos-eticos.md`](05-jss-aspectos-eticos.md) | Tres principios, en profundidad |
 | [`06-jss-metodologia.md`](06-jss-metodologia.md) | Los ocho pasos, con el diseño real del proyecto |
+| [`07-jss-analisis-exploratorio.md`](07-jss-analisis-exploratorio.md) | El análisis exploratorio de datos de AFG2, con sus figuras e interpretación |
+| [`08-jss-metricas-y-criterio-de-exito.md`](08-jss-metricas-y-criterio-de-exito.md) | Qué se mide, sobre qué, con qué umbral, y cómo se decide si el experimento tuvo éxito |
+| [`09-jss-modelos-y-justificacion.md`](09-jss-modelos-y-justificacion.md) | Las condiciones comparadas como modelos, sus parámetros y su evidencia |
 
 ## De dónde sale el contenido
 

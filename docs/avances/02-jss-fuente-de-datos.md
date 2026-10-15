@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 02 — Fuente de datos |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.2 |
-| **Fecha** | 2026-10-01 |
+| **Versión** | 1.3 |
+| **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -15,6 +15,7 @@
 | 1.0 | 2026-09-20 | Versión inicial. Fuente de datos, auditoría y riesgos para AFG1. | Primera entrega del curso. |
 | 1.1 | 2026-09-20 | Redacción en voz impersonal / de equipo. | El proyecto es de un equipo de tres personas; ningún documento se redacta en primera persona singular. |
 | 1.2 | 2026-10-01 | Reescritura completa de la redacción: el corpus se presenta desde lo que contiene una serie de reuniones, cada término técnico se explica al aparecer y se agrega un glosario breve. Las cifras, las referencias, las decisiones y la numeración de secciones no cambian. | Retroalimentación de la revisión entre equipos de la semana 8: el problema y la metodología no se entendían, menos aún para una audiencia no técnica. |
+| 1.3 | 2026-10-15 | Se agrega la sección 7, «Calidad y relevancia de los datos»: resumen de lo que el análisis exploratorio ([documento 07](07-jss-analisis-exploratorio.md)) encontró sobre valores faltantes, duplicados y valores atípicos, y de la relevancia de los datos para el problema, con las cifras del documento 07 y su fuente. Se agregan filas de trazabilidad. No cambia ninguna cifra, decisión ni sección anterior. | La rúbrica del pre-informe de AFG2 (sección 3) pide describir el origen, el tipo, la calidad y la relevancia de los datos; este documento cubría origen y tipo, y la calidad y la relevancia estaban solo en el documento 07. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -275,6 +276,68 @@ Frente a esos riesgos, cuatro reglas de trabajo.
    [`../../config/corpus.toml`](../../config/corpus.toml) antes de que empiece la anotación
    humana, para que ningún ajuste posterior pueda leerse como sobreajuste a los resultados.
 
+## 7. Calidad y relevancia de los datos
+
+Las secciones anteriores describen de dónde vienen los datos y cómo se eligió la muestra. Esta
+sección resume lo que el análisis exploratorio
+([documento 07](07-jss-analisis-exploratorio.md)) encontró sobre su **calidad** y su
+**relevancia** para el problema. No repite el análisis: las cifras vienen del
+[notebook 03](../../notebooks/03-jss-eda.ipynb) y se explican con sus figuras en el documento 07.
+
+### 7.1 Calidad
+
+**Valores faltantes.** Un valor faltante es una celda vacía. De las 77 variables revisadas,
+solo tres tienen celdas vacías (documento 07, [§4.1](07-jss-analisis-exploratorio.md#41-valores-faltantes);
+notebook 03, §3.1):
+
+| Variable | Faltantes | Origen del faltante |
+|---|---|---|
+| Hora de inicio de la reunión | 32 de 56 (57,1 %) | Depende del sitio de grabación: AMI la trae en IS, no la trae en TS y la pierde en 16 de 20 reuniones de ES. |
+| Lengua materna declarada | 64 de 224 (28,6 %) | Faltan todos los hablantes de TS; el archivo de participantes no los incluye (ver §4.5). |
+| Evidencia de la decisión | 26 de 343 (7,6 %) | Decisiones del resumen sin ninguna intervención enlazada (ver §4.7). |
+
+Los dos primeros faltantes son estructurales, es decir, vienen de cómo AMI armó sus archivos.
+El tercero no falta al azar: no falta ninguna en la primera reunión de la serie (0 de 51) y la
+proporción sube a 11,2 % (10 de 89) en la tercera y 11,5 % (11 de 96) en la cuarta. Por eso
+las 26 decisiones sin evidencia se tratan como una señal de revisión manual y no como un dato
+corriente; es la misma señal que anticipó el error del botón turbo (§5).
+
+**Decisiones sin evidencia: se marcan, no se imputan.** Imputar es reemplazar un valor
+faltante por uno estimado. El proyecto no imputa nada, porque las etiquetas de referencia las
+pone una persona, porque estimar la evidencia de una decisión fabricaría un respaldo que no
+existe y porque los otros faltantes son metadatos que ningún resultado usa. El faltante se
+conserva como categoría y se señala (documento 07, [§4.2](07-jss-analisis-exploratorio.md#42-por-qué-no-se-imputa)).
+
+**Duplicados.** Hay 4 frases idénticas y 8 casi idénticas dentro de una misma serie, siempre
+en reuniones consecutivas y nunca dentro de una misma reunión. Ese patrón corresponde a una
+decisión reafirmada, no a un error de captura. Se conservan con una marca, porque las
+reafirmaciones son parte de lo que el proyecto quiere medir (documento 07,
+[§4.3](07-jss-analisis-exploratorio.md#43-duplicados)).
+
+**Valores atípicos.** Quedaron marcadas 15 de 56 reuniones por al menos un método estadístico.
+Ninguna se eliminó ni se corrigió: el resultado neto es 0 filas eliminadas, 0 valores
+corregidos y 0 valores imputados, porque los casos revisados son fenómenos reales (por ejemplo,
+una reunión muy larga) y no errores de captura (documento 07,
+[§5](07-jss-analisis-exploratorio.md#5-valores-atípicos)). La excepción es TS3003c, cuya
+duración declarada supera en 286 segundos (11,1 %) a la del último turno transcrito; sin el
+audio no se puede resolver, y por eso la duración del archivo no se usa como variable
+explicativa.
+
+**Capa ausente.** La segmentación de decisiones de AMI existe solo para 6 de las 14 series y
+se usa únicamente como subconjunto de validación (documento 07, §4.1; notebook 03, §3.2).
+
+### 7.2 Relevancia para el problema
+
+Los datos sirven al problema porque reúnen tres rasgos: varias reuniones consecutivas por equipo, decisiones ya registradas en el resumen
+y un enlace de cada decisión con la conversación que la respalda, cuando existe. Con ellos se
+puede estudiar cómo una decisión se retoma, cambia o se revierte en la reunión siguiente
+(§2 y §3). La muestra son 14 series con 343 decisiones, elegidas con criterios registrados
+antes de anotar y no al azar (documento 07, [§1](07-jss-analisis-exploratorio.md#1-origen-tipo-y-relevancia-de-los-datos)).
+
+Su alcance tiene límites que se declaran: un solo dominio (el diseño de un control remoto),
+habla actuada y una muestra no aleatoria, por lo que los resultados describen estas 14 series
+y no se extrapolan a otros corpus (documento 07, [§9](07-jss-analisis-exploratorio.md#9-limitaciones); riesgos en §5).
+
 ## Glosario breve
 
 | Término | Qué significa en este documento |
@@ -322,3 +385,4 @@ numeración de secciones son las mismas de la versión 1.1.
 | Bloqueador: 712/3.071 con sólo coeficiente, 92 con mínimo absoluto | [`../decisions/README.md`](../decisions/README.md), decisión D9 |
 | Botón turbo: falso positivo del resumen abstractivo | [`../anotacion/manual-anotacion-oe1.md`](../anotacion/manual-anotacion-oe1.md) §3 |
 | Caso IS1004b → IS1004c no seleccionado por el bloqueador | [`../../notebooks/01-jss-viabilidad-e3.ipynb`](../../notebooks/01-jss-viabilidad-e3.ipynb) |
+| Calidad: faltantes (32/56, 64/224, 26/343), duplicados (4 y 8), atípicos (15 de 56 reuniones; 0 eliminadas, 0 corregidas, 0 imputadas), segmentación en 6 de 14 series | [`07-jss-analisis-exploratorio.md`](07-jss-analisis-exploratorio.md) §4–5; [`../../notebooks/03-jss-eda.ipynb`](../../notebooks/03-jss-eda.ipynb) §2.4, §3, §5 |
