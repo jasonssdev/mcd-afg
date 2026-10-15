@@ -98,7 +98,7 @@ mira una reunión posterior para etiquetar una anterior.
    contiene, nunca por una evidencia corta; jamás se leen reuniones posteriores. El resumen
    oficial de AMI ya tiene al menos un error demostrado (el botón turbo). Detalle: manual §2.
 2. **`evidence_da_count = 0` es sospecha inmediata.** Busca la evidencia con
-   `uv run afg gold evidence --meeting <ID> --term <palabra>` antes de decidir.
+   `uv run afg gold evidencia --meeting <ID> --term <palabra>` antes de decidir.
 3. **La dirección importa.** En un par, la decisión posterior actúa sobre la anterior: "la de
    diciembre revierte la de octubre", nunca al revés. La hipótesis H3 depende de esto.
 

@@ -4,7 +4,7 @@ Before this module, an annotator's first half hour was five separate steps -- sy
 dependencies, download the corpus, render the transcripts, prepare the workspace, and
 then guess which file to open -- each with its own way of failing quietly. This wraps the
 last four behind one idempotent command that skips whatever is already done and closes
-with the one thing that actually matters: the exact path to open first.
+with the one thing that actually matters: the one next action.
 
 Nothing here talks to the terminal. The interactive corpus-licence confirmation is kept in
 :mod:`afg.cli`, which is the only place a user's yes/no answer to a 228 MB CC BY 4.0
@@ -27,12 +27,11 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
+from afg.annotation.progress import AnnotatorStatus, annotator_status
 from afg.annotation.workspace import (
     AnnotationPlan,
     PrepareOutcome,
-    WorkspaceFile,
     WorkspacePaths,
-    expected_files,
     prepare_annotator_workspace,
 )
 from afg.corpus.download import DownloadResult, download_annotations
@@ -60,9 +59,9 @@ class SetupOutcome:
     """Everything ``afg gold setup`` did, and everything it needs to tell the annotator to
     do next.
 
-    ``first_file`` is ``None`` for the maintainer (see :attr:`is_maintainer`), who never
-    fills a workspace file -- ``prepare_annotator_workspace`` already draws that
-    distinction and this mirrors it rather than re-deriving it.
+    ``status`` is ``None`` for the maintainer (see :attr:`is_maintainer`), who never fills a
+    workspace file. For everyone else it holds the real state after the workspace was
+    prepared, including the one next action (:mod:`afg.annotation.progress`).
     """
 
     initials: str
@@ -72,7 +71,7 @@ class SetupOutcome:
     transcripts_already_rendered: bool
     transcripts_render: RenderResult | None
     prepare: PrepareOutcome
-    first_file: WorkspaceFile | None
+    status: AnnotatorStatus | None
 
 
 def run_setup(
@@ -133,10 +132,7 @@ def run_setup(
 
     prepare_outcome = prepare_annotator_workspace(plan, initials, paths=paths, force=False)
 
-    first_file: WorkspaceFile | None = None
-    if annotator.annotates:
-        files = expected_files(plan, annotator, paths)
-        first_file = files[0] if files else None
+    status = annotator_status(plan, initials, paths=paths) if annotator.annotates else None
 
     return SetupOutcome(
         initials=initials,
@@ -146,5 +142,5 @@ def run_setup(
         transcripts_already_rendered=transcripts_already_rendered,
         transcripts_render=render_result,
         prepare=prepare_outcome,
-        first_file=first_file,
+        status=status,
     )

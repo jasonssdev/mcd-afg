@@ -6,7 +6,8 @@
 >
 > **Quién manda en el reparto concreto.** [`config/annotation.toml`](../../../config/annotation.toml)
 > es la **única fuente de verdad** de quién anota qué serie, en qué fase, quién adjudica,
-> quién escribe y valida el banco de preguntas, y quién hace la Tarea C. Es lo que leen
+> quién escribe y valida el banco de preguntas, y quién hace la Tarea C; y, en `released_series`,
+> qué series ha abierto ya `jss` para anotar. Es lo que leen `afg gold setup`,
 > `afg gold prepare`, `afg gold validate` y `afg gold status`. Si algo de este documento
 > parece contradecir el archivo, gana el archivo y este documento tiene un error.
 >
@@ -212,7 +213,7 @@ Estas valen para `gv` y `gm` por igual, en las tres fases.
    reuniones posteriores). `sin_soporte` solo si la transcripción contradice la frase o no la
    contiene (manual §2, «La regla de oro»).
 2. **`evidence_da_count = 0` es sospecha inmediata**, no un hueco menor. Se busca la
-   evidencia con `uv run afg gold evidence --meeting <ID> --term <palabra>` antes de decidir.
+   evidencia con `uv run afg gold evidencia --meeting <ID> --term <palabra>` antes de decidir.
 3. **Orden cronológico dentro de la serie: `a → b → c → d`.** Al juzgar una decisión no se
    miran reuniones posteriores (regla anti-fuga, §5.1 de la tesis).
 4. **Independencia durante las Fases 1 y 2.** Las dos personas no comparan etiquetas ni

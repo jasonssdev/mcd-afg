@@ -241,6 +241,17 @@ class AnnotationPlan:
     phase2_series: tuple[str, ...]
     recall_sample: RecallSampleAssignment
     question_bank: QuestionBankAssignment
+    released_series: tuple[str, ...] | None = None
+    """Series ``jss`` has opened for annotation; ``None`` means every series is open.
+
+    Whether the next series may start is a human signal (the maintainer announces it once the
+    previous one is adjudicated), so it cannot be derived from files. Listing it here is how
+    that signal reaches ``setup``, ``prepare``, ``validate`` and ``status``.
+    """
+
+    def is_released(self, series_id: str) -> bool:
+        """Whether ``series_id`` is open for annotation."""
+        return self.released_series is None or series_id in self.released_series
 
     def annotator(self, initials: str) -> Annotator:
         """Look up a person by initials.
@@ -309,7 +320,9 @@ def load_annotation_plan(raw: Mapping[str, Any] | None = None) -> AnnotationPlan
                 f"rows_per_stratum: {name} tiene {rows} filas, menos que las "
                 f"{base_rows} por estrato del mínimo."
             )
+    released = section.get("released_series")
     return AnnotationPlan(
+        released_series=None if released is None else tuple(released),
         annotators=tuple(annotators),
         adjudicator=section["adjudicator"],
         phase1_series=phase1,
@@ -473,6 +486,8 @@ class PrepareOutcome:
     skipped_annotated: tuple[WorkspaceFile, ...]
     overwritten: tuple[WorkspaceFile, ...]
     missing_sources: tuple[WorkspaceFile, ...]
+    not_open: tuple[WorkspaceFile, ...] = ()
+    """Files of series ``jss`` has not opened yet: deliberately not created."""
 
 
 def expected_files(
@@ -552,8 +567,12 @@ def prepare_annotator_workspace(
     skipped: list[WorkspaceFile] = []
     overwritten: list[WorkspaceFile] = []
     missing: list[WorkspaceFile] = []
+    not_open: list[WorkspaceFile] = []
 
     for workspace_file in expected_files(plan, annotator, paths):
+        if not plan.is_released(workspace_file.series_id):
+            not_open.append(workspace_file)
+            continue
         if not workspace_file.source.exists():
             missing.append(workspace_file)
             continue
@@ -577,6 +596,7 @@ def prepare_annotator_workspace(
         skipped_annotated=tuple(skipped),
         overwritten=tuple(overwritten),
         missing_sources=tuple(missing),
+        not_open=tuple(not_open),
     )
 
 
@@ -982,6 +1002,28 @@ def _validate_file(
     return filled, len(rows), issues
 
 
+def validate_workspace_file(
+    path: Path, source: Path, kind: TaskKind
+) -> tuple[int, int, list[ValidationIssue]]:
+    """Validate one workspace file against its base. Returns ``(filled, total, issues)``."""
+    return _validate_file(path, source, kind)
+
+
+def decision_row_counts(path: Path) -> tuple[int, int]:
+    """``(original rows, compuesta parts)`` of a decisions file.
+
+    A ``compuesta`` sentence is split into child rows (``ES2015a.d01-1``, ``-2``...), so the
+    row count of a file exceeds the number of decisions the base proposed. Returns
+    ``(0, 0)`` when the file does not exist.
+    """
+    if not path.exists():
+        return 0, 0
+    _, rows = _read_rows(path)
+    ids = [row.get(_DECISION_ID_COLUMN, "") for row in rows]
+    children = sum(1 for value in ids if _parent_decision_id(value) != value)
+    return len(ids) - children, children
+
+
 def validate_annotator(
     plan: AnnotationPlan,
     initials: str,
@@ -1011,6 +1053,13 @@ def validate_annotator(
                 f"La serie {series!r} no está asignada a {initials!r}. "
                 f"Series asignadas: {assigned}."
             )
+        if not plan.is_released(series):
+            raise ValueError(
+                f"La serie {series} aún no está abierta: {plan.adjudicator} avisa cuando "
+                "toca empezarla. Mientras tanto no hay nada que validar de ella."
+            )
+    else:
+        assignments = tuple(a for a in assignments if plan.is_released(a.series_id))
 
     recall = plan.recall_sample
     progresses: list[SeriesProgress] = []

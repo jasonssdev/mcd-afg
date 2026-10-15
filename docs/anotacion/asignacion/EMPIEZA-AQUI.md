@@ -32,12 +32,17 @@ clonar el repositorio, `uv sync --group dev --group notebooks`, y verificar con
 uv run afg gold setup --annotator <tus iniciales>
 ```
 
-Descarga el corpus AMI (pide confirmar la licencia CC BY 4.0 antes de bajar 228 MB), genera
-las 171 transcripciones, y crea `<serie>.decisions.<iniciales>.csv` y
-`<serie>.candidates.<iniciales>.csv` para cada serie que te toca, ya nombrados y con las
-columnas de máquina llenas. Nunca copies ni renombres un CSV a mano; correr esto de nuevo no
-borra lo que ya anotaste, y salta cualquier paso que ya esté hecho. Termina diciéndote la
-ruta exacta del primer archivo que debes abrir — anótala, la usas en el paso 4.
+Descarga el corpus AMI (pide confirmar la licencia CC BY 4.0; la descarga pesa unos 22 MB y,
+extraído, el corpus ocupa 228 MB), genera las 171 transcripciones, y crea
+`<serie>.decisions.<iniciales>.csv` y `<serie>.candidates.<iniciales>.csv` para cada serie que
+ya te toca empezar, ya nombrados y con las columnas de máquina llenas. Las series que `jss`
+todavía no abre salen como «aún no» y no tienen archivos. Nunca copies ni renombres un CSV a
+mano; correr esto de nuevo no borra lo que ya anotaste, y salta cualquier paso que ya esté
+hecho. Termina con «Qué hacer ahora», según el estado real de tu trabajo: la ruta del archivo
+que debes abrir, o a quién esperas. Cuando `jss` abra una serie nueva, vuelve a correrlo.
+
+En cualquier momento, `uv run afg gold status --annotator <tus iniciales>` te muestra en qué
+está cada serie y termina con una línea `Siguiente: …` con lo único que toca hacer.
 
 ## 3. Lee, en este orden, antes de escribir nada
 
@@ -53,8 +58,8 @@ ruta exacta del primer archivo que debes abrir — anótala, la usas en el paso 
 
 ## 4. Llena solo las columnas humanas
 
-Con la serie que toque según tus «Próximos pasos» en `tareas-<iniciales>.md` (el orden de las
-fases está en [`README.md`](README.md) §2):
+Con la serie que indique «Qué hacer ahora» (o `Siguiente:` en `status`; el detalle está en tus «Próximos pasos» en
+`tareas-<iniciales>.md`; el orden de las fases está en [`README.md`](README.md) §2):
 
 - **Tarea A** (`<serie>.decisions.<iniciales>.csv`): `status`, `decision_object`,
   `decision_content`, `notes` si hace falta.

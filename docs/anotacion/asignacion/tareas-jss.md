@@ -22,6 +22,12 @@ uv run afg gold validate --annotator <iniciales>        # en cada PR, antes de a
 uv run afg gold validate-adjudication --series <ID>     # al terminar de adjudicar: ¿quedó todo con veredicto y razón?
 ```
 
+**Abrir una serie.** Quién puede empezar qué serie lo decides tú: agrega la serie a
+`released_series` en `config/annotation.toml` (en el PR que lo anuncia). Mientras no esté
+ahí, `setup` y `prepare` no crean sus archivos, `validate` no la revisa y `status` la muestra
+como `pendiente (aún no)`. Una serie está `adjudicada` cuando existen sus dos CSV de
+adjudicación.
+
 `status` es tu panel: una fila por persona y serie, con fase, avance de las dos tareas y si
 pasa la validación — así sabes cuándo una serie doble ya tiene los cuatro archivos listos
 para adjudicar, sin entrar a `data/processed/`. `adjudicate` escribe los dos CSV de
@@ -71,7 +77,7 @@ de esa sesión.
 - Los dos PRs de esa serie están mergeados: `<serie>.decisions.gv.csv`,
   `<serie>.candidates.gv.csv`, `<serie>.decisions.gm.csv`, `<serie>.candidates.gm.csv`.
 - Los cuatro archivos están completos: ninguna celda humana vacía. `uv run afg gold status`
-  te lo confirma de un vistazo: la serie tiene que aparecer como **completa** para `gv` y
+  te lo confirma de un vistazo: la serie tiene que aparecer como **lista para entregar** para `gv` y
   para `gm`; "en curso" o "sin preparar" significa que todavía falta trabajo.
 - Ninguna de las dos personas ha visto el archivo de la otra.
 
@@ -412,7 +418,7 @@ Nunca push directo a `main`, ni para cambios triviales.
 ## 10. Checklist de cierre de adjudicación
 
 ### Antes de la sesión
-- [ ] `uv run afg gold status` muestra la serie como **completa** para `gv` y para `gm`
+- [ ] `uv run afg gold status` muestra la serie como **lista para entregar** para `gv` y para `gm`
 - [ ] Los cuatro archivos de la serie están mergeados (§2.1)
 - [ ] `uv run afg gold validate --annotator gv` y `--annotator gm` corrieron sin error en sus
       PRs respectivos (§4) — columnas de máquina intactas y valores legales ya verificados

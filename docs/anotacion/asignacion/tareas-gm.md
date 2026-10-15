@@ -48,17 +48,23 @@ uv run afg gold validate --annotator gm --series <ID>       # al cerrar cada ser
 uv run afg gold status   --annotator gm                     # tu propio avance (lectura)
 ```
 
-`setup` se corre **una sola vez**: descarga el corpus (con confirmación de la licencia),
-genera las transcripciones y crea cada `<serie>.decisions.gm.csv` y
+`setup` se corre **una sola vez** (y otra vez cuando `jss` abre una serie nueva): descarga el
+corpus (con confirmación de la licencia; la descarga pesa unos 22 MB y ocupa 228 MB),
+genera las transcripciones y crea, solo para las series ya abiertas, cada `<serie>.decisions.gm.csv` y
 `<serie>.candidates.gm.csv` con las columnas de máquina ya llenas y las tuyas vacías —
-nunca copies ni renombres un CSV a mano. Termina diciéndote exactamente qué archivo abrir
-primero. Si vuelves a correrlo, salta lo que ya esté hecho y nunca borra tu trabajo: un
+nunca copies ni renombres un CSV a mano. Termina diciéndote lo único que toca hacer
+ahora según el estado real (qué serie, qué archivo, o a quién esperas). Si vuelves a correrlo, salta lo que ya esté hecho y nunca borra tu trabajo: un
 archivo con anotación se respeta. Si alguna vez necesitas recrear un archivo puntual
 (por ejemplo porque su base cambió), sigue disponible `afg gold prepare --annotator gm`.
 `validate` con `--series <ID>` revisa solo la serie cuyo PR vas a abrir; sin `--series`
 recorre todas tus series asignadas. Si hay un error sale con código distinto de cero y te
 dice fila y columna exactas. `status --annotator gm` es solo lectura; te muestra tu propio
-avance, serie por serie, sin abrir un CSV.
+avance, serie por serie, sin abrir un CSV. Cada serie está `pendiente (aún no)` (`jss`
+todavía no la abre; no hay archivos), `sin preparar`, `por empezar`, `en curso`, `con errores`,
+`lista para entregar` o `adjudicada`. Las filas de una serie cuentan también las partes de
+las decisiones `compuesta` (p. ej. «32 filas = 29 originales + 3 partes»). Termina siempre
+con una línea `Siguiente: …`.
+También muestra cuántas preguntas del banco llevas por estrato frente al mínimo.
 
 ---
 
@@ -225,7 +231,7 @@ que se mide todo lo demás.
 | Puedes | No puedes |
 |---|---|
 | Leer la transcripción de la reunión que estás anotando | Leer reuniones posteriores a la que anotas (§4) |
-| Usar `afg gold evidence` para buscar un término | Leer series que no te tocan |
+| Usar `afg gold evidencia` para buscar un término | Leer series que no te tocan |
 | Leer los insumos de tus series | Comentar contenido de evaluación fuera del flujo de anotación |
 | Leer cualquier cosa de ES2015 o IS1004 (desarrollo) | Abrir el XML del corpus (no hace falta nunca) |
 

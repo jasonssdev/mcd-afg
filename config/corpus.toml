@@ -30,6 +30,9 @@ licence_page = "https://groups.inf.ed.ac.uk/ami/corpus/license.shtml"
 url = "https://groups.inf.ed.ac.uk/ami/AMICorpusAnnotations/ami_public_manual_1.6.2.zip"
 filename = "ami_public_manual_1.6.2.zip"
 approximate_size_mb = 22
+# Size on disk after extraction (measured: `du -sh data/raw/ami`); the download itself is
+# ~22 MB (Content-Length 22887865 bytes).
+extracted_size_mb = 228
 published_date = "2017-04-10"
 format = "NXT (NITE XML Toolkit)"
 

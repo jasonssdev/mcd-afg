@@ -317,3 +317,76 @@ def load_configured_question_bank(
 def format_issue(issue: QuestionBankIssue) -> str:
     """One-line, human-readable form of an issue."""
     return f"{issue.row_id}: {issue.message}"
+
+
+@dataclass(frozen=True)
+class StratumProgress:
+    """How far one stratum of the bank is: rows written, rows validated, and the targets."""
+
+    stratum: QuestionStratum
+    written: int
+    validated: int
+    minimum: int
+    rows: int
+    """Rows the bank holds for the stratum (above ``minimum`` they are optional)."""
+
+
+@dataclass(frozen=True)
+class QuestionBankProgress:
+    """Per-stratum progress of the bank, for ``afg gold status``."""
+
+    strata: tuple[StratumProgress, ...]
+
+    @property
+    def written(self) -> int:
+        return sum(s.written for s in self.strata)
+
+    @property
+    def validated(self) -> int:
+        return sum(s.validated for s in self.strata)
+
+    @property
+    def missing_for_minimum(self) -> int:
+        return sum(max(0, s.minimum - s.written) for s in self.strata)
+
+    @property
+    def awaiting_validation(self) -> int:
+        """Written rows nobody has validated yet."""
+        return sum(s.written - s.validated for s in self.strata)
+
+
+def question_bank_progress(
+    path: Path, *, minimum: int, rows_per_stratum: dict[QuestionStratum, int]
+) -> QuestionBankProgress | None:
+    """Count written (``text`` filled) and validated rows per stratum, or ``None`` when the
+    bank file does not exist.
+
+    Never raises on content: this is a progress count, not a validation (``questions-check``
+    validates). Rows with an unknown stratum are ignored.
+    """
+    if not path.is_file():
+        return None
+    written: Counter[QuestionStratum] = Counter()
+    validated: Counter[QuestionStratum] = Counter()
+    with open_csv_reader(path) as handle:
+        for row in csv.DictReader(handle):
+            try:
+                stratum = QuestionStratum((row.get("stratum") or "").strip())
+            except ValueError:
+                continue
+            if (row.get("text") or "").strip():
+                written[stratum] += 1
+                if (row.get("validated_by") or "").strip():
+                    validated[stratum] += 1
+    return QuestionBankProgress(
+        strata=tuple(
+            StratumProgress(
+                stratum=s,
+                written=written[s],
+                validated=validated[s],
+                minimum=minimum,
+                rows=rows_per_stratum.get(s, minimum),
+            )
+            for s in QuestionStratum
+        )
+    )
