@@ -1,18 +1,17 @@
-"""Alternative readings of the correct-citation rule, for comparison (thesis section 5.6).
+"""Readings of the correct-citation rule over one answer (thesis section 5.6; ADR 0009).
 
 Section 5.6 defines the correct-citation rate as "the cited source actually supports the
-claim". :func:`afg.evaluation.citation.citation_correct` reads that as "every cited span shares
-at least one dialogue act with the reference evidence". This module computes, side by side and
-without changing that rule, other defensible readings over the same inputs:
+claim". This module holds the one hit computation behind it and the readings built on it:
 
-* ``all_hit``: every cited span hits the reference (the current rule).
-* ``any_hit``: at least one cited span hits the reference.
-* ``precision``: the fraction of cited spans that hit the reference.
+* ``any_hit``: at least one cited span hits the reference. This is the adopted rule
+  (:func:`afg.evaluation.citation.citation_correct`, ADR 0009).
+* ``precision``: the fraction of cited spans that hit the reference, reported beside the rule.
+* ``all_hit``: every cited span hits the reference (the retired rule, kept for comparison).
 * ``recall``: the fraction of reference dialogue acts covered by the union of the citations.
 
 A span *hits* when it shares its meeting and at least one dialogue act with some reference
-span. Act ids are compared within a meeting only. The variants apply exactly where the current
-rule applies (not to abstentions, E4 questions or questions without reference evidence); an
+span. Act ids are compared within a meeting only. The variants apply exactly where the rule
+applies (not to abstentions, E4 questions or questions without reference evidence); an
 answer with no citation fails every variant.
 """
 

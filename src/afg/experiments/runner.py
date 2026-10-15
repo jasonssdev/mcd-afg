@@ -35,7 +35,7 @@ from typing import Any
 
 from afg.conditions.base import Condition
 from afg.domain.question import Answer, Question, QuestionStratum
-from afg.evaluation.citation import citation_correct
+from afg.evaluation.citation import citation_correct, citation_precision
 from afg.evaluation.judge import (
     JudgeBackend,
     JudgeFailure,
@@ -49,7 +49,9 @@ from afg.shared.paths import PROJECT_ROOT
 
 RECORDS_FILE = "respuestas.jsonl"
 MANIFEST_FILE = "manifest.json"
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
+"""Version 2 adds ``citation_precision`` and scores ``citation_correct`` as "any cited span hits"
+(ADR 0009); version 1 records hold the retired "every cited span hits" value."""
 
 DEFAULT_MAX_CONSECUTIVE_ERRORS = 10
 """A systemic failure (backend down) must not fill the file with hundreds of error records."""
@@ -385,6 +387,7 @@ def _evaluate(
         "verdict": None,
         "judge_failure": None,
         "citation_correct": None,
+        "citation_precision": None,
         "error": None,
         "error_stage": None,
         "answer_seconds": None,
@@ -402,6 +405,7 @@ def _evaluate(
     record["answer"] = _jsonable(answer)
     record["trace"] = None if trace is None else _jsonable(trace)
     record["citation_correct"] = citation_correct(question, answer)
+    record["citation_precision"] = citation_precision(question, answer)
 
     started = clock()
     try:

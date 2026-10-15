@@ -12,6 +12,7 @@ from afg.experiments.citation_analysis import (
     cited_chunk_summaries,
     compare_records,
     reference_sizes,
+    rescore_citation,
     tally_by_verdict,
     tally_variants,
 )
@@ -188,3 +189,26 @@ def test_tally_by_verdict_groups_by_correct_and_evidence_supported() -> None:
     assert list(groups) == [(True, True), (True, False)]
     assert (groups[(True, True)].records, groups[(True, True)].all_hit) == (2, 1)
     assert groups[(True, False)].any_hit == 0
+
+
+def test_rescore_citation_applies_the_current_rule_to_stored_answers() -> None:
+    stale = _record("q1", [_span("ES2015a", "a.1"), _span("ES2015a", "a.9")])
+    stale["citation_correct"] = False  # written under the retired all-cited-must-hit rule
+    abstention = _record("q2", [], outcome="no_answer_in_context", abstained=True)
+    (rescored, kept) = rescore_citation([stale, abstention], QUESTIONS)
+    assert rescored["citation_correct"] is True
+    assert rescored["citation_precision"] == 0.5
+    assert kept["citation_correct"] is None
+    assert kept["citation_precision"] is None
+    assert stale["citation_correct"] is False  # the input is not mutated
+    assert "citation_precision" not in stale
+
+
+def test_rescore_citation_leaves_records_without_an_answer_untouched() -> None:
+    failed = {"question_id": "q1", "answer": None, "error": "boom", "citation_correct": None}
+    assert rescore_citation([failed], QUESTIONS) == [failed]
+
+
+def test_rescore_citation_rejects_an_unknown_question() -> None:
+    with pytest.raises(KeyError):
+        rescore_citation([_record("q99", [REF])], QUESTIONS)

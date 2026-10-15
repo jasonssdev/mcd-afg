@@ -26,6 +26,7 @@ def _record(
     correct: bool | None = True,
     supported: bool | None = True,
     citation: bool | None = True,
+    precision: float | None = None,
     cited: tuple[str, ...] = ("c1",),
     raw_reply: str | None = "Answer.\nUSED: 1",
     answer_seconds: float = 10.0,
@@ -48,6 +49,7 @@ def _record(
             None if correct is None else {"correct": correct, "evidence_supported": supported}
         ),
         "citation_correct": citation,
+        "citation_precision": precision,
         "answer_seconds": answer_seconds,
         "judge_seconds": judge_seconds,
         "error": error,
@@ -165,10 +167,27 @@ def test_citation_tally_counts_answered_records_with_citations() -> None:
     assert tally.incorrect_rate == pytest.approx(0.75)
 
 
+def test_citation_tally_reports_mean_precision_of_the_evaluated_records() -> None:
+    records = [
+        _record("ES2015.q001", citation=True, precision=1.0),
+        _record("ES2015.q002", citation=True, precision=0.2),
+        _record("ES2015.q003", citation=False, precision=0.0),
+        _record("ES2015.q004", citation=True),  # an older record without the field
+        _abstention("ES2015.q031"),
+    ]
+    assert citation_tally(records).mean_precision == pytest.approx(0.4)
+
+
+def test_record_row_reads_precision_and_tolerates_its_absence() -> None:
+    assert record_row(_record(precision=0.5)).citation_precision == 0.5
+    assert record_row(_record()).citation_precision is None
+
+
 def test_citation_tally_with_nothing_to_evaluate() -> None:
     tally = citation_tally([_abstention("ES2015.q031")])
     assert tally.evaluated == 0
     assert tally.incorrect_rate == 0.0
+    assert tally.mean_precision == 0.0
 
 
 def test_resume_status_counts_complete_and_pending_keys() -> None:

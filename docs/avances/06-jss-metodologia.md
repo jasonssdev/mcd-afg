@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 06 — Metodología |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 3.2 |
+| **Versión** | 3.3 |
 | **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
@@ -22,6 +22,7 @@
 | 3.0 | 2026-10-13 | Se agrega la calibración de la anotación y su resultado (§5–6): la calibración sobre ES2015 dio un acuerdo bajo, se corrigió la guía de anotación (leer la transcripción de la reunión cuando la evidencia enlazada no alcanza, y un criterio para decidir qué cuenta como decisión) y se agrega una recalibración sobre TS3009 antes de las series de control. TS3009 pasa a doble anotación: las series doblemente anotadas pasan de 5 a 6. El 36,4 % de doble anotación de la evaluación no cambia. | Resultado de la calibración sobre ES2015: kappa de estado 0,094 (13 de 29 filas en acuerdo); 14 de los 16 desacuerdos eran de umbral. El protocolo exige corregir la guía y volver a calibrar antes de tocar una serie de evaluación ([`../../notebooks/04-jss-anotacion-f1-calibracion.ipynb`](../../notebooks/04-jss-anotacion-f1-calibracion.ipynb)). |
 | 3.1 | 2026-10-14 | Se registra la elección del juez automático (§5–6): `gpt-oss:20b`, elegido entre tres candidatos con una calibración propia sobre ES2015 y umbrales fijados antes de ver resultados. Se declara una limitación de esa calibración. No cambian cifras previas ni umbrales. | La metodología preveía un juez automático sin nombrarlo; la calibración ([`../../notebooks/05-jss-seleccion-juez.ipynb`](../../notebooks/05-jss-seleccion-juez.ipynb)) ya permite fijarlo. |
 | 3.2 | 2026-10-15 | Se registra el ajuste de la línea base C1 (§3–4): se ajustó sobre ES2015 con una regla fijada antes de correr, midiendo la evidencia sobre el texto que realmente llega al modelo; resultado de 1.200 caracteres por fragmento, 1 turno de solapamiento y 5 fragmentos. Se declara que las fechas de las reuniones llevan hora (§7–8): real cuando AMI la trae (6 de 14 series) y sintética, solo para preservar el orden, cuando no (8 de 14). La versión de OpenKOS a fijar queda abierta mientras se corrige (se suma `jasonssdev/openkos#1384` al plan). No cambian otras cifras ni umbrales. | El ajuste de C1 y la decisión sobre las fechas ya tienen evidencia propia ([ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md) y su enmienda, [notebook 06](../../notebooks/06-jss-ajuste-c1.ipynb); [ADR 0008](../decisions/0008-adr-fechas-de-reunion-para-openkos.md), [notebook 08](../../notebooks/08-jss-fechas-de-reunion.ipynb)). |
+| 3.3 | 2026-10-15 | Se define la citación correcta (§1): una respuesta cuenta como bien citada cuando al menos una de sus fuentes citadas contiene alguna de las intervenciones que las personas marcaron como evidencia de la pregunta; además se informa, como cifra secundaria, qué fracción de lo citado es pertinente. Se declara el riesgo de que la regla favorezca a quien cita fragmentos grandes y el compromiso de revisarlo con los primeros datos de C2, antes de evaluar. No cambian otras cifras ni umbrales. | Análisis de la regla sobre la corrida de humo de ES2015: exigir que todas las fuentes coincidieran castigaba respuestas correctas con una cita válida más un repaso posterior ([ADR 0009](../decisions/0009-adr-regla-de-citacion-correcta.md), [notebook 09](../../notebooks/09-jss-regla-de-citacion.ipynb)). |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -79,6 +80,20 @@ lo que la máquina extrajo era realmente una decisión; cobertura, qué parte de
 reales encontró; F1 las combina. **Métricas de OE3** (fase 3): corrección de respuesta,
 soporte de evidencia, citación correcta, corrección del rechazo (si el sistema sabe decir
 "no hay información" cuando no la hay), y costo amortizado (§7).
+
+**Citación correcta (ADR 0009).** Esta métrica busca el caso en que la respuesta es correcta
+pero la fuente que cita no la respalda. En términos simples: una respuesta cita uno o varios
+pasajes de las reuniones; cada pasaje "acierta" si contiene al menos una de las
+intervenciones que las personas marcaron como la evidencia de esa pregunta. La citación se da
+por **correcta cuando al menos un pasaje acierta**, e **incorrecta cuando ninguno acierta o
+cuando la respuesta no cita nada** (una afirmación sin fuente cuenta como falla aunque sea
+correcta). Se descartó exigir que *todos* los pasajes acierten, porque castigaba por igual
+citar una fuente ajena y citar la fuente correcta junto con un repaso válido de la misma
+idea. Como la regla admite citar de más, se informa además la **precisión de la citación**
+(la fracción de los pasajes citados que aciertan), que deja a la vista a quien cita todo.
+Queda un riesgo declarado: C1 cita fragmentos grandes y C2 y C3 citarán decisiones más
+puntuales, de modo que la regla podría favorecer a C1; se revisará con los primeros datos de
+C2, antes de correr la evaluación.
 
 **Umbrales operativos provisionales.** Un paso 1 sin números es una declaración de
 intenciones. Se fijan ahora para que sea cuantitativo; se revisan en AFG2 con los primeros
