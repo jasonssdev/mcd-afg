@@ -17,12 +17,15 @@ from afg.conditions.c1_tuning import (
     NoEligibleConfigError,
     TuningConfig,
     TuningQuestion,
+    delivered_recall,
     evaluate_grid,
     evidence_recall,
     first_hit_rank,
+    load_act_turns,
     load_tuning_config,
     load_tuning_questions,
     load_tuning_results,
+    questions_with_any_delivered_hit,
     save_tuning_results,
     select_winner,
     series_meetings,
@@ -96,13 +99,19 @@ def result(
     k: int = 5,
     recall: float = 0.5,
     budget_ok: bool = True,
+    delivered: float | None = None,
 ) -> ConfigResult:
+    # By default the delivered recall equals the full-chunk recall (nothing was trimmed).
+    shown = recall if delivered is None else delivered
     return ConfigResult(
         max_chars=max_chars,
         overlap_turns=overlap,
         k=k,
         mean_recall=recall,
         recalls={"q1": recall},
+        mean_delivered_recall=shown,
+        delivered_recalls={"q1": shown},
+        mean_delivered_chars=90.0,
         first_hit_ranks={"q1": 1},
         mean_context_chars=100.0,
         n_chunks=10,
@@ -147,6 +156,58 @@ def test_first_hit_rank_is_one_based_and_none_when_missed() -> None:
     assert first_hit_rank([], [span("M1", "a")]) is None
 
 
+# --- delivered recall ------------------------------------------------------------------
+
+ACT_TURNS = {
+    ("M1", "a"): [(0, "PM: first turn")],
+    ("M1", "b"): [(1, "ME: second turn")],
+    ("M1", "c"): [(1, "ME: second turn"), (2, "PM: third turn")],
+}
+
+
+def block(chunk_id: str, acts: tuple[str, ...], text: str, first: int = 0, last: int = 2) -> tuple:  # type: ignore[type-arg]
+    c = dataclasses.replace(chunk(chunk_id, acts, text), first_turn=first, last_turn=last)
+    return (c, f"[concept_id: {chunk_id} — M1]\n{text}")
+
+
+def test_delivered_recall_counts_an_act_whose_turn_survives_intact() -> None:
+    delivered = [block("M1.c000", ("a", "b"), "PM: first turn\n\nME: second turn")]
+    evidence = [span("M1", "a", "b")]
+    assert delivered_recall(delivered, evidence, ACT_TURNS) == 1.0
+
+
+def test_delivered_recall_ignores_an_act_whose_turn_was_elided() -> None:
+    text = "PM: first turn\n[... source elided to fit the context window ...]\nPM: third turn"
+    delivered = [block("M1.c000", ("a", "b", "c"), text)]
+    assert delivered_recall(delivered, [span("M1", "a", "b")], ACT_TURNS) == pytest.approx(0.5)
+
+
+def test_delivered_recall_needs_every_turn_of_the_act() -> None:
+    # act c spans turns 1 and 2: with turn 2 missing the act is not fully delivered.
+    delivered = [block("M1.c000", ("c",), "ME: second turn")]
+    assert delivered_recall(delivered, [span("M1", "c")], ACT_TURNS) == 0.0
+    both = [block("M1.c000", ("c",), "ME: second turn\nPM: third turn")]
+    assert delivered_recall(both, [span("M1", "c")], ACT_TURNS) == 1.0
+
+
+def test_delivered_recall_matches_whole_lines_not_substrings() -> None:
+    acts = {("M1", "a"): [(0, "PM: yes")]}
+    delivered = [block("M1.c000", ("a",), "PM: yes indeed it is")]
+    assert delivered_recall(delivered, [span("M1", "a")], acts) == 0.0
+
+
+def test_delivered_recall_with_nothing_delivered_is_zero_and_needs_evidence() -> None:
+    assert delivered_recall([], [span("M1", "a")], ACT_TURNS) == 0.0
+    with pytest.raises(ValueError, match="evidence"):
+        delivered_recall([], [], ACT_TURNS)
+
+
+def test_load_act_turns_maps_each_act_to_its_rendered_turns(transcripts: Path) -> None:
+    acts = load_act_turns(["ES2015a"], transcripts)
+    assert acts[("ES2015a", "d2")] == [(1, "PM: budget twelve euros fifty")]
+    assert set(acts) == {("ES2015a", f"d{i}") for i in range(1, 5)}
+
+
 # --- selection rule --------------------------------------------------------------------
 
 
@@ -155,6 +216,16 @@ def test_winner_is_the_eligible_config_with_highest_recall() -> None:
     selection = select_winner(results, tie_margin=0.02)
     assert selection.winner.k == 5
     assert "recall" in selection.reason
+
+
+def test_selection_ranks_by_delivered_recall_not_full_chunk_recall() -> None:
+    results = [
+        result(k=3, recall=0.9, delivered=0.30),
+        result(k=5, recall=0.5, delivered=0.60),
+    ]
+    selection = select_winner(results, tie_margin=0.02)
+    assert selection.winner.k == 5
+    assert "delivered" in selection.reason
 
 
 def test_ineligible_configs_never_win() -> None:
@@ -335,6 +406,60 @@ def test_recall_never_decreases_with_k(transcripts: Path) -> None:
         assert recalls == sorted(recalls)
 
 
+def test_untrimmed_context_delivers_exactly_what_was_retrieved(transcripts: Path) -> None:
+    results = evaluate_grid(questions(), ["ES2015a"], small_config(), LetterEmbedder(), transcripts)
+    for r in results:
+        assert r.delivered_recalls == pytest.approx(r.recalls)
+        assert r.mean_delivered_recall == pytest.approx(r.mean_recall)
+        assert 0 < r.mean_delivered_chars <= r.mean_context_chars + 200  # + block labels
+
+
+def test_a_starved_budget_delivers_nothing_though_chunks_are_retrieved(transcripts: Path) -> None:
+    config = small_config(max_chars=(400,), overlap_turns=(0,), k=(1,))
+    (only,) = evaluate_grid(
+        questions(),
+        ["ES2015a"],
+        config,
+        LetterEmbedder(),
+        transcripts,
+        context_window=8192,  # zero characters left for the context
+        max_generation_tokens=8192,
+    )
+    assert only.mean_recall == 1.0
+    assert only.mean_delivered_recall == 0.0
+    assert only.mean_delivered_chars == 0.0
+    assert questions_with_any_delivered_hit(only) == 0
+
+
+def test_trimming_hides_evidence_that_full_chunks_contain(tmp_path: Path) -> None:
+    filler = "word " * 150  # ~750 chars per turn
+    turns = [(f"{filler}marker{i}", (f"d{i}",)) for i in range(6)]
+    write_meeting(tmp_path, "ES2015a", turns)
+    qs = [
+        TuningQuestion(
+            "q1",
+            QuestionStratum.E1_POINT_FACT,
+            "marker0 marker5",
+            (span("ES2015a", "d0", "d2", "d3", "d5"),),
+        )
+    ]
+    config = small_config(max_chars=(5000,), overlap_turns=(0,), k=(1,))
+    (full,) = evaluate_grid(qs, ["ES2015a"], config, LetterEmbedder(), tmp_path)
+    (tight,) = evaluate_grid(
+        qs,
+        ["ES2015a"],
+        config,
+        LetterEmbedder(),
+        tmp_path,
+        context_window=8192 + 1600,
+        max_generation_tokens=8192,
+    )
+    assert full.mean_recall == 1.0 and full.mean_delivered_recall == 1.0
+    assert tight.mean_recall == 1.0
+    assert tight.mean_delivered_recall < 1.0
+    assert tight.mean_delivered_chars < full.mean_delivered_chars
+
+
 def test_context_chars_and_eligibility(transcripts: Path) -> None:
     config = small_config(max_chars=(400,), overlap_turns=(0,), k=(1, 3), char_budget=900)
     first, second = evaluate_grid(questions(), ["ES2015a"], config, LetterEmbedder(), transcripts)
@@ -437,6 +562,13 @@ def test_questions_with_any_hit_counts_non_null_ranks() -> None:
         result(k=5, recall=0.5), first_hit_ranks={"a": 1, "b": None, "c": 4, "d": None}
     )
     assert c1_tuning.questions_with_any_hit(r) == 2
+
+
+def test_questions_with_any_delivered_hit_counts_positive_delivered_recall() -> None:
+    r = dataclasses.replace(
+        result(k=5, recall=0.5), delivered_recalls={"a": 0.5, "b": 0.0, "c": 0.25}
+    )
+    assert questions_with_any_delivered_hit(r) == 2
 
 
 def test_load_pinned_c1_params_reads_the_retrieval_c1_section() -> None:

@@ -154,3 +154,99 @@ def test_tune_needs_the_calibration_file(env: dict[str, Path]) -> None:
     result = _tune()
     assert result.exit_code == 1
     assert "calibracion" in _out(result)
+
+
+# --- afg c1 ask ------------------------------------------------------------------------
+
+
+class _AskChat:
+    def __init__(self, *replies: str) -> None:
+        self._replies = list(replies)
+
+    def chat(self, messages: Any, *, model: str, options: Any) -> str:
+        return self._replies.pop(0)
+
+
+@pytest.fixture
+def ask_env(env: dict[str, Path], monkeypatch: pytest.MonkeyPatch) -> Path:
+    from afg.conditions.c1_document_rag import DocumentRagCondition, GenerationSettings
+    from afg.conditions.c1_tuning import PinnedC1Params
+
+    replies: list[str] = ["quote", "Twelve euros.\nUSED: 1"]
+
+    def make() -> DocumentRagCondition:
+        return DocumentRagCondition(
+            chat=_AskChat(*replies),
+            embedder=LetterEmbedder(),
+            settings=GenerationSettings("qwen3:8b", 0.1, 42, 12288, 8192),
+            params=PinnedC1Params(max_chars=60, overlap_turns=0, k=2),
+            transcripts_dir=afg_cli.TRANSCRIPTS_DIR,
+        )
+
+    monkeypatch.setattr(afg_cli, "make_c1_condition", make)
+    monkeypatch.setattr(
+        afg_cli,
+        "list_installed_models",
+        lambda: [f"{configured_embedding_model()}:latest", "qwen3:8b"],
+    )
+    return env["results"]
+
+
+def _ask(*extra: str) -> Any:
+    return CliRunner().invoke(afg_cli.app, ["c1", "ask", "budget in euros?", *extra])
+
+
+def test_ask_prints_answer_citations_and_outcome(ask_env: Path) -> None:
+    result = _ask("--series", "ES2015")
+    assert result.exit_code == 0, result.output
+    out = _out(result)
+    assert "Twelve euros." in out
+    assert "USED" not in out
+    assert "answered" in out
+    assert "ES2015a" in out
+
+
+def test_ask_reports_an_abstention(ask_env: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from afg.conditions.c1_document_rag import NO_ANSWER_IN_CONTEXT, DocumentRagCondition
+
+    make = afg_cli.make_c1_condition
+
+    def make_abstaining() -> DocumentRagCondition:
+        condition = make()
+        condition.chat = _AskChat("NONE")
+        return condition
+
+    monkeypatch.setattr(afg_cli, "make_c1_condition", make_abstaining)
+    result = _ask("--series", "ES2015")
+    assert result.exit_code == 0, result.output
+    assert "no_answer_in_context" in _out(result)
+    assert NO_ANSWER_IN_CONTEXT in _out(result)
+
+
+def test_ask_stops_when_the_generative_model_is_missing(
+    ask_env: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        afg_cli, "list_installed_models", lambda: [f"{configured_embedding_model()}:latest"]
+    )
+    result = _ask("--series", "ES2015")
+    assert result.exit_code == 1
+    assert "ollama pull qwen3:8b" in _out(result)
+
+
+def test_ask_stops_when_ollama_is_unreachable(
+    ask_env: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def boom() -> list[str]:
+        raise RuntimeError("connection refused")
+
+    monkeypatch.setattr(afg_cli, "list_installed_models", boom)
+    result = _ask("--series", "ES2015")
+    assert result.exit_code == 1
+    assert "Ollama" in _out(result)
+
+
+def test_ask_stops_when_the_series_has_no_transcripts(ask_env: Path) -> None:
+    result = _ask("--series", "TS3009")
+    assert result.exit_code == 1
+    assert "TS3009" in _out(result)

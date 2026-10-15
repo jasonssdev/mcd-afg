@@ -28,6 +28,11 @@ from afg.bibliography.audit import render_table as render_biblio_table
 from afg.bibliography.audit import run_audit
 from afg.bibliography.audit import write_csv as write_biblio_csv
 from afg.bibliography.library import load_library
+from afg.conditions.c1_document_rag import (
+    ChatError,
+    DocumentRagCondition,
+    GenerationSettings,
+)
 from afg.conditions.c1_retrieval import OllamaEmbedder, configured_embedding_model
 from afg.conditions.c1_tuning import (
     RESULTS_PATH as C1_TUNING_RESULTS_PATH,
@@ -64,6 +69,7 @@ from afg.corpus.participants import (
 )
 from afg.corpus.render import discover_meeting_ids, render_meetings
 from afg.domain.decision import Decision
+from afg.domain.question import Question, QuestionStratum
 from afg.evaluation.judge import OllamaJudgeBackend, list_installed_models, missing_models
 from afg.evaluation.judge_calibration import load_thresholds
 from afg.evaluation.judge_calibration_agreement import (
@@ -1606,15 +1612,83 @@ def make_c1_embedder() -> OllamaEmbedder:
     return OllamaEmbedder.from_config()
 
 
+def make_c1_condition() -> DocumentRagCondition:
+    """C1 wired from ``config/experiments.toml`` and the local Ollama."""
+    return DocumentRagCondition.from_config(TRANSCRIPTS_DIR)
+
+
+@c1_app.command("ask")
+def c1_ask(
+    question: Annotated[str, typer.Argument(help="Pregunta a responder.")],
+    series: Annotated[str, typer.Option("--series", help="Serie AMI a consultar, p. ej. ES2015.")],
+) -> None:
+    """Responde una pregunta con C1 como lo haría `openkos query`, con fragmentos de transcripción.
+
+    Recupera K fragmentos de toda la serie (D15), pregunta al modelo si alcanzan para responder
+    y, si es así, redacta la respuesta citando los fragmentos usados (ADR 0006). Sirve para
+    probar C1 a mano; no guarda nada.
+    """
+    import time
+
+    quiet_http_logs()
+    try:
+        model = GenerationSettings.from_config().model
+        needed = [model, configured_embedding_model()]
+        absent = missing_models(needed, list_installed_models())
+    except ValueError as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    except (RuntimeError, ConnectionError, OSError) as exc:
+        console.print(
+            f"[bold red]No se pudo consultar los modelos instalados en Ollama: {exc}[/bold red] "
+            "Comprueba que Ollama esté corriendo."
+        )
+        raise typer.Exit(code=1) from exc
+    if absent:
+        for name in absent:
+            console.print(
+                f"[bold red]Falta el modelo {name} en Ollama:[/bold red] `ollama pull {name}`"
+            )
+        raise typer.Exit(code=1)
+
+    item = Question(
+        id="c1-ask", series_id=series, stratum=QuestionStratum.E1_POINT_FACT, text=question
+    )
+    started = time.monotonic()
+    try:
+        condition = make_c1_condition()
+        answer, trace = condition.answer_with_trace(item)
+    except (ValueError, FileNotFoundError, ChatError, RuntimeError) as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    elapsed = time.monotonic() - started
+
+    console.print(f"[bold]Resultado:[/bold] {trace.outcome}")
+    console.print(f"[bold]Respuesta:[/bold] {answer.text}")
+    if answer.cited_evidence:
+        console.print("[bold]Citas:[/bold]")
+        for span in answer.cited_evidence:
+            console.print(f"  {span.meeting_id}: {', '.join(span.dialogue_act_ids)}")
+    else:
+        console.print("[bold]Citas:[/bold] ninguna")
+    console.print(
+        f"{len(trace.context_blocks)} fragmentos enviados, {len(trace.omitted)} omitidos por "
+        f"presupuesto, {sum(b.excerpted for b in trace.context_blocks)} recortados; "
+        f"{elapsed:.1f} s."
+    )
+
+
 @c1_app.command("tune")
 def c1_tune() -> None:
     """Mide el recall de evidencia de C1 sobre desarrollo y elige segmentación y K.
 
     Solo recuperación (sin modelo generativo): para cada combinación de `max_chars`,
     `overlap_turns` y K de `[retrieval.tuning]`, mide qué fracción de los actos de diálogo de
-    referencia caen en los K fragmentos recuperados. Indexa la serie completa (D15) y usa las
-    preguntas respondibles (E1-E3) del conjunto de calibración del juez. Los resultados quedan
-    en `reports/c1-tuning/resultados.json`.
+    referencia llegan completos al modelo, es decir, sobrevivientes al recorte del presupuesto
+    de contexto de OpenKOS (recall entregado, el que decide), y los compara con los que caen
+    en los K fragmentos recuperados sin recortar (recall de fragmentos completos). Indexa la
+    serie completa (D15) y usa las preguntas respondibles (E1-E3) del conjunto de calibración
+    del juez. Los resultados quedan en `reports/c1-tuning/resultados.json`.
     """
     from rich.table import Table
 
@@ -1682,22 +1756,32 @@ def c1_tune() -> None:
         raise typer.Exit(code=1) from exc
 
     table = Table(title="Recall de evidencia por configuración")
-    for column in ("max_chars", "overlap", "K", "recall", "contexto (car.)", "elegible"):
+    for column in (
+        "max_chars",
+        "overlap",
+        "K",
+        "recall entregado",
+        "recall fragmentos",
+        "entregado (car.)",
+        "elegible",
+    ):
         table.add_column(column, justify="right")
     for r in results:
         table.add_row(
             str(r.max_chars),
             str(r.overlap_turns),
             str(r.k),
+            f"{r.mean_delivered_recall:.3f}",
             f"{r.mean_recall:.3f}",
-            f"{r.mean_context_chars:.0f}",
+            f"{r.mean_delivered_chars:.0f}",
             "sí" if r.eligible else "no",
         )
     console.print(table)
     win = selection.winner
     console.print(
         f"[bold green]Ganador:[/bold green] max_chars={win.max_chars}, "
-        f"overlap_turns={win.overlap_turns}, K={win.k} (recall {win.mean_recall:.3f}). "
+        f"overlap_turns={win.overlap_turns}, K={win.k} "
+        f"(recall entregado {win.mean_delivered_recall:.3f}). "
         f"{selection.reason}"
     )
     save_tuning_results(
