@@ -173,7 +173,7 @@ def test_real_empty_bank_is_all_pending() -> None:
 
     path = Path("data/processed/questions/banco-preguntas.csv")
     report = load_configured_question_bank(path)
-    assert len(report.pending_ids) == 100
+    assert len(report.pending_ids) == 115
     assert report.usable == ()
     assert not report.has_errors
 
@@ -200,3 +200,50 @@ def test_load_experiment_questions_refuses_a_bank_with_nothing_usable(tmp_path: 
     path = write(tmp_path, "q001,,E1_point_fact,,,,gm,,")
     with pytest.raises(QuestionBankError, match="pendiente"):
         load_experiment_questions(path)
+
+
+def test_blank_rows_beyond_the_minimum_are_optional_and_do_not_block_complete(
+    tmp_path: Path,
+) -> None:
+    path = write(
+        tmp_path,
+        GOOD_E1,
+        "q002,ES2015,E2_current_state,Now?,A,ES2015a:d1,gm,gv,",
+        "q003,ES2015,E3_evolution,Changed?,A,ES2015a:d1;d2,gm,gv,",
+        "q004,IS1004,E4_unanswerable,Weather?,,,gm,gv,",
+        "q005,,E3_evolution,,,,gm,,",
+    )
+    report = load(path, minimum=1, complete=True)
+    assert not report.has_errors
+    assert report.optional_ids == ("q005",)
+    assert report.pending_ids == ()
+    assert [q.id for q in report.usable] == ["q001", "q002", "q003", "q004"]
+
+
+def test_blank_rows_are_pending_while_the_stratum_is_below_its_minimum(tmp_path: Path) -> None:
+    path = write(tmp_path, GOOD_E1, "q003,,E1_point_fact,,,,gm,,")
+    report = load(path, minimum=2, complete=True)
+    assert report.optional_ids == ()
+    assert report.pending_ids == ()  # complete mode reports them as errors instead
+    assert any(r == "q003" and s is Severity.ERROR for r, s, _ in problems(report))
+    assert any("mínimo" in m for _, s, m in problems(report) if s is Severity.ERROR)
+
+
+def test_a_written_but_unvalidated_row_is_never_optional(tmp_path: Path) -> None:
+    path = write(tmp_path, GOOD_E1, "q003,ES2015,E1_point_fact,Drafted?,,,gm,,")
+    partial = load(path, minimum=1)
+    assert partial.pending_ids == ("q003",)
+    assert partial.optional_ids == ()
+    complete = load(path, minimum=1, complete=True)
+    assert any(r == "q003" and s is Severity.ERROR for r, s, _ in problems(complete))
+
+
+def test_optional_rows_are_ignored_by_the_experiment_loader(tmp_path: Path) -> None:
+    path = tmp_path / "banco.csv"
+    path.write_text(
+        HEADER
+        + "q001,ES2015,E1_point_fact,How much?,Twelve,ES2015a:d1,gm,gv,\n"
+        + "q002,,E1_point_fact,,,,gm,,\n",
+        encoding="utf-8",
+    )
+    assert [q.id for q in load_experiment_questions(path)] == ["q001"]

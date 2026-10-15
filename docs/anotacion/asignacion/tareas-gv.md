@@ -428,7 +428,7 @@ revisa fila por fila sin detenerse en el primer error:
 
 ```bash
 uv run afg gold questions-check              # tolera un banco a medias
-uv run afg gold questions-check --complete   # solo al cierre: exige las 100 filas validadas
+uv run afg gold questions-check --complete   # solo al cierre: exige el mínimo validado por estrato
 ```
 
 En cada fila que marcaste con `gv` comprueba que la serie sea una del estudio, que la
@@ -436,7 +436,8 @@ evidencia esté bien formada y pertenezca a esa serie, que la respuesta y la evi
 presentes (y que una E4 no lleve ninguna de las dos), y que validador y autor sean personas
 distintas. Avisa si una fila validada conserva `validation_notes`. No juzga criterio: que la
 respuesta salga de la evidencia o que una E4 sea realmente incontestable lo sigues revisando
-tú. Sale con código 1 si hay errores.
+tú. E3 puede traer entre 25 y 40 preguntas: las filas de E3 sobre el mínimo que sigan vacías
+son opcionales y no se validan. Sale con código 1 si hay errores.
 
 ---
 

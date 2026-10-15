@@ -51,8 +51,13 @@ seed = 42
 # bank does not validate it.
 author = "gm"
 validator = "gv"
-total_questions = 100
+# Rows the bank holds per stratum (the total, 115, is derived). 25 is the preregistered
+# minimum ([question_bank].min_questions in experiments.toml, unchanged). E3 has room for
+# up to 40 so the evolution comparison can detect a smaller improvement (notebook 10); gm
+# writes as many E3 questions as the material really allows and leaves the rest empty
+# (notebook 01 projects ~37 evolution relations). Empty extra rows are optional.
 questions_per_stratum = 25
+rows_per_stratum = { E3_evolution = 40 }
 
 # --- people -------------------------------------------------------------------------------
 # `role = "annotator"` means the person's phase lists drive `afg gold prepare`.

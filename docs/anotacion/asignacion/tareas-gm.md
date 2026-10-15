@@ -379,7 +379,7 @@ como `earlier` y la de `d` como `later`, que es el orden de la convención.
 ## 7. El banco de preguntas — tú escribes, Germán valida
 
 Mínimo **25 preguntas por estrato**, cuatro estratos, **≥100 en total**
-(`docs/propuesta.md` §5.5). **El autor no valida y el validador no escribe**: tú no tocas
+(`docs/propuesta.md` §5.5); para E3 la meta es **hasta 40** (ver más abajo). **El autor no valida y el validador no escribe**: tú no tocas
 `validated_by`, y Germán no escribe preguntas. Es la misma regla de separación que hace que
 `jss` adjudique y no anote (`CONTRIBUTING.md` §1).
 
@@ -395,6 +395,24 @@ Los valores de `stratum` son literalmente los de
 | `E3_evolution` | E3 — evolución | *¿Cambió X? ¿En qué reunión y por qué?* | **El estrato que prueba la tesis** |
 | `E4_unanswerable` | E4 — incontestable | Pregunta adyacente al dominio, sin respuesta en el material | Mide si el sistema **se abstiene o fabrica** |
 
+### Cuántas preguntas de E3: hasta 40, nunca inventadas
+
+El mínimo de cada estrato sigue siendo **25**. Para E3 el banco tiene además espacio para
+**hasta 40 preguntas**: escribe tantas como el material permita, hasta ese tope. La razón es
+estadística: E3 es el estrato donde se compara C2 con C1, y con más preguntas aumenta la
+probabilidad de detectar una mejora real pequeña. En la simulación de potencia del notebook 10,
+con 25 preguntas una mejora verdadera de 15 puntos se detecta en alrededor de 57 % de los
+experimentos; con 40, en alrededor de 76 %. El límite lo pone el material, no el esfuerzo: el
+notebook 01 proyecta unas 37 relaciones de evolución en las series de evaluación, así que no
+siempre habrá 40 casos genuinos.
+
+**Regla: nunca se inventa un caso E3.** Solo entra una pregunta sobre una decisión que de
+verdad cambia entre reuniones y que está anotada como `revierte`, `reemplaza` o `refina`. Si
+el material se agota antes de 40, las filas sobrantes de E3 se **dejan vacías**: no pasa nada,
+`questions-check --complete` las trata como opcionales y no se usan. Quedarse corto de 40 se
+declara como una limitación de potencia, no como un incumplimiento; lo que sí es obligatorio
+es llegar a 25.
+
 ### El archivo
 
 `data/processed/questions/banco-preguntas.csv` ya está creado — el mantenedor corrió:
@@ -403,8 +421,9 @@ Los valores de `stratum` son literalmente los de
 uv run afg gold questions-init
 ```
 
-100 filas numeradas `q001`..`q100`, 25 por cada uno de los cuatro estratos en el orden de la
-tabla de arriba, con `stratum` y `author = gm` ya puestos. Tú **nunca inventas un `id` ni
+115 filas numeradas `q001`..`q115`: 25 para E1 (`q001`–`q025`), 25 para E2 (`q026`–`q050`),
+**40 para E3** (`q051`–`q090`) y 25 para E4 (`q091`–`q115`), en el orden de la tabla de arriba,
+con `stratum` y `author = gm` ya puestos. Tú **nunca inventas un `id` ni
 escribes un `stratum`**: escribes texto dentro de una fila que ya existe. Si el banco llegara
 a necesitar regenerarse, `questions-init` se niega a hacerlo mientras haya preguntas escritas,
 salvo `--force` — que destruye el banco, igual que `prepare --force` en las Tareas A y B.
@@ -414,19 +433,21 @@ ejecuta nada y revisa fila por fila sin detenerse en el primer error:
 
 ```bash
 uv run afg gold questions-check              # tolera un banco a medias
-uv run afg gold questions-check --complete   # solo al cierre: exige las 100 filas validadas
+uv run afg gold questions-check --complete   # solo al cierre: exige el mínimo validado por estrato
 ```
 
 Comprueba, en cada fila ya validada, que la serie sea una del estudio, que la evidencia esté
 bien formada y pertenezca a esa serie, que la respuesta y la evidencia estén presentes (y que
 una E4 no lleve ninguna de las dos), y que el validador no sea el autor. Las filas aún sin
 validar quedan como pendientes y el mínimo por estrato es un aviso; con `--complete` ambos
-pasan a ser errores. Sale con código 1 si hay errores: se corrigen antes del PR.
+pasan a ser errores. Las filas de más sobre el mínimo que siguen **completamente vacías** (sin
+texto, respuesta, evidencia, serie ni validador) se informan como *opcionales sin usar*: no
+son pendientes ni errores, y el Experimento B las ignora. Sale con código 1 si hay errores: se corrigen antes del PR.
 
 Hay además un ejemplo de referencia, uno por estrato, en
 [`../../../data/processed/questions/_plantilla-banco-preguntas.csv`](../../../data/processed/questions/_plantilla-banco-preguntas.csv).
 **Su `id` lleva prefijo de serie** (`ES2015.q001`); el banco real que genera `questions-init`
-no lo lleva (`q001`..`q100`, sin serie) porque la serie es tu elección por pregunta, no algo
+no lo lleva (`q001`..`q115`, sin serie) porque la serie es tu elección por pregunta, no algo
 que se sepa de antemano. Úsala solo para ver el estilo de una pregunta bien construida, no
 como plantilla de formato de `id`.
 
@@ -434,7 +455,7 @@ Las columnas salen del modelo `src/afg/domain/question.py::Question`, una por ca
 
 | Columna | Qué es |
 |---|---|
-| `id` | `q001`..`q100`, ya puesto por `questions-init`. **No tocar** |
+| `id` | `q001`..`q115`, ya puesto por `questions-init`. **No tocar** |
 | `series_id` | La serie de la que sale la pregunta. **La llenas tú**, es tu elección por pregunta |
 | `stratum` | Uno de los cuatro valores de arriba, ya puesto por `questions-init`. **No tocar** |
 | `text` | La pregunta, en español. **La llenas tú** |
@@ -568,7 +589,7 @@ dividida con sentido).
 - [ ] No hubo comparación de etiquetas ni discusión de casos concretos con `gv` antes de la adjudicación
 
 ### Banco de preguntas (al cerrarlo)
-- [ ] ≥25 preguntas por cada uno de los cuatro estratos, ≥100 en total
+- [ ] ≥25 preguntas por cada uno de los cuatro estratos, ≥100 en total (en E3, hasta 40 si el material lo permite; las filas E3 sobrantes quedan vacías)
 - [ ] `stratum` usa los valores literales de `QuestionStratum`
 - [ ] Cada respuesta de referencia se deriva de la evidencia citada, no del resumen
 - [ ] Toda E4 se buscó en las cuatro transcripciones de su serie y no aparece
