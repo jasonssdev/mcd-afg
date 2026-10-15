@@ -11,9 +11,16 @@ embedding backend.
 
 ## Matching
 
-One alignment per series and threshold ``tau``, over every extracted decision of the series
-against every reference decision of the series (the protocol does not restrict matches to
-the same meeting, so this does not either). Only extracted decisions with status
+One alignment per series and threshold ``tau``. PROVISIONAL (issue #99, to be confirmed with
+the first real extraction of a development series): a pair is admissible only if the
+reference decision's meeting is among the extracted decision's origin meetings
+(:attr:`afg.domain.decision.Decision.origin_meetings`; OpenKOS may merge a decision restated
+in several meetings into one concept). Inadmissible pairs are masked in the similarity matrix
+(set to ``-inf``) before the Hungarian assignment, so :func:`afg.evaluation.alignment.align`
+is untouched. This is the primary scope (``alignment_scope="origin_meetings"``); the
+series-wide alignment (every extracted decision against every reference decision of the
+series) stays available as a SENSITIVITY analysis (``alignment_scope="series"``), and
+:func:`score_series_views` computes both side by side. Only extracted decisions with status
 ``ACCEPTED`` are scored; the others are not claims of a decision and are counted in
 ``n_ignored_non_decisions``. ``TP`` is the number of matches, ``FP`` the unmatched extracted
 decisions, ``FN`` the unmatched reference decisions. A zero denominator gives 0.0.
@@ -32,11 +39,18 @@ optimistic in that respect.
 
 ## Role stratification
 
-Recall by role uses the primary role of each reference decision
+PRIMARY (``by_role``): recall by role uses the majority role of each reference decision
 (:func:`afg.evaluation.reference.primary_role`). Precision by role needs a role for each
 extracted decision, so it is reported only when ``predicted_role_of`` is given (typically
 :func:`evidence_role_resolver`, which reads the role from the extracted decision's evidence
-turns). Native / non-native speakers are not stratified (proposal, section 6.3).
+turns).
+
+SENSITIVITY (``by_role_every_role``, provisional, issue #99): the same counts, but a decision
+with evidence from several roles counts in every role involved (``ReferenceDecision.roles``;
+for extracted decisions, ``predicted_roles_of``, typically
+:func:`evidence_roles_resolver`).
+
+Native / non-native speakers are not stratified (proposal, section 6.3).
 
 ## Partition guard
 
@@ -52,6 +66,7 @@ import statistics
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Literal
 
 import numpy as np
 
@@ -59,7 +74,7 @@ from afg.conditions.c1_chunking import FrozenTurn, load_frozen_turns
 from afg.domain.decision import Decision
 from afg.evaluation.alignment import align
 from afg.evaluation.metrics import precision_recall_f1, wilson_interval
-from afg.evaluation.reference import ReferenceDecision, primary_role
+from afg.evaluation.reference import ReferenceDecision, primary_role, roles_of
 from afg.extraction.runner import MIN_RUNS
 from afg.shared.config import load_experiments_config
 from afg.shared.paths import TRANSCRIPTS_DIR
@@ -70,18 +85,24 @@ __all__ = [
     "PooledScore",
     "RoleScore",
     "RunsReport",
+    "ScoreViews",
     "SeriesScore",
     "SimilarityFn",
     "evidence_role_resolver",
+    "evidence_roles_resolver",
     "interval_settings_from_config",
     "pair_text",
     "pool_scores",
     "score_runs",
     "score_series",
+    "score_series_views",
 ]
 
 SimilarityFn = Callable[[Sequence[str], Sequence[str]], np.ndarray]
 """``(predicted_texts, reference_texts) -> similarity matrix`` of shape (n_pred, n_ref)."""
+
+AlignmentScope = Literal["origin_meetings", "series"]
+"""``origin_meetings`` is the primary scope; ``series`` is the sensitivity analysis."""
 
 UNKNOWN_ROLE = "unknown"
 _METHODS = {"precision": "wilson", "recall": "wilson", "f1": "bootstrap over decisions"}
@@ -154,6 +175,8 @@ class SeriesScore:
     reference_hits: tuple[bool, ...]
     by_role: Mapping[str, RoleScore]
     n_ignored_non_decisions: int = 0
+    by_role_every_role: Mapping[str, RoleScore] = field(default_factory=dict)
+    alignment_scope: AlignmentScope = "origin_meetings"
 
 
 def score_series(
@@ -164,6 +187,8 @@ def score_series(
     *,
     tau: float,
     predicted_role_of: Callable[[Decision], str | None] | None = None,
+    predicted_roles_of: Callable[[Decision], Sequence[str]] | None = None,
+    alignment_scope: AlignmentScope = "origin_meetings",
 ) -> SeriesScore:
     """Align ``predicted`` to ``reference`` at ``tau`` and count TP/FP/FN (module docstring)."""
     accepted = [d for d in predicted if d.is_decision]
@@ -177,6 +202,12 @@ def score_series(
         )
     else:
         matrix = np.zeros((len(accepted), len(reference)))
+    if alignment_scope == "origin_meetings":
+        admissible = np.array(
+            [[r.meeting_id in d.origin_meetings for r in reference] for d in accepted],
+            dtype=bool,
+        ).reshape(len(accepted), len(reference))
+        matrix = np.where(admissible, matrix, -np.inf)
     matches = align(matrix, tau).matches
 
     predicted_hits = [False] * len(accepted)
@@ -198,6 +229,15 @@ def score_series(
             key = predicted_role_of(decision) or UNKNOWN_ROLE
             roles[key] = roles.get(key, RoleScore()) + RoleScore(0, 0, 1, int(hit))
 
+    every_role: dict[str, RoleScore] = {}
+    for ref, hit in zip(reference, reference_hits, strict=True):
+        for key in ref.roles or (ref.role or UNKNOWN_ROLE,):
+            every_role[key] = every_role.get(key, RoleScore()) + RoleScore(1, int(hit), 0, 0)
+    if predicted_roles_of is not None:
+        for decision, hit in zip(accepted, predicted_hits, strict=True):
+            for key in predicted_roles_of(decision) or (UNKNOWN_ROLE,):
+                every_role[key] = every_role.get(key, RoleScore()) + RoleScore(0, 0, 1, int(hit))
+
     return SeriesScore(
         series_id=series_id,
         tau=tau,
@@ -211,7 +251,59 @@ def score_series(
         reference_hits=tuple(reference_hits),
         by_role=roles,
         n_ignored_non_decisions=len(predicted) - len(accepted),
+        by_role_every_role=every_role,
+        alignment_scope=alignment_scope,
     )
+
+
+@dataclass(frozen=True, slots=True)
+class ScoreViews:
+    """The primary score (origin-meeting scope) and its series-wide sensitivity analysis."""
+
+    primary: SeriesScore
+    series_wide_sensitivity: SeriesScore
+
+
+def score_series_views(
+    series_id: str,
+    reference: Sequence[ReferenceDecision],
+    predicted: Sequence[Decision],
+    similarity: SimilarityFn,
+    *,
+    tau: float,
+    predicted_role_of: Callable[[Decision], str | None] | None = None,
+    predicted_roles_of: Callable[[Decision], Sequence[str]] | None = None,
+) -> ScoreViews:
+    """Score once per alignment scope so both results are reportable side by side."""
+
+    def run(scope: AlignmentScope) -> SeriesScore:
+        return score_series(
+            series_id,
+            reference,
+            predicted,
+            similarity,
+            tau=tau,
+            predicted_role_of=predicted_role_of,
+            predicted_roles_of=predicted_roles_of,
+            alignment_scope=scope,
+        )
+
+    return ScoreViews(primary=run("origin_meetings"), series_wide_sensitivity=run("series"))
+
+
+def evidence_roles_resolver(
+    transcripts_dir: Path = TRANSCRIPTS_DIR,
+) -> Callable[[Decision], tuple[str, ...]]:
+    """Every role of an extracted decision's evidence turns (sensitivity view of the roles)."""
+    cache: dict[str, list[FrozenTurn]] = {}
+
+    def roles_for(decision: Decision) -> tuple[str, ...]:
+        meeting = decision.evidence.meeting_id
+        if meeting not in cache:
+            cache[meeting] = load_frozen_turns(meeting, transcripts_dir)
+        return roles_of(decision.evidence.dialogue_act_ids, cache[meeting])
+
+    return roles_for
 
 
 def evidence_role_resolver(
@@ -285,6 +377,8 @@ class PooledScore:
     confidence_level: float
     by_role: Mapping[str, RoleScore]
     partition: str
+    by_role_every_role: Mapping[str, RoleScore] = field(default_factory=dict)
+    alignment_scope: AlignmentScope = "origin_meetings"
     interval_methods: Mapping[str, str] = field(default_factory=lambda: dict(_METHODS))
 
     @property
@@ -333,6 +427,10 @@ def pool_scores(
     for s in scores:
         for role, counts in s.by_role.items():
             pooled_roles[role] = pooled_roles.get(role, RoleScore()) + counts
+    pooled_every_role: dict[str, RoleScore] = {}
+    for s in scores:
+        for role, counts in s.by_role_every_role.items():
+            pooled_every_role[role] = pooled_every_role.get(role, RoleScore()) + counts
     level = settings.confidence_level
     return PooledScore(
         tau=scores[0].tau,
@@ -349,6 +447,8 @@ def pool_scores(
         confidence_level=level,
         by_role=pooled_roles,
         partition=_combine_partitions(partition_of(s.series_id) for s in scores),
+        by_role_every_role=pooled_every_role,
+        alignment_scope=scores[0].alignment_scope,
     )
 
 
@@ -389,6 +489,8 @@ def score_runs(
     settings: IntervalSettings,
     partition_of: Callable[[str], str] | None = None,
     predicted_role_of: Callable[[Decision], str | None] | None = None,
+    predicted_roles_of: Callable[[Decision], Sequence[str]] | None = None,
+    alignment_scope: AlignmentScope = "origin_meetings",
 ) -> RunsReport:
     """Score each run (``series -> extracted decisions``) and aggregate across runs.
 
@@ -410,6 +512,8 @@ def score_runs(
                     similarity,
                     tau=tau,
                     predicted_role_of=predicted_role_of,
+                    predicted_roles_of=predicted_roles_of,
+                    alignment_scope=alignment_scope,
                 )
                 for series, decisions in run.items()
             ],

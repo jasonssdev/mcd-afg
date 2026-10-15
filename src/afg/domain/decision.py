@@ -112,6 +112,18 @@ class Decision(BaseModel):
     annotator: str | None = Field(
         default=None, description="Annotator id, when human-annotated; None if system-extracted."
     )
+    origin_meeting_ids: tuple[str, ...] = Field(
+        default=(),
+        description=(
+            "Every meeting the decision comes from, when a system merged a decision restated "
+            "in several meetings into one concept. Empty means just ``meeting_id``."
+        ),
+    )
+
+    @property
+    def origin_meetings(self) -> tuple[str, ...]:
+        """The meetings of origin: ``origin_meeting_ids``, or ``(meeting_id,)`` when unset."""
+        return self.origin_meeting_ids or (self.meeting_id,)
 
     @property
     def is_decision(self) -> bool:
