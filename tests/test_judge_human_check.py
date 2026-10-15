@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import json
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +14,7 @@ from afg.evaluation.judge_human_check import (
     SHEET_COLUMNS,
     check_judge_against_humans,
     read_csv_rows,
+    save_judge_human_check,
     select_human_sample,
     write_human_sample,
 )
@@ -66,6 +68,28 @@ def test_sample_is_stratified_by_condition_and_stratum() -> None:
     }
 
 
+def test_sample_takes_one_random_run_per_question_and_condition() -> None:
+    sample = select_human_sample(_records(), fraction=0.2, seed=42)
+    pairs = [(k["question_id"], k["condition"]) for k in sample.key_rows]
+    assert len(pairs) == len(set(pairs))
+    assert {int(k["run"]) for k in sample.key_rows} == {0, 1, 2}  # the run is drawn, not fixed
+
+
+def test_sample_size_is_a_fraction_of_judged_answers_capped_at_available_pairs() -> None:
+    # 2 questions x 5 runs = 10 judged answers -> ceil(0.5 * 10) = 5, but only 2 pairs exist.
+    records = [_record(q, "C1", r) for q in (1, 2) for r in range(5)]
+    sample = select_human_sample(records, fraction=0.5, seed=1)
+    assert len(sample.sheet_rows) == 2
+    assert sample.per_cell == {("C1", "E3"): (10, 2)}
+    assert sample.pairs_per_cell == {("C1", "E3"): 2}
+
+
+def test_runs_with_failures_are_not_drawn_for_a_pair() -> None:
+    records = [_record(1, "C1", 0, judge_failure="bad"), _record(1, "C1", 1)]
+    sample = select_human_sample(records, fraction=1.0, seed=5)
+    assert [k["run"] for k in sample.key_rows] == ["1"]
+
+
 def test_sample_is_deterministic_and_seed_dependent() -> None:
     a = select_human_sample(_records(), fraction=0.2, seed=42)
     b = select_human_sample(list(reversed(_records())), fraction=0.2, seed=42)
@@ -78,7 +102,7 @@ def test_failures_and_errors_are_not_sampled() -> None:
     records = [_record(1, "C1", r) for r in range(5)]
     records += [_record(2, "C1", 0, judge_failure="bad"), _record(3, "C1", 0, error="boom")]
     sample = select_human_sample(records, fraction=1.0, seed=1)
-    assert len(sample.sheet_rows) == 5
+    assert len(sample.sheet_rows) == 1  # one run per (question, condition)
     assert {row["question_id"] for row in sample.key_rows} == {"ES2015.q001"}
 
 
@@ -267,3 +291,71 @@ def test_sample_fills_passage_columns_from_context_for() -> None:
     )
     assert all(r["pasaje_transcripcion"] == "PASSAGE" for r in sample.sheet_rows)
     assert all(r["archivos_transcripcion"] == "files.md" for r in sample.sheet_rows)
+
+
+def test_every_label_reports_observed_agreement_and_class_prevalence() -> None:
+    key = _key(10, [("si", "si")] * 7 + [("no", "si")] * 3)
+    human = {k["id"]: ("si", "si") for k in key}
+    check = check_judge_against_humans(key, _labelled(key, human), min_kappa=0.70)
+    correct, evidence = check.columns
+    assert correct.n_agree == 7 and correct.observed_agreement == pytest.approx(0.7)
+    assert correct.judge_positive_rate == pytest.approx(0.7)
+    assert correct.human_positive_rate == pytest.approx(1.0)
+    assert evidence.observed_agreement == pytest.approx(1.0)
+    assert evidence.judge_positive_rate == evidence.human_positive_rate == pytest.approx(1.0)
+
+
+def test_evidence_supported_has_its_own_reliability_flag() -> None:
+    key = _key(20, [("si", "si"), ("no", "no")] * 10)
+    agree_correct_only = {k["id"]: (k["judge_correct"], "si") for k in key}
+    check = check_judge_against_humans(key, _labelled(key, agree_correct_only), min_kappa=0.70)
+    assert check.keep_automatic_judging is True
+    assert check.evidence_supported_reliable is False
+    assert "evidence_supported" in check.evidence_decision
+    assert "no confiable" in check.evidence_decision
+
+    all_agree = {k["id"]: (k["judge_correct"], k["judge_evidence_supported"]) for k in key}
+    ok = check_judge_against_humans(key, _labelled(key, all_agree), min_kappa=0.70)
+    assert ok.keep_automatic_judging and ok.evidence_supported_reliable
+
+
+def test_evidence_supported_does_not_gate_the_primary_metric() -> None:
+    key = _key(20, [("si", "si"), ("no", "no")] * 10)
+    human = {k["id"]: ("si", k["judge_evidence_supported"]) for k in key}  # correct disagrees
+    check = check_judge_against_humans(key, _labelled(key, human), min_kappa=0.70)
+    assert check.keep_automatic_judging is False
+    assert check.evidence_supported_reliable is True
+    assert "evaluación humana" in check.decision
+
+
+def test_undefined_kappa_counts_as_not_passing_but_agreement_is_reported() -> None:
+    key = _key(4, [("si", "si")] * 4)
+    check = check_judge_against_humans(
+        key, _labelled(key, {k["id"]: ("si", "si") for k in key}), min_kappa=0.7
+    )
+    correct = check.columns[0]
+    assert correct.kappa is None and correct.passes is False
+    assert correct.observed_agreement == pytest.approx(1.0)
+    assert correct.judge_positive_rate == correct.human_positive_rate == pytest.approx(1.0)
+    assert "indefinido" in check.decision
+    assert "acuerdo observado" in check.decision
+
+
+def test_saved_check_carries_the_label_level_verdicts(tmp_path: Path) -> None:
+    key = _key(20, [("si", "si"), ("no", "no")] * 10)
+    human = {k["id"]: (k["judge_correct"], "si") for k in key}
+    check = check_judge_against_humans(key, _labelled(key, human), min_kappa=0.70)
+    path = tmp_path / "juez-humano.json"
+    save_judge_human_check(path, check)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    assert payload["keep_automatic_judging"] is True
+    assert payload["evidence_supported_reliable"] is False
+    assert payload["evidence_decision"]
+    column = {c["column"]: c for c in payload["columns"]}["evidence_supported"]
+    assert set(column) >= {
+        "observed_agreement",
+        "judge_positive_rate",
+        "human_positive_rate",
+        "kappa",
+        "passes",
+    }

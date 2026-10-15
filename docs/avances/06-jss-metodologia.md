@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 06 — Metodología |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 3.3 |
+| **Versión** | 3.5 |
 | **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
@@ -23,6 +23,8 @@
 | 3.1 | 2026-10-14 | Se registra la elección del juez automático (§5–6): `gpt-oss:20b`, elegido entre tres candidatos con una calibración propia sobre ES2015 y umbrales fijados antes de ver resultados. Se declara una limitación de esa calibración. No cambian cifras previas ni umbrales. | La metodología preveía un juez automático sin nombrarlo; la calibración ([`../../notebooks/05-jss-seleccion-juez.ipynb`](../../notebooks/05-jss-seleccion-juez.ipynb)) ya permite fijarlo. |
 | 3.2 | 2026-10-15 | Se registra el ajuste de la línea base C1 (§3–4): se ajustó sobre ES2015 con una regla fijada antes de correr, midiendo la evidencia sobre el texto que realmente llega al modelo; resultado de 1.200 caracteres por fragmento, 1 turno de solapamiento y 5 fragmentos. Se declara que las fechas de las reuniones llevan hora (§7–8): real cuando AMI la trae (6 de 14 series) y sintética, solo para preservar el orden, cuando no (8 de 14). La versión de OpenKOS a fijar queda abierta mientras se corrige (se suma `jasonssdev/openkos#1384` al plan). No cambian otras cifras ni umbrales. | El ajuste de C1 y la decisión sobre las fechas ya tienen evidencia propia ([ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md) y su enmienda, [notebook 06](../../notebooks/06-jss-ajuste-c1.ipynb); [ADR 0008](../decisions/0008-adr-fechas-de-reunion-para-openkos.md), [notebook 08](../../notebooks/08-jss-fechas-de-reunion.ipynb)). |
 | 3.3 | 2026-10-15 | Se define la citación correcta (§1): una respuesta cuenta como bien citada cuando al menos una de sus fuentes citadas contiene alguna de las intervenciones que las personas marcaron como evidencia de la pregunta; además se informa, como cifra secundaria, qué fracción de lo citado es pertinente. Se declara el riesgo de que la regla favorezca a quien cita fragmentos grandes y el compromiso de revisarlo con los primeros datos de C2, antes de evaluar. No cambian otras cifras ni umbrales. | Análisis de la regla sobre la corrida de humo de ES2015: exigir que todas las fuentes coincidieran castigaba respuestas correctas con una cita válida más un repaso posterior ([ADR 0009](../decisions/0009-adr-regla-de-citacion-correcta.md), [notebook 09](../../notebooks/09-jss-regla-de-citacion.ipynb)). |
+| 3.4 | 2026-10-15 | Se registran cuatro decisiones del análisis del Experimento B antes de correr cualquier evaluación (§1, §5–6, §7–8). (1) Criterio D16: el criterio principal pasa a ser que el intervalo bootstrap del 95 % de la **diferencia pareada** C2 − C1 en E3 quede por encima de 0; la no superposición de los intervalos independientes, que era la redacción de la versión 2.0, se conserva como cifra de robustez. Es una enmienda de un criterio prerregistrado el 2026-10-13, hecha antes de que exista cualquier corrida de evaluación. (2) Verificación humana del juez: el veredicto es por etiqueta (la corrección decide el juicio automático de la métrica principal; el soporte de evidencia tiene su propia marca de confiable o no confiable) y siempre se informan el acuerdo observado y la prevalencia junto al kappa. (3) Un kappa indefinido sigue contando como «no cumple». (4) La muestra humana toma una corrida sorteada por pregunta y condición, con el 20 % de las respuestas juzgadas como tamaño. No cambian otros umbrales ni cifras. | El criterio D16 se probó con una simulación de potencia con datos sintéticos: con las 25 preguntas mínimas de E3 y una mejora verdadera de 15 a 20 puntos, el criterio pareado declara respaldada la hipótesis en 58 % a 80 % de los experimentos y el de no solapamiento en 10 % a 28 % (con dificultad compartida moderada entre condiciones), con falsos positivos de a lo más 4,5 % y 0,8 % ([ADR 0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md), [notebook 10](../../notebooks/10-jss-potencia-criterio-d16.ipynb)). Las otras tres decisiones se apoyan en razones de principio, expuestas en el mismo ADR. |
+| 3.5 | 2026-10-15 | Se registran dos decisiones provisionales de la puntuación del Experimento A (§1) y se declara una limitación de los intervalos. (1) Ámbito de la alineación: una decisión extraída solo puede emparejarse con una decisión de referencia cuya reunión esté entre las reuniones de origen de la extraída; la alineación sobre toda la serie se calcula aparte, como análisis de sensibilidad. (2) Rol de una decisión con evidencia de varias personas: el rol que más habló es el principal; contar la decisión en cada rol involucrado es el análisis de sensibilidad. Ambas decisiones son provisionales y se confirman o cambian con un análisis sobre la primera extracción real de una serie de desarrollo. No cambian otras cifras ni umbrales. | La decisión extraída puede reunir en un solo concepto una decisión repetida en varias reuniones, y la referencia de ES2015 tiene 9 de 27 decisiones con evidencia de más de un rol; sin extracción real no hay datos para elegir con evidencia (issue #99, bloqueado por #95). |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -81,6 +83,8 @@ reales encontró; F1 las combina. **Métricas de OE3** (fase 3): corrección de 
 soporte de evidencia, citación correcta, corrección del rechazo (si el sistema sabe decir
 "no hay información" cuando no la hay), y costo amortizado (§7).
 
+**Dos decisiones provisionales de la puntuación de OE2.** Antes de que exista una extracción real, la puntuación fija dos valores por defecto y calcula siempre, junto a cada uno, una alternativa de sensibilidad (un análisis de sensibilidad repite el cálculo con la otra opción para ver cuánto cambia el resultado). (1) **Ámbito de la alineación.** Una decisión extraída solo puede emparejarse con una decisión de referencia si la reunión de esta última figura entre las reuniones de origen de la extraída: el sistema puede reunir en un solo concepto una decisión repetida en varias reuniones, de modo que la extraída puede tener más de una reunión de origen. La alineación sobre toda la serie, sin esa restricción, se calcula aparte como sensibilidad. (2) **Rol del hablante.** Cuando la evidencia de una decisión proviene de personas con roles distintos, el rol que más habló es el principal; la sensibilidad cuenta la decisión en cada rol involucrado, tanto en cobertura como, cuando se conoce el rol de lo extraído, en precisión. Ambas decisiones son provisionales: se confirmarán o se cambiarán con un cuaderno de análisis sobre la primera extracción real de una serie de desarrollo (issues #95 y #99), y entonces quedarán registradas en un ADR. Se declara además una limitación: los intervalos de precisión, cobertura y F1 tratan las decisiones como independientes e ignoran su agrupación por reunión y por serie, por lo que son optimistas en ese sentido.
+
 **Citación correcta (ADR 0009).** Esta métrica busca el caso en que la respuesta es correcta
 pero la fuente que cita no la respalda. En términos simples: una respuesta cita uno o varios
 pasajes de las reuniones; cada pasaje "acierta" si contiene al menos una de las
@@ -102,9 +106,9 @@ datos y cualquier cambio se registra en `docs/decisions/`.
 | Qué | Umbral | Qué pasa si no se cumple |
 |---|---|---|
 | Concordancia del alineamiento automático con el emparejamiento manual (100 pares) | ≥ 0,80 | Se revisa la grilla de τ y se repite la validación |
-| Concordancia juez automático – humano (20 % de las respuestas) | kappa ≥ 0,70 | Se descarta el juicio automático y se reporta solo la evaluación humana |
+| Concordancia juez automático – humano (20 % de las respuestas, una corrida por pregunta y condición), por etiqueta | kappa ≥ 0,70 | Si falla la corrección de respuesta, se descarta el juicio automático de la métrica principal y se reporta solo la evaluación humana; si falla el soporte de evidencia, esa métrica se reporta solo con evaluación humana o marcada como no confiable |
 | Tamaño del estrato E3 | ≥ 25 preguntas | E3 se reformula como análisis de casos con reporte cualitativo |
-| Diferencia entre condiciones | Intervalos bootstrap del 95 % que no se solapan | No se afirma diferencia; se reporta como no concluyente |
+| Diferencia entre condiciones (criterio principal D16) | Intervalo bootstrap del 95 % de la diferencia pareada C2 − C1 por encima de 0 | No se afirma diferencia; se reporta como no concluyente |
 | Kappa de la anotación (existencia, tipo, dirección) | Sin umbral de aceptación, por diseño | Se reporta tal como salga; un kappa bajo es un hallazgo (documento 01, §3) |
 
 La última fila merece una explicación. Kappa es la medida de acuerdo entre dos anotadores
@@ -118,12 +122,26 @@ validez: dicen si la medición es confiable, no si el proyecto tuvo éxito. El c
 éxito principal se fija aquí, antes de correr el experimento, para que no pueda ajustarse a
 los resultados: la **corrección de respuesta en el estrato E3** (las preguntas sobre cómo
 cambió una decisión), **C2 frente a C1**. La hipótesis del proyecto se considera respaldada
-si el intervalo bootstrap del 95 % de C2 queda por encima del de C1 sin solaparse; si los
-intervalos se solapan, el resultado se reporta como no concluyente y nunca como éxito. Todo
-lo demás es secundario y descriptivo: precisión, cobertura y F1 de OE2, exactitud de tipo y
-de dirección, soporte de evidencia, citación, corrección del rechazo, costo amortizado, los
-estratos E1, E2 y E4, y la comparación C2 frente a C3. Cómo se calculan los intervalos se
-explica en los pasos 7–8.
+si el intervalo bootstrap del 95 % de la **diferencia pareada C2 − C1** queda por encima de 0.
+La diferencia pareada se calcula pregunta por pregunta: como C1 y C2 responden las mismas
+preguntas, una pregunta difícil lo es para las dos y esa dificultad común se cancela en la
+diferencia. Si el intervalo incluye el 0, el resultado se reporta como no concluyente y nunca
+como éxito. Como cifra de **robustez** se informa además si los intervalos del 95 % de C2 y de
+C1, calculados cada uno por separado, se solapan; esa cifra acompaña al criterio principal y no
+lo reemplaza. Todo lo demás es secundario y descriptivo: precisión, cobertura y F1 de OE2,
+exactitud de tipo y de dirección, soporte de evidencia, citación, corrección del rechazo, costo
+amortizado, los estratos E1, E2 y E4, y la comparación C2 frente a C3. Cómo se calculan los
+intervalos se explica en los pasos 7–8.
+
+> **Enmienda del criterio D16 (2026-10-15, versión 3.4).** *Redacción superada* (versión 2.0,
+> 2026-10-13): la hipótesis se considera respaldada «si el intervalo bootstrap del 95 % de C2
+> queda por encima del de C1 sin solaparse». Se cambió antes de que exista cualquier corrida de
+> evaluación, de modo que ningún dato pudo influir en la elección. La razón es que, con las 25
+> preguntas mínimas de E3, esa lectura casi nunca permite concluir aunque la mejora sea real:
+> una simulación con datos sintéticos da 10 % a 28 % de detección para mejoras de 15 a 20 puntos
+> (con dificultad compartida moderada), frente a 58 % a 80 % del criterio pareado, con falsos positivos por debajo del 5 % en ambos
+> ([ADR 0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md),
+> [notebook 10](../../notebooks/10-jss-potencia-criterio-d16.ipynb)).
 
 **Acumulación de reuniones (D15).** Cada pregunta se responde después de haber procesado la
 serie completa (4 reuniones), en orden cronológico y sin acceso a reuniones futuras durante
@@ -339,8 +357,20 @@ ver cómo se había generado (con o sin la evidencia), de modo que quienes etiqu
 saberlo. El equipo decidió declararlo en lugar de volver a etiquetar; los casos en que las
 etiquetas contradicen ese identificador indican que se etiquetó por el contenido, pero el
 acuerdo podría estar algo inflado. Como protección adicional, el Experimento B mantiene la
-verificación humana sobre el 20 % de las respuestas (§1): si el acuerdo con el juez cae bajo
-0,70, el juicio automático se descarta.
+verificación humana sobre el 20 % de las respuestas (§1) y la decide **por etiqueta**, porque
+las dos etiquetas del juez no se usan igual. La **corrección de respuesta** es la métrica del
+criterio principal (D16): si su acuerdo con las personas cae bajo 0,70 (kappa), el juicio
+automático se descarta y esa métrica se reporta solo con evaluación humana. El **soporte de
+evidencia** es secundario y tiene su propia marca: si su kappa cae bajo 0,70, se reporta solo
+con evaluación humana o marcada como no confiable, sin afectar a la métrica principal. Un
+kappa que no se puede calcular (juez y personas usan una sola clase de respuesta) cuenta como
+«no cumple»; en todos los casos se informan además el **acuerdo observado** (la fracción de
+respuestas en que coinciden) y la **prevalencia** (la fracción de «sí» de cada lado), porque
+un kappa solo puede engañar cuando casi todas las respuestas son de una misma clase. La muestra
+toma **una corrida sorteada por cada pregunta y condición**, y no todas las corridas, porque las
+corridas de una pregunta son mediciones repetidas del mismo ítem y el análisis cuenta
+preguntas; su tamaño es el 20 % de las respuestas juzgadas de cada condición y estrato, con tope
+en las preguntas disponibles ([ADR 0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md)).
 
 ## 7–8. Análisis de errores y operación
 
@@ -413,7 +443,8 @@ remuestrean las preguntas con reemplazo 10.000 veces, se recalcula la métrica e
 remuestreo y se toman los percentiles 2,5 % y 97,5 % de los valores obtenidos. Los
 parámetros están en `config/experiments.toml` (`bootstrap_resamples = 10_000`,
 `bootstrap_confidence_level = 0.95`) y la función es `afg.evaluation.metrics.bootstrap_ci`,
-con pruebas.
+con pruebas. La comparación entre condiciones (D16) aplica el mismo método a la **diferencia
+pareada** por pregunta, C2 − C1.
 
 **Qué significaría operar esto en una organización real.** El experimento completo depende
 de que exista suficiente material de evolución entre reuniones para sostener el estrato E3
@@ -480,6 +511,7 @@ riesgo de C2; la numeración de secciones no cambia.
 | Filtro léxico: sesgos, comparación por sitio y Tarea C | [`../../notebooks/00-jss-corpus-y-auditoria.ipynb`](../../notebooks/00-jss-corpus-y-auditoria.ipynb) §4.1; `src/afg/annotation/blocking.py` |
 | Wilson y bootstrap percentil | [`../../notebooks/01-jss-viabilidad-e3.ipynb`](../../notebooks/01-jss-viabilidad-e3.ipynb) §2; `src/afg/evaluation/metrics.py` (`wilson_interval`, `bootstrap_ci`); [`../../config/experiments.toml`](../../config/experiments.toml) |
 | Acumulación por serie (D15) y criterio de éxito (D16) | [`../decisions/README.md`](../decisions/README.md), decisiones D15 y D16 |
+| Enmienda de D16 (diferencia pareada), decisión de la verificación humana del juez, kappa indefinido y muestra de una corrida por pregunta | [`../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md`](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md); [`../../notebooks/10-jss-potencia-criterio-d16.ipynb`](../../notebooks/10-jss-potencia-criterio-d16.ipynb); `src/afg/experiments/power.py` |
 | Ajuste de C1: 1.200 caracteres, 1 turno de solapamiento, K = 5; contexto de unos 7.400 caracteres | [`../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md`](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md) (enmienda 2026-10-15); [`../../notebooks/06-jss-ajuste-c1.ipynb`](../../notebooks/06-jss-ajuste-c1.ipynb) |
 | Fechas de reunión: hora real en 6 de 14 series, sintética en 8 | [`../decisions/0008-adr-fechas-de-reunion-para-openkos.md`](../decisions/0008-adr-fechas-de-reunion-para-openkos.md); [`../../notebooks/08-jss-fechas-de-reunion.ipynb`](../../notebooks/08-jss-fechas-de-reunion.ipynb) |
 | Riesgo de C2 (4 frente a 29 decisiones en ES2015) | `jasonssdev/openkos#1348`, `#1349`, `#1350`, `#1384`; [`../decisions/0005-adr-development-evaluation-split.md`](../decisions/0005-adr-development-evaluation-split.md); [`../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md`](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) |

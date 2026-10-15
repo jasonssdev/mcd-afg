@@ -14,10 +14,12 @@ from afg.evaluation.scoring import (
     DevelopmentResultError,
     IntervalSettings,
     SimilarityFn,
+    evidence_roles_resolver,
     pair_text,
     pool_scores,
     score_runs,
     score_series,
+    score_series_views,
 )
 
 SETTINGS = IntervalSettings(n_resamples=500, confidence_level=0.95, seed=7)
@@ -323,3 +325,180 @@ def test_evidence_role_resolver_reads_the_role_from_the_frozen_turns(tmp_path: P
 
     assert role_of(_pred(1)) == "UI"
     assert role_of(_pred(1, act="other.act")) is None
+
+
+# --- provisional decisions of issue #99 -------------------------------------------------------
+
+
+def _ref_in(i: int, meeting: str, roles: tuple[str, ...] = ("PM",)) -> ReferenceDecision:
+    return ReferenceDecision(
+        decision_id=f"{meeting}.d{i:02d}",
+        series_id="ES2015",
+        meeting_id=meeting,
+        decision_object=f"obj{i}",
+        content=f"cont{i}",
+        evidence=EvidenceSpan(meeting_id=meeting, dialogue_act_ids=(f"da.{i}",)),
+        evidence_method="sentence_id",
+        role=roles[0],
+        roles=roles,
+    )
+
+
+def _pred_in(i: int, meeting: str, origin: tuple[str, ...] = ()) -> Decision:
+    return Decision(
+        id=f"p{i}",
+        series_id="ES2015",
+        meeting_id=meeting,
+        origin_meeting_ids=origin,
+        decision_object=f"obj{i}",
+        content=f"cont{i}",
+        status=DecisionStatus.ACCEPTED,
+        evidence=EvidenceSpan(meeting_id=meeting, dialogue_act_ids=(f"da.{i}",)),
+    )
+
+
+def test_decision_without_origin_meetings_falls_back_to_its_meeting() -> None:
+    assert _pred_in(1, "ES2015a").origin_meetings == ("ES2015a",)
+    assert _pred_in(1, "ES2015a", ("ES2015a", "ES2015c")).origin_meetings == (
+        "ES2015a",
+        "ES2015c",
+    )
+
+
+def test_alignment_is_restricted_to_the_origin_meetings_by_default() -> None:
+    reference = [_ref_in(1, "ES2015b")]
+    predicted = [_pred_in(1, "ES2015a")]  # same text, but from another meeting
+
+    restricted = score_series("ES2015", reference, predicted, SIM, tau=0.5)
+    series_wide = score_series(
+        "ES2015", reference, predicted, SIM, tau=0.5, alignment_scope="series"
+    )
+
+    assert (restricted.tp, restricted.fp, restricted.fn) == (0, 1, 1)
+    assert (series_wide.tp, series_wide.fp, series_wide.fn) == (1, 0, 0)
+
+
+def test_a_decision_restated_in_several_meetings_may_match_any_of_them() -> None:
+    reference = [_ref_in(1, "ES2015c")]
+    predicted = [_pred_in(1, "ES2015a", origin=("ES2015a", "ES2015c"))]
+
+    score = score_series("ES2015", reference, predicted, SIM, tau=0.5)
+
+    assert score.tp == 1
+
+
+def test_masking_leaves_admissible_pairs_to_the_assignment() -> None:
+    # p1 resembles both references equally; only the one in its meeting is admissible, so
+    # the other prediction can still claim the second reference.
+    def flat(predicted: Sequence[str], reference: Sequence[str]) -> np.ndarray:
+        return np.ones((len(predicted), len(reference)))
+
+    reference = [_ref_in(1, "ES2015a"), _ref_in(2, "ES2015b")]
+    predicted = [_pred_in(1, "ES2015a"), _pred_in(2, "ES2015a")]
+
+    score = score_series("ES2015", reference, predicted, flat, tau=0.5)
+
+    assert score.tp == 1
+    assert score.reference_hits == (True, False)
+
+
+def test_views_report_primary_and_series_wide_sensitivity_side_by_side() -> None:
+    reference = [_ref_in(1, "ES2015b"), _ref_in(2, "ES2015a")]
+    predicted = [_pred_in(1, "ES2015a"), _pred_in(2, "ES2015a")]
+
+    views = score_series_views("ES2015", reference, predicted, SIM, tau=0.5)
+
+    assert views.primary.tp == 1
+    assert views.series_wide_sensitivity.tp == 2
+    assert views.primary.series_id == views.series_wide_sensitivity.series_id == "ES2015"
+
+
+def test_every_role_view_counts_a_decision_in_each_role_involved() -> None:
+    reference = [_ref_in(1, "ES2015a", ("PM", "ME")), _ref_in(2, "ES2015a", ("ME",))]
+    predicted = [_pred_in(1, "ES2015a")]
+
+    score = score_series("ES2015", reference, predicted, SIM, tau=0.5)
+
+    # Primary view: majority role only.
+    assert score.by_role["PM"].n_reference == 1
+    assert score.by_role["ME"].n_reference == 1
+    # Sensitivity: the first decision counts in PM and in ME.
+    assert score.by_role_every_role["PM"].n_reference == 1
+    assert score.by_role_every_role["PM"].recall == pytest.approx(1.0)
+    assert score.by_role_every_role["ME"].n_reference == 2
+    assert score.by_role_every_role["ME"].recall == pytest.approx(0.5)
+
+
+def test_every_role_view_gives_precision_with_a_roles_resolver() -> None:
+    roles = {"da.1": ("PM", "ME"), "da.9": ("UI",)}
+    reference = [_ref_in(1, "ES2015a", ("PM",))]
+    predicted = [_pred_in(1, "ES2015a"), _pred_in(9, "ES2015a")]
+
+    score = score_series(
+        "ES2015",
+        reference,
+        predicted,
+        SIM,
+        tau=0.5,
+        predicted_roles_of=lambda d: roles[d.evidence.dialogue_act_ids[0]],
+    )
+
+    assert score.by_role_every_role["PM"].precision == pytest.approx(1.0)
+    assert score.by_role_every_role["ME"].precision == pytest.approx(1.0)
+    assert score.by_role_every_role["UI"].precision == pytest.approx(0.0)
+    # Without a primary resolver the primary view stays recall-only.
+    assert score.by_role["PM"].precision is None
+
+
+def test_pooled_every_role_view_is_summed_across_series() -> None:
+    a = score_series("ES2015", [_ref_in(1, "ES2015a", ("PM", "ME"))], [], SIM, tau=0.5)
+    b = score_series("ES2015", [_ref_in(2, "ES2015a", ("ME",))], [], SIM, tau=0.5)
+
+    pooled = pool_scores([a, b], settings=SETTINGS, partition_of=EVAL)
+
+    assert pooled.by_role_every_role["ME"].n_reference == 2
+
+
+def test_runs_accept_scope_and_roles_resolver() -> None:
+    reference = {"ES2015": [_ref_in(1, "ES2015b")]}
+    runs = [{"ES2015": [_pred_in(1, "ES2015a")]}] * 3
+
+    primary = score_runs(reference, runs, SIM, tau=0.5, settings=SETTINGS, partition_of=EVAL)
+    wide = score_runs(
+        reference,
+        runs,
+        SIM,
+        tau=0.5,
+        settings=SETTINGS,
+        partition_of=EVAL,
+        alignment_scope="series",
+    )
+
+    assert primary.recall_mean == pytest.approx(0.0)
+    assert wide.recall_mean == pytest.approx(1.0)
+
+
+def test_evidence_roles_resolver_returns_every_role_of_the_evidence(tmp_path: Path) -> None:
+    import json
+
+    def turn(index: int, role: str, act: str) -> dict[str, object]:
+        return {
+            "meeting_id": "ES2015a",
+            "turn_index": index,
+            "speaker": "A",
+            "role": role,
+            "text": "hello",
+            "start": None,
+            "end": None,
+            "char_start": 4,
+            "char_end": 9,
+            "dialogue_act_ids": [act],
+        }
+
+    lines = [json.dumps(turn(0, "UI", "da.1")), json.dumps(turn(1, "PM", "da.2"))]
+    (tmp_path / "ES2015a.jsonl").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    decision = _pred(1, act="da.1").model_copy(
+        update={"evidence": EvidenceSpan(meeting_id="ES2015a", dialogue_act_ids=("da.1", "da.2"))}
+    )
+
+    assert evidence_roles_resolver(tmp_path)(decision) == ("UI", "PM")

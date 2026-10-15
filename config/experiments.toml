@@ -119,3 +119,12 @@ seeds = [42, 43, 44]                 # seeds for the self-consistency check (3 r
 
 # Bootstrap resamples and confidence level come from [evaluation]; the bootstrap seed from
 # [shared_budget].seed.
+
+[power_simulation]
+# Monte Carlo study of the two D16 criteria (notebook 10): synthetic experiments, no model runs.
+n_simulations = 1000                  # simulated experiments per scenario (Monte Carlo error <= ~1.6 points)
+n_resamples = 300                     # bootstrap resamples INSIDE the simulation (the reported analysis uses [evaluation].bootstrap_resamples)
+difficulty_sd = [0.0, 1.0, 2.0]       # spread of the per-question difficulty shared by both conditions (logit scale); 0 = no shared difficulty
+base_accuracies = [0.4, 0.5, 0.6]     # mean accuracy of C1
+differences = [0.0, 0.10, 0.15, 0.20, 0.30]   # true mean accuracy of C2 minus C1
+n_questions = [25, 40, 50]            # 25 is [question_bank].min_questions
