@@ -126,3 +126,74 @@ def test_missing_questions_file_is_reported(env: dict[str, Any]) -> None:
     result = _invoke(env)
     assert result.exit_code == 1
     assert not env["out"].exists()
+
+
+# --- question bank source --------------------------------------------------------------------
+
+_BANK_HEADER = (
+    "id,series_id,stratum,text,reference_answer,reference_evidence,author,validated_by,"
+    "validation_notes\n"
+)
+_BANK_OK = "q001,ES2015,E1_point_fact,How much?,Twelve,ES2015a:d1,gm,gv,\n"
+_BANK_PENDING = "q002,,E2_current_state,,,,gm,,\n"
+
+
+def _bank(env: dict[str, Any], *rows: str) -> None:
+    env["questions"].write_text(_BANK_HEADER + "".join(rows), encoding="utf-8")
+
+
+def test_bank_runs_only_validated_rows_and_reports_pending(env: dict[str, Any]) -> None:
+    _bank(env, _BANK_OK, _BANK_PENDING)
+    result = _invoke(env, "--runs", "1", "--run-name", "bank")
+    assert result.exit_code == 0, result.output
+    lines = (env["out"] / "bank" / "respuestas.jsonl").read_text(encoding="utf-8").splitlines()
+    assert [json.loads(line)["question_id"] for line in lines] == ["q001"]
+    assert "1 pendiente" in _out(result)
+
+
+def test_bank_with_blocking_errors_is_refused_before_running(env: dict[str, Any]) -> None:
+    _bank(env, _BANK_OK, "q002,ES2015,E1_point_fact,,A,ES2015a:d1,gm,gv,\n")
+    result = _invoke(env, "--run-name", "bad")
+    assert result.exit_code == 1
+    assert "q002" in _out(result)
+    assert not env["out"].exists()
+
+
+def test_bank_with_nothing_validated_is_refused(env: dict[str, Any]) -> None:
+    _bank(env, _BANK_PENDING)
+    result = _invoke(env, "--run-name", "none")
+    assert result.exit_code == 1
+    assert "pendiente" in _out(result)
+    assert not env["out"].exists()
+
+
+# --- afg gold questions-check ----------------------------------------------------------------
+
+
+def _check(path: Path, *args: str) -> Any:
+    return CliRunner().invoke(afg_cli.app, ["gold", "questions-check", "--path", str(path), *args])
+
+
+def test_questions_check_reports_without_running(env: dict[str, Any]) -> None:
+    _bank(env, _BANK_OK, _BANK_PENDING)
+    result = _check(env["questions"])
+    assert result.exit_code == 0, result.output
+    assert "1 validada" in _out(result) and "1 pendiente" in _out(result)
+
+
+def test_questions_check_exits_1_on_blocking_errors(env: dict[str, Any]) -> None:
+    _bank(env, "q001,ES9999,E1_point_fact,Q?,A,ES9999a:d1,gm,gv,\n")
+    result = _check(env["questions"])
+    assert result.exit_code == 1
+    assert "q001" in _out(result)
+
+
+def test_questions_check_complete_requires_every_row_validated(env: dict[str, Any]) -> None:
+    _bank(env, _BANK_OK, _BANK_PENDING)
+    assert _check(env["questions"], "--complete").exit_code == 1
+
+
+def test_questions_check_rejects_a_file_that_is_not_a_bank(env: dict[str, Any]) -> None:
+    env["questions"].write_text(_HEADER + _ROWS, encoding="utf-8")
+    result = _check(env["questions"])
+    assert result.exit_code == 1

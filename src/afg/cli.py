@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Annotated
 
 import typer
 from rich.console import Console
+from rich.markup import escape
 
 if TYPE_CHECKING:
     from afg.annotation.workspace import AnnotationPlan, WorkspacePaths
@@ -123,7 +124,13 @@ from afg.evaluation.judge_calibration_worksheet import (
     worksheet_questions,
     write_worksheet,
 )
-from afg.experiments.questions import load_experiment_questions
+from afg.experiments.question_bank import (
+    QuestionBankReport,
+    format_issue,
+    is_question_bank,
+    load_configured_question_bank,
+)
+from afg.experiments.questions import QuestionBankError, load_experiment_questions
 from afg.experiments.runner import (
     ManifestMismatchError,
     RunAbortedError,
@@ -1289,6 +1296,55 @@ def gold_questions_init(
     )
 
 
+def _print_question_bank_report(report: QuestionBankReport) -> None:
+    """Counts per stratum, then every error and warning, one line each."""
+    console.print(
+        f"{report.total_rows} filas: {len(report.usable)} validada(s) y sin errores, "
+        f"{len(report.pending_ids)} pendiente(s)."
+    )
+    for stratum, count in report.usable_per_stratum.items():
+        console.print(f"  {stratum.value}: {count} validada(s)")
+    for issue in report.errors:
+        console.print(f"[bold red]  error {escape(format_issue(issue))}[/bold red]")
+    for issue in report.warnings:
+        console.print(f"[yellow]  aviso {escape(format_issue(issue))}[/yellow]")
+
+
+@gold_app.command("questions-check")
+def gold_questions_check(
+    path: Annotated[
+        Path | None,
+        typer.Option("--path", help="Banco a revisar (por defecto el banco del proyecto)."),
+    ] = None,
+    complete: Annotated[
+        bool,
+        typer.Option(
+            "--complete",
+            help="Exige las 100 filas validadas y el mínimo por estrato (cierre del banco).",
+        ),
+    ] = False,
+) -> None:
+    """Revisa el banco de preguntas sin correr nada: informe por fila, sin parar en el primer error.
+
+    Por defecto tolera un banco a medias (las filas sin validar quedan pendientes y el mínimo
+    por estrato es un aviso). Sale con código 1 si hay errores bloqueantes.
+    """
+    bank_path = path or _workspace_paths().question_bank
+    try:
+        if not is_question_bank(bank_path):
+            console.print(
+                f"[bold red]{_short(bank_path)} no tiene el formato del banco.[/bold red]"
+            )
+            raise typer.Exit(code=1)
+        report = load_configured_question_bank(bank_path, require_complete=complete)
+    except (ValueError, FileNotFoundError) as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    _print_question_bank_report(report)
+    if report.has_errors:
+        raise typer.Exit(code=1)
+
+
 # --- judge calibration (issue #82) ---------------------------------------------------------
 
 
@@ -1848,8 +1904,9 @@ def experiment_b(
         Path,
         typer.Option(
             "--questions",
-            help="CSV de preguntas: la hoja `ES2015.preguntas.csv` o el CSV de preguntas de "
-            "calibración (el banco real aún no tiene cargador).",
+            help="CSV de preguntas: el banco `banco-preguntas.csv` (corre solo las filas "
+            "validadas y se niega si hay errores bloqueantes), la hoja `ES2015.preguntas.csv` "
+            "o el CSV de preguntas de calibración.",
         ),
     ],
     conditions: Annotated[
@@ -1890,8 +1947,12 @@ def experiment_b(
         raise typer.Exit(code=1)
     try:
         built = {c.upper(): make_experiment_b_condition(c) for c in dict.fromkeys(wanted)}
+        if questions.exists() and is_question_bank(questions):
+            bank_report = load_configured_question_bank(questions)
+            if not bank_report.has_errors:
+                _print_question_bank_report(bank_report)
         bank = load_experiment_questions(questions, limit=limit_questions)
-    except (ValueError, FileNotFoundError, CalibrationSetError) as exc:
+    except (QuestionBankError, ValueError, FileNotFoundError, CalibrationSetError) as exc:
         console.print(f"[bold red]{exc}[/bold red]")
         raise typer.Exit(code=1) from exc
 
