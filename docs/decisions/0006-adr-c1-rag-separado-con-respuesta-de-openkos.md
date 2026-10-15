@@ -54,7 +54,8 @@ Se consideraron tres caminos para C1:
    Cualquier ajuste reabriría la duda de que la diferencia entre condiciones venga de la
    instrucción y no de la representación.
 5. **OpenKOS se fija a una versión exacta publicada, `openkos==0.5.4`**, la primera que trae
-   `query --json` (issue jasonssdev/openkos#1345). No se usa un rango (`>=`) ni la 0.5.3. Desde
+   `query --json` (issue jasonssdev/openkos#1345). *(Fijación superada como pendiente por la
+   [enmienda del 2026-10-15](#enmienda-2026-10-15).)* No se usa un rango (`>=`) ni la 0.5.3. Desde
    la 0.5.3 el índice léxico cambia (stemming), así que cada condición usa un espacio de
    trabajo nuevo, construido con la versión fijada.
 6. **`openkos query --json`** se agrega en OpenKOS como prerrequisito (esquema versión 1):
@@ -84,6 +85,7 @@ Se consideraron tres caminos para C1:
 - C1 sigue siendo ajustable, como exige una línea base honesta, sin tocar el instrumento.
 - El experimento depende de un cambio en OpenKOS (`query --json`) y de su publicación como
   0.5.4. Mientras no exista, C2 y C3 no pueden registrar lo recuperado y OE4 queda bloqueado.
+  *(Superado como pendiente por la [enmienda del 2026-10-15](#enmienda-2026-10-15).)*
 - Si OpenKOS cambia sus prompts de respuesta en una versión posterior, la copia de C1 no se
   actualiza sola: el SHA-256 fijado lo detecta y la prueba falla.
 - Los valores de `config/experiments.toml` que hoy difieren de los de OpenKOS
@@ -91,3 +93,21 @@ Se consideraron tres caminos para C1:
   índice registra esta decisión.
 - Complementa el [ADR 0003](0003-adr-openkos-as-instrument.md): OpenKOS sigue siendo el
   instrumento, y C1 queda explícitamente fuera de él.
+
+## Enmienda (2026-10-15)
+
+Esta sección corrige la decisión 5 (la versión de OpenKOS a fijar). El texto anterior no se
+reescribe: queda como registro de lo que se decidió con la información de entonces.
+
+- **La fijación `openkos==0.5.4` queda superada como pendiente.** La versión 0.5.4 trae
+  `query --json`, pero no incluye el paso de decisión por reunión ni el orden de reuniones del
+  mismo día, que el Experimento B y la extracción necesitan.
+- **OpenKOS se está corrigiendo** en `jasonssdev/openkos#1348`, `#1349`, `#1350` y `#1384`. La
+  versión que cumpla lo requerido aún no está publicada.
+- **La versión se fijará antes de cualquier serie de evaluación** y se registrará en cada
+  corrida. Hasta entonces no se corren experimentos.
+- **El adaptador verifica las capacidades** de la versión instalada y registra su número, de
+  modo que una versión que no las ofrezca se rechaza en lugar de producir resultados
+  incompletos.
+- El seguimiento está en el issue #94 (fijar la versión en este ADR, en `pyproject.toml` y en
+  `uv.lock`).

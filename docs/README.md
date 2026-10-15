@@ -2,7 +2,7 @@
 
 - **`propuesta.md`** — la propuesta de tesis completa, tal como se escribió en AFG1. Se cita
   por sección (§1.4, §5.4, ...) desde el código, la configuración y los avances. No se
-  edita: las revisiones pendientes se siguen en el issue #20.
+  edita: las revisiones pendientes se siguen en los issues abiertos del repositorio.
 
 - **`anotacion/`** — **el trabajo humano.** Punto de entrada para quien anota: quién hace qué,
   en qué orden, con qué CSV y cuánto toma (`README.md`); la definición del constructo

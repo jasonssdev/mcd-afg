@@ -423,6 +423,21 @@ está validada, solo tiene una observación pendiente.
 Gustavo reescribe la pregunta devuelta y borra `validation_notes` al reentregarla — la
 autoría de la corrección sigue siendo suya, nunca tuya.
 
+Antes de abrir el PR de la validación se corre la revisión del banco, que no ejecuta nada y
+revisa fila por fila sin detenerse en el primer error:
+
+```bash
+uv run afg gold questions-check              # tolera un banco a medias
+uv run afg gold questions-check --complete   # solo al cierre: exige las 100 filas validadas
+```
+
+En cada fila que marcaste con `gv` comprueba que la serie sea una del estudio, que la
+evidencia esté bien formada y pertenezca a esa serie, que la respuesta y la evidencia estén
+presentes (y que una E4 no lleve ninguna de las dos), y que validador y autor sean personas
+distintas. Avisa si una fila validada conserva `validation_notes`. No juzga criterio: que la
+respuesta salga de la evidencia o que una E4 sea realmente incontestable lo sigues revisando
+tú. Sale con código 1 si hay errores.
+
 ---
 
 ## 9. Cómo entregas
