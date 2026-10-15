@@ -197,3 +197,29 @@ def test_questions_check_rejects_a_file_that_is_not_a_bank(env: dict[str, Any]) 
     env["questions"].write_text(_HEADER + _ROWS, encoding="utf-8")
     result = _check(env["questions"])
     assert result.exit_code == 1
+
+
+# --- encoding and delimiter problems (Excel) --------------------------------------------------
+
+
+def test_questions_check_explains_a_latin1_file(env: dict[str, Any]) -> None:
+    env["questions"].write_bytes((_BANK_HEADER + "q001,decisión\n").encode("latin-1"))
+    result = _check(env["questions"])
+    assert result.exit_code == 1
+    out = _out(result)
+    assert env["questions"].name in out and "UTF-8" in out
+    assert "codec" not in out and "Traceback" not in result.output
+
+
+def test_questions_check_explains_a_utf16_file(env: dict[str, Any]) -> None:
+    env["questions"].write_bytes((_BANK_HEADER + "q001,x\n").encode("utf-16"))
+    result = _check(env["questions"])
+    assert result.exit_code == 1
+    assert "UTF-16" in _out(result) and "CSV UTF-8" in _out(result)
+
+
+def test_questions_check_explains_a_semicolon_file(env: dict[str, Any]) -> None:
+    env["questions"].write_text(_BANK_HEADER.replace(",", ";") + "q001;x\n", encoding="utf-8")
+    result = _check(env["questions"])
+    assert result.exit_code == 1
+    assert "`;`" in _out(result) and "comas" in _out(result)

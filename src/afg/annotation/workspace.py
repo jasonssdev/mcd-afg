@@ -54,7 +54,7 @@ from afg.domain.decision import AnnotationStatus
 from afg.domain.question import QuestionStratum
 from afg.domain.relation import Confidence, DirectionOk, RelationType
 from afg.shared.config import load_annotation_config
-from afg.shared.csvio import open_csv_writer
+from afg.shared.csvio import open_csv_reader, open_csv_writer, semicolon_hint
 from afg.shared.paths import GOLD_DECISIONS_DIR, GOLD_RELATIONS_DIR, QUESTIONS_DIR
 
 __all__ = [
@@ -384,7 +384,7 @@ def _read_rows(path: Path) -> tuple[list[str], list[dict[str, str]]]:
     Read as ``utf-8-sig`` so a leading BOM (Excel's "CSV UTF-8") never reaches the first
     header. Writers stay plain ``utf-8``.
     """
-    with path.open(newline="", encoding="utf-8-sig") as handle:
+    with open_csv_reader(path) as handle:
         reader = csv.DictReader(handle)
         fieldnames = list(reader.fieldnames or ())
         rows = [{name: (row.get(name) or "") for name in fieldnames} for row in reader]
@@ -961,23 +961,12 @@ def _validate_file(
         )
 
     fieldnames, rows = _read_rows(path)
-    if len(fieldnames) == 1 and ";" in fieldnames[0]:
+    hint = semicolon_hint(path, fieldnames)
+    if hint:
         return (
             0,
             0,
-            [
-                ValidationIssue(
-                    path=path,
-                    row_id="-",
-                    column="-",
-                    value="",
-                    message=(
-                        f"{path.name}: el archivo parece guardado con `;` como separador. "
-                        "Guárdalo con comas (en Excel: «CSV UTF-8 (delimitado por comas)»; "
-                        "ver «Editar el CSV» en docs/anotacion/asignacion/EMPIEZA-AQUI.md)."
-                    ),
-                )
-            ],
+            [ValidationIssue(path=path, row_id="-", column="-", value="", message=hint)],
         )
     _, reference_rows = _read_rows(source)
     id_column = _row_id_column_for(kind)

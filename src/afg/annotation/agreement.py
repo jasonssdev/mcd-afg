@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from afg.evaluation.metrics import cohen_kappa
-from afg.shared.csvio import open_csv_writer
+from afg.shared.csvio import open_csv_reader, open_csv_writer
 
 # Manual de anotacion section 6 (Tarea D): the closed relation-type label set includes
 # "no_relacionada", which means "the blocker was wrong, there is no link" -- a pair with
@@ -112,7 +112,7 @@ def annotator_csvs(directory: Path, series_id: str, kind: str) -> list[Path]:
 
 
 def _read_candidate_rows(path: Path) -> dict[str, dict[str, str]]:
-    with path.open(newline="", encoding="utf-8-sig") as handle:
+    with open_csv_reader(path) as handle:
         reader = csv.DictReader(handle)
         rows: dict[str, dict[str, str]] = {}
         for row in reader:

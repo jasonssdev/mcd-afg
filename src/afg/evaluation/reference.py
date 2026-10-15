@@ -50,6 +50,7 @@ from afg.annotation.goldset import summlink_dialogue_act_ids
 from afg.conditions.c1_chunking import FrozenTurn
 from afg.domain.decision import AnnotationStatus, Decision, DecisionStatus, EvidenceSpan
 from afg.extraction.openkos.evidence import EvidenceMatch, load_meeting_text, locate_quote
+from afg.shared.csvio import open_csv_reader
 from afg.shared.paths import AMI_DIR, GOLD_DECISIONS_DIR, TRANSCRIPTS_DIR
 
 __all__ = [
@@ -181,7 +182,7 @@ def _match_quotes(
 
 
 def _read_adjudicated(path: Path) -> list[dict[str, str]]:
-    with path.open(newline="", encoding="utf-8-sig") as handle:
+    with open_csv_reader(path) as handle:
         reader = csv.DictReader(handle)
         header = reader.fieldnames or []
         missing = [c for c in _REQUIRED_COLUMNS if c not in header]
@@ -298,3 +299,62 @@ def load_series_reference(
     for meeting_id in meeting_ids:
         sentence_acts.update(summlink_dialogue_act_ids(ami_root, meeting_id))
     return load_reference(path, sentence_acts=sentence_acts, transcripts_dir=transcripts_dir)
+
+
+class DecisionNotFoundError(ValueError):
+    """The decision id is not in the adjudicated file; the message lists the valid ids."""
+
+
+@dataclass(frozen=True, slots=True)
+class DecisionEvidence:
+    """Where one adjudicated decision is evidenced: its dialogue acts, in transcript order."""
+
+    decision_id: str
+    meeting_id: str
+    final_status: str
+    final_object: str
+    final_content: str
+    act_ids: tuple[str, ...]
+    method: EvidenceMethod
+
+
+def adjudicated_decision_evidence(
+    path: Path,
+    decision_id: str,
+    *,
+    sentence_acts: Mapping[str, Sequence[str]],
+    transcripts_dir: Path = TRANSCRIPTS_DIR,
+) -> DecisionEvidence:
+    """Dialogue acts of one decision of an adjudicated file (same rule as :func:`load_reference`).
+
+    Unlike :func:`load_reference`, a half-adjudicated file is fine: only the requested row
+    is looked at, so an annotator can build a question from the decisions already closed.
+
+    Raises:
+        DecisionNotFoundError: ``decision_id`` is not in the file.
+    """
+    rows = {r["decision_id"]: r for r in _read_adjudicated(path) if r.get("decision_id")}
+    row = rows.get(decision_id)
+    if row is None:
+        raise DecisionNotFoundError(
+            f"{decision_id!r} no está en {path.name}. Decisiones disponibles: "
+            f"{', '.join(sorted(rows)) or '(ninguna)'}."
+        )
+    meeting_id = row["meeting_id"]
+    body, turns = load_meeting_text(meeting_id, transcripts_dir)
+    method: EvidenceMethod = "sentence_id"
+    acts = tuple(sentence_acts.get(row["source_sentence_id"], ()))
+    if not acts:
+        method = "quote"
+        acts = _match_quotes(meeting_id, row.get("evidence_text", ""), body, turns)
+    if not acts:
+        method = "none"
+    return DecisionEvidence(
+        decision_id=decision_id,
+        meeting_id=meeting_id,
+        final_status=row.get("final_status", ""),
+        final_object=row.get("final_object", ""),
+        final_content=row.get("final_content", ""),
+        act_ids=_transcript_order(acts, turns),
+        method=method,
+    )

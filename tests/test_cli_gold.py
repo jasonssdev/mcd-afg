@@ -307,3 +307,39 @@ class TestGoldStatusFilter:
         assert status_result.exit_code == 1
         assert prepare_result.exit_code == 1
         assert status_result.output.strip() == prepare_result.output.strip()
+
+
+class TestValidateExplainsEncodingProblems:
+    """A CSV saved by Excel as plain "CSV" (latin-1) must not end in a codec traceback."""
+
+    def test_latin1_file_gets_a_spanish_message_with_the_file_name(
+        self, plan: AnnotationPlan, paths: WorkspacePaths, sources: WorkspacePaths
+    ) -> None:
+        prepare_annotator_workspace(plan, "gv", paths=sources)
+        target = sources.decisions_dir / "ES1.decisions.gv.csv"
+        target.write_bytes(
+            target.read_text(encoding="utf-8").replace("They", "Ellos é").encode("latin-1")
+        )
+
+        result = CliRunner().invoke(afg_cli.app, ["gold", "validate", "--annotator", "gv"])
+
+        assert result.exit_code == 1, result.output
+        flat = " ".join(result.output.split())
+        assert "ES1.decisions.gv.csv" in flat
+        assert "CSV UTF-8 (delimitado por comas)" in flat
+        assert "codec" not in flat
+
+    def test_status_explains_a_latin1_file_without_traceback(
+        self, plan: AnnotationPlan, paths: WorkspacePaths, sources: WorkspacePaths
+    ) -> None:
+        prepare_annotator_workspace(plan, "gv", paths=sources)
+        target = sources.decisions_dir / "ES1.decisions.gv.csv"
+        target.write_bytes(
+            target.read_text(encoding="utf-8").replace("They", "Él").encode("latin-1")
+        )
+
+        result = CliRunner().invoke(afg_cli.app, ["gold", "status"])
+
+        assert result.exit_code == 1, result.output
+        assert "ES1.decisions.gv.csv" in " ".join(result.output.split())
+        assert "Traceback" not in result.output

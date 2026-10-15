@@ -460,10 +460,63 @@ Las columnas salen del modelo `src/afg/domain/question.py::Question`, una por ca
 | `stratum` | Uno de los cuatro valores de arriba, ya puesto por `questions-init`. **No tocar** |
 | `text` | La pregunta, en español. **La llenas tú** |
 | `reference_answer` | La respuesta derivada de la evidencia. **La llenas tú**, y queda **vacía en E4**: el modelo la declara `None` para ese estrato, porque ahí la referencia *es la ausencia de respuesta* |
-| `reference_evidence` | Los actos de diálogo que la respaldan. **La llenas tú**. Formato `reunion:da_id;da_id`, y `\|` entre reuniones cuando la evidencia abarca más de una. **Vacía en E4** |
+| `reference_evidence` | Los actos de diálogo que la respaldan. **La llenas tú**. Formato `reunion:da_id;da_id`, y `\|` entre reuniones cuando la evidencia abarca más de una. **Vacía en E4**. Los ids se obtienen con `uv run afg gold evidencia` (ver «Cómo llenar `reference_evidence`» más abajo) |
 | `author` | `gm`, ya puesto por `questions-init` |
 | `validated_by` | **Lo llena Germán.** Tú lo dejas vacío |
 | `validation_notes` | **Lo llena Germán** cuando devuelve una pregunta que no pasó, con el motivo. **Tú lo borras** al reentregar la pregunta corregida — la tabla completa de los cuatro estados está en `tareas-gv.md` §8 |
+
+### Cómo llenar `reference_evidence`
+
+Los ids de acto de diálogo no aparecen en los `.md` de las transcripciones ni en los CSV de
+anotación. El comando `uv run afg gold evidencia` los muestra y entrega la celda lista para
+pegar. Hay dos formas de usarlo.
+
+**A. Partir de una decisión ya adjudicada** (lo habitual, porque las preguntas salen de la
+anotación adjudicada). El id de la decisión está en la primera columna de
+`data/processed/decisions/<SERIE>.decisions.adjudicated.csv`:
+
+```bash
+uv run afg gold evidencia --decision ES2015a.d02
+```
+
+```text
+ES2015a.d02: precio de venta — fijar el precio de venta en 25 euros
+Evidencia en 1 turno(s) de ES2015a:
+
+turno 114 (PM)
+  So, now that we know how to use the whiteboard, um, the next, um, thing we need to
+  address is our financial department, [...] selling price of twenty five Euros. [...]
+  actos: ES2015a.A.dialog-act.dharshi.120
+
+Para pegar en `reference_evidence`:
+  ES2015a:ES2015a.A.dialog-act.dharshi.120
+```
+
+El texto de la última sección (la línea bajo «Para pegar en `reference_evidence`») se copia tal
+cual en la celda. Si la evidencia abarca varios turnos o varias decisiones, los valores de la
+misma reunión se unen con `;` dentro de un solo `reunion:` y los de reuniones distintas se
+separan con `|`, por ejemplo `ES2015a:ES2015a.A.dialog-act.dharshi.120|ES2015b:ES2015b.A.dialog-act.dharshi.45`.
+
+**B. Buscar en la transcripción** (cuando la evidencia no coincide con una decisión, por ejemplo
+en una E1 sobre un detalle, o para confirmar una E4):
+
+```bash
+uv run afg gold evidencia --meeting ES2015a --term "twenty five"   # por palabra o frase
+uv run afg gold evidencia --meeting ES2015a --turnos 113-115       # por turnos
+```
+
+Cada turno que coincide se muestra con su número, quién habló (`PM`, `UI`, `ID`, `ME`), el texto,
+sus ids (`actos:`) y su línea «para pegar». Con varios turnos, la última sección junta todos los
+ids. Los turnos largos traen varios actos de diálogo: si solo uno respalda la respuesta, basta
+con dejar ese id en la celda.
+
+Antes de pegar, conviene leer el turno y confirmar que dice lo que afirma `reference_answer`
+(regla 1 de arriba: la respuesta sale de la evidencia). Después, `uv run afg gold questions-check`
+verifica el formato de la celda.
+
+Si el comando indica que faltan las transcripciones, se corre `uv run afg gold setup`. Si el
+archivo del banco se guardó con Excel, debe quedar como «CSV UTF-8 (delimitado por comas)»;
+con otra codificación o con `;` como separador, `questions-check` indica qué cambiar.
 
 ### Las tres reglas que más se rompen
 

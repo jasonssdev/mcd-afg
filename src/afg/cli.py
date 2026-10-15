@@ -15,7 +15,10 @@ from rich.console import Console
 from rich.markup import escape
 
 if TYPE_CHECKING:
+    from collections.abc import Collection
+
     from afg.annotation.workspace import AnnotationPlan, WorkspacePaths
+    from afg.conditions.c1_chunking import FrozenTurn
 
 from afg.annotation.blocking import (
     BLOCKER_VERSION,
@@ -683,6 +686,158 @@ def gold_evidence(
         console.print(f"  {hit.context}")
 
 
+@gold_app.command("evidencia")
+def gold_evidencia(
+    meeting: Annotated[
+        str | None, typer.Option("--meeting", help="Reunión de AMI, p. ej. ES2015a.")
+    ] = None,
+    term: Annotated[
+        str | None,
+        typer.Option(
+            "--term", help="Palabra o frase a buscar en la reunión (sin distinguir mayúsculas)."
+        ),
+    ] = None,
+    turns: Annotated[
+        str | None,
+        typer.Option("--turnos", help="Turno o rango de turnos de esa reunión, p. ej. 40 o 40-46."),
+    ] = None,
+    decision: Annotated[
+        str | None,
+        typer.Option(
+            "--decision",
+            help="Decisión ya adjudicada (p. ej. ES2015a.d01): su evidencia lista para pegar.",
+        ),
+    ] = None,
+) -> None:
+    """Muestra los ids de acto de diálogo para llenar `reference_evidence` del banco.
+
+    Dos formas de uso. Desde una decisión ya adjudicada:
+    `uv run afg gold evidencia --decision ES2015a.d01`. O buscando en la transcripción:
+    `uv run afg gold evidencia --meeting ES2015a --term "remote"` (con `--turnos 40-46` para
+    ver un tramo). Cada resultado trae el texto, quién habló y el valor para pegar en la celda.
+    """
+    from afg.annotation.evidence_lookup import (
+        EvidenceLookupError,
+        find_turns,
+        format_evidence,
+        parse_turn_range,
+    )
+
+    try:
+        if decision:
+            _evidencia_por_decision(decision)
+            return
+        if not meeting or not (term or turns):
+            console.print(
+                "[bold red]Indica una forma de búsqueda:[/bold red] `--decision ES2015a.d01`, o "
+                '`--meeting ES2015a` con `--term "palabra"` y/o `--turnos 40-46`.'
+            )
+            raise typer.Exit(code=1)
+        found = find_turns(
+            meeting,
+            term=term,
+            turn_range=parse_turn_range(turns) if turns else None,
+            transcripts_dir=TRANSCRIPTS_DIR,
+        )
+    except EvidenceLookupError as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+
+    if not found:
+        what = f"{term!r}" if term else f"los turnos {turns}"
+        console.print(f"[yellow]No hay turnos de {meeting} con {what}.[/yellow]")
+        raise typer.Exit(code=1)
+
+    console.print(f"[bold]{len(found)} turno(s) de {meeting}:[/bold]")
+    for turn in found:
+        _print_turn(turn)
+        console.print(
+            f"  para pegar: {format_evidence(meeting, [turn])}", markup=False, soft_wrap=True
+        )
+    if len(found) > 1:
+        console.print("\n[bold]Todos los turnos juntos:[/bold]")
+        console.print(f"  {format_evidence(meeting, found)}", markup=False, soft_wrap=True)
+    console.print(
+        "\nEn la celda `reference_evidence` de una pregunta se pega solo lo que respalda la "
+        "respuesta; varias reuniones se separan con `|`.",
+        markup=False,
+    )
+
+
+def _print_turn(turn: FrozenTurn, only: Collection[str] | None = None) -> None:
+    console.print(f"\n[bold]turno {turn.turn_index}[/bold] ({turn.role})")
+    console.print(f"  {turn.text}", markup=False, soft_wrap=True)
+    shown = [a for a in turn.dialogue_act_ids if only is None or a in only]
+    console.print(f"  actos: {'; '.join(shown)}", markup=False, soft_wrap=True)
+
+
+def _evidencia_por_decision(decision: str) -> None:
+    from afg.annotation.evidence_lookup import (
+        EvidenceLookupError,
+        format_evidence,
+        turns_with_acts,
+    )
+    from afg.annotation.goldset import summlink_dialogue_act_ids
+    from afg.evaluation.reference import (
+        DecisionNotFoundError,
+        NotAdjudicatedError,
+        adjudicated_decision_evidence,
+    )
+
+    meeting_id, _, _ = decision.partition(".")
+    series = meeting_id[:-1]
+    path = GOLD_DECISIONS_DIR / f"{series}.decisions.adjudicated.csv"
+    if not path.is_file():
+        console.print(
+            f"[bold red]La serie {series} aún no tiene decisiones adjudicadas "
+            f"({_short(path)}).[/bold red] Mientras tanto busca en la transcripción: "
+            f'`uv run afg gold evidencia --meeting {meeting_id} --term "palabra"`.'
+        )
+        raise typer.Exit(code=1)
+    if not (AMI_DIR.exists() and TRANSCRIPTS_DIR.exists()):
+        console.print(
+            "[bold red]Falta el corpus o las transcripciones.[/bold red] "
+            "Corre `uv run afg gold setup`."
+        )
+        raise typer.Exit(code=1)
+    try:
+        acts = summlink_dialogue_act_ids(AMI_DIR, meeting_id)
+        info = adjudicated_decision_evidence(
+            path, decision, sentence_acts=acts, transcripts_dir=TRANSCRIPTS_DIR
+        )
+        if info.final_status != "decision":
+            console.print(
+                f"[bold red]{decision} quedó adjudicada como `{info.final_status}`, no como "
+                "decisión:[/bold red] no sirve de base para una pregunta."
+            )
+            raise typer.Exit(code=1)
+        if not info.act_ids:
+            console.print(
+                f"[bold red]No se encontró evidencia automática para {decision}.[/bold red] "
+                f"Búscala a mano: `uv run afg gold evidencia --meeting {meeting_id} --term "
+                '"palabra"`.'
+            )
+            raise typer.Exit(code=1)
+        found = turns_with_acts(meeting_id, info.act_ids, transcripts_dir=TRANSCRIPTS_DIR)
+    except (EvidenceLookupError, DecisionNotFoundError, NotAdjudicatedError, ValueError) as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+
+    console.print(f"[bold]{decision}[/bold]: {info.final_object} — {info.final_content}")
+    console.print(f"Evidencia en {len(found)} turno(s) de {meeting_id}:")
+    for turn in found:
+        _print_turn(turn, set(info.act_ids))
+    console.print("\n[bold]Para pegar en `reference_evidence`:[/bold]")
+    console.print(
+        f"  {format_evidence(meeting_id, found, only=info.act_ids)}", markup=False, soft_wrap=True
+    )
+    console.print(
+        "\nRevisa que los turnos de arriba respalden de verdad tu respuesta de referencia; "
+        "si sobra alguno, quita sus ids de la celda.",
+        markup=False,
+    )
+
+
 def _decisions_for_series_or_exit(ami_root: Path, series: str) -> list[Decision]:
     if not ami_root.exists():
         console.print(
@@ -1161,7 +1316,11 @@ def gold_status(
             continue
         if annotator is not None and person.initials != annotator:
             continue
-        report = validate_annotator(plan, person.initials, paths=paths)
+        try:
+            report = validate_annotator(plan, person.initials, paths=paths)
+        except ValueError as exc:
+            console.print(f"[bold red]{exc}[/bold red]")
+            raise typer.Exit(code=1) from exc
         for progress in report.series:
             any_row = True
             if progress.ok and progress.complete:

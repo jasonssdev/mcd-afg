@@ -18,6 +18,7 @@ from pathlib import Path
 
 from afg.evaluation.judge_calibration_set import CalibrationSetError, _parse_bool
 from afg.evaluation.metrics import cohen_kappa
+from afg.shared.csvio import open_csv_reader
 from afg.shared.paths import JUDGE_CALIBRATION_DIR, REPORTS_DIR
 
 SECOND_SHEET_PATH: Path = JUDGE_CALIBRATION_DIR / "calibracion-juez.segunda-etiqueta.csv"
@@ -60,7 +61,7 @@ class ColumnAgreement:
 
 def read_label_rows(path: Path) -> list[dict[str, str]]:
     """Read a calibration or second-labeler CSV as raw rows (BOM tolerated)."""
-    with path.open(newline="", encoding="utf-8-sig") as handle:
+    with open_csv_reader(path) as handle:
         return [{k: v or "" for k, v in row.items()} for row in csv.DictReader(handle)]
 
 

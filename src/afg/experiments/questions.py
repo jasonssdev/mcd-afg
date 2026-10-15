@@ -25,6 +25,7 @@ from afg.experiments.question_bank import (
     is_question_bank,
     load_configured_question_bank,
 )
+from afg.shared.csvio import open_csv_reader
 
 
 def _to_question(item: CalibrationQuestion) -> Question:
@@ -63,7 +64,7 @@ def bank_questions(report: QuestionBankReport) -> list[Question]:
 
 
 def _is_worksheet(path: Path) -> bool:
-    with path.open(newline="", encoding="utf-8-sig") as handle:
+    with open_csv_reader(path) as handle:
         header = next(csv.reader(handle), [])
     return "pregunta" in header
 

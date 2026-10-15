@@ -31,6 +31,7 @@ from pathlib import Path
 from afg.domain.decision import EvidenceSpan
 from afg.domain.question import Question, QuestionStratum, parse_reference_evidence
 from afg.shared.config import load_corpus_config, load_experiments_config
+from afg.shared.csvio import CsvFormatError, open_csv_reader, semicolon_hint
 
 BANK_COLUMNS = (
     "id",
@@ -87,8 +88,11 @@ class QuestionBankReport:
 
 def is_question_bank(path: Path) -> bool:
     """Whether ``path`` has the question bank header (``text`` and ``validated_by``)."""
-    with path.open(newline="", encoding="utf-8-sig") as handle:
+    with open_csv_reader(path) as handle:
         header = next(csv.reader(handle), [])
+    hint = semicolon_hint(path, header)
+    if hint:
+        raise CsvFormatError(hint)
     return "text" in header and "validated_by" in header
 
 
@@ -179,8 +183,11 @@ def load_question_bank(
         ValueError: if the file lacks a bank column.
         FileNotFoundError: if ``path`` does not exist.
     """
-    with path.open(newline="", encoding="utf-8-sig") as handle:
+    with open_csv_reader(path) as handle:
         reader = csv.DictReader(handle)
+        hint = semicolon_hint(path, reader.fieldnames or [])
+        if hint:
+            raise CsvFormatError(hint)
         missing = [c for c in BANK_COLUMNS if c not in (reader.fieldnames or [])]
         if missing:
             raise ValueError(f"{path.name}: faltan columnas del banco: {missing}.")

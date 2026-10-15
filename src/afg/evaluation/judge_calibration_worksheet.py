@@ -37,7 +37,7 @@ from afg.domain.question import (
 )
 from afg.evaluation.judge_calibration_generation import CalibrationQuestion
 from afg.evaluation.judge_calibration_set import DevelopmentSplitError, calibration_series
-from afg.shared.csvio import open_csv_writer
+from afg.shared.csvio import open_csv_reader, open_csv_writer
 from afg.shared.paths import JUDGE_CALIBRATION_DIR, TRANSCRIPTS_DIR
 
 SERIES_ID = "ES2015"
@@ -120,7 +120,7 @@ def make_act_resolver(ami_root: Path, transcripts_dir: Path = TRANSCRIPTS_DIR) -
 
 
 def _read_csv(path: Path) -> list[dict[str, str]]:
-    with path.open(newline="", encoding="utf-8-sig") as handle:
+    with open_csv_reader(path) as handle:
         return [{k: v or "" for k, v in row.items()} for row in csv.DictReader(handle)]
 
 
@@ -229,7 +229,7 @@ def build_worksheet_rows(
 
 def load_worksheet(path: Path) -> list[dict[str, str]]:
     """Read the worksheet (BOM tolerated); every declared column is present in each row."""
-    with path.open(newline="", encoding="utf-8-sig") as handle:
+    with open_csv_reader(path) as handle:
         reader = csv.DictReader(handle)
         missing = [c for c in COLUMNS if c not in (reader.fieldnames or [])]
         if missing:
