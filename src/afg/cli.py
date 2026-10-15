@@ -2097,9 +2097,10 @@ def experiment_b_report(
             console.print(
                 f"[bold]Principal (D16)[/bold] C2 frente a C1 en E3: diferencia "
                 f"{comparison.difference:+.2f} [{comparison.difference_lower:+.2f}, "
-                f"{comparison.difference_upper:+.2f}] sobre {comparison.n_pairs} preguntas; "
-                f"intervalos {'solapados' if comparison.intervals_overlap else 'disjuntos'}: "
-                f"{comparison.criterion}."
+                f"{comparison.difference_upper:+.2f}] sobre {comparison.n_pairs} preguntas: "
+                f"{comparison.criterion}. Robustez (intervalos independientes "
+                f"{'solapados' if comparison.intervals_overlap else 'disjuntos'}): "
+                f"{comparison.nonoverlap_criterion}."
             )
     console.print(f"[dim]{CRITERION_NOTE}[/dim]")
     for warning in report.warnings:
@@ -2134,10 +2135,12 @@ def experiment_b_sample(
         bool, typer.Option("--force", help="Sobrescribir una hoja que ya tiene etiquetas.")
     ] = False,
 ) -> None:
-    """Muestra estratificada del 20 % de las respuestas juzgadas para la verificación humana.
+    """Muestra para la verificación humana: una corrida sorteada por pregunta y condición.
 
-    Escribe la hoja ciega (sin condición ni veredicto del juez) y, aparte, la clave con la
-    condición y el veredicto del juez. La semilla es `\\[shared_budget].seed`.
+    El tamaño por condición y estrato es el 20 % de las respuestas juzgadas (con tope en los
+    pares pregunta-condición disponibles). Escribe la hoja ciega (sin condición ni veredicto del
+    juez) y, aparte, la clave con la condición y el veredicto del juez. La semilla es
+    `\\[shared_budget].seed`.
     """
     from afg.evaluation.judge_human_check import (
         question_context_for,
@@ -2167,8 +2170,12 @@ def experiment_b_sample(
     except (ValueError, FileNotFoundError, SecondSheetLabeledError) as exc:
         console.print(f"[bold red]{escape(str(exc))}[/bold red]")
         raise typer.Exit(code=1) from exc
-    for (condition, stratum), (total, taken) in sample.per_cell.items():
-        console.print(f"  {condition} {stratum}: {taken} de {total} respuestas")
+    for (condition, stratum), (judged, taken) in sample.per_cell.items():
+        pairs = sample.pairs_per_cell[(condition, stratum)]
+        console.print(
+            f"  {condition} {stratum}: {taken} de {pairs} pares pregunta-condición "
+            f"({judged} respuestas juzgadas)"
+        )
     console.print(
         f"{len(sample.sheet_rows)} filas. Hoja para la persona: "
         f"{_short(run_dir / HUMAN_SHEET_FILE)}; clave (no compartir): "
@@ -2182,10 +2189,12 @@ def experiment_b_human_check(
         str, typer.Option("--run-name", help="Carpeta de la corrida en reports/experiment-b/.")
     ],
 ) -> None:
-    """Acuerdo juez-humano (kappa de Cohen) sobre la hoja completada, con el umbral prerregistrado.
+    """Acuerdo juez-humano (kappa de Cohen) por etiqueta, con el umbral prerregistrado.
 
-    Si el kappa de `correct` no alcanza `\\[judge.calibration].min_kappa_correct`, se descarta el
-    juicio automático y se reporta solo la evaluación humana.
+    `correct` decide el juicio automático de la métrica principal: si su kappa no alcanza
+    `\\[judge.calibration].min_kappa_correct`, la corrección se reporta solo con evaluación
+    humana. `evidence_supported` tiene su propio indicador de confiable o no confiable. Siempre
+    se informan el acuerdo observado y la prevalencia junto al kappa.
     """
     from afg.evaluation.judge_human_check import (
         check_judge_against_humans,
@@ -2218,10 +2227,13 @@ def experiment_b_human_check(
         kappa = "indefinido" if column.kappa is None else f"{column.kappa:.3f}"
         verdict = "[green]cumple[/green]" if column.passes else "[red]no cumple[/red]"
         console.print(
-            f"  {column.column}: {column.n_agree}/{column.n_items} coinciden, "
-            f"kappa {kappa}, {verdict}"
+            f"  {column.column}: acuerdo observado {column.n_agree}/{column.n_items} "
+            f"({column.observed_agreement:.0%}), kappa {kappa}, {verdict}; "
+            f"prevalencia de «sí»: juez {column.judge_positive_rate:.0%}, "
+            f"personas {column.human_positive_rate:.0%}"
         )
     console.print(f"[bold]{check.decision}[/bold]")
+    console.print(f"[bold]{check.evidence_decision}[/bold]")
     console.print(f"Guardado en {_short(run_dir / HUMAN_CHECK_FILE)}.")
 
 

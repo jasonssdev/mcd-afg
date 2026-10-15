@@ -203,15 +203,30 @@ def test_primary_comparison_supported_when_intervals_do_not_overlap() -> None:
     assert cmp.difference == pytest.approx(1.0)
     assert cmp.intervals_overlap is False
     assert cmp.criterion == "supported"
+    assert cmp.nonoverlap_criterion == "supported"
     assert cmp.difference_lower > 0
 
 
-def test_primary_comparison_inconclusive_when_intervals_overlap() -> None:
+def test_primary_criterion_is_the_paired_difference_not_the_non_overlap() -> None:
+    # Shared easy/hard questions make the independent intervals overlap, but C2 never does worse
+    # than C1 on any question, so the paired difference interval excludes 0 (D16, ADR 0010).
     c1 = _bank("C1", [[True, False, True]] * 4 + [[False]] * 4)
     c2 = _bank("C2", [[True, True, True]] * 4 + [[False]] * 4)
     cmp = _primary(analyze_runs(c1 + c2, settings=SETTINGS, min_questions=1))
     assert cmp.intervals_overlap is True
+    assert cmp.nonoverlap_criterion == "inconclusive"
+    assert cmp.difference_lower > 0
+    assert cmp.criterion == "supported"
+
+
+def test_primary_inconclusive_when_the_paired_interval_includes_zero() -> None:
+    same = [[True, False, True]] * 4 + [[False]] * 4
+    cmp = _primary(
+        analyze_runs(_bank("C1", same) + _bank("C2", same), settings=SETTINGS, min_questions=1)
+    )
+    assert cmp.difference == 0
     assert cmp.criterion == "inconclusive"
+    assert cmp.nonoverlap_criterion == "inconclusive"
 
 
 def test_reverse_direction_is_never_success() -> None:
@@ -219,7 +234,9 @@ def test_reverse_direction_is_never_success() -> None:
     c2 = _bank("C2", [[False, False, False]] * 30)
     cmp = _primary(analyze_runs(c1 + c2, settings=SETTINGS, min_questions=25))
     assert cmp.criterion == "inconclusive"
+    assert cmp.nonoverlap_criterion == "inconclusive"
     assert cmp.direction == "b_above"
+    assert cmp.difference_upper < 0
 
 
 def test_pairing_uses_only_questions_judged_in_both_conditions() -> None:
@@ -262,3 +279,13 @@ def test_analysis_is_deterministic_and_serialisable() -> None:
     assert a == b
     assert a["partition"] == "evaluation"
     assert a["combination"]
+
+
+def test_report_states_the_paired_criterion_and_keeps_non_overlap_as_robustness() -> None:
+    records = _bank("C1", [[False]] * 30) + _bank("C2", [[True]] * 30)
+    data = report_to_dict(analyze_runs(records, settings=SETTINGS, min_questions=25))
+    assert "pareada" in data["criterion_d16"]
+    assert "robustez" in data["criterion_d16"]
+    primary = next(c for c in data["comparisons"] if c["primary"])
+    assert primary["criterion"] == "supported"
+    assert primary["nonoverlap_criterion"] == "supported"

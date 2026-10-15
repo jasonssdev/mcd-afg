@@ -25,11 +25,13 @@ evidence (E1 to E3) and only from schema version 2 records: version 1 holds the 
 
 D16 criterion
 -------------
-Implemented literally from ``docs/avances/06-jss-metodologia.md``: the primary criterion is the
-answer correctness on E3, C2 against C1, and the hypothesis is supported "si el intervalo
-bootstrap del 95 % de C2 queda por encima del de C1 sin solaparse"; otherwise the result is
-inconclusive and never a success. The paired-difference interval is reported next to it as
-supporting information; it does not replace the preregistered criterion.
+The primary criterion is the answer correctness on E3, C2 against C1. Since the amendment of
+2026-10-15 (``docs/decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md``, made before
+any evaluation run and backed by the power simulation of notebook 10) the hypothesis is supported
+when the 95 % bootstrap interval of the PAIRED difference C2 - C1 lies above 0; otherwise the
+result is inconclusive and never a success. The preregistered wording of 2026-10-13 (the 95 %
+intervals of C2 and C1, computed independently, do not overlap) is kept as a robustness field,
+``nonoverlap_criterion``, reported next to the primary verdict and never replacing it.
 """
 
 from __future__ import annotations
@@ -38,7 +40,7 @@ from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import asdict, dataclass
 from typing import Any
 
-from afg.evaluation.metrics import bootstrap_ci
+from afg.evaluation.metrics import BootstrapCI, bootstrap_ci
 from afg.evaluation.scoring import DevelopmentResultError, IntervalSettings
 
 __all__ = [
@@ -49,6 +51,8 @@ __all__ = [
     "DevelopmentResultError",
     "RateEstimate",
     "analyze_runs",
+    "bootstrap_mean_interval",
+    "intervals_disjoint_above",
     "report_to_dict",
 ]
 
@@ -69,8 +73,10 @@ COMBINATION_NOTE = (
     "por pregunta."
 )
 CRITERION_NOTE = (
-    "Criterio D16 aplicado al pie de la letra: la hipótesis se respalda si el intervalo del 95 % "
-    "de C2 queda por encima del de C1 sin solaparse; en otro caso el resultado es no concluyente."
+    "Criterio D16 (enmendado, ADR 0010): la hipótesis se respalda si el intervalo bootstrap del "
+    "95 % de la diferencia pareada C2 - C1 queda por encima de 0; en otro caso el resultado es no "
+    "concluyente. La no superposición de los intervalos independientes de C2 y C1 (redacción "
+    "original) se informa aparte como robustez y no reemplaza al criterio principal."
 )
 
 Record = Mapping[str, Any]
@@ -119,9 +125,12 @@ class Comparison:
     interval_a: tuple[float, float]
     interval_b: tuple[float, float]
     direction: str
-    """``a_above`` / ``b_above`` when the 95 % intervals are disjoint, else ``overlap``."""
+    """``a_above`` / ``b_above`` when the independent 95 % intervals are disjoint, else
+    ``overlap``."""
     criterion: str
-    """``supported`` only when ``a_above``; every other outcome is ``inconclusive``."""
+    """Primary verdict: ``supported`` only when the paired difference interval is above 0."""
+    nonoverlap_criterion: str
+    """Robustness: ``supported`` only when ``a_above``; every other outcome is ``inconclusive``."""
 
     @property
     def intervals_overlap(self) -> bool:
@@ -225,19 +234,33 @@ def _question_scores(records: Iterable[Record], extract: Extractor) -> dict[str,
     return {q: (_mean(v), len(v)) for q, v in per_question.items()}
 
 
-def _estimate(
-    scores: Mapping[str, tuple[float, int]], settings: IntervalSettings
-) -> RateEstimate | None:
-    if not scores:
-        return None
-    values = [score for score, _ in scores.values()]
-    ci = bootstrap_ci(
+def bootstrap_mean_interval(values: Sequence[float], settings: IntervalSettings) -> BootstrapCI:
+    """Percentile bootstrap interval of the mean over per-question values (resamples questions).
+
+    The single entry point for every interval of this module; the power simulation
+    (:mod:`afg.experiments.power`) calls it too, so it studies the machinery that is reported.
+    """
+    return bootstrap_ci(
         values,
         _mean,
         n=settings.n_resamples,
         seed=settings.seed,
         confidence_level=settings.confidence_level,
     )
+
+
+def intervals_disjoint_above(a: tuple[float, float], b: tuple[float, float]) -> bool:
+    """True when interval ``a`` lies strictly above interval ``b`` (non-overlap criterion)."""
+    return a[0] > b[1]
+
+
+def _estimate(
+    scores: Mapping[str, tuple[float, int]], settings: IntervalSettings
+) -> RateEstimate | None:
+    if not scores:
+        return None
+    values = [score for score, _ in scores.values()]
+    ci = bootstrap_mean_interval(values, settings)
     return RateEstimate(
         point=ci.point_estimate,
         lower=ci.lower,
@@ -412,16 +435,10 @@ def _paired(
     if not shared or est_a is None or est_b is None:
         return None
     diffs = [scores_a[q][0] - scores_b[q][0] for q in shared]
-    ci = bootstrap_ci(
-        diffs,
-        _mean,
-        n=settings.n_resamples,
-        seed=settings.seed,
-        confidence_level=settings.confidence_level,
-    )
-    if est_a.lower > est_b.upper:
+    ci = bootstrap_mean_interval(diffs, settings)
+    if intervals_disjoint_above((est_a.lower, est_a.upper), (est_b.lower, est_b.upper)):
         direction = "a_above"
-    elif est_b.lower > est_a.upper:
+    elif intervals_disjoint_above((est_b.lower, est_b.upper), (est_a.lower, est_a.upper)):
         direction = "b_above"
     else:
         direction = "overlap"
@@ -439,7 +456,8 @@ def _paired(
         interval_a=(est_a.lower, est_a.upper),
         interval_b=(est_b.lower, est_b.upper),
         direction=direction,
-        criterion="supported" if direction == "a_above" else "inconclusive",
+        criterion="supported" if ci.lower > 0.0 else "inconclusive",
+        nonoverlap_criterion="supported" if direction == "a_above" else "inconclusive",
     )
 
 
