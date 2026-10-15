@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 04 — Bibliografía |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.2 |
-| **Fecha** | 2026-10-01 |
+| **Versión** | 1.3 |
+| **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -15,6 +15,7 @@
 | 1.0 | 2026-09-20 | Versión inicial. Bibliografía APA 7 para AFG1. | Primera entrega del curso. |
 | 1.1 | 2026-09-20 | Correcciones de autores, títulos y sufijos a/b; entrada de la licencia AMI en refs.bib. | Verificación contra la API de arXiv y DOI, 2026-09-20. |
 | 1.2 | 2026-10-01 | Se agrega una guía de lectura al inicio y, en cada sección temática, un párrafo que explica en lenguaje llano para qué sirve ese grupo de fuentes en el proyecto. Las entradas bibliográficas no cambian: ni una letra. | Retroalimentación de la revisión entre equipos de la semana 8: el problema y la metodología no se entendían, menos aún para una audiencia no técnica. |
+| 1.3 | 2026-10-15 | Se agrega la sección «Trabajos relacionados y su vínculo con el proyecto»: análisis de cuatro grupos de trabajos ya incluidos en la bibliografía (GraphRAG; detección de decisiones en AMI; auditoría de decisiones; modelos de lenguaje como jueces), con lo que el proyecto toma de cada uno y el vacío que aborda frente a él. No se agrega ni se modifica ninguna entrada bibliográfica. | La rúbrica de la presentación final de AFG2 pide al menos dos trabajos relacionados, con un análisis claro de cómo se relacionan con el proyecto y lo complementan. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -372,6 +373,79 @@ Google Cloud. (2026). *Open Knowledge Format (OKF): Especificación v0.1* [Borra
 de la representación persistente usada por el instrumento OpenKOS (documento 06, §5–6).
 Documento borrador sin DOI ni versión estable publicada; se cita como tal.
 
+## Trabajos relacionados y su vínculo con el proyecto
+
+Las secciones anteriores ordenan las fuentes por tema. Esta sección hace otra cosa: toma cuatro
+grupos de trabajos de la lista, los más cercanos a lo que el proyecto hace, y para cada uno
+dice qué hace, qué toma de él el proyecto y qué vacío aborda el proyecto frente a él. Lo que
+se afirma de cada trabajo es lo que ya consta en esta bibliografía y en los documentos
+[01](01-jss-problema.md) y [09](09-jss-modelos-y-justificacion.md); no se agregan referencias.
+
+### Estructura frente a búsqueda directa: Edge et al. (2024), GraphRAG
+
+*Qué hace.* Propone construir primero un índice estructurado a partir de los documentos y
+consultar después ese índice, en lugar de buscar fragmentos en el texto original (sección 2;
+documento 01, §2). Es la familia de soluciones más cercana a la propuesta del proyecto.
+
+*Qué toma el proyecto.* La idea de que consultar algo construido a partir de los documentos
+puede responder lo que la búsqueda de fragmentos no alcanza. En el proyecto, esa idea es la
+condición C2 (documento 03, OE3).
+
+*Qué vacío aborda.* La evidencia disponible compara sistemas completos entre sí: si el sistema
+con índice responde mejor, no se sabe cuánto de la mejora viene de tener el índice y cuánto
+del modelo que lo construyó (documento 01, §2). El proyecto complementa ese trabajo con la
+condición C3, la misma base construida desde la anotación humana: la distancia entre C1 y C3
+mide el valor de la estructura, y la distancia entre C3 y C2 mide el costo de construirla con
+una máquina que se equivoca. GraphRAG es además un preprint sin revisión por pares, por lo que
+se lo usa como antecedente y no como evidencia concluyente.
+
+### Detección de decisiones en AMI: Hsueh y Moore (2007a) y Fernández et al. (2008)
+
+*Qué hacen.* Ambos equipos intentaron detectar automáticamente las decisiones en las reuniones
+del corpus AMI, el mismo que usa este proyecto. Hsueh y Moore marcaron como relacionado con
+decisiones apenas el 1,4 % de los actos de diálogo; Fernández et al. hicieron lo mismo sobre
+las mismas reuniones con un criterio propio. Al comparar ambos resultados, el acuerdo fue peor
+que el azar (kappa negativo, 12,22 % de solapamiento) (documento 01, §3).
+
+*Qué toma el proyecto.* La conclusión de que una etiqueta no puede darse por buena solo porque
+la escribió una persona. De ahí que el proyecto mida el acuerdo entre anotadores en lugar de
+suponerlo (kappa por existencia, tipo y dirección, documento 03, OE1) y exija evidencia en cada
+decisión.
+
+*Qué vacío aborda.* Esos trabajos se ocupan de reconocer decisiones, no de seguirlas de una
+reunión a otra. La capa del corpus pensada para enlazar decisiones no distribuye datos
+(documento 02, §5). El proyecto aporta la anotación que falta, el enlace tipado entre
+reuniones sucesivas, con evidencia obligatoria y confiabilidad medida.
+
+### Seguimiento de una decisión a lo largo de reuniones: Murray et al. (2009), auditoría de decisiones
+
+*Qué hace.* Es el antecedente más cercano: pusieron a personas a reconstruir la historia de
+una decisión leyendo una serie completa de reuniones, y demostraron que la tarea es real y
+difícil (sección 1).
+
+*Qué toma el proyecto.* La confirmación de que la unidad natural es la serie completa y de
+que reconstruir la historia de una decisión exige leer varias reuniones. Por eso el proyecto
+elige y anota series completas (documento 02, §2).
+
+*Qué vacío aborda.* El trabajo no dejó datos reutilizables. El proyecto construye un conjunto
+de referencia reutilizable y, sobre él, mide si una máquina puede hacer ese seguimiento y a
+qué costo, algo que una auditoría hecha por personas no responde.
+
+### Modelos de lenguaje como jueces: Zheng et al. (2023), con Wang et al. (2024) y Panickssery et al. (2024)
+
+*Qué hacen.* Zheng et al. muestran que un modelo de lenguaje puede calificar las respuestas de
+otro de manera útil. Wang et al. y Panickssery et al. muestran sus sesgos; en particular, que
+un modelo tiende a favorecer sus propias respuestas (sección 4).
+
+*Qué toma el proyecto.* Ambas lecciones. Califica las unas 900 respuestas del Experimento B un
+juez automático (`gpt-oss:20b`), de una familia de modelos distinta de la del modelo que
+extrae, y una persona verifica al menos el 20 % de sus veredictos (documento 09, §4).
+
+*Qué vacío aborda.* Ningún banco público mide la tarea de calificar respuestas sobre
+decisiones de reuniones (documento 09, §4), así que el proyecto calibra su propio juez con 42
+respuestas etiquetadas a mano, con seis requisitos fijados antes de ver resultados (kappa
+0,951), y declara la limitación de esa calibración (documento 09, §4).
+
 ---
 
 ## Trazabilidad
@@ -382,3 +456,4 @@ Documento borrador sin DOI ni versión estable publicada; se cita como tal.
 | Verificación contra fuente primaria | [`../../bibliography/refs.bib`](../../bibliography/refs.bib), cabecera del archivo |
 | Preprints marcados: Edge et al. 2024, Cai & O'Connor 2025, Zhang & Li 2026, Bohnet et al. 2022 | [`../../bibliography/refs.bib`](../../bibliography/refs.bib), campo `keywords` |
 | Página de licencia AMI como fuente de datos pública | [`../../config/corpus.toml`](../../config/corpus.toml) |
+| Sección «Trabajos relacionados»: cifras de Hsueh y Moore / Fernández et al. y del juez | [`01-jss-problema.md`](01-jss-problema.md) §2–3; [`09-jss-modelos-y-justificacion.md`](09-jss-modelos-y-justificacion.md) §4 |
