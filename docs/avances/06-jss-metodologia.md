@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 06 — Metodología |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 3.6 |
+| **Versión** | 3.7 |
 | **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
@@ -26,10 +26,23 @@
 | 3.4 | 2026-10-15 | Se registran cuatro decisiones del análisis del Experimento B antes de correr cualquier evaluación (§1, §5–6, §7–8). (1) Criterio D16: el criterio principal pasa a ser que el intervalo bootstrap del 95 % de la **diferencia pareada** C2 − C1 en E3 quede por encima de 0; la no superposición de los intervalos independientes, que era la redacción de la versión 2.0, se conserva como cifra de robustez. Es una enmienda de un criterio prerregistrado el 2026-10-13, hecha antes de que exista cualquier corrida de evaluación. (2) Verificación humana del juez: el veredicto es por etiqueta (la corrección decide el juicio automático de la métrica principal; el soporte de evidencia tiene su propia marca de confiable o no confiable) y siempre se informan el acuerdo observado y la prevalencia junto al kappa. (3) Un kappa indefinido sigue contando como «no cumple». (4) La muestra humana toma una corrida sorteada por pregunta y condición, con el 20 % de las respuestas juzgadas como tamaño. No cambian otros umbrales ni cifras. | El criterio D16 se probó con una simulación de potencia con datos sintéticos: con las 25 preguntas mínimas de E3 y una mejora verdadera de 15 a 20 puntos, el criterio pareado declara respaldada la hipótesis en 58 % a 80 % de los experimentos y el de no solapamiento en 10 % a 28 % (con dificultad compartida moderada entre condiciones), con falsos positivos de a lo más 4,5 % y 0,8 % ([ADR 0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md), [notebook 10](../../notebooks/10-jss-potencia-criterio-d16.ipynb)). Las otras tres decisiones se apoyan en razones de principio, expuestas en el mismo ADR. |
 | 3.5 | 2026-10-15 | Se registran dos decisiones provisionales de la puntuación del Experimento A (§1) y se declara una limitación de los intervalos. (1) Ámbito de la alineación: una decisión extraída solo puede emparejarse con una decisión de referencia cuya reunión esté entre las reuniones de origen de la extraída; la alineación sobre toda la serie se calcula aparte, como análisis de sensibilidad. (2) Rol de una decisión con evidencia de varias personas: el rol que más habló es el principal; contar la decisión en cada rol involucrado es el análisis de sensibilidad. Ambas decisiones son provisionales y se confirman o cambian con un análisis sobre la primera extracción real de una serie de desarrollo. No cambian otras cifras ni umbrales. | La decisión extraída puede reunir en un solo concepto una decisión repetida en varias reuniones, y la referencia de ES2015 tiene 9 de 27 decisiones con evidencia de más de un rol; sin extracción real no hay datos para elegir con evidencia (issue #99, bloqueado por #95). |
 | 3.6 | 2026-10-15 | Se declara que el banco admite hasta 40 preguntas de E3 (§1, umbral del estrato E3). El mínimo prerregistrado de 25 por estrato no cambia; las filas de E3 sobre ese mínimo son opcionales y quedan vacías si el material de evolución no alcanza. | Aumentar la probabilidad de detectar una mejora real más pequeña en E3: la simulación de potencia da alrededor de 57 % con 25 preguntas y 76 % con 40 para una mejora de 15 puntos ([notebook 10](../../notebooks/10-jss-potencia-criterio-d16.ipynb)); el tope lo fija el material disponible ([notebook 01](../../notebooks/01-jss-viabilidad-e3.ipynb)). |
+| 3.7 | 2026-10-15 | Se agregan referencias cruzadas a los documentos [07](07-jss-analisis-exploratorio.md), [08](08-jss-metricas-y-criterio-de-exito.md) y [09](09-jss-modelos-y-justificacion.md), donde ahora vive el detalle del filtro léxico, de las métricas y del criterio D16, y de las condiciones, el juez y los parámetros: una nota «Documentos relacionados» al inicio y una línea de remisión al comienzo de las secciones 1, 2, 3–4 y 5–6. No se elimina contenido y no cambia ninguna cifra, umbral ni decisión. | Los documentos 07 a 09 de AFG2 desarrollan partes de esta metodología; sin enlaces, el lector no sabe dónde está el detalle. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
 > la evidencia que lo motivó**. El historial nunca se reescribe: se agrega una fila.
+
+## Documentos relacionados
+
+Este documento fija el diseño completo. Tres documentos posteriores desarrollan partes de él
+con más detalle y con las cifras ya medidas:
+
+- [Documento 07, análisis exploratorio](07-jss-analisis-exploratorio.md): la calidad de los
+  datos y el filtro léxico en lenguaje simple (§7).
+- [Documento 08, métricas y criterio de éxito](08-jss-metricas-y-criterio-de-exito.md): qué se
+  mide en cada objetivo, con qué umbral o intervalo, y el criterio D16 (§6).
+- [Documento 09, modelos y su justificación](09-jss-modelos-y-justificacion.md): las tres
+  condiciones, el juez automático y los parámetros, con su evidencia.
 
 ## El experimento en una página
 
@@ -67,6 +80,8 @@ fase pertenece.
 ## 1. Problema y métricas
 
 *Fases 1 a 3: qué se cuenta y cómo se mide.*
+
+*Más detalle:* todas las métricas con su umbral y su estado, en el [documento 08](08-jss-metricas-y-criterio-de-exito.md) (§3 y §4); el criterio de éxito D16, en su [§6](08-jss-metricas-y-criterio-de-exito.md#6-cómo-sabremos-si-el-experimento-tuvo-éxito).
 
 **Unidad de análisis.** Lo primero es fijar qué se va a contar. La unidad es la decisión
 individual y el par de decisiones dentro de una serie (un par es una decisión de una
@@ -169,6 +184,8 @@ mismo día), no asumida.
 
 *Fase 1: con qué material se trabaja.*
 
+*Más detalle:* la calidad de los datos, en el [documento 07](07-jss-analisis-exploratorio.md) (§4); la regla del filtro léxico explicada en lenguaje simple, en su [§7](07-jss-analisis-exploratorio.md#7-el-filtro-léxico-en-lenguaje-simple).
+
 Resumida aquí; el detalle completo —marco muestral, selección de 14 series, split
 desarrollo/evaluación, los cuatro N, composición lingüística, autoría por rol, anclaje a
 evidencia, riesgos y plan de saneamiento— está en
@@ -214,6 +231,8 @@ relaciones que existen en el corpus. La evidencia está en
 ## 3–4. Diseño analítico y líneas base
 
 *Fase 3: las tres condiciones y la regla de "todo lo demás igual".*
+
+*Más detalle:* cada condición, sus técnicas y sus parámetros, con la evidencia de cada elección, en el [documento 09](09-jss-modelos-y-justificacion.md) (§2 y §3).
 
 **Tres condiciones**, mismo modelo generativo, mismo modelo de *embeddings*, mismo hardware y
 mismo presupuesto de contexto. Un modelo de *embeddings* convierte texto en números para
@@ -265,6 +284,8 @@ el piloto; con el mínimo añadido, 92 (3,0 %, ≈2,3 h), sin perder el caso de 
 
 *Fases 1 y 2: con qué modelos se extrae, cómo se decide si acertaron y por qué la referencia
 la hacen personas.*
+
+*Más detalle:* la elección y la calibración del juez automático, en el [documento 09](09-jss-modelos-y-justificacion.md) (§4); la cuenta de parámetros, en su §5.
 
 **Modelos.** Modelos generativos de ejecución local (familia Qwen o equivalente, en escalas
 contrastables) y un modelo de *embeddings* multilingüe. "Ejecución local" significa que
