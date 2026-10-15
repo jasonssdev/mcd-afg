@@ -65,11 +65,11 @@ _BANK_COLUMNS = (
 )
 
 
-def _config(released: list[str] | None) -> dict[str, Any]:
+def _config(released: list[str] | None, phase2: list[str] | None = None) -> dict[str, Any]:
     section: dict[str, Any] = {
         "adjudicator": "jss",
         "phase1_series": ["ES1", "ES4"],
-        "phase2_series": [],
+        "phase2_series": phase2 or [],
         "recall_sample": {"owner": "gv", "series": ["ES3"], "n": 1, "seed": 1},
         "question_bank": {
             "author": "gm",
@@ -488,3 +488,60 @@ class TestBankProgressAndRowCounts:
 
         assert decision_row_counts(path) == (2, 1)
         assert decision_row_counts(tmp_path / "missing.csv") == (0, 0)
+
+
+class TestBankIsGatedByPhase2:
+    """Issue #32: the bank starts when the Phase 2 control series are adjudicated."""
+
+    def _gated(self, monkeypatch: pytest.MonkeyPatch, env: WorkspacePaths) -> None:
+        cfg = _config(["ES1"], phase2=["ES5"])
+        monkeypatch.setattr("afg.annotation.workspace.load_annotation_config", lambda: cfg)
+        _write_csv(
+            env.question_bank,
+            _BANK_COLUMNS,
+            [{"id": "q001", "stratum": "E1_point_fact", "author": "gm", "text": "¿Qué?"}],
+        )
+
+    def test_gated_bank_shows_aun_no_and_is_never_the_next_step(
+        self, env: WorkspacePaths, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        self._gated(monkeypatch, env)
+
+        gm = _flat(_run("gold", "status", "--annotator", "gm").output)
+        assert "Banco de preguntas: aún no" in gm
+        assert "4 series de control de la Fase 2" in gm and "(#32)" in gm
+        assert "E1_point_fact" not in gm
+        assert "banco" not in gm.split("Siguiente:")[1].lower()
+
+        gv = _flat(_run("gold", "status", "--annotator", "gv").output)
+        assert "Validación del banco de preguntas: aún no" in gv and "(#33)" in gv
+        assert "banco" not in gv.split("Siguiente:")[1].lower()
+
+    def test_setup_shows_the_same_gate_for_gm(
+        self, env: WorkspacePaths, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        self._gated(monkeypatch, env)
+
+        out = _flat(_run("gold", "setup", "--annotator", "gm").output)
+
+        assert "Banco de preguntas: aún no" in out
+
+    def test_opens_once_every_phase2_series_is_adjudicated(
+        self, env: WorkspacePaths, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        self._gated(monkeypatch, env)
+        _adjudicate(env, "ES5")
+
+        gm = _flat(_run("gold", "status", "--annotator", "gm").output)
+
+        assert "aún no" not in gm.split("Banco de preguntas")[1][:20]
+        assert "E1_point_fact" in gm
+
+    def test_not_prepared_released_series_says_to_annotate_it(
+        self, env: WorkspacePaths, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        _use(monkeypatch, ["ES1"])
+
+        out = _flat(_run("gold", "status", "--annotator", "gv").output)
+
+        assert "Siguiente: Anota la serie ES1" in out

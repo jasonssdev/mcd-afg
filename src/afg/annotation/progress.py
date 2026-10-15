@@ -109,6 +109,9 @@ class AnnotatorStatus:
     series: tuple[SeriesStatus, ...]
     recall: tuple[RecallStatus, ...]
     bank: QuestionBankProgress | None
+    bank_gate: str | None
+    """Spanish line saying why the question bank has not started, or ``None`` when it is open
+    (or this person has no part in it)."""
     bank_role: str | None
     """``"author"`` or ``"validator"`` when this person works on the question bank."""
     next_action: NextAction
@@ -175,6 +178,31 @@ def _recall_statuses(
     return tuple(out)
 
 
+def _bank_gate(plan: AnnotationPlan, role: str | None, paths: WorkspacePaths) -> str | None:
+    """Issue #32: the bank starts once every Phase 2 control series is adjudicated.
+
+    Derived from the same files as the series state (both adjudication CSVs). Questions come
+    only from evaluation series; the development ones are excluded elsewhere (ADR 0005).
+    """
+    if role is None:
+        return None
+    if all(
+        paths.adjudicated(TaskKind.DECISIONS, sid).exists()
+        and paths.adjudicated(TaskKind.CANDIDATES, sid).exists()
+        for sid in plan.phase2_series
+    ):
+        return None
+    what, issue = (
+        ("Banco de preguntas", "#32")
+        if role == "author"
+        else ("Validación del banco de preguntas", "#33")
+    )
+    return (
+        f"{what}: aún no — empieza cuando las 4 series de control de la Fase 2 estén "
+        f"adjudicadas ({issue})."
+    )
+
+
 def _bank(
     plan: AnnotationPlan, initials: str, paths: WorkspacePaths
 ) -> tuple[QuestionBankProgress | None, str | None]:
@@ -182,8 +210,8 @@ def _bank(
     role = (
         "author" if bank.author == initials else "validator" if bank.validator == initials else None
     )
-    if role is None:
-        return None, None
+    if role is None or _bank_gate(plan, role, paths) is not None:
+        return None, role
     from afg.domain.question import QuestionStratum
 
     progress = question_bank_progress(
@@ -210,8 +238,8 @@ def _next_action(
         if item.state is SeriesState.NOT_PREPARED:
             return NextAction(
                 NextKind.PREPARE,
-                f"Corre `uv run afg gold prepare --annotator {initials}` para crear los "
-                f"archivos de {item.series_id}.",
+                f"Anota la serie {item.series_id} (fase {item.phase}): primero corre "
+                f"`uv run afg gold setup --annotator {initials}` para crear tus archivos.",
                 item.series_id,
                 item.phase,
             )
@@ -341,6 +369,7 @@ def annotator_status(
         series=series,
         recall=recall,
         bank=bank,
+        bank_gate=_bank_gate(plan, bank_role, paths),
         bank_role=bank_role,
         next_action=_next_action(plan, initials, paths, series, recall, bank, bank_role),
     )

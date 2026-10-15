@@ -13,7 +13,7 @@ ES2015 ya está adjudicada. Lo que sigue, en este orden:
 1. **Sesión conjunta sobre ES2015** con `jss` y gm
    ([`../calibracion/ES2015-sesion-conjunta.md`](../calibracion/ES2015-sesion-conjunta.md)).
    Se habla **solo de ES2015**: no leas ni anotes TS3009 antes.
-2. **Cuando `jss` lo indique**, anotas TS3009 (recalibración):
+2. **`jss` ya abrió TS3009**: la anotas ahora (recalibración):
    ```bash
    git switch main && git pull
    git switch -c data/anotacion-TS3009-gv
@@ -397,6 +397,10 @@ los resultados de las cuatro. Escríbelo en el PR y para ahí.
 ---
 
 ## 8. Validación del banco de preguntas
+
+**Cuándo empieza.** Cuando las cuatro series de control de la Fase 2 estén adjudicadas y
+Gustavo haya escrito preguntas; hasta entonces `afg gold status` muestra «Validación del banco
+de preguntas: aún no».
 
 Gustavo escribe el banco (mínimo 25 preguntas por estrato, ≥100 en total). **Tú lo validas, y
 no escribes ninguna**: `docs/propuesta.md` §5.5 exige que quien valida no sea quien escribe.

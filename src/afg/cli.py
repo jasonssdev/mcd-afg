@@ -1105,6 +1105,8 @@ def gold_setup(
 
     status = outcome.status
     assert status is not None  # only the maintainer has none, and returned above
+    if status.bank_gate is not None:
+        console.print(f"[dim]{status.bank_gate}[/dim]")
     action = status.next_action
     console.print("\n[bold]Qué hacer ahora.[/bold]")
     if action.kind is NextKind.ANNOTATE and action.target and action.partner:
@@ -1380,6 +1382,8 @@ def gold_status(
             f"Tarea C (muestra de recall) {rec.series_id}: {rec.state.value}{progress}",
             markup=False,
         )
+    if status.bank_gate is not None:
+        console.print(status.bank_gate, markup=False, soft_wrap=True)
     if status.bank is not None:
         bank = status.bank
         per_stratum = ", ".join(
@@ -1392,6 +1396,10 @@ def gold_status(
             f"validadas {bank.validated} de {bank.written} escritas.",
             markup=False,
             soft_wrap=True,
+        )
+        console.print(
+            "E3 depende de relaciones ya adjudicadas: la mayoría llegará con la Fase 3.",
+            markup=False,
         )
     console.print(f"Siguiente: {status.next_action.message}", markup=False, soft_wrap=True)
 

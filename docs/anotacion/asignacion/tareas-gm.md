@@ -13,7 +13,7 @@ ES2015 ya está adjudicada. Lo que sigue, en este orden:
 1. **Sesión conjunta sobre ES2015** con `jss` y gv
    ([`../calibracion/ES2015-sesion-conjunta.md`](../calibracion/ES2015-sesion-conjunta.md)).
    Se habla **solo de ES2015**: no leas ni anotes TS3009 antes.
-2. **Cuando `jss` lo indique**, anotas TS3009 (recalibración):
+2. **`jss` ya abrió TS3009**: la anotas ahora (recalibración):
    ```bash
    git switch main && git pull
    git switch -c data/anotacion-TS3009-gm
@@ -383,6 +383,12 @@ como `earlier` y la de `d` como `later`, que es el orden de la convención.
 ---
 
 ## 7. El banco de preguntas — tú escribes, Germán valida
+
+**Cuándo empieza.** Cuando las cuatro series de control de la Fase 2 (ES2016, IS1003, TS3005,
+ES2008) estén adjudicadas; hasta entonces `afg gold status` muestra «Banco de preguntas: aún
+no» y no lo propone como siguiente paso. Las preguntas salen solo de series de evaluación
+(ES2015, IS1004 y TS3009 quedan fuera, ADR 0005). E3 depende de relaciones ya adjudicadas, así
+que la mayoría llegará con la Fase 3.
 
 Mínimo **25 preguntas por estrato**, cuatro estratos, **≥100 en total**
 (`docs/propuesta.md` §5.5); para E3 la meta es **hasta 40** (ver más abajo). **El autor no valida y el validador no escribe**: tú no tocas
