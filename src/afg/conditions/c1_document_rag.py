@@ -259,6 +259,46 @@ def _sufficiency_holds(reply: str) -> bool:
     return reply.strip().strip("\"'`*. \t\n").upper() != SUFFICIENCY_NONE
 
 
+def assemble_context(
+    question: str, chunks: Sequence[Chunk], *, context_window: int, max_generation_tokens: int
+) -> tuple[list[str], list[tuple[Chunk, bool]], list[Chunk]]:
+    """``_bound_bodies`` + the no-history tail of ``_assemble_context``.
+
+    Returns the block strings, the ``(chunk, excerpted)`` pairs kept, and the chunks the
+    budget left no room for (dropped from the prompt and never citable). Pure and public so
+    the C1 tuning measures the text the model actually receives with this very function.
+    """
+    labels = [_label(c) for c in chunks]
+    bodies = [c.text for c in chunks]
+    if not bodies:
+        return [], [], []
+    overhead = len(_user_content(labels, question)) + max(
+        len(system_prompt()), len(sufficiency_prompt())
+    )
+    budget = budget_chars(
+        planning=context_window,
+        generation_reserve_tokens=max_generation_tokens,
+        overhead_chars=overhead,
+    )
+    shares = fair_shares([len(b) for b in bodies], budget=budget)
+    blocks: list[str] = []
+    kept: list[tuple[Chunk, bool]] = []
+    omitted: list[Chunk] = []
+    for chunk, label, body, share in zip(chunks, labels, bodies, shares, strict=True):
+        text, was_bounded = bounded_text(
+            body,
+            budget=share,
+            windows=chunk_lines(body, CONTEXT_CHUNK_TARGET),
+            marker=ELISION_MARKER,
+        )
+        if was_bounded and not text and body:
+            omitted.append(chunk)
+            continue
+        blocks.append(label + text)
+        kept.append((chunk, was_bounded))
+    return blocks, kept, omitted
+
+
 # --- trace -----------------------------------------------------------------------------
 
 
@@ -405,7 +445,12 @@ class DocumentRagCondition:
             )
             for h in hits
         )
-        blocks, kept, omitted = self._assemble(question.text, [h.chunk for h in hits])
+        blocks, kept, omitted = assemble_context(
+            question.text,
+            [h.chunk for h in hits],
+            context_window=self.settings.context_window,
+            max_generation_tokens=self.settings.max_generation_tokens,
+        )
         base: dict[str, Any] = {
             "retrieved": retrieved,
             "omitted": tuple(OmittedTrace(c.chunk_id, c.meeting_id) for c in omitted),
@@ -479,44 +524,6 @@ class DocumentRagCondition:
             return True, True, None
         return _sufficiency_holds(reply), False, reply
 
-    def _assemble(
-        self, question: str, chunks: Sequence[Chunk]
-    ) -> tuple[list[str], list[tuple[Chunk, bool]], list[Chunk]]:
-        """``_bound_bodies`` + the no-history tail of ``_assemble_context``.
-
-        Returns the block strings, the ``(chunk, excerpted)`` pairs kept, and the chunks the
-        budget left no room for (dropped from the prompt and never citable).
-        """
-        labels = [_label(c) for c in chunks]
-        bodies = [c.text for c in chunks]
-        if not bodies:
-            return [], [], []
-        overhead = len(_user_content(labels, question)) + max(
-            len(system_prompt()), len(sufficiency_prompt())
-        )
-        budget = budget_chars(
-            planning=self.settings.context_window,
-            generation_reserve_tokens=self.settings.max_generation_tokens,
-            overhead_chars=overhead,
-        )
-        shares = fair_shares([len(b) for b in bodies], budget=budget)
-        blocks: list[str] = []
-        kept: list[tuple[Chunk, bool]] = []
-        omitted: list[Chunk] = []
-        for chunk, label, body, share in zip(chunks, labels, bodies, shares, strict=True):
-            text, was_bounded = bounded_text(
-                body,
-                budget=share,
-                windows=chunk_lines(body, CONTEXT_CHUNK_TARGET),
-                marker=ELISION_MARKER,
-            )
-            if was_bounded and not text and body:
-                omitted.append(chunk)
-                continue
-            blocks.append(label + text)
-            kept.append((chunk, was_bounded))
-        return blocks, kept, omitted
-
 
 def _evidence_spans(chunks: Sequence[Chunk]) -> tuple[EvidenceSpan, ...]:
     """Dialogue acts of the cited chunks, grouped by meeting (first-seen order, no repeats)."""
@@ -541,6 +548,7 @@ __all__ = [
     "DocumentRagCondition",
     "GenerationSettings",
     "OllamaChatBackend",
+    "assemble_context",
     "split_attribution",
     "strip_concept_id_scaffolding",
 ]

@@ -1684,9 +1684,11 @@ def c1_tune() -> None:
 
     Solo recuperación (sin modelo generativo): para cada combinación de `max_chars`,
     `overlap_turns` y K de `[retrieval.tuning]`, mide qué fracción de los actos de diálogo de
-    referencia caen en los K fragmentos recuperados. Indexa la serie completa (D15) y usa las
-    preguntas respondibles (E1-E3) del conjunto de calibración del juez. Los resultados quedan
-    en `reports/c1-tuning/resultados.json`.
+    referencia llegan completos al modelo, es decir, sobrevivientes al recorte del presupuesto
+    de contexto de OpenKOS (recall entregado, el que decide), y los compara con los que caen
+    en los K fragmentos recuperados sin recortar (recall de fragmentos completos). Indexa la
+    serie completa (D15) y usa las preguntas respondibles (E1-E3) del conjunto de calibración
+    del juez. Los resultados quedan en `reports/c1-tuning/resultados.json`.
     """
     from rich.table import Table
 
@@ -1754,22 +1756,32 @@ def c1_tune() -> None:
         raise typer.Exit(code=1) from exc
 
     table = Table(title="Recall de evidencia por configuración")
-    for column in ("max_chars", "overlap", "K", "recall", "contexto (car.)", "elegible"):
+    for column in (
+        "max_chars",
+        "overlap",
+        "K",
+        "recall entregado",
+        "recall fragmentos",
+        "entregado (car.)",
+        "elegible",
+    ):
         table.add_column(column, justify="right")
     for r in results:
         table.add_row(
             str(r.max_chars),
             str(r.overlap_turns),
             str(r.k),
+            f"{r.mean_delivered_recall:.3f}",
             f"{r.mean_recall:.3f}",
-            f"{r.mean_context_chars:.0f}",
+            f"{r.mean_delivered_chars:.0f}",
             "sí" if r.eligible else "no",
         )
     console.print(table)
     win = selection.winner
     console.print(
         f"[bold green]Ganador:[/bold green] max_chars={win.max_chars}, "
-        f"overlap_turns={win.overlap_turns}, K={win.k} (recall {win.mean_recall:.3f}). "
+        f"overlap_turns={win.overlap_turns}, K={win.k} "
+        f"(recall entregado {win.mean_delivered_recall:.3f}). "
         f"{selection.reason}"
     )
     save_tuning_results(

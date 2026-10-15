@@ -16,6 +16,7 @@ from afg.conditions.answer_prompts import (
     system_prompt,
 )
 from afg.conditions.base import Condition
+from afg.conditions.c1_chunking import chunk_meetings
 from afg.conditions.c1_document_rag import (
     NO_ANSWER_IN_CONTEXT,
     NO_MATCH,
@@ -24,6 +25,7 @@ from afg.conditions.c1_document_rag import (
     DocumentRagCondition,
     GenerationSettings,
     OllamaChatBackend,
+    assemble_context,
     split_attribution,
     strip_concept_id_scaffolding,
 )
@@ -407,6 +409,28 @@ def test_blocks_with_no_room_are_omitted_and_never_cited(tmp_path: Path) -> None
     assert answer.abstained is True
     assert answer.text == NO_MATCH
     assert trace.outcome == "no_match"
+
+
+def test_assemble_context_is_what_the_condition_sends(tmp_path: Path) -> None:
+    long_turns = [f"word{i} " * 600 for i in range(2)]
+    _write_meeting(tmp_path, "ES2015a", long_turns)
+    chat = ScriptedChat("quote", "answer\nUSED: 1")
+    tight = dataclasses.replace(SETTINGS, context_window=8192 + 1600)
+    _, trace = _condition(
+        tmp_path, chat, settings=tight, params=PinnedC1Params(120, 0, 2)
+    ).answer_with_trace(_question("word1?"))
+    chunks = chunk_meetings(["ES2015a"], 120, 0, tmp_path)
+    by_id = {c.chunk_id: c for c in chunks}
+    retrieved = [by_id[b.chunk_id] for b in trace.context_blocks]
+    blocks, kept, omitted = assemble_context(
+        "word1?",
+        retrieved,
+        context_window=tight.context_window,
+        max_generation_tokens=tight.max_generation_tokens,
+    )
+    assert blocks == [b.text for b in trace.context_blocks]
+    assert [c for c, _ in kept] == retrieved
+    assert omitted == []
 
 
 # --- Ollama backend --------------------------------------------------------------------

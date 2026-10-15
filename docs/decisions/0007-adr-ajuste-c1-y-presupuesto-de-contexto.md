@@ -82,6 +82,89 @@ lee.
 - Se midió solo recuperación; el efecto sobre la corrección de las respuestas queda para el
   Experimento B.
 
+## Enmienda (2026-10-15)
+
+Esta sección corrige la medición del ajuste y su conclusión sobre los parámetros de C1. El
+texto anterior no se reescribe: queda como registro de lo que se decidió con la información de
+entonces.
+
+### Premisa errónea
+
+La cifra de 13.516 caracteres para 5 cuerpos se midió antes de que OpenKOS limitara el
+contexto de su *prompt* (incidencia #882). En OpenKOS v0.5.4 el contexto está acotado:
+`budget_chars = int((12.288 − 8.192) / 0,40) − sobrecarga`, donde la sobrecarga reúne los
+*prompts* de sistema y de suficiencia, el marco del mensaje y la pregunta. Eso deja unos
+**7.400 caracteres** de contexto. `_bound_bodies` reparte ese presupuesto entre los bloques
+con `fair_shares` y recorta cada uno con `bounded_text` (ventanas de 800 caracteres y marca de
+elisión). El recorte es el mismo para C1, C2 y C3 **por construcción**, porque C1 reproduce
+esas funciones (`src/afg/conditions/c1_prompt_budget.py`) y las usa al responder.
+
+Consecuencias para lo decidido arriba:
+
+- El ajuste original contó la evidencia sobre los fragmentos recuperados **completos**. Con
+  K = 8 fragmentos de 1.600 caracteres, el modelo recibe cada uno recortado a unos 900
+  caracteres, de modo que el recall de 0,642 sobrestimaba la evidencia disponible.
+- La condición «K × `max_chars` ≤ 13.516» descansa en la premisa errónea. Se conserva sin
+  cambios como filtro de elegibilidad, porque fue prerregistrada; con el presupuesto efectivo
+  ya no restringe el resultado de forma relevante.
+- La igualdad de presupuesto de texto de la opción A (decisión 3) ya no depende de ajustar
+  K × `max_chars` a un total: se cumple por construcción, porque las tres condiciones
+  entregan al modelo el mismo contexto acotado. Las cifras de «unos 12.000» y «unos 13.500
+  caracteres» de esa decisión, y los 21.600 de la decisión 4, quedan sin efecto.
+
+### Medición corregida
+
+Se repitió el ajuste con la misma rejilla, la misma regla prerregistrada y las mismas 17
+preguntas, y un cambio: un acto de diálogo de referencia cuenta como **entregado** solo si
+cada turno que lo compone aparece completo en el texto que recibe el modelo, es decir,
+después de `fair_shares` y `bounded_text`. El texto entregado se obtiene con la misma función
+con que C1 arma su contexto (`assemble_context`), de modo que la medición no puede divergir de
+la condición. El recall de fragmentos completos se conserva como cifra secundaria, que no
+interviene en la selección. Los turnos son líneas del fragmento y el recorte conserva o
+descarta líneas completas, por lo que basta comparar líneas y no hace falta normalizar
+espacios.
+
+| `max_chars` | `overlap_turns` | K | recall entregado | recall de fragmentos completos | caracteres entregados (media) | elegible |
+|---|---|---|---|---|---|---|
+| 1.600 | 0 | 8 (anterior) | 0,446 | 0,642 | 6.946 | sí |
+| 1.600 | 0 | 5 | 0,583 | 0,583 | 7.628 | sí |
+| **1.200** | **1** | **5 (nuevo)** | **0,569** | 0,569 | 5.599 | sí |
+| 1.200 | 0 | 5 | 0,520 | 0,520 | 5.654 | sí |
+| 2.400 | 1 | 8 | 0,402 | 0,706 | 6.619 | no |
+
+Los caracteres entregados incluyen el rótulo de cada bloque y las marcas de elisión, por lo que
+pueden superar ligeramente los 7.400 del presupuesto de cuerpos. La tabla completa de 32
+configuraciones está en `reports/c1-tuning/resultados.json` y en el
+[notebook 06](../../notebooks/06-jss-ajuste-c1.ipynb).
+
+### Resultado y decisión
+
+- El mejor recall entregado entre las elegibles es 0,583 (1.600 / 0 / K = 5). Dos
+  configuraciones quedan a no más de 0,02: esa y 1.200 / 1 / K = 5 (0,569). Con igual K, la
+  regla prefiere el menor `max_chars`.
+- **El ganador cambia: C1 usa `max_chars` = 1.200, `overlap_turns` = 1 y K = 5**
+  (antes 1.600 / 0 / 8). Los valores quedan en `[retrieval.c1]` de
+  `config/experiments.toml`; la prueba que los contrasta con el ganador almacenado sigue
+  vigente.
+- Con el presupuesto real, más fragmentos no ayudan: al repartirse ~7.400 caracteres entre K
+  bloques, cada uno se recorta y la evidencia se pierde. La configuración anterior baja de
+  0,642 a 0,446, y las de mayor recall de fragmentos completos (2.400 / 1 / K = 8, 0,706)
+  entregan 0,402.
+- El ganador acierta (algún acto de referencia entregado) en 11 de las 17 preguntas. No
+  tienen ningún acierto q010, q011, q016, q017, q026 y q028.
+- C1 recibe K = 5, igual que `--limit 5` de C2 y C3, aunque la decisión 3 descartó igualar K
+  por el motivo del tamaño de bloque: lo que se iguala es el presupuesto de texto, que
+  ahora coincide por construcción. La decisión 5 (no modificar el valor por defecto de
+  OpenKOS) se mantiene.
+
+### Limitaciones añadidas
+
+- Las limitaciones del texto original siguen vigentes (una sola serie, 17 preguntas, el
+  recall es un piso). La diferencia entre 0,583 y 0,569 está dentro del ruido; la elección
+  entre ambas la fija la regla, no la evidencia.
+- El criterio de entrega exige el turno completo. Un acto cuyo turno se recorta parcialmente
+  cuenta como no entregado, aunque parte de su texto llegue al modelo.
+
 ## Trazabilidad
 
 - Notebook: [`06-jss-ajuste-c1.ipynb`](../../notebooks/06-jss-ajuste-c1.ipynb).

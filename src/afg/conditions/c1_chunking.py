@@ -93,7 +93,8 @@ def load_frozen_turns(meeting_id: str, transcripts_dir: Path = TRANSCRIPTS_DIR) 
     return turns
 
 
-def _render(turn: FrozenTurn) -> str:
+def render_turn(turn: FrozenTurn) -> str:
+    """The line a turn occupies inside a chunk: ``ROLE: text``."""
     return f"{turn.role}: {turn.text}"
 
 
@@ -110,7 +111,7 @@ def _build_chunk(meeting_id: str, number: int, turns: Sequence[FrozenTurn]) -> C
         start=min(starts) if starts else None,
         end=max(ends) if ends else None,
         dialogue_act_ids=tuple(acts),
-        text=_TURN_SEPARATOR.join(_render(t) for t in turns),
+        text=_TURN_SEPARATOR.join(render_turn(t) for t in turns),
     )
 
 
@@ -131,7 +132,7 @@ def chunk_turns(turns: Sequence[FrozenTurn], max_chars: int, overlap_turns: int 
     if any(t.meeting_id != meeting_id for t in turns):
         raise ValueError("chunk_turns expects turns from exactly one meeting")
 
-    lengths = [len(_render(t)) for t in turns]
+    lengths = [len(render_turn(t)) for t in turns]
     chunks: list[Chunk] = []
     begin = 0
     while begin < len(turns):
