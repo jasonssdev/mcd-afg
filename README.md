@@ -240,7 +240,7 @@ de forzar una resolución, sobre todo si el conflicto está en un CSV de anotaci
 |---|---|---|
 | `README.md` | Esta guía | Todos, el primer día |
 | `CONTRIBUTING.md` | Flujo de trabajo, roles, convenciones (nombres, idioma, cifras, etiquetas humanas) | Todos, antes de la primera PR |
-| `docs/propuesta.md` | La propuesta de tesis completa. Se cita por sección (§1.4, §5.4). No se edita: sus revisiones pendientes se siguen en el issue #20 | Todos, para entender el diseño original |
+| `docs/propuesta.md` | La propuesta de tesis completa. Se cita por sección (§1.4, §5.4). No se edita: sus revisiones pendientes se siguen en los issues abiertos del repositorio | Todos, para entender el diseño original |
 | `docs/avances/` | Los seis documentos vivos: problema, fuente de datos, objetivos, bibliografía, ética, metodología. Cada uno con versión e historial | Todos. Son la versión vigente del proyecto y de aquí salen las entregas |
 | `docs/entregables/` | Lo que se entregó al curso, congelado tal como se envió: guiones de video, informe de la semana 4 | Quien prepara una entrega; se agrega, no se edita |
 | `docs/anotacion/` | **El trabajo humano**: quién anota qué, el manual paso a paso de los CSV, la definición del constructo | Anotadores y adjudicador |
@@ -301,6 +301,7 @@ uv run afg gold validate --annotator <iniciales>   # verifica tu trabajo antes d
 uv run afg gold status                             # panel del mantenedor: una fila por anotador y serie
 uv run afg gold adjudicate --series ES2015         # escribe los dos CSV de adjudicación (prellenados donde hay acuerdo)
 uv run afg gold questions-init                     # crea el banco de 100 preguntas, vacío, 25 por estrato
+uv run afg gold questions-check                   # revisa el banco de preguntas fila por fila, sin correr nada (--complete exige las 100 validadas)
 uv run afg gold link                               # sin implementar: sale con código 2 y explica qué falta
 
 uv run afg skills sync-assets deck-uc   # copia los assets UC desde la carpeta compartida y verifica su SHA-256
@@ -312,8 +313,11 @@ uv run afg biblio stats             # conteos por sección y preprint/revisado
 
 uv run afg report                   # regenera reports/tables/*.csv con lo que haya disponible
 
+uv run afg c1 tune                  # mide el recall de evidencia de C1 sobre desarrollo y elige segmentación y K (ADR 0007)
+uv run afg c1 ask                   # responde una pregunta con C1 como lo haría `openkos query`, con fragmentos de transcripción
+
 uv run afg experiment a             # sin implementar: sale con código 2 (requiere el extractor y el conjunto de referencia)
-uv run afg experiment b             # sin implementar: sale con código 2 (requiere las tres condiciones y el banco de preguntas)
+uv run afg experiment b             # Experimento B: preguntas x condiciones x corridas, con juicio y citación; hoy solo C1 corre (corrida de humo sobre ES2015)
 ```
 
 ### Notebooks
@@ -330,10 +334,14 @@ uv run jupyter lab
 | 03 | `03-jss-eda.ipynb` | Análisis exploratorio de datos de AFG2: calidad, faltantes, atípicos, relaciones, estructura multivariada y temporal, e implicancias para el modelado |
 | 04 | `04-jss-anotacion-f1-calibracion.ipynb` | Anotación humana, Fase 1: calibración sobre ES2015 y recalibración sobre TS3009 (acuerdo diagnóstico) |
 | 05 | `05-jss-seleccion-juez.ipynb` | Selección del modelo juez (§5.7): criterios, umbrales prerregistrados y calibración contra etiquetas humanas |
+| 06 | `06-jss-ajuste-c1.ipynb` | Ajuste de la línea base C1 (§5.3) sobre ES2015: segmentación y número de fragmentos por recall de evidencia |
+| 07 | `07-jss-runner-experimento-b.ipynb` | Motor de corrida del Experimento B y corrida de humo con C1 sobre ES2015 (serie de desarrollo) |
+| 08 | `08-jss-fechas-de-reunion.ipynb` | Fechas de evento de las reuniones que se entregan a OpenKOS y la regla que preserva el orden a→d |
+| 09 | `09-jss-regla-de-citacion.ipynb` | Análisis de la regla de citación correcta (§5.6, §6.2) sobre la corrida de humo con C1 |
 | — | *(pendiente)* `NN-jss-anotacion-f2-control.ipynb` | Anotación humana, Fase 2: series de control, kappa reportable |
 | — | *(pendiente)* `NN-jss-anotacion-f3-referencia.ipynb` | Anotación humana, Fase 3: conjunto de referencia final |
 | — | *(pendiente)* `NN-jss-experimento-a.ipynb` | OE2 — calidad de la extracción automática |
-| — | *(pendiente)* `NN-jss-experimento-b.ipynb` | OE3/OE4 — C1 vs C2 vs C3 y atribución del error |
+| — | *(pendiente)* `NN-jss-experimento-b.ipynb` | OE3/OE4 — C1 vs C2 vs C3 y atribución del error (el 07 cubre solo el motor de corrida y la corrida de humo) |
 
 Los notebooks pendientes no tienen número reservado: cada uno toma el siguiente número libre
 al crearse.
@@ -409,15 +417,21 @@ Tres convenciones que más se rompen sin querer:
 
 ## 8. Estado
 
-**El experimento no ha empezado.** El corpus está descargado, auditado y la muestra elegida;
+**Los experimentos no han empezado.** El corpus está descargado, auditado y la muestra elegida;
 las herramientas de construcción del conjunto de referencia están implementadas y con test.
 Falta la anotación humana, y con ella todo lo demás.
+
+Existe además el andamiaje del Experimento B: el motor de corrida (`afg experiment b`), la
+línea base C1 con su ajuste (`afg c1 tune`, `afg c1 ask`) y una corrida de humo de desarrollo
+sobre ES2015, cuyas cifras no entran en resultados (ADR 0005). Las corridas reales están en
+pausa hasta fijar la versión de OpenKOS (#94), contar con su lector del bundle y la corrida de
+extracción (#95), terminar el banco de preguntas y la sesión de adjudicación.
 
 | | Objetivo | Estado | Curso |
 |---|---|---|---|
 | **OE1** | Conjunto de referencia con relaciones entre reuniones | Herramientas listas; falta anotar | AFG1 → AFG2 |
 | **OE2** | Calidad de la extracción automática | No empezado | AFG2 |
-| **OE3** | Comparación C1 / C2 / C3 | No empezado | AFG2 |
+| **OE3** | Comparación C1 / C2 / C3 | Motor de corrida y C1 listos; C2 y C3 pendientes de OpenKOS | AFG2 |
 | **OE4** | Atribución del error a su etapa de origen | Código listo; nada que correr | AFG3 |
 
 Lo pendiente, por prioridad, está en los **issues de GitHub**.

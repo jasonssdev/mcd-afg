@@ -409,6 +409,20 @@ escribes un `stratum`**: escribes texto dentro de una fila que ya existe. Si el 
 a necesitar regenerarse, `questions-init` se niega a hacerlo mientras haya preguntas escritas,
 salvo `--force` — que destruye el banco, igual que `prepare --force` en las Tareas A y B.
 
+Antes de abrir el PR del banco (o de un estrato) se corre la revisión del banco, que no
+ejecuta nada y revisa fila por fila sin detenerse en el primer error:
+
+```bash
+uv run afg gold questions-check              # tolera un banco a medias
+uv run afg gold questions-check --complete   # solo al cierre: exige las 100 filas validadas
+```
+
+Comprueba, en cada fila ya validada, que la serie sea una del estudio, que la evidencia esté
+bien formada y pertenezca a esa serie, que la respuesta y la evidencia estén presentes (y que
+una E4 no lleve ninguna de las dos), y que el validador no sea el autor. Las filas aún sin
+validar quedan como pendientes y el mínimo por estrato es un aviso; con `--complete` ambos
+pasan a ser errores. Sale con código 1 si hay errores: se corrigen antes del PR.
+
 Hay además un ejemplo de referencia, uno por estrato, en
 [`../../../data/processed/questions/_plantilla-banco-preguntas.csv`](../../../data/processed/questions/_plantilla-banco-preguntas.csv).
 **Su `id` lleva prefijo de serie** (`ES2015.q001`); el banco real que genera `questions-init`

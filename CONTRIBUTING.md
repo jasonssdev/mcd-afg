@@ -224,7 +224,7 @@ configuración. Las etiquetas de anotación (`introduce`, `reafirma`, `refina`,
 `revierte`, `reemplaza`, `no_relacionada`) se mantienen en español dentro del
 código: son el conjunto de etiquetas que define la tesis. La propuesta
 (`docs/propuesta.md`) es el texto original y no se edita; sus revisiones
-pendientes se siguen en el issue #20.
+pendientes se siguen en los issues abiertos del repositorio.
 
 ### 7.5 Cifras
 
