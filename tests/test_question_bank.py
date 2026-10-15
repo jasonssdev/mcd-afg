@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -28,13 +29,14 @@ def write(tmp_path: Path, *rows: str) -> Path:
     return path
 
 
-def load(path: Path, *, minimum: int = 0, complete: bool = False):  # type: ignore[no-untyped-def]
+def load(path: Path, *, minimum: int = 0, complete: bool = False, **extra):  # type: ignore[no-untyped-def]
     return load_question_bank(
         path,
         study_series=SERIES,
         meeting_letters=LETTERS,
         min_per_stratum=minimum,
         require_complete=complete,
+        **extra,
     )
 
 
@@ -178,20 +180,42 @@ def test_real_empty_bank_is_all_pending() -> None:
     assert not report.has_errors
 
 
-def test_load_experiment_questions_accepts_the_bank(tmp_path: Path) -> None:
-    path = write(tmp_path, GOOD_E1, "q003,,E2_current_state,,,,gm,,")
-    # Configured series do not include the fixture series, so use a real one.
-    path.write_text(
-        HEADER + "q001,ES2015,E1_point_fact,How much?,Twelve,ES2015a:d1,gm,gv,\n",
-        encoding="utf-8",
-    )
+_EVALUATION_ROW = "q001,ES2016,E1_point_fact,How much?,Twelve,ES2016a:ES2016a.x.1,gm,gv,\n"
+
+
+def _known_acts(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """One transcript for ES2016a holding the dialogue act the evaluation rows cite."""
+    transcripts = tmp_path / "transcripts"
+    transcripts.mkdir()
+    turn = {
+        "meeting_id": "ES2016a",
+        "turn_index": 0,
+        "speaker": "A",
+        "role": "PM",
+        "text": "hello",
+        "start": 0.0,
+        "end": 1.0,
+        "char_start": 0,
+        "char_end": 5,
+        "dialogue_act_ids": ["ES2016a.x.1"],
+    }
+    (transcripts / "ES2016a.jsonl").write_text(json.dumps(turn) + "\n", encoding="utf-8")
+    monkeypatch.setattr("afg.experiments.question_bank.TRANSCRIPTS_DIR", transcripts)
+
+
+def test_load_experiment_questions_accepts_the_bank(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _known_acts(monkeypatch, tmp_path)
+    path = tmp_path / "banco.csv"
+    path.write_text(HEADER + _EVALUATION_ROW + "q003,,E2_current_state,,,,gm,,\n", encoding="utf-8")
     questions = load_experiment_questions(path)
     assert [q.id for q in questions] == ["q001"]
     assert load_experiment_questions(path, limit=1)[0].id == "q001"
 
 
 def test_load_experiment_questions_refuses_blocking_errors(tmp_path: Path) -> None:
-    path = write(tmp_path, "q001,ES2015,E1_point_fact,,A,ES2015a:d1,gm,gv,")
+    path = write(tmp_path, "q001,ES2016,E1_point_fact,,A,ES2016a:d1,gm,gv,")
     with pytest.raises(QuestionBankError, match="q001"):
         load_experiment_questions(path)
 
@@ -224,7 +248,7 @@ def test_blank_rows_are_pending_while_the_stratum_is_below_its_minimum(tmp_path:
     path = write(tmp_path, GOOD_E1, "q003,,E1_point_fact,,,,gm,,")
     report = load(path, minimum=2, complete=True)
     assert report.optional_ids == ()
-    assert report.pending_ids == ()  # complete mode reports them as errors instead
+    assert report.pending_ids == ("q003",)  # still pending, and also a blocking error
     assert any(r == "q003" and s is Severity.ERROR for r, s, _ in problems(report))
     assert any("mínimo" in m for _, s, m in problems(report) if s is Severity.ERROR)
 
@@ -238,12 +262,101 @@ def test_a_written_but_unvalidated_row_is_never_optional(tmp_path: Path) -> None
     assert any(r == "q003" and s is Severity.ERROR for r, s, _ in problems(complete))
 
 
-def test_optional_rows_are_ignored_by_the_experiment_loader(tmp_path: Path) -> None:
+def test_optional_rows_are_ignored_by_the_experiment_loader(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _known_acts(monkeypatch, tmp_path)
     path = tmp_path / "banco.csv"
-    path.write_text(
-        HEADER
-        + "q001,ES2015,E1_point_fact,How much?,Twelve,ES2015a:d1,gm,gv,\n"
-        + "q002,,E1_point_fact,,,,gm,,\n",
-        encoding="utf-8",
-    )
+    path.write_text(HEADER + _EVALUATION_ROW + "q002,,E1_point_fact,,,,gm,,\n", encoding="utf-8")
     assert [q.id for q in load_experiment_questions(path)] == ["q001"]
+
+
+# --- stricter checks (questions-check) -------------------------------------------------------
+
+
+def _errors(report) -> list[str]:  # type: ignore[no-untyped-def]
+    return [m for _, s, m in problems(report) if s is Severity.ERROR]
+
+
+def test_complete_mode_counts_unvalidated_rows_as_pending(tmp_path: Path) -> None:
+    path = write(
+        tmp_path, GOOD_E1, "q003,,E2_current_state,,,,gm,,", "q004,,E2_current_state,,,,gm,,"
+    )
+    report = load(path, complete=True)
+    assert report.pending_ids == ("q003", "q004")
+
+
+def test_blank_unvalidated_row_in_complete_mode_says_it_is_unwritten(tmp_path: Path) -> None:
+    report = load(write(tmp_path, "q003,,E2_current_state,,,,gm,,"), complete=True)
+    assert any("sin escribir" in m for m in _errors(report))
+    assert not any("validated_by" in m for m in _errors(report))
+
+
+def test_written_unvalidated_row_in_complete_mode_still_asks_for_validation(
+    tmp_path: Path,
+) -> None:
+    report = load(write(tmp_path, "q003,ES2015,E2_current_state,Q?,,,gm,,"), complete=True)
+    assert any("sin validar" in m for m in _errors(report))
+
+
+def test_comma_separated_acts_are_rejected_with_the_right_separators(tmp_path: Path) -> None:
+    report = load(write(tmp_path, 'q001,ES2015,E1_point_fact,Q?,A,"ES2015a:x.1,x.2",gm,gv,'))
+    message = " ".join(_errors(report))
+    assert report.usable == ()
+    assert "`,`" in message and "`;`" in message and "`|`" in message
+    assert "ES2015a:" in message
+
+
+def test_evidence_without_meeting_gets_a_spanish_message_with_an_example(
+    tmp_path: Path,
+) -> None:
+    report = load(write(tmp_path, "q001,ES2015,E1_point_fact,Q?,A,d1;d2,gm,gv,"))
+    message = " ".join(_errors(report))
+    assert "malformed" not in message
+    assert "reunión" in message and "ES2015a:" in message
+
+
+def test_development_series_is_blocking_when_configured(tmp_path: Path) -> None:
+    path = write(tmp_path, GOOD_E1, GOOD_E4)
+    report = load(path, development_series=frozenset({"ES2015"}))
+    assert [q.id for q in report.usable] == ["q002"]
+    message = " ".join(m for r, s, m in problems(report) if r == "q001" and s is Severity.ERROR)
+    assert "desarrollo" in message and "ADR 0005" in message and "#32" in message
+
+
+def test_invalid_or_self_validator_lists_valid_initials(tmp_path: Path) -> None:
+    path = write(
+        tmp_path,
+        "q001,ES2015,E1_point_fact,Q?,A,ES2015a:d1,gm,jss,",
+        "q002,ES2015,E1_point_fact,Q?,A,ES2015a:d1,gm,pepe,",
+    )
+    report = load(path, valid_validators=("gm", "gv"))
+    assert report.usable == ()
+    for row in ("q001", "q002"):
+        message = " ".join(m for r, s, m in problems(report) if r == row and s is Severity.ERROR)
+        assert "gm, gv" in message
+        assert "jss" not in message.split("válidas")[-1]
+
+
+def test_valid_validator_passes(tmp_path: Path) -> None:
+    report = load(write(tmp_path, GOOD_E1), valid_validators=("gm", "gv"))
+    assert report.issues == ()
+
+
+def test_unknown_dialogue_act_is_blocking_and_names_the_id(tmp_path: Path) -> None:
+    path = write(tmp_path, "q001,ES2015,E1_point_fact,Q?,A,ES2015a:d1;nope.7,gm,gv,")
+    report = load(path, act_ids_of=lambda meeting: frozenset({"d1", "d2"}))
+    message = " ".join(_errors(report))
+    assert report.usable == ()
+    assert "nope.7" in message and "'d1'" not in message
+    assert "uv run afg gold evidencia" in message
+
+
+def test_missing_transcripts_give_one_warning_not_a_crash(tmp_path: Path) -> None:
+    path = write(tmp_path, GOOD_E1, "q002,ES2015,E1_point_fact,Q?,A,ES2015b:d9,gm,gv,")
+    report = load(path, act_ids_of=lambda meeting: None)
+    assert not report.has_errors
+    assert len(report.usable) == 2
+    warnings = [m for _, s, m in problems(report) if s is Severity.WARNING]
+    assert len(warnings) == 1
+    assert "uv run afg gold setup" in warnings[0]

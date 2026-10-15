@@ -11,11 +11,15 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Any
 
 import typer
+import typer.rich_utils as typer_rich_utils
 from rich.console import Console
 from rich.markup import escape
 
 if TYPE_CHECKING:
+    from collections.abc import Collection, Sequence
+
     from afg.annotation.workspace import AnnotationPlan, WorkspacePaths
+    from afg.conditions.c1_chunking import FrozenTurn
 
 from afg.annotation.blocking import (
     BLOCKER_VERSION,
@@ -125,8 +129,8 @@ from afg.evaluation.judge_calibration_worksheet import (
     write_worksheet,
 )
 from afg.experiments.question_bank import (
+    QuestionBankIssue,
     QuestionBankReport,
-    format_issue,
     is_question_bank,
     load_configured_question_bank,
 )
@@ -159,33 +163,49 @@ from afg.shared.skills import SkillAssetsError, link_skill, sync_assets, verify_
 console = Console()
 logger = get_logger(__name__)
 
+# Section titles of ``--help`` in Spanish (typer reads these module constants at render time).
+typer_rich_utils.COMMANDS_PANEL_TITLE = "Comandos"
+typer_rich_utils.OPTIONS_PANEL_TITLE = "Opciones"
+typer_rich_utils.ARGUMENTS_PANEL_TITLE = "Argumentos"
+
+_PANEL_ANNOTATORS = "Para anotadores"
+_PANEL_MAINTENANCE = "Para mantenimiento (mantenedor)"
+
 app = typer.Typer(
     name="afg",
-    help="Evaluation harness: document RAG vs. compiled decision representations "
-    "over the AMI Meeting Corpus (thesis section 5).",
+    help="Banco de pruebas de la tesis: RAG sobre documentos frente a representaciones "
+    "compiladas de decisiones, sobre el corpus de reuniones AMI. Quien anota usa solo "
+    "`afg gold` (ver `afg gold --help`).",
     no_args_is_help=True,
 )
-corpus_app = typer.Typer(help="AMI corpus download and paso-cero inventory (thesis section 5.0).")
-biblio_app = typer.Typer(help="Bibliography coverage and stats (bibliography/refs.bib).")
-gold_app = typer.Typer(help="OE1: build the gold decision/relation set (thesis section 3).")
+corpus_app = typer.Typer(help="Descarga e inventario del corpus AMI (paso cero, sección 5.0).")
+biblio_app = typer.Typer(
+    help="Cobertura y estadísticas de la bibliografía (bibliography/refs.bib)."
+)
+gold_app = typer.Typer(
+    help="Conjunto de referencia de OE1: anotación de decisiones y relaciones. Quien anota "
+    "usa los comandos de «Para anotadores»; el resto es del mantenedor."
+)
 judge_app = typer.Typer(
     help="Selección del modelo juez: preguntas, respuestas y calibración (issue #82)."
 )
 c1_app = typer.Typer(help="C1 (RAG sobre documentos): ajuste de la segmentación y de K (ADR 0005).")
-experiment_app = typer.Typer(help="OE2/OE3: run Experiment A / Experiment B (thesis section 3).")
-skills_app = typer.Typer(help="Install, verify and link skills under .agents/skills/.")
+experiment_app = typer.Typer(
+    help="OE2/OE3: corre el Experimento A y el Experimento B (tesis, sección 3)."
+)
+skills_app = typer.Typer(help="Instala, verifica y enlaza las skills de .agents/skills/.")
 
-app.add_typer(corpus_app, name="corpus")
-app.add_typer(biblio_app, name="biblio")
 app.add_typer(gold_app, name="gold")
-app.add_typer(judge_app, name="judge")
-app.add_typer(c1_app, name="c1")
-app.add_typer(experiment_app, name="experiment")
-app.add_typer(skills_app, name="skills")
+app.add_typer(corpus_app, name="corpus", rich_help_panel=_PANEL_MAINTENANCE)
+app.add_typer(biblio_app, name="biblio", rich_help_panel=_PANEL_MAINTENANCE)
+app.add_typer(judge_app, name="judge", rich_help_panel=_PANEL_MAINTENANCE)
+app.add_typer(c1_app, name="c1", rich_help_panel=_PANEL_MAINTENANCE)
+app.add_typer(experiment_app, name="experiment", rich_help_panel=_PANEL_MAINTENANCE)
+app.add_typer(skills_app, name="skills", rich_help_panel=_PANEL_MAINTENANCE)
 
 
 @app.callback()
-def main(log_level: str = typer.Option("INFO", help="Logging level.")) -> None:
+def main(log_level: str = typer.Option("INFO", help="Nivel de registro (log).")) -> None:
     configure_logging(log_level)
     ensure_dirs()
 
@@ -253,17 +273,19 @@ def skills_link(
 
 
 def _print_corpus_licence() -> None:
+    """Tell the person, in Spanish, what is about to be downloaded and under which terms."""
     cfg = load_corpus_config()
     licence = cfg["corpus"]["licence"]
+    annotations = cfg["corpus"]["annotations"]
     console.print(
-        f"[bold]Licence:[/bold] {licence['name']} "
-        f"(archive published {licence['archive_published']}; the licence page states no "
-        f"effective date)"
+        f"[bold]Licencia:[/bold] el corpus AMI se publica con la licencia {licence['name']}: "
+        "se puede usar citando la fuente. Texto de la licencia: "
+        f"{licence['licence_page']}"
     )
-    console.print(licence["note"].strip())
-    console.print(f"[bold]Source:[/bold] {cfg['corpus']['annotations']['url']}")
+    console.print(f"[bold]Fuente:[/bold] {annotations['url']}")
     console.print(
-        f"[bold]Approximate size:[/bold] {cfg['corpus']['annotations']['approximate_size_mb']} MB"
+        f"[bold]Tamaño:[/bold] la descarga pesa unos {annotations['approximate_size_mb']} MB; "
+        f"ya extraído, el corpus ocupa unos {annotations['extracted_size_mb']} MB en disco."
     )
 
 
@@ -276,17 +298,19 @@ def _confirm_and_download_corpus(yes: bool) -> None:
     """
     _print_corpus_licence()
 
-    if not yes and not typer.confirm("Proceed with download?"):
-        console.print("Aborted.")
+    if not yes and not typer.confirm("¿Descargar el corpus ahora?"):
+        console.print("Cancelado: no se descargó nada.")
         raise typer.Exit(code=1)
 
     try:
         result = download_annotations(AMI_DIR)
     except DownloadError as exc:
-        console.print(f"[bold red]Download failed:[/bold red] {exc}")
+        console.print(f"[bold red]La descarga falló:[/bold red] {exc}")
         raise typer.Exit(code=1) from exc
 
-    console.print(f"Downloaded {result.bytes_downloaded} bytes, extracted to {result.extracted_to}")
+    console.print(
+        f"Descargados {result.bytes_downloaded} bytes y extraídos en {result.extracted_to}"
+    )
 
 
 @corpus_app.command("download")
@@ -482,9 +506,9 @@ def _refuse_or_warn_if_series_annotated(series: str, *, force: bool) -> None:
     )
 
 
-@gold_app.command("build")
+@gold_app.command("build", rich_help_panel=_PANEL_MAINTENANCE)
 def gold_build(
-    series: str = typer.Option(..., "--series", help="AMI series id, e.g. IS1004."),
+    series: str = typer.Option(..., "--series", help="Serie de AMI, p. ej. IS1004."),
     force: bool = typer.Option(
         False,
         "--force",
@@ -492,15 +516,17 @@ def gold_build(
         "Desalinea `afg gold validate` para todo el mundo.",
     ),
 ) -> None:
-    """Build the Task-A working file for a series (manual de anotacion secciones 2, 3).
+    """(Mantenedor) Genera el archivo base de la Tarea A de una serie (manual, secciones 2 y 3).
 
-    Writes ``data/processed/decisions/<series>.decisions.csv``. IMPORTANT: this is a
-    working file for a human annotator, not a finished gold set. ``machine_flags`` are
-    triage hints only, never a verdict -- ``status``, ``decision_object``,
-    ``decision_content``, ``annotator``, and ``notes`` are always written empty and must be
-    filled in by a human (see ``afg.annotation.goldset`` module docstring). Refuses to run
-    at all if a derived ``<series>.decisions.<iniciales>.csv`` or
-    ``<series>.candidates.<iniciales>.csv`` already holds annotation, unless ``--force``.
+    Escribe ``data/processed/decisions/<serie>.decisions.csv``. Es un
+    archivo de trabajo para quien anota, no un conjunto de referencia
+    terminado: ``machine_flags`` son solo pistas de triaje, nunca un
+    veredicto, y ``status``, ``decision_object``, ``decision_content``,
+    ``annotator`` y ``notes`` salen siempre vacías para que las llene una
+    persona. Se niega a correr si algún
+    ``<serie>.decisions.<iniciales>.csv`` o
+    ``<serie>.candidates.<iniciales>.csv`` derivado ya tiene anotación,
+    salvo con ``--force``.
     """
     from afg.annotation.goldset import build_gold_decisions, write_gold_decisions_csv
 
@@ -556,9 +582,9 @@ def gold_build(
     console.print(f"Wrote {out_path}")
 
 
-@gold_app.command("link")
+@gold_app.command("link", rich_help_panel=_PANEL_MAINTENANCE)
 def gold_link() -> None:
-    """Generate cross-meeting relation annotation candidates (thesis sections 3, 5.1)."""
+    """(Mantenedor) Pendiente: candidatos de relación entre reuniones (tesis, secciones 3 y 5.1)."""
     console.print(
         "[yellow]Requires a built gold decision set (`afg gold build`) as input. "
         "Once decisions exist, use afg.annotation.linking.chronological_candidate_pairs "
@@ -567,14 +593,15 @@ def gold_link() -> None:
     raise typer.Exit(code=2)
 
 
-@gold_app.command("agreement")
+@gold_app.command("agreement", rich_help_panel=_PANEL_MAINTENANCE)
 def gold_agreement(
-    series: str = typer.Option(..., "--series", help="AMI series id, e.g. IS1004."),
+    series: str = typer.Option(..., "--series", help="Serie de AMI, p. ej. IS1004."),
 ) -> None:
-    """Compute Cohen's kappa for existence/type/direction, separately (manual section 6).
+    """(Mantenedor) Calcula el kappa de Cohen de existencia, tipo y dirección (manual, sección 6).
 
-    Reads every ``data/processed/relations/<series>.candidates.<initials>.csv`` file
-    (one per independent annotator) and writes ``reports/tables/<series>.agreement.csv``.
+    Lee cada ``data/processed/relations/<serie>.candidates.<iniciales>.csv``
+    (uno por anotador independiente) y escribe
+    ``reports/tables/<serie>.agreement.csv``.
     """
     from afg.annotation.agreement import (
         AgreementInputError,
@@ -641,46 +668,177 @@ def gold_agreement(
     console.print(f"Wrote {out_path}")
 
 
-@gold_app.command("evidence")
+@gold_app.command("evidence", hidden=True)
 def gold_evidence(
-    meeting: str = typer.Option(..., "--meeting", help="AMI meeting id, e.g. IS1004d."),
-    term: str = typer.Option(..., "--term", help="Word to search for (case-insensitive)."),
+    meeting: Annotated[
+        str | None, typer.Option("--meeting", help="Reunión, p. ej. ES2015a.")
+    ] = None,
+    term: Annotated[str | None, typer.Option("--term", help="Palabra o frase a buscar.")] = None,
 ) -> None:
-    """Find a term in a meeting's transcript, with context (manual section 3.3).
+    """Nombre anterior de `afg gold evidencia`, que ahora cubre también este uso."""
+    console.print(
+        "[dim]Este comando se llama ahora `uv run afg gold evidencia`; se ejecuta ese.[/dim]"
+    )
+    gold_evidencia(meeting=meeting, term=term, turns=None, decision=None)
 
-    The tool an annotator reaches for once a decision row's ``evidence_da_count`` is 0:
-    searches every speaker's ``words/<meeting>.<speaker>.words.xml`` for ``term`` as a
-    whole word token and prints each hit with surrounding context.
+
+@gold_app.command("evidencia", rich_help_panel=_PANEL_ANNOTATORS)
+def gold_evidencia(
+    meeting: Annotated[
+        str | None, typer.Option("--meeting", help="Reunión de AMI, p. ej. ES2015a.")
+    ] = None,
+    term: Annotated[
+        str | None,
+        typer.Option(
+            "--term", help="Palabra o frase a buscar en la reunión (sin distinguir mayúsculas)."
+        ),
+    ] = None,
+    turns: Annotated[
+        str | None,
+        typer.Option("--turnos", help="Turno o rango de turnos de esa reunión, p. ej. 40 o 40-46."),
+    ] = None,
+    decision: Annotated[
+        str | None,
+        typer.Option(
+            "--decision",
+            help="Decisión ya adjudicada (p. ej. ES2015a.d01): su evidencia lista para pegar.",
+        ),
+    ] = None,
+) -> None:
+    """Busca en la transcripción de una reunión (Tarea A y banco de preguntas).
+
+    \b
+    Cuándo usarlo:
+    1. Tarea A, si `evidence_text` no alcanza: busca una palabra con su
+       contexto. Ejemplo: --meeting ES2015a --term "remote" (con
+       --turnos 40-46 para ver un tramo).
+    2. Banco de preguntas, para llenar `reference_evidence`: cada turno
+       trae quién habló, el texto y el valor para pegar en la celda.
+       Si la decisión ya está adjudicada, --decision ES2015a.d01 lo da
+       directo.
+
+    Necesita las transcripciones: `uv run afg gold setup`.
     """
-    from afg.annotation.goldset import MeetingNotFoundError, find_term_occurrences
-
-    settings = get_settings()
-    ami_root = settings.ami_root or AMI_DIR
-    if not ami_root.exists():
-        console.print(
-            f"[bold red]AMI corpus not found at {ami_root}. "
-            "Run `uv run afg corpus download` first.[/bold red]"
-        )
-        raise typer.Exit(code=1)
+    from afg.annotation.evidence_lookup import (
+        EvidenceLookupError,
+        find_turns,
+        format_evidence,
+        parse_turn_range,
+    )
 
     try:
-        hits = find_term_occurrences(ami_root, meeting, term)
-    except MeetingNotFoundError as exc:
+        if decision:
+            _evidencia_por_decision(decision)
+            return
+        if not meeting or not (term or turns):
+            console.print(
+                "[bold red]Indica una forma de búsqueda:[/bold red] `--decision ES2015a.d01`, o "
+                '`--meeting ES2015a` con `--term "palabra"` y/o `--turnos 40-46`.'
+            )
+            raise typer.Exit(code=1)
+        found = find_turns(
+            meeting,
+            term=term,
+            turn_range=parse_turn_range(turns) if turns else None,
+            transcripts_dir=TRANSCRIPTS_DIR,
+        )
+    except EvidenceLookupError as exc:
         console.print(f"[bold red]{exc}[/bold red]")
         raise typer.Exit(code=1) from exc
 
-    if not hits:
-        console.print(f"[yellow]No occurrences of {term!r} found for meeting {meeting!r}.[/yellow]")
+    if not found:
+        what = f"{term!r}" if term else f"los turnos {turns}"
+        console.print(f"[yellow]No hay turnos de {meeting} con {what}.[/yellow]")
         raise typer.Exit(code=1)
 
-    console.print(f"[bold]{len(hits)} occurrence(s) of {term!r} in {meeting}:[/bold]")
-    for hit in hits:
-        try:
-            source = hit.source_path.relative_to(ami_root)
-        except ValueError:
-            source = hit.source_path
-        console.print(f"\n[bold]{source}[/bold], near {hit.word_id} (speaker {hit.speaker})")
-        console.print(f"  {hit.context}")
+    console.print(f"[bold]{len(found)} turno(s) de {meeting}:[/bold]")
+    for turn in found:
+        _print_turn(turn)
+        console.print(
+            f"  para pegar: {format_evidence(meeting, [turn])}", markup=False, soft_wrap=True
+        )
+    if len(found) > 1:
+        console.print("\n[bold]Todos los turnos juntos:[/bold]")
+        console.print(f"  {format_evidence(meeting, found)}", markup=False, soft_wrap=True)
+    console.print(
+        "\nEn la celda `reference_evidence` de una pregunta se pega solo lo que respalda la "
+        "respuesta; varias reuniones se separan con `|`.",
+        markup=False,
+    )
+
+
+def _print_turn(turn: FrozenTurn, only: Collection[str] | None = None) -> None:
+    console.print(f"\n[bold]turno {turn.turn_index}[/bold] ({turn.role})")
+    console.print(f"  {turn.text}", markup=False, soft_wrap=True)
+    shown = [a for a in turn.dialogue_act_ids if only is None or a in only]
+    console.print(f"  actos: {'; '.join(shown)}", markup=False, soft_wrap=True)
+
+
+def _evidencia_por_decision(decision: str) -> None:
+    from afg.annotation.evidence_lookup import (
+        EvidenceLookupError,
+        format_evidence,
+        turns_with_acts,
+    )
+    from afg.annotation.goldset import summlink_dialogue_act_ids
+    from afg.evaluation.reference import (
+        DecisionNotFoundError,
+        NotAdjudicatedError,
+        adjudicated_decision_evidence,
+    )
+
+    meeting_id, _, _ = decision.partition(".")
+    series = meeting_id[:-1]
+    path = GOLD_DECISIONS_DIR / f"{series}.decisions.adjudicated.csv"
+    if not path.is_file():
+        console.print(
+            f"[bold red]La serie {series} aún no tiene decisiones adjudicadas "
+            f"({_short(path)}).[/bold red] Mientras tanto busca en la transcripción: "
+            f'`uv run afg gold evidencia --meeting {meeting_id} --term "palabra"`.'
+        )
+        raise typer.Exit(code=1)
+    if not (AMI_DIR.exists() and TRANSCRIPTS_DIR.exists()):
+        console.print(
+            "[bold red]Falta el corpus o las transcripciones.[/bold red] "
+            "Corre `uv run afg gold setup`."
+        )
+        raise typer.Exit(code=1)
+    try:
+        acts = summlink_dialogue_act_ids(AMI_DIR, meeting_id)
+        info = adjudicated_decision_evidence(
+            path, decision, sentence_acts=acts, transcripts_dir=TRANSCRIPTS_DIR
+        )
+        if info.final_status != "decision":
+            console.print(
+                f"[bold red]{decision} quedó adjudicada como `{info.final_status}`, no como "
+                "decisión:[/bold red] no sirve de base para una pregunta."
+            )
+            raise typer.Exit(code=1)
+        if not info.act_ids:
+            console.print(
+                f"[bold red]No se encontró evidencia automática para {decision}.[/bold red] "
+                f"Búscala a mano: `uv run afg gold evidencia --meeting {meeting_id} --term "
+                '"palabra"`.'
+            )
+            raise typer.Exit(code=1)
+        found = turns_with_acts(meeting_id, info.act_ids, transcripts_dir=TRANSCRIPTS_DIR)
+    except (EvidenceLookupError, DecisionNotFoundError, NotAdjudicatedError, ValueError) as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+
+    console.print(f"[bold]{decision}[/bold]: {info.final_object} — {info.final_content}")
+    console.print(f"Evidencia en {len(found)} turno(s) de {meeting_id}:")
+    for turn in found:
+        _print_turn(turn, set(info.act_ids))
+    console.print("\n[bold]Para pegar en `reference_evidence`:[/bold]")
+    console.print(
+        f"  {format_evidence(meeting_id, found, only=info.act_ids)}", markup=False, soft_wrap=True
+    )
+    console.print(
+        "\nRevisa que los turnos de arriba respalden de verdad tu respuesta de referencia; "
+        "si sobra alguno, quita sus ids de la celda.",
+        markup=False,
+    )
 
 
 def _decisions_for_series_or_exit(ami_root: Path, series: str) -> list[Decision]:
@@ -702,18 +860,18 @@ def _decisions_for_series_or_exit(ami_root: Path, series: str) -> list[Decision]
     return decisions
 
 
-@gold_app.command("candidates")
+@gold_app.command("candidates", rich_help_panel=_PANEL_MAINTENANCE)
 def gold_candidates(
-    series: str = typer.Option(..., "--series", help="AMI series id, e.g. IS1004."),
+    series: str = typer.Option(..., "--series", help="Serie de AMI, p. ej. IS1004."),
     threshold: float = typer.Option(
         0.30,
         "--threshold",
-        help="Overlap-coefficient blocking threshold (thesis manual section 4).",
+        help="Umbral de bloqueo por coeficiente de solapamiento (manual de la tesis, sección 4).",
     ),
     min_overlap: int = typer.Option(
         2,
         "--min-overlap",
-        help="Minimum absolute shared-token count (|A & B|), alongside --threshold.",
+        help="Mínimo absoluto de palabras compartidas (|A & B|), junto con --threshold.",
     ),
     force: bool = typer.Option(
         False,
@@ -722,13 +880,15 @@ def gold_candidates(
         "Desalinea `afg gold validate` para todo el mundo.",
     ),
 ) -> None:
-    """Generate cross-meeting candidate decision pairs for human adjudication (Tarea B).
+    """(Mantenedor) Genera el archivo base de la Tarea B: pares candidatos entre reuniones.
 
-    Provisional: candidates are built from raw abstractive DECISIONS sentences
-    (``afg.annotation.blocking.decisions_from_abstractive``), not yet P3's normalised gold
-    decisions. Writes ``data/processed/relations/<series>.candidates.csv``. Refuses to run
-    at all if a derived ``<series>.decisions.<iniciales>.csv`` or
-    ``<series>.candidates.<iniciales>.csv`` already holds annotation, unless ``--force``.
+    Provisional: los candidatos salen de las oraciones DECISIONS del resumen
+    abstractivo (``afg.annotation.blocking.decisions_from_abstractive``),
+    todavía no de las decisiones normalizadas del conjunto de referencia.
+    Escribe ``data/processed/relations/<serie>.candidates.csv``. Se niega a
+    correr si algún ``<serie>.decisions.<iniciales>.csv`` o
+    ``<serie>.candidates.<iniciales>.csv`` derivado ya tiene anotación,
+    salvo con ``--force``.
     """
     _refuse_or_warn_if_series_annotated(series, force=force)
 
@@ -750,35 +910,37 @@ def gold_candidates(
     console.print(f"Wrote {out_path}")
 
 
-@gold_app.command("recall-sample")
+@gold_app.command("recall-sample", rich_help_panel=_PANEL_MAINTENANCE)
 def gold_recall_sample(
-    series: str = typer.Option(..., "--series", help="AMI series id, e.g. IS1004."),
-    n: int = typer.Option(50, "--n", help="Number of rejected pairs to sample."),
-    seed: int = typer.Option(42, "--seed", help="Random seed for a reproducible sample."),
+    series: str = typer.Option(..., "--series", help="Serie de AMI, p. ej. IS1004."),
+    n: int = typer.Option(50, "--n", help="Cantidad de pares rechazados a muestrear."),
+    seed: int = typer.Option(42, "--seed", help="Semilla para que la muestra sea reproducible."),
     threshold: float = typer.Option(
         0.30,
         "--threshold",
-        help="Overlap-coefficient blocking threshold (thesis manual section 4).",
+        help="Umbral de bloqueo por coeficiente de solapamiento (manual de la tesis, sección 4).",
     ),
     min_overlap: int = typer.Option(
         2,
         "--min-overlap",
-        help="Minimum absolute shared-token count (|A & B|), alongside --threshold.",
+        help="Mínimo absoluto de palabras compartidas (|A & B|), junto con --threshold.",
     ),
     force: bool = typer.Option(
         False,
         "--force",
-        help="Overwrite an existing sample. Invalidates any annotation made on it.",
+        help="Sobrescribe una muestra existente. Invalida la anotación hecha sobre ella.",
     ),
 ) -> None:
-    """Sample rejected pairs for the blocker recall check (Tarea C).
+    """(Mantenedor) Muestrea pares rechazados para la Tarea C (recall del bloqueador).
 
-    Provisional: sampled from raw abstractive DECISIONS sentences, same caveat as
-    ``afg gold candidates``. Writes ``data/processed/relations/<series>.recall-sample.csv``.
+    Provisional: la muestra sale de las oraciones DECISIONS del resumen
+    abstractivo, con la misma salvedad que ``afg gold candidates``. Escribe
+    ``data/processed/relations/<serie>.recall-sample.csv``.
 
-    Refuses to overwrite an existing sample unless ``--force`` is given: the sample is
-    drawn once with a fixed seed, and one regenerated after seeing results is no longer
-    a valid estimate (docs/anotacion/asignacion/tareas-jss.md section 5).
+    Se niega a sobrescribir una muestra existente salvo con ``--force``: la
+    muestra se saca una sola vez con semilla fija, y una regenerada tras ver
+    resultados deja de ser una estimación válida
+    (docs/anotacion/asignacion/tareas-jss.md, sección 5).
     """
     out_path = GOLD_RELATIONS_DIR / f"{series}.recall-sample.csv"
     if out_path.exists() and not force:
@@ -842,7 +1004,7 @@ def _short(path: Path) -> str:
         return str(path)
 
 
-@gold_app.command("setup")
+@gold_app.command("setup", rich_help_panel=_PANEL_ANNOTATORS)
 def gold_setup(
     annotator: str = typer.Option(..., "--annotator", help="Iniciales del anotador, p. ej. gv."),
     yes: bool = typer.Option(
@@ -853,12 +1015,13 @@ def gold_setup(
 
     Corre, en orden, saltando lo que ya esté hecho: descarga el corpus AMI (pide
     confirmación explícita de la licencia CC BY 4.0 y del tamaño de la descarga, salvo
-    que pases --yes), genera las 171 transcripciones, y prepara tu espacio de trabajo --
-    nunca con --force, así que jamás borra anotación ya hecha. Termina diciendo
+    que pases --yes), genera las 171 transcripciones y prepara tu espacio de trabajo.
+    Nunca usa --force, así que jamás borra anotación ya hecha. Termina diciendo
     exactamente qué archivo abrir primero.
     """
+    from afg.annotation.progress import NextKind
     from afg.annotation.setup import CorpusDownloadDeclinedError, run_setup
-    from afg.annotation.workspace import TaskKind, UnknownAnnotatorError
+    from afg.annotation.workspace import UnknownAnnotatorError
 
     plan = _plan_or_exit()
 
@@ -866,7 +1029,7 @@ def gold_setup(
         _print_corpus_licence()
         if yes:
             return True
-        return typer.confirm("Proceed with download?")
+        return typer.confirm("¿Descargar el corpus ahora?")
 
     try:
         outcome = run_setup(
@@ -888,7 +1051,7 @@ def gold_setup(
         console.print(f"[bold red]{exc}[/bold red]")
         raise typer.Exit(code=1) from exc
     except DownloadError as exc:
-        console.print(f"[bold red]Download failed:[/bold red] {exc}")
+        console.print(f"[bold red]La descarga falló:[/bold red] {exc}")
         raise typer.Exit(code=1) from exc
 
     # --- 1/3 corpus ---
@@ -953,37 +1116,44 @@ def gold_setup(
                 f"--series {workspace_file.series_id}"
             )
 
-    if not prep.created and not prep.skipped_annotated:
+    if not prep.created and not prep.skipped_annotated and not prep.not_open:
         console.print("[bold red]No se creó ningún archivo.[/bold red]")
         raise typer.Exit(code=1)
 
-    first = outcome.first_file
-    if first is None:
+    if prep.not_open:
+        waiting = dict.fromkeys(f.series_id for f in prep.not_open)
         console.print(
-            f"[bold red]{annotator} no tiene ninguna serie asignada en "
-            "config/annotation.toml.[/bold red]"
+            f"[dim]Series aún no abiertas: {', '.join(waiting)}. No se crearon archivos de "
+            f"ellas; {plan.adjudicator} avisa cuándo toca cada una.[/dim]"
         )
-        raise typer.Exit(code=1)
 
-    partner = (
-        _short(_workspace_paths().target(TaskKind.CANDIDATES, first.series_id, annotator))
-        if first.kind is TaskKind.DECISIONS
-        else _short(_workspace_paths().target(TaskKind.DECISIONS, first.series_id, annotator))
-    )
+    status = outcome.status
+    assert status is not None  # only the maintainer has none, and returned above
+    if status.bank_gate is not None:
+        console.print(f"[dim]{status.bank_gate}[/dim]")
+    action = status.next_action
+    console.print("\n[bold]Qué hacer ahora.[/bold]")
+    if action.kind is NextKind.ANNOTATE and action.target and action.partner:
+        console.print(
+            f"  1. Lee la transcripción de la serie {action.series_id} (fase {action.phase}) en "
+            f"{_short(TRANSCRIPTS_DIR)}/{action.series_id}*.md antes de llenar una sola "
+            "fila -- anotar solo desde el resumen es el error que más cuesta corregir.\n"
+            f"  2. Abre {_short(action.target)} y llena las columnas humanas (luego "
+            f"{_short(action.partner)} para la otra tarea de la misma serie).\n"
+            f"  3. Cuando cierres esa serie: uv run afg gold validate --annotator {annotator} "
+            f"--series {action.series_id}\n"
+            "  4. Sin errores -> abre el PR de esa serie (una serie por PR).",
+            markup=False,
+            soft_wrap=True,
+        )
+    else:
+        console.print(f"  {action.message}", markup=False, soft_wrap=True)
     console.print(
-        "\n[bold]Qué hacer ahora.[/bold]\n"
-        f"  1. Lee la transcripción de la serie {first.series_id} (fase {first.phase}, tu "
-        f"primera) en {_short(TRANSCRIPTS_DIR)}/{first.series_id}*.md antes de llenar una "
-        "sola fila -- anotar solo desde el resumen es el error que más cuesta corregir.\n"
-        f"  2. Abre {_short(first.target)} y llena las columnas humanas (luego {partner} "
-        "para la Tarea B de la misma serie).\n"
-        f"  3. Cuando cierres esa serie: uv run afg gold validate --annotator {annotator} "
-        f"--series {first.series_id}\n"
-        "  4. Sin errores -> abre el PR de esa serie (una serie por PR)."
+        f"\nPara ver tu avance en cualquier momento: uv run afg gold status --annotator {annotator}"
     )
 
 
-@gold_app.command("prepare")
+@gold_app.command("prepare", rich_help_panel=_PANEL_ANNOTATORS)
 def gold_prepare(
     annotator: str = typer.Option(..., "--annotator", help="Iniciales del anotador, p. ej. gv."),
     force: bool = typer.Option(
@@ -1047,7 +1217,19 @@ def gold_prepare(
                 f"--series {workspace_file.series_id}"
             )
 
-    if not outcome.created and not outcome.overwritten and not outcome.skipped_annotated:
+    if outcome.not_open:
+        waiting = dict.fromkeys(f.series_id for f in outcome.not_open)
+        console.print(
+            f"[dim]Series aún no abiertas: {', '.join(waiting)}. No se crean archivos de "
+            f"series que {plan.adjudicator} no ha abierto.[/dim]"
+        )
+
+    if (
+        not outcome.created
+        and not outcome.overwritten
+        and not outcome.skipped_annotated
+        and not outcome.not_open
+    ):
         console.print("[yellow]No se creó ningún archivo.[/yellow]")
         raise typer.Exit(code=1)
 
@@ -1061,7 +1243,7 @@ def gold_prepare(
     )
 
 
-@gold_app.command("validate")
+@gold_app.command("validate", rich_help_panel=_PANEL_ANNOTATORS)
 def gold_validate(
     annotator: str = typer.Option(..., "--annotator", help="Iniciales del anotador, p. ej. gv."),
     series: str | None = typer.Option(
@@ -1121,21 +1303,25 @@ def gold_validate(
     raise typer.Exit(code=1)
 
 
-@gold_app.command("status")
+@gold_app.command("status", rich_help_panel=_PANEL_ANNOTATORS)
 def gold_status(
     annotator: str | None = typer.Option(
         None, "--annotator", help="Muestra solo las series de esta persona, p. ej. gv."
     ),
 ) -> None:
-    """Panel de control del mantenedor: una fila por anotador y serie.
+    """Avance por persona y serie, y qué hacer a continuación.
 
-    Muestra fase, avance en las dos tareas y si la serie pasa la validación, para seguir
-    al equipo sin abrir un solo archivo. Con `--annotator`, muestra solo las filas de esa
-    persona -- su propio avance, sin el resto del equipo.
+    Cada serie está en uno de estos estados: `pendiente (aún no)` (el mantenedor todavía no
+    la abre), `sin preparar` (abierta pero sin archivos), `por empezar`, `en curso`,
+    `con errores`, `lista para entregar` (todo lleno y válido) o `adjudicada` (cerrada). Con
+    `--annotator`, muestra solo la fila de esa persona, la Tarea C y el banco de preguntas
+    si le tocan, y termina con una línea `Siguiente:` con lo único que toca hacer ahora.
     """
+    from rich import box
     from rich.table import Table
 
-    from afg.annotation.workspace import UnknownAnnotatorError, validate_annotator
+    from afg.annotation.progress import SeriesState, annotator_status
+    from afg.annotation.workspace import UnknownAnnotatorError
 
     plan = _plan_or_exit()
     paths = _workspace_paths()
@@ -1147,61 +1333,109 @@ def gold_status(
             console.print(f"[bold red]{exc}[/bold red]")
             raise typer.Exit(code=1) from exc
 
-    table = Table(title="Anotación OE1 — avance por persona y serie")
-    table.add_column("Anotador")
-    table.add_column("Serie")
+    table = Table(title="Anotación OE1 — avance por persona y serie", box=box.SIMPLE_HEAD)
+    table.add_column("Anotador", no_wrap=True)
+    table.add_column("Serie", no_wrap=True)
     table.add_column("Fase", justify="right")
-    table.add_column("Decisiones", justify="right")
-    table.add_column("Candidatos", justify="right")
-    table.add_column("Validación")
+    table.add_column("Estado", no_wrap=True)
+    table.add_column("Tarea A", justify="right")
+    table.add_column("Tarea B", justify="right")
 
-    any_row = False
+    colors = {
+        SeriesState.NOT_YET: "dim",
+        SeriesState.NOT_PREPARED: "dim",
+        SeriesState.TO_START: "yellow",
+        SeriesState.IN_PROGRESS: "yellow",
+        SeriesState.ERRORS: "bold red",
+        SeriesState.READY: "green",
+        SeriesState.ADJUDICATED: "green",
+    }
+    notes: list[str] = []
+    statuses = []
     for person in plan.annotators:
         if not person.annotates:
             continue
         if annotator is not None and person.initials != annotator:
             continue
-        report = validate_annotator(plan, person.initials, paths=paths)
-        for progress in report.series:
-            any_row = True
-            if progress.ok and progress.complete:
-                verdict = "[green]completa[/green]"
-            elif progress.ok:
-                verdict = "[yellow]en curso[/yellow]"
-            elif progress.not_started:
-                verdict = "[dim]sin preparar[/dim]"
-            else:
-                verdict = f"[bold red]{len(progress.issues)} error(es)[/bold red]"
+        try:
+            status = annotator_status(plan, person.initials, paths=paths)
+        except ValueError as exc:
+            console.print(f"[bold red]{exc}[/bold red]")
+            raise typer.Exit(code=1) from exc
+        statuses.append(status)
+        for item in status.series:
+            label = item.state.value
+            if item.state is SeriesState.ERRORS:
+                label = f"{item.issue_count} error(es)"
+            started = item.state not in (SeriesState.NOT_YET, SeriesState.NOT_PREPARED)
             table.add_row(
                 f"{person.initials} ({person.github})",
-                progress.series_id,
-                str(progress.phase),
-                f"{progress.decisions_filled}/{progress.decisions_total}",
-                f"{progress.candidates_filled}/{progress.candidates_total}",
-                verdict,
+                item.series_id,
+                str(item.phase),
+                f"[{colors[item.state]}]{label}[/{colors[item.state]}]",
+                f"{item.decisions_filled}/{item.decisions_total}" if started else "—",
+                f"{item.candidates_filled}/{item.candidates_total}" if started else "—",
             )
+            if item.parts:
+                notes.append(
+                    f"{item.series_id}: {item.decisions_total} filas ({item.originals} "
+                    f"originales + {item.parts} partes de compuestas)"
+                )
 
-    if not any_row:
+    if not statuses:
         console.print("[yellow]No hay ninguna serie asignada en config/annotation.toml.[/yellow]")
         raise typer.Exit(code=1)
 
     console.print(table)
-    console.print(
-        f"Adjudica `{plan.adjudicator}`. Banco de preguntas: lo escribe "
-        f"`{plan.question_bank.author}`, lo valida `{plan.question_bank.validator}`. "
-        f"Muestra de recall (Tarea C): `{plan.recall_sample.owner}` sobre "
-        f"{', '.join(plan.recall_sample.series_ids)}."
-    )
+    for note in notes:
+        console.print(f"  {note}", markup=False, soft_wrap=True)
+
+    if annotator is None:
+        console.print(
+            f"Adjudica `{plan.adjudicator}`. Banco de preguntas: lo escribe "
+            f"`{plan.question_bank.author}`, lo valida `{plan.question_bank.validator}`. "
+            f"Muestra de recall (Tarea C): `{plan.recall_sample.owner}` sobre "
+            f"{', '.join(plan.recall_sample.series_ids)}."
+        )
+        return
+
+    status = statuses[0]
+    for rec in status.recall:
+        progress = f" {rec.filled}/{rec.total}" if rec.total else ""
+        console.print(
+            f"Tarea C (muestra de recall) {rec.series_id}: {rec.state.value}{progress}",
+            markup=False,
+        )
+    if status.bank_gate is not None:
+        console.print(status.bank_gate, markup=False, soft_wrap=True)
+    if status.bank is not None:
+        bank = status.bank
+        per_stratum = ", ".join(
+            f"{s.stratum.value} {s.written}/{s.minimum}"
+            + (f" (hasta {s.rows})" if s.rows > s.minimum else "")
+            for s in bank.strata
+        )
+        console.print(
+            f"Banco de preguntas (escritas/mínimo por estrato): {per_stratum}; "
+            f"validadas {bank.validated} de {bank.written} escritas.",
+            markup=False,
+            soft_wrap=True,
+        )
+        console.print(
+            "E3 depende de relaciones ya adjudicadas: la mayoría llegará con la Fase 3.",
+            markup=False,
+        )
+    console.print(f"Siguiente: {status.next_action.message}", markup=False, soft_wrap=True)
 
 
-@gold_app.command("adjudicate")
+@gold_app.command("adjudicate", rich_help_panel=_PANEL_MAINTENANCE)
 def gold_adjudicate(
     series: str = typer.Option(..., "--series", help="Serie de doble anotación, p. ej. ES2015."),
     force: bool = typer.Option(
         False, "--force", help="Regenera aunque los CSV ya tengan veredictos escritos."
     ),
 ) -> None:
-    """Escribe los dos CSV de adjudicación de una serie, con las respuestas lado a lado.
+    """(Mantenedor) Escribe los dos CSV de adjudicación de una serie, lado a lado.
 
     Genera `<serie>.decisions.adjudicated.csv` (una fila por decisión base) y
     `<serie>.candidates.adjudicated.csv` (una fila por par). Cada archivo trae las columnas
@@ -1232,11 +1466,11 @@ def gold_adjudicate(
     )
 
 
-@gold_app.command("validate-adjudication")
+@gold_app.command("validate-adjudication", rich_help_panel=_PANEL_MAINTENANCE)
 def gold_validate_adjudication(
     series: str = typer.Option(..., "--series", help="Serie de doble anotación, p. ej. ES2015."),
 ) -> None:
-    """Verifica que el adjudicador terminó los dos CSV de adjudicación de una serie.
+    """(Mantenedor) Verifica que el adjudicador terminó los dos CSV de adjudicación de una serie.
 
     Cada fila necesita un `final_*` legal, `razon` donde hubo desacuerdo o `sin_soporte`,
     y `adjudicator`; una fila `compuesta` necesita al menos dos filas hijas consecutivas.
@@ -1255,13 +1489,13 @@ def gold_validate_adjudication(
     raise typer.Exit(code=1)
 
 
-@gold_app.command("questions-init")
+@gold_app.command("questions-init", rich_help_panel=_PANEL_MAINTENANCE)
 def gold_questions_init(
     force: bool = typer.Option(
         False, "--force", help="Regenera aunque el banco ya tenga preguntas escritas."
     ),
 ) -> None:
-    """Crea el banco de preguntas con filas numeradas y vacías: 25 por estrato, 40 en E3.
+    """(Mantenedor) Crea el banco de preguntas: filas numeradas y vacías (25 por estrato, 40 en E3).
 
     Quien escribe el banco llena texto en filas que ya existen: nunca inventa un id ni
     escribe un estrato, que es lo que hacía que un estrato corto se descubriera contando
@@ -1312,13 +1546,30 @@ def _print_question_bank_report(report: QuestionBankReport) -> None:
     )
     for stratum, count in report.usable_per_stratum.items():
         console.print(f"  {stratum.value}: {count} validada(s)")
-    for issue in report.errors:
-        console.print(f"[bold red]  error {escape(format_issue(issue))}[/bold red]")
-    for issue in report.warnings:
-        console.print(f"[yellow]  aviso {escape(format_issue(issue))}[/yellow]")
+    for line in _collapsed_issue_lines(report.errors):
+        console.print(f"[bold red]  error {escape(line)}[/bold red]")
+    for line in _collapsed_issue_lines(report.warnings):
+        console.print(f"[yellow]  aviso {escape(line)}[/yellow]")
 
 
-@gold_app.command("questions-check")
+def _collapsed_issue_lines(issues: Sequence[QuestionBankIssue]) -> list[str]:
+    """One line per kind of problem: repeated messages become a count with a few row ids."""
+    by_message: dict[str, list[str]] = {}
+    for issue in issues:
+        by_message.setdefault(issue.message, []).append(issue.row_id)
+    lines: list[str] = []
+    for message, row_ids in by_message.items():
+        if len(row_ids) == 1:
+            lines.append(f"{row_ids[0]}: {message}")
+            continue
+        shown = ", ".join(row_ids[:3])
+        rest = len(row_ids) - 3
+        examples = f"{shown} y {rest} más" if rest > 0 else shown
+        lines.append(f"{len(row_ids)} filas ({examples}): {message}")
+    return lines
+
+
+@gold_app.command("questions-check", rich_help_panel=_PANEL_ANNOTATORS)
 def gold_questions_check(
     path: Annotated[
         Path | None,
@@ -1347,13 +1598,18 @@ def gold_questions_check(
                 f"[bold red]{_short(bank_path)} no tiene el formato del banco.[/bold red]"
             )
             raise typer.Exit(code=1)
-        report = load_configured_question_bank(bank_path, require_complete=complete)
+        report = load_configured_question_bank(bank_path, require_complete=complete, strict=True)
     except (ValueError, FileNotFoundError) as exc:
         console.print(f"[bold red]{exc}[/bold red]")
         raise typer.Exit(code=1) from exc
     _print_question_bank_report(report)
     if report.has_errors:
         raise typer.Exit(code=1)
+
+
+# Annotator commands first in ``afg gold --help``; the sort is stable, so each group keeps the
+# order in which its commands are defined above.
+gold_app.registered_commands.sort(key=lambda c: c.rich_help_panel != _PANEL_ANNOTATORS)
 
 
 # --- judge calibration (issue #82) ---------------------------------------------------------
@@ -1916,7 +2172,8 @@ def experiment_b(
         typer.Option(
             "--questions",
             help="CSV de preguntas: el banco `banco-preguntas.csv` (corre solo las filas "
-            "validadas y se niega si hay errores bloqueantes), la hoja `ES2015.preguntas.csv` "
+            "validadas y se niega si hay errores bloqueantes, con las mismas verificaciones de "
+            "`afg gold questions-check`), la hoja `ES2015.preguntas.csv` "
             "o el CSV de preguntas de calibración.",
         ),
     ],
@@ -1959,7 +2216,7 @@ def experiment_b(
     try:
         built = {c.upper(): make_experiment_b_condition(c) for c in dict.fromkeys(wanted)}
         if questions.exists() and is_question_bank(questions):
-            bank_report = load_configured_question_bank(questions)
+            bank_report = load_configured_question_bank(questions, strict=True)
             if not bank_report.has_errors:
                 _print_question_bank_report(bank_report)
         bank = load_experiment_questions(questions, limit=limit_questions)
@@ -2251,9 +2508,9 @@ def experiment_b_human_check(
 # --- report ---------------------------------------------------------------------------------
 
 
-@app.command("report")
+@app.command("report", rich_help_panel=_PANEL_MAINTENANCE)
 def report() -> None:
-    """Regenerate reports/tables/*.csv from whatever data is currently available."""
+    """Regenera reports/tables/*.csv con los datos disponibles (mantenedor)."""
     console.print("Regenerating bibliography audit...")
     biblio_audit()
     console.print(

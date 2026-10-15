@@ -55,7 +55,7 @@ volver a correrlos sobrescribe el insumo. La tabla de abajo los lista como refer
 | `uv run afg gold build --series <ID>` | (mantenedor) Genera el CSV de decisiones de la Tarea A |
 | `uv run afg gold candidates --series <ID>` | (mantenedor) Genera el CSV de pares candidatos de la Tarea B |
 | `uv run afg gold recall-sample --series <ID> --n 50 --seed 42` | (mantenedor) Genera la muestra de la Tarea C |
-| `uv run afg gold evidence --meeting <ID> --term <palabra>` | Busca evidencia en la transcripción cuando `evidence_da_count` es 0 |
+| `uv run afg gold evidencia --meeting <ID> --term <palabra>` | Busca en la transcripción: evidencia de la Tarea A cuando `evidence_da_count` es 0, o ids de acto para el banco de preguntas |
 | `uv run afg gold agreement --series <ID>` | (adjudicador) Calcula el kappa de la Tarea D |
 
 Para una serie, el flujo del mantenedor (no el tuyo) fue:
@@ -160,7 +160,7 @@ de soporte: antes de marcar `sin_soporte`, busca el pasaje completo.
 
 - **Dónde está la transcripción:** `data/interim/transcripts/<reunión>.md` (por ejemplo,
   `ES2015d.md`). Para buscar un término dentro de ella:
-  `uv run afg gold evidence --meeting <ID> --term <palabra>`.
+  `uv run afg gold evidencia --meeting <ID> --term <palabra>`.
 - **Qué puedes leer:** lo que se dice antes y después en **la misma reunión**. Nunca
   reuniones posteriores de la serie (regla anti-fuga, §4).
 - **Qué escribes:** en `notes`, qué encontraste en la transcripción y dónde, sobre todo si
@@ -288,7 +288,7 @@ La herramienta te ofrece las ocurrencias de los términos del objeto en la trans
 esa reunión. Para "turbo" en `IS1004d` hay ocho. La relevante es esta:
 
 > **Transcripción `data/interim/transcripts/IS1004d.md`** (hablante B; la encuentras con
-> `uv run afg gold evidence --meeting IS1004d --term turbo`):
+> `uv run afg gold evidencia --meeting IS1004d --term turbo`):
 >
 > *"…instead of a turbo button but you know the turbo button does add that extra class.
 > You know. So I mean if we're **if we're over budget then maybe we could we could rethink

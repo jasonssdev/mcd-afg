@@ -32,12 +32,17 @@ clonar el repositorio, `uv sync --group dev --group notebooks`, y verificar con
 uv run afg gold setup --annotator <tus iniciales>
 ```
 
-Descarga el corpus AMI (pide confirmar la licencia CC BY 4.0 antes de bajar 228 MB), genera
-las 171 transcripciones, y crea `<serie>.decisions.<iniciales>.csv` y
-`<serie>.candidates.<iniciales>.csv` para cada serie que te toca, ya nombrados y con las
-columnas de máquina llenas. Nunca copies ni renombres un CSV a mano; correr esto de nuevo no
-borra lo que ya anotaste, y salta cualquier paso que ya esté hecho. Termina diciéndote la
-ruta exacta del primer archivo que debes abrir — anótala, la usas en el paso 4.
+Descarga el corpus AMI (pide confirmar la licencia CC BY 4.0; la descarga pesa unos 22 MB y,
+extraído, el corpus ocupa 228 MB), genera las 171 transcripciones, y crea
+`<serie>.decisions.<iniciales>.csv` y `<serie>.candidates.<iniciales>.csv` para cada serie que
+ya te toca empezar, ya nombrados y con las columnas de máquina llenas. Las series que `jss`
+todavía no abre salen como «aún no» y no tienen archivos. Nunca copies ni renombres un CSV a
+mano; correr esto de nuevo no borra lo que ya anotaste, y salta cualquier paso que ya esté
+hecho. Termina con «Qué hacer ahora», según el estado real de tu trabajo: la ruta del archivo
+que debes abrir, o a quién esperas. Cuando `jss` abra una serie nueva, vuelve a correrlo.
+
+En cualquier momento, `uv run afg gold status --annotator <tus iniciales>` te muestra en qué
+está cada serie y termina con una línea `Siguiente: …` con lo único que toca hacer.
 
 ## 3. Lee, en este orden, antes de escribir nada
 
@@ -53,15 +58,16 @@ ruta exacta del primer archivo que debes abrir — anótala, la usas en el paso 
 
 ## 4. Llena solo las columnas humanas
 
-Con la serie que toque según tus «Próximos pasos» en `tareas-<iniciales>.md` (el orden de las
-fases está en [`README.md`](README.md) §2):
+Con la serie que indique «Qué hacer ahora» (o `Siguiente:` en `status`; el detalle está en tus «Próximos pasos» en
+`tareas-<iniciales>.md`; el orden de las fases está en [`README.md`](README.md) §2):
 
 - **Tarea A** (`<serie>.decisions.<iniciales>.csv`): `status`, `decision_object`,
-  `decision_content`, `notes` si hace falta.
+  `decision_content`, `notes` si hace falta (obligatoria con `sin_soporte`).
 - **Tarea B** (`<serie>.candidates.<iniciales>.csv`): `relation`, `direction_ok`,
-  `confidence`, `notes` si hace falta.
+  `confidence`, `notes` si hace falta (obligatoria si `direction_ok` es `no`).
 
-`annotator` ya viene puesto. Ninguna columna de máquina se toca; los valores permitidos de
+`annotator` ya viene puesto. Ninguna columna de máquina se toca ni se renombra (si falta o
+cambió de nombre una columna, `validate` indica cuál); los valores permitidos de
 cada columna están en tu documento personal, §2.
 
 > **Editar el CSV.** Usa VS Code o LibreOffice Calc. Excel sirve solo si guardas con
@@ -82,11 +88,18 @@ recorre todas tus series asignadas.
 ## 6. Abre el PR
 
 Una serie, un PR — instrucciones exactas (rama, mensaje de commit, a quién le toca revisar)
-en la sección "Cómo entregas" de tu documento personal.
+en la sección "Cómo entregas" de tu documento personal. Las Tareas A y B de una serie van en
+la rama `data/anotacion-<serie>-<iniciales>`.
+
+La **Tarea C** (solo `gv`: adjudicar la muestra de recall del bloqueador, archivo
+`<serie>.recall-sample.gv.csv`) va en un PR aparte, uno por serie, con la rama
+`data/anotacion-recall-<SERIE>` (p. ej. `data/anotacion-recall-IS1004`); los detalles están en
+[`tareas-gv.md`](tareas-gv.md) §7 y §9.
 
 ---
 
 El mantenedor sigue el avance de todo el equipo con `uv run afg gold status`, sin abrir un
 solo archivo. El reparto completo — quién anota qué, en qué orden, cuándo se adjudica — está
 en [`README.md`](README.md). Si alguna vez necesitas recrear un archivo puntual en vez de todo
-el flujo, `afg gold prepare --annotator <iniciales>` sigue disponible.
+el flujo, existe `afg gold prepare --annotator <iniciales>`: hace solo el último paso de
+`setup` (crear los archivos), sin descargar nada.

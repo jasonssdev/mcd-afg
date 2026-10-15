@@ -54,7 +54,7 @@ from afg.domain.decision import AnnotationStatus
 from afg.domain.question import QuestionStratum
 from afg.domain.relation import Confidence, DirectionOk, RelationType
 from afg.shared.config import load_annotation_config
-from afg.shared.csvio import open_csv_writer
+from afg.shared.csvio import open_csv_reader, open_csv_writer, semicolon_hint
 from afg.shared.paths import GOLD_DECISIONS_DIR, GOLD_RELATIONS_DIR, QUESTIONS_DIR
 
 __all__ = [
@@ -241,6 +241,17 @@ class AnnotationPlan:
     phase2_series: tuple[str, ...]
     recall_sample: RecallSampleAssignment
     question_bank: QuestionBankAssignment
+    released_series: tuple[str, ...] | None = None
+    """Series ``jss`` has opened for annotation; ``None`` means every series is open.
+
+    Whether the next series may start is a human signal (the maintainer announces it once the
+    previous one is adjudicated), so it cannot be derived from files. Listing it here is how
+    that signal reaches ``setup``, ``prepare``, ``validate`` and ``status``.
+    """
+
+    def is_released(self, series_id: str) -> bool:
+        """Whether ``series_id`` is open for annotation."""
+        return self.released_series is None or series_id in self.released_series
 
     def annotator(self, initials: str) -> Annotator:
         """Look up a person by initials.
@@ -253,7 +264,7 @@ class AnnotationPlan:
         for person in self.annotators:
             if person.initials == initials:
                 return person
-        known = ", ".join(person.initials for person in self.annotators)
+        known = ", ".join(person.initials for person in self.annotators if person.annotates)
         raise UnknownAnnotatorError(
             f"No existe el anotador {initials!r} en config/annotation.toml. "
             f"Iniciales válidas: {known}."
@@ -309,7 +320,9 @@ def load_annotation_plan(raw: Mapping[str, Any] | None = None) -> AnnotationPlan
                 f"rows_per_stratum: {name} tiene {rows} filas, menos que las "
                 f"{base_rows} por estrato del mínimo."
             )
+    released = section.get("released_series")
     return AnnotationPlan(
+        released_series=None if released is None else tuple(released),
         annotators=tuple(annotators),
         adjudicator=section["adjudicator"],
         phase1_series=phase1,
@@ -384,7 +397,7 @@ def _read_rows(path: Path) -> tuple[list[str], list[dict[str, str]]]:
     Read as ``utf-8-sig`` so a leading BOM (Excel's "CSV UTF-8") never reaches the first
     header. Writers stay plain ``utf-8``.
     """
-    with path.open(newline="", encoding="utf-8-sig") as handle:
+    with open_csv_reader(path) as handle:
         reader = csv.DictReader(handle)
         fieldnames = list(reader.fieldnames or ())
         rows = [{name: (row.get(name) or "") for name in fieldnames} for row in reader]
@@ -411,6 +424,13 @@ def _row_id_column_for(kind: TaskKind) -> str:
 
 def _machine_columns_for(kind: TaskKind) -> tuple[str, ...]:
     return _DECISION_MACHINE_COLUMNS if kind is TaskKind.DECISIONS else _CANDIDATE_MACHINE_COLUMNS
+
+
+def _expected_columns_for(kind: TaskKind) -> tuple[str, ...]:
+    """Every column a workspace file of ``kind`` must carry (id, machine and human)."""
+    if kind is TaskKind.DECISIONS:
+        return (_DECISION_ID_COLUMN, *_DECISION_MACHINE_COLUMNS, *_DECISION_HUMAN_COLUMNS)
+    return (_PAIR_ID_COLUMN, *_CANDIDATE_MACHINE_COLUMNS, *_CANDIDATE_HUMAN_COLUMNS)
 
 
 def file_contains_annotation(path: Path, kind: TaskKind) -> bool:
@@ -473,6 +493,8 @@ class PrepareOutcome:
     skipped_annotated: tuple[WorkspaceFile, ...]
     overwritten: tuple[WorkspaceFile, ...]
     missing_sources: tuple[WorkspaceFile, ...]
+    not_open: tuple[WorkspaceFile, ...] = ()
+    """Files of series ``jss`` has not opened yet: deliberately not created."""
 
 
 def expected_files(
@@ -552,8 +574,12 @@ def prepare_annotator_workspace(
     skipped: list[WorkspaceFile] = []
     overwritten: list[WorkspaceFile] = []
     missing: list[WorkspaceFile] = []
+    not_open: list[WorkspaceFile] = []
 
     for workspace_file in expected_files(plan, annotator, paths):
+        if not plan.is_released(workspace_file.series_id):
+            not_open.append(workspace_file)
+            continue
         if not workspace_file.source.exists():
             missing.append(workspace_file)
             continue
@@ -577,6 +603,7 @@ def prepare_annotator_workspace(
         skipped_annotated=tuple(skipped),
         overwritten=tuple(overwritten),
         missing_sources=tuple(missing),
+        not_open=tuple(not_open),
     )
 
 
@@ -701,6 +728,7 @@ def _check_machine_columns(
     kind: TaskKind,
     rows: Sequence[Mapping[str, str]],
     reference: Mapping[str, Mapping[str, str]],
+    source_name: str,
 ) -> list[ValidationIssue]:
     """Compare every machine column against the generated base file.
 
@@ -740,7 +768,7 @@ def _check_machine_columns(
                     value=row_id,
                     message=(
                         f"{path.name}, fila {row_id}: ese id no existe en el archivo base "
-                        f"{path.name.replace(f'.{kind.value}.', f'.{kind.value}.')}. "
+                        f"{source_name}. "
                         "Las filas nuevas solo son válidas como hijas de una fila "
                         "`compuesta`, con el sufijo -1, -2, ..."
                     ),
@@ -902,6 +930,20 @@ def _check_candidate_row(path: Path, row: Mapping[str, str]) -> tuple[bool, list
                 )
             )
 
+    if values["direction_ok"] == DirectionOk.NO.value and not row.get("notes", "").strip():
+        issues.append(
+            ValidationIssue(
+                path=path,
+                row_id=row_id,
+                column="notes",
+                value="",
+                message=(
+                    f"{path.name}, fila {row_id}: `direction_ok = no` exige que `notes` explique "
+                    "por qué el orden del par no respeta la convención (manual §4)."
+                ),
+            )
+        )
+
     if not annotator:
         issues.append(
             ValidationIssue(
@@ -961,20 +1003,31 @@ def _validate_file(
         )
 
     fieldnames, rows = _read_rows(path)
-    if len(fieldnames) == 1 and ";" in fieldnames[0]:
+    hint = semicolon_hint(path, fieldnames)
+    if hint:
         return (
             0,
             0,
+            [ValidationIssue(path=path, row_id="-", column="-", value="", message=hint)],
+        )
+    expected_columns = _expected_columns_for(kind)
+    absent = [column for column in expected_columns if column not in fieldnames]
+    if absent:
+        listed = ", ".join(f"`{column}`" for column in absent)
+        plural = "las columnas" if len(absent) > 1 else "la columna"
+        return (
+            0,
+            len(rows),
             [
                 ValidationIssue(
                     path=path,
                     row_id="-",
-                    column="-",
+                    column=absent[0],
                     value="",
                     message=(
-                        f"{path.name}: el archivo parece guardado con `;` como separador. "
-                        "Guárdalo con comas (en Excel: «CSV UTF-8 (delimitado por comas)»; "
-                        "ver «Editar el CSV» en docs/anotacion/asignacion/EMPIEZA-AQUI.md)."
+                        f"{path.name}: falta {plural} {listed} (¿la renombraste?). No se "
+                        "cambian los nombres de la cabecera. Columnas esperadas: "
+                        f"{', '.join(expected_columns)}."
                     ),
                 )
             ],
@@ -983,7 +1036,7 @@ def _validate_file(
     id_column = _row_id_column_for(kind)
     reference = {row[id_column]: row for row in reference_rows if row.get(id_column, "").strip()}
 
-    issues = _check_machine_columns(path, kind, rows, reference)
+    issues = _check_machine_columns(path, kind, rows, reference, source.name)
     check_row = _check_decision_row if kind is TaskKind.DECISIONS else _check_candidate_row
     filled = 0
     for row in rows:
@@ -991,6 +1044,28 @@ def _validate_file(
         filled += int(is_filled)
         issues.extend(row_issues)
     return filled, len(rows), issues
+
+
+def validate_workspace_file(
+    path: Path, source: Path, kind: TaskKind
+) -> tuple[int, int, list[ValidationIssue]]:
+    """Validate one workspace file against its base. Returns ``(filled, total, issues)``."""
+    return _validate_file(path, source, kind)
+
+
+def decision_row_counts(path: Path) -> tuple[int, int]:
+    """``(original rows, compuesta parts)`` of a decisions file.
+
+    A ``compuesta`` sentence is split into child rows (``ES2015a.d01-1``, ``-2``...), so the
+    row count of a file exceeds the number of decisions the base proposed. Returns
+    ``(0, 0)`` when the file does not exist.
+    """
+    if not path.exists():
+        return 0, 0
+    _, rows = _read_rows(path)
+    ids = [row.get(_DECISION_ID_COLUMN, "") for row in rows]
+    children = sum(1 for value in ids if _parent_decision_id(value) != value)
+    return len(ids) - children, children
 
 
 def validate_annotator(
@@ -1022,6 +1097,13 @@ def validate_annotator(
                 f"La serie {series!r} no está asignada a {initials!r}. "
                 f"Series asignadas: {assigned}."
             )
+        if not plan.is_released(series):
+            raise ValueError(
+                f"La serie {series} aún no está abierta: {plan.adjudicator} avisa cuando "
+                "toca empezarla. Mientras tanto no hay nada que validar de ella."
+            )
+    else:
+        assignments = tuple(a for a in assignments if plan.is_released(a.series_id))
 
     recall = plan.recall_sample
     progresses: list[SeriesProgress] = []

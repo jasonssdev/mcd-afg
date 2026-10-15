@@ -16,7 +16,8 @@ one place and cannot regress a fourth time.
 from __future__ import annotations
 
 import csv
-from collections.abc import Iterator
+import io
+from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -24,7 +25,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     import _csv
 
-__all__ = ["open_csv_writer"]
+__all__ = ["CsvFormatError", "open_csv_reader", "open_csv_writer", "semicolon_hint"]
 
 
 @contextmanager
@@ -40,3 +41,56 @@ def open_csv_writer(path: Path, *, encoding: str | None = None) -> Iterator[_csv
     with path.open("w", newline="", encoding=encoding) as fh:
         writer = csv.writer(fh, lineterminator="\n")
         yield writer
+
+
+class CsvFormatError(ValueError):
+    """An annotator's CSV cannot be read as UTF-8 text; the message tells how to fix it."""
+
+
+_UTF16_BOMS = (b"\xff\xfe", b"\xfe\xff")
+
+_HOW_TO_SAVE = (
+    "Guárdalo de nuevo como UTF-8: en Excel, «Guardar como → CSV UTF-8 (delimitado por "
+    "comas)»; en LibreOffice, «Juego de caracteres: Unicode (UTF-8)» y separador coma."
+)
+
+
+@contextmanager
+def open_csv_reader(path: Path) -> Iterator[io.StringIO]:
+    """Open an annotator-edited CSV as text: UTF-8, with or without BOM.
+
+    Excel's plain "CSV" is latin-1/cp1252 and its "Unicode text" is UTF-16; both used to
+    surface as a raw ``'utf-8' codec can't decode`` traceback. Here either case raises
+    :class:`CsvFormatError` naming the file and how to re-save it. Latin-1 is deliberately
+    *not* guessed: decoding it silently would hide corruption in the annotators' text.
+
+    Raises:
+        CsvFormatError: the file is UTF-16 or not valid UTF-8.
+        FileNotFoundError: ``path`` does not exist.
+    """
+    raw = path.read_bytes()
+    if raw.startswith(_UTF16_BOMS):
+        raise CsvFormatError(
+            f"{path.name}: el archivo está guardado como «Unicode» (UTF-16), que este programa "
+            f"no lee. {_HOW_TO_SAVE}"
+        )
+    try:
+        text = raw.decode("utf-8-sig")
+    except UnicodeDecodeError as exc:
+        raise CsvFormatError(
+            f"{path.name}: el archivo no está guardado como UTF-8 (probablemente Excel lo "
+            f"guardó como «CSV» simple y las tildes y la «ñ» se corrompen). {_HOW_TO_SAVE}"
+        ) from exc
+    with io.StringIO(text, newline="") as handle:
+        yield handle
+
+
+def semicolon_hint(path: Path, fieldnames: Sequence[str]) -> str | None:
+    """Spanish explanation when the header shows a ``;``-separated file, else ``None``."""
+    if len(fieldnames) == 1 and ";" in fieldnames[0]:
+        return (
+            f"{path.name}: el archivo parece guardado con `;` como separador. Guárdalo con "
+            "comas (en Excel: «CSV UTF-8 (delimitado por comas)»; ver «Editar el CSV» en "
+            "docs/anotacion/asignacion/EMPIEZA-AQUI.md)."
+        )
+    return None

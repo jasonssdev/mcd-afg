@@ -135,7 +135,7 @@ uv run pytest -q      # los tests pasan (441 al momento de escribir esto; el nú
 
 ### 3.3 Descarga el corpus
 
-El corpus **no está en el repositorio**: pesa 228 MB y está en `.gitignore`. Se descarga una
+El corpus **no está en el repositorio**: la descarga pesa unos 22 MB y, extraído, ocupa 228 MB; está en `.gitignore`. Se descarga una
 vez por máquina:
 
 ```bash
@@ -168,8 +168,8 @@ uv run afg gold setup --annotator <tus iniciales>
 ```
 
 Descarga el corpus (si no lo tienes), genera las 171 transcripciones y prepara tus archivos
-de trabajo ya nombrados; nunca borra anotación existente. Termina diciéndote exactamente qué
-archivo abrir primero. Sigue desde ahí
+de trabajo ya nombrados; nunca borra anotación existente. Termina diciéndote lo único que toca
+hacer ahora, según el estado real de tu trabajo. Sigue desde ahí
 [`docs/anotacion/asignacion/EMPIEZA-AQUI.md`](docs/anotacion/asignacion/EMPIEZA-AQUI.md): qué
 leer antes de anotar, qué columnas llenar, cómo validar tu trabajo y cómo abrir el PR.
 
@@ -196,6 +196,9 @@ git add data/processed/decisions/<serie>.decisions.<ini>.csv \
 git commit -m "data(anotacion): tareas A y B de <serie> (<ini>)"
 git push -u origin data/anotacion-<serie>-<ini>       # sube la rama al repositorio del equipo (origin)
 ```
+
+Una serie, un PR. La Tarea C (solo `gv`, muestra de recall) va en un PR aparte por serie, con la
+rama `data/anotacion-recall-<SERIE>` (p. ej. `data/anotacion-recall-IS1004`).
 
 `origin` es el repositorio del equipo, no una copia personal. Eso es seguro: `main` está
 protegida, así que ese `push` solo puede subir la rama nueva, nunca `main`. Si `git push`
@@ -295,10 +298,10 @@ uv run afg gold build --series IS1004              # archivo de trabajo de la Ta
 uv run afg gold prepare --annotator <iniciales>    # crea tus archivos de trabajo (gold setup ya lo hace por ti)
 uv run afg gold candidates --series IS1004         # pares candidatos a adjudicar (Tarea B)
 uv run afg gold recall-sample --series IS1004 --n 50 --seed 42   # Tarea C (una muestra por serie: IS1004, ES2016, IS1003, TS3005)
-uv run afg gold evidence --meeting IS1004d --term turbo          # busca evidencia en la transcripción
+uv run afg gold evidencia --meeting IS1004d --term turbo         # busca en la transcripción (Tarea A y banco de preguntas)
 uv run afg gold agreement --series IS1004          # kappa: existencia / tipo / dirección (Tarea D)
 uv run afg gold validate --annotator <iniciales>   # verifica tu trabajo antes de abrir el PR
-uv run afg gold status                             # panel del mantenedor: una fila por anotador y serie
+uv run afg gold status                             # panel: una fila por anotador y serie; con --annotator, estado y «Siguiente: …»
 uv run afg gold adjudicate --series ES2015         # escribe los dos CSV de adjudicación (prellenados donde hay acuerdo)
 uv run afg gold questions-init                     # crea el banco vacío: 25 filas por estrato y 40 en E3 (115 en total)
 uv run afg gold questions-check                   # revisa el banco de preguntas fila por fila, sin correr nada (--complete exige el mínimo validado por estrato)

@@ -56,7 +56,7 @@ from afg.evaluation.passage import (
     transcript_files_text,
 )
 from afg.shared.config import load_experiments_config
-from afg.shared.csvio import open_csv_writer
+from afg.shared.csvio import open_csv_reader, open_csv_writer
 from afg.shared.paths import JUDGE_CALIBRATION_DIR, TRANSCRIPTS_DIR
 
 QUESTIONS_TEMPLATE_PATH: Path = JUDGE_CALIBRATION_DIR / "_plantilla-preguntas-calibracion.csv"
@@ -191,7 +191,7 @@ def load_calibration_questions(path: Path) -> list[CalibrationQuestion]:
     """Read the calibration question CSV (BOM accepted), guarding series and evidence."""
     allowed = calibration_series()
     questions: list[CalibrationQuestion] = []
-    with path.open(newline="", encoding="utf-8-sig") as handle:
+    with open_csv_reader(path) as handle:
         reader = csv.DictReader(handle)
         missing = [c for c in QUESTION_COLUMNS if c not in (reader.fieldnames or [])]
         if missing:
@@ -346,7 +346,7 @@ def generate_answers(
 def _read_rows(path: Path) -> list[dict[str, str]]:
     if not path.exists():
         return []
-    with path.open(newline="", encoding="utf-8-sig") as handle:
+    with open_csv_reader(path) as handle:
         return [{c: row.get(c) or "" for c in COLUMNS} for row in csv.DictReader(handle)]
 
 

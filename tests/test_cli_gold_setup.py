@@ -365,7 +365,7 @@ class TestCorpusConfirmation:
 
         assert result.exit_code == 0, result.output
         assert "licen" in result.output.lower()  # "Licence:" / "licencia"
-        assert "proceed with download" in result.output.lower()
+        assert "descargar el corpus" in result.output.lower()
         assert calls.download == 1
 
     def test_declining_the_confirmation_stops_everything(

@@ -49,6 +49,7 @@ from afg.evaluation.judge_calibration_agreement import (
     compute_human_agreement,
     write_second_sheet,
 )
+from afg.shared.csvio import open_csv_reader
 
 __all__ = [
     "EVIDENCE_COLUMN",
@@ -287,7 +288,7 @@ def write_human_sample(
 
 def read_csv_rows(path: Path) -> list[dict[str, str]]:
     """Read a sheet or key CSV (UTF-8, BOM tolerated)."""
-    with path.open(newline="", encoding="utf-8-sig") as handle:
+    with open_csv_reader(path) as handle:
         return [{k: v or "" for k, v in row.items()} for row in csv.DictReader(handle)]
 
 

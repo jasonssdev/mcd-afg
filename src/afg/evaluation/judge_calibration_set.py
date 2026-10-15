@@ -25,6 +25,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_valida
 from afg.domain.decision import EvidenceSpan
 from afg.domain.question import QuestionStratum, parse_reference_evidence
 from afg.shared.config import load_corpus_config, load_experiments_config
+from afg.shared.csvio import open_csv_reader
 from afg.shared.paths import JUDGE_CALIBRATION_DIR
 
 TEMPLATE_PATH: Path = JUDGE_CALIBRATION_DIR / "_plantilla-calibracion-juez.csv"
@@ -71,7 +72,7 @@ def load_variants(calibration_path: Path) -> dict[str, str]:
     path = variants_path(calibration_path)
     if not path.exists():
         return {}
-    with path.open(newline="", encoding="utf-8-sig") as handle:
+    with open_csv_reader(path) as handle:
         return {
             (row["id"] or "").strip(): (row["answer_variant"] or "").strip()
             for row in csv.DictReader(handle)
@@ -184,7 +185,7 @@ def load_calibration_items(path: Path, *, require_labels: bool = False) -> list[
     """
     allowed = calibration_series()
     variants = load_variants(path)
-    with path.open(newline="", encoding="utf-8-sig") as handle:
+    with open_csv_reader(path) as handle:
         reader = csv.DictReader(handle)
         missing = [c for c in LOADED_COLUMNS if c not in (reader.fieldnames or [])]
         if missing:

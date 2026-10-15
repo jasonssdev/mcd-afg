@@ -1,5 +1,8 @@
 # Tareas de Gustavo Martínez (`gm`)
 
+> **Antes de empezar:** instala `uv`, sincroniza el entorno y descarga el corpus siguiendo
+> [`README.md` §3](../../../README.md#3-tu-primer-día-paso-a-paso) y lee [`EMPIEZA-AQUI.md`](EMPIEZA-AQUI.md).
+
 > **Antes de la primera fila:** lee [`../annotation-guidelines.md`](../annotation-guidelines.md)
 > (qué cuenta como decisión, qué significa cada relación) y ten
 > [`../manual-anotacion-oe1.md`](../manual-anotacion-oe1.md) abierto al lado del CSV. Este
@@ -13,11 +16,11 @@ ES2015 ya está adjudicada. Lo que sigue, en este orden:
 1. **Sesión conjunta sobre ES2015** con `jss` y gv
    ([`../calibracion/ES2015-sesion-conjunta.md`](../calibracion/ES2015-sesion-conjunta.md)).
    Se habla **solo de ES2015**: no leas ni anotes TS3009 antes.
-2. **Cuando `jss` lo indique**, anotas TS3009 (recalibración):
+2. **`jss` ya abrió TS3009**: la anotas ahora (recalibración):
    ```bash
    git switch main && git pull
    git switch -c data/anotacion-TS3009-gm
-   uv run afg gold prepare --annotator gm
+   uv run afg gold setup --annotator gm
    ```
    Abre `data/processed/decisions/TS3009.decisions.gm.csv` (Tarea A) y luego
    `data/processed/relations/TS3009.candidates.gm.csv` (Tarea B), en orden de reunión
@@ -26,12 +29,12 @@ ES2015 ya está adjudicada. Lo que sigue, en este orden:
    ```bash
    uv run afg gold validate --annotator gm --series TS3009
    ```
-   y entrega con la convención de §9 (rama `data/anotacion-TS3009-gm`, commit
+   y entrega con la convención de §8 (rama `data/anotacion-TS3009-gm`, commit
    `data(anotacion): tareas A y B de TS3009 (gm)`, un PR). El issue de recalibración de
    TS3009 asignado a ti (#79) sigue ese avance.
 3. **Independencia:** no abras el PR, la rama ni el CSV de Germán, ni comenten casos de
    TS3009, hasta que `jss` anuncie la adjudicación de TS3009.
-4. **Espera la adjudicación de TS3009.** Después sigue ES2016 con la misma receta (§9).
+4. **Espera la adjudicación de TS3009.** Después sigue ES2016 con la misma receta (§8).
 
 ---
 
@@ -48,17 +51,23 @@ uv run afg gold validate --annotator gm --series <ID>       # al cerrar cada ser
 uv run afg gold status   --annotator gm                     # tu propio avance (lectura)
 ```
 
-`setup` se corre **una sola vez**: descarga el corpus (con confirmación de la licencia),
-genera las transcripciones y crea cada `<serie>.decisions.gm.csv` y
+`setup` se corre **una sola vez** (y otra vez cuando `jss` abre una serie nueva): descarga el
+corpus (con confirmación de la licencia; la descarga pesa unos 22 MB y ocupa 228 MB),
+genera las transcripciones y crea, solo para las series ya abiertas, cada `<serie>.decisions.gm.csv` y
 `<serie>.candidates.gm.csv` con las columnas de máquina ya llenas y las tuyas vacías —
-nunca copies ni renombres un CSV a mano. Termina diciéndote exactamente qué archivo abrir
-primero. Si vuelves a correrlo, salta lo que ya esté hecho y nunca borra tu trabajo: un
+nunca copies ni renombres un CSV a mano. Termina diciéndote lo único que toca hacer
+ahora según el estado real (qué serie, qué archivo, o a quién esperas). Si vuelves a correrlo, salta lo que ya esté hecho y nunca borra tu trabajo: un
 archivo con anotación se respeta. Si alguna vez necesitas recrear un archivo puntual
-(por ejemplo porque su base cambió), sigue disponible `afg gold prepare --annotator gm`.
+(por ejemplo porque su base cambió), existe `afg gold prepare --annotator gm`: hace solo el último paso de `setup` (crear los archivos), sin descargar nada; es la única diferencia entre los dos.
 `validate` con `--series <ID>` revisa solo la serie cuyo PR vas a abrir; sin `--series`
 recorre todas tus series asignadas. Si hay un error sale con código distinto de cero y te
 dice fila y columna exactas. `status --annotator gm` es solo lectura; te muestra tu propio
-avance, serie por serie, sin abrir un CSV.
+avance, serie por serie, sin abrir un CSV. Cada serie está `pendiente (aún no)` (`jss`
+todavía no la abre; no hay archivos), `sin preparar`, `por empezar`, `en curso`, `con errores`,
+`lista para entregar` o `adjudicada`. Las filas de una serie cuentan también las partes de
+las decisiones `compuesta` (p. ej. «32 filas = 29 originales + 3 partes»). Termina siempre
+con una línea `Siguiente: …`.
+También muestra cuántas preguntas del banco llevas por estrato frente al mínimo.
 
 ---
 
@@ -126,12 +135,12 @@ trabajo fino.
 copia ya existe con el nombre correcto y las columnas de máquina llenas en cuanto corres:
 
 ```bash
-uv run afg gold prepare --annotator gm
+uv run afg gold setup --annotator gm
 ```
 
 El patrón `<serie>.decisions.<iniciales>.csv` es el que fija [`README.md`](README.md) §5.1,
 espejo del `<serie>.candidates.<iniciales>.csv` que el manual ya definía para la Tarea B.
-`prepare` lo aplica también en Fase 3, aunque anotes solo tú.
+`setup` lo aplica también en Fase 3, aunque anotes solo tú.
 
 | Columna | Quién | Regla |
 |---|---|---|
@@ -145,7 +154,7 @@ espejo del `<serie>.candidates.<iniciales>.csv` que el manual ya definía para l
 | **`status`** | **tú** | Valor del conjunto cerrado, ver abajo |
 | **`decision_object`** | **tú** | Qué se decide |
 | **`decision_content`** | **tú** | Qué se decidió al respecto |
-| **`annotator`** | **tú** | `gm`, ya puesto por `prepare` |
+| **`annotator`** | **tú** | `gm`, ya puesto por `setup` |
 | **`notes`** | **tú** | Solo si algo no es obvio; obligatorio en `sin_soporte` |
 
 **Valores permitidos de `status`:**
@@ -167,7 +176,7 @@ decision | no_decision | compuesta | sin_soporte | descartar
 
 ### Tarea B — `data/processed/relations/<serie>.candidates.gm.csv`
 
-Misma regla: la crea `afg gold prepare --annotator gm`, no una copia manual.
+Misma regla: la crea `afg gold setup --annotator gm`, no una copia manual.
 
 | Columna | Quién | Regla |
 |---|---|---|
@@ -179,7 +188,7 @@ Misma regla: la crea `afg gold prepare --annotator gm`, no una copia manual.
 | **`relation`** | **tú** | Valor del conjunto cerrado, ver abajo |
 | **`direction_ok`** | **tú** | `si` / `no` |
 | **`confidence`** | **tú** | `alta` / `media` / `baja` |
-| **`annotator`** | **tú** | `gm`, ya puesto por `prepare` |
+| **`annotator`** | **tú** | `gm`, ya puesto por `setup` |
 | **`notes`** | **tú** | Obligatorio si `direction_ok = no` |
 
 **Valores permitidos:**
@@ -225,7 +234,7 @@ que se mide todo lo demás.
 | Puedes | No puedes |
 |---|---|
 | Leer la transcripción de la reunión que estás anotando | Leer reuniones posteriores a la que anotas (§4) |
-| Usar `afg gold evidence` para buscar un término | Leer series que no te tocan |
+| Usar `afg gold evidencia` para buscar un término | Leer series que no te tocan |
 | Leer los insumos de tus series | Comentar contenido de evaluación fuera del flujo de anotación |
 | Leer cualquier cosa de ES2015 o IS1004 (desarrollo) | Abrir el XML del corpus (no hace falta nunca) |
 
@@ -280,7 +289,7 @@ documento que todo el equipo lee, es decir, contaminarla para siempre.
 
 ### 6.1 Tarea A — fila `ES2015c.d08`, una `compuesta`
 
-**Antes** (lo que deja `uv run afg gold prepare --annotator gm` en tu
+**Antes** (lo que deja `uv run afg gold setup --annotator gm` en tu
 `ES2015.decisions.gm.csv`; `annotator` ya viene puesto, el resto de lo tuyo está vacío):
 
 ```
@@ -333,7 +342,7 @@ son una sola decisión, y filas sin bandera que son tres.
 
 ### 6.2 Tarea B — par `ES2015.p002`
 
-**Antes** (lo que deja `prepare` en tu `ES2015.candidates.gm.csv`):
+**Antes** (lo que deja `setup` en tu `ES2015.candidates.gm.csv`):
 
 ```
 pair_id             : ES2015.p002
@@ -378,8 +387,15 @@ como `earlier` y la de `d` como `later`, que es el orden de la convención.
 
 ## 7. El banco de preguntas — tú escribes, Germán valida
 
-Mínimo **25 preguntas por estrato**, cuatro estratos, **≥100 en total**
-(`docs/propuesta.md` §5.5); para E3 la meta es **hasta 40** (ver más abajo). **El autor no valida y el validador no escribe**: tú no tocas
+**Cuándo empieza.** Cuando las cuatro series de control de la Fase 2 (ES2016, IS1003, TS3005,
+ES2008) estén adjudicadas; hasta entonces `afg gold status` muestra «Banco de preguntas: aún
+no» y no lo propone como siguiente paso. Las preguntas salen solo de series de evaluación
+(ES2015, IS1004 y TS3009 quedan fuera, ADR 0005). E3 depende de relaciones ya adjudicadas, así
+que la mayoría llegará con la Fase 3.
+
+Cada uno de los cuatro estratos necesita **al menos 25 preguntas** (obligatorio), así que el
+banco tiene **al menos 100 en total** (`docs/propuesta.md` §5.5). Solo E3 admite además hasta
+**40**: las filas de E3 entre la 26 y la 40 son opcionales (ver más abajo). **El autor no valida y el validador no escribe**: tú no tocas
 `validated_by`, y Germán no escribe preguntas. Es la misma regla de separación que hace que
 `jss` adjudique y no anote (`CONTRIBUTING.md` §1).
 
@@ -397,8 +413,9 @@ Los valores de `stratum` son literalmente los de
 
 ### Cuántas preguntas de E3: hasta 40, nunca inventadas
 
-El mínimo de cada estrato sigue siendo **25**. Para E3 el banco tiene además espacio para
-**hasta 40 preguntas**: escribe tantas como el material permita, hasta ese tope. La razón es
+El mínimo de cada estrato sigue siendo **25**, también en E3. Para E3 el banco tiene además
+espacio para **hasta 40 preguntas**: las que pasen de 25 son opcionales; escribe tantas como el
+material permita, hasta ese tope. La razón es
 estadística: E3 es el estrato donde se compara C2 con C1, y con más preguntas aumenta la
 probabilidad de detectar una mejora real pequeña. En la simulación de potencia del notebook 10,
 con 25 preguntas una mejora verdadera de 15 puntos se detecta en alrededor de 57 % de los
@@ -436,11 +453,17 @@ uv run afg gold questions-check              # tolera un banco a medias
 uv run afg gold questions-check --complete   # solo al cierre: exige el mínimo validado por estrato
 ```
 
-Comprueba, en cada fila ya validada, que la serie sea una del estudio, que la evidencia esté
-bien formada y pertenezca a esa serie, que la respuesta y la evidencia estén presentes (y que
-una E4 no lleve ninguna de las dos), y que el validador no sea el autor. Las filas aún sin
+Comprueba, en cada fila ya validada, que la serie sea una **serie de evaluación** (las de
+desarrollo —ES2015, IS1004 y TS3009— no aportan preguntas al banco: ADR 0005), que la evidencia
+esté bien formada y pertenezca a esa serie, que cada acto de diálogo citado **exista** en la
+transcripción de la reunión, que la respuesta y la evidencia estén presentes (y que una E4 no
+lleve ninguna de las dos), y que `validated_by` sean las iniciales de quien valida (`gm` o `gv`),
+distintas del autor. En la evidencia los actos de una misma reunión se separan con `;` y las
+reuniones con `|`; una coma entre ids se rechaza con un ejemplo del formato correcto. Si faltan
+las transcripciones, avisa una sola vez y se corre `uv run afg gold setup`. Las filas aún sin
 validar quedan como pendientes y el mínimo por estrato es un aviso; con `--complete` ambos
-pasan a ser errores. Las filas de más sobre el mínimo que siguen **completamente vacías** (sin
+pasan a ser errores, y los errores repetidos se agrupan en una línea con su cuenta (por
+ejemplo, «115 filas (q001, q002, q003 y 112 más): sin escribir»). Las filas de más sobre el mínimo que siguen **completamente vacías** (sin
 texto, respuesta, evidencia, serie ni validador) se informan como *opcionales sin usar*: no
 son pendientes ni errores, y el Experimento B las ignora. Sale con código 1 si hay errores: se corrigen antes del PR.
 
@@ -460,10 +483,63 @@ Las columnas salen del modelo `src/afg/domain/question.py::Question`, una por ca
 | `stratum` | Uno de los cuatro valores de arriba, ya puesto por `questions-init`. **No tocar** |
 | `text` | La pregunta, en español. **La llenas tú** |
 | `reference_answer` | La respuesta derivada de la evidencia. **La llenas tú**, y queda **vacía en E4**: el modelo la declara `None` para ese estrato, porque ahí la referencia *es la ausencia de respuesta* |
-| `reference_evidence` | Los actos de diálogo que la respaldan. **La llenas tú**. Formato `reunion:da_id;da_id`, y `\|` entre reuniones cuando la evidencia abarca más de una. **Vacía en E4** |
+| `reference_evidence` | Los actos de diálogo que la respaldan. **La llenas tú**. Formato `reunion:da_id;da_id`, y `\|` entre reuniones cuando la evidencia abarca más de una. **Vacía en E4**. Los ids se obtienen con `uv run afg gold evidencia` (ver «Cómo llenar `reference_evidence`» más abajo) |
 | `author` | `gm`, ya puesto por `questions-init` |
 | `validated_by` | **Lo llena Germán.** Tú lo dejas vacío |
 | `validation_notes` | **Lo llena Germán** cuando devuelve una pregunta que no pasó, con el motivo. **Tú lo borras** al reentregar la pregunta corregida — la tabla completa de los cuatro estados está en `tareas-gv.md` §8 |
+
+### Cómo llenar `reference_evidence`
+
+Los ids de acto de diálogo no aparecen en los `.md` de las transcripciones ni en los CSV de
+anotación. El comando `uv run afg gold evidencia` los muestra y entrega la celda lista para
+pegar. Hay dos formas de usarlo.
+
+**A. Partir de una decisión ya adjudicada** (lo habitual, porque las preguntas salen de la
+anotación adjudicada). El id de la decisión está en la primera columna de
+`data/processed/decisions/<SERIE>.decisions.adjudicated.csv`:
+
+```bash
+uv run afg gold evidencia --decision ES2015a.d02
+```
+
+```text
+ES2015a.d02: precio de venta — fijar el precio de venta en 25 euros
+Evidencia en 1 turno(s) de ES2015a:
+
+turno 114 (PM)
+  So, now that we know how to use the whiteboard, um, the next, um, thing we need to
+  address is our financial department, [...] selling price of twenty five Euros. [...]
+  actos: ES2015a.A.dialog-act.dharshi.120
+
+Para pegar en `reference_evidence`:
+  ES2015a:ES2015a.A.dialog-act.dharshi.120
+```
+
+El texto de la última sección (la línea bajo «Para pegar en `reference_evidence`») se copia tal
+cual en la celda. Si la evidencia abarca varios turnos o varias decisiones, los valores de la
+misma reunión se unen con `;` dentro de un solo `reunion:` y los de reuniones distintas se
+separan con `|`, por ejemplo `ES2015a:ES2015a.A.dialog-act.dharshi.120|ES2015b:ES2015b.A.dialog-act.dharshi.45`.
+
+**B. Buscar en la transcripción** (cuando la evidencia no coincide con una decisión, por ejemplo
+en una E1 sobre un detalle, o para confirmar una E4):
+
+```bash
+uv run afg gold evidencia --meeting ES2015a --term "twenty five"   # por palabra o frase
+uv run afg gold evidencia --meeting ES2015a --turnos 113-115       # por turnos
+```
+
+Cada turno que coincide se muestra con su número, quién habló (`PM`, `UI`, `ID`, `ME`), el texto,
+sus ids (`actos:`) y su línea «para pegar». Con varios turnos, la última sección junta todos los
+ids. Los turnos largos traen varios actos de diálogo: si solo uno respalda la respuesta, basta
+con dejar ese id en la celda.
+
+Antes de pegar, conviene leer el turno y confirmar que dice lo que afirma `reference_answer`
+(regla 1 de arriba: la respuesta sale de la evidencia). Después, `uv run afg gold questions-check`
+verifica el formato de la celda.
+
+Si el comando indica que faltan las transcripciones, se corre `uv run afg gold setup`. Si el
+archivo del banco se guardó con Excel, debe quedar como «CSV UTF-8 (delimitado por comas)»;
+con otra codificación o con `;` como separador, `questions-check` indica qué cambiar.
 
 ### Las tres reglas que más se rompen
 
@@ -503,7 +579,7 @@ mantenedor revise exactamente esa serie antes de que entre.
 git checkout main                                          # vuelve a main
 git pull                                                    # trae lo que el equipo ya fusionó
 git checkout -b data/anotacion-ES2015-gm                    # crea la rama de esta serie
-uv run afg gold prepare --annotator gm
+uv run afg gold setup --annotator gm
 # ... anotas ...
 uv run afg gold validate --annotator gm --series ES2015     # tiene que salir sin errores
 git add data/processed/decisions/ES2015.decisions.gm.csv \

@@ -34,6 +34,14 @@ adjudicator = "jss"
 phase1_series = ["ES2015", "TS3009"]
 phase2_series = ["ES2016", "IS1003", "TS3005", "ES2008"]
 
+# Series `jss` has opened for annotation, in the order they were opened. Whether the next
+# series may start is a human signal (announced once the previous one is adjudicated), so it
+# is the one piece of state that cannot be derived from files: `afg gold setup`, `prepare`,
+# `validate` and `status` read it. A series that is not listed gets no files, shows as
+# "pendiente (aún no)" and is never offered as the next step. To open the next series, add
+# it here in the same PR that announces it. Omitting this key opens every series.
+released_series = ["ES2015", "TS3009"]
+
 [annotation.recall_sample]
 # Tarea C (manual section 5): adjudicate a random sample of pairs the blocker REJECTED, to
 # put a number on what it lost. One person, one sample per listed series: the original
