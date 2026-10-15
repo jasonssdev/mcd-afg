@@ -1872,7 +1872,7 @@ def experiment_b(
 ) -> None:
     """Experimento B: preguntas x condiciones x corridas, con juicio y citación (OE3).
 
-    Por cada combinación obtiene la respuesta, la juzga con el modelo de `[judge]`, calcula la
+    Por cada combinación obtiene la respuesta, la juzga con el modelo de `\\[judge]`, calcula la
     corrección de las citas y agrega un registro a `respuestas.jsonl`. Si se interrumpe, al
     repetir el comando con el mismo `--run-name` continúa donde quedó; los registros con error
     se reintentan. La semilla de generación de la corrida r es `seed + r`.
