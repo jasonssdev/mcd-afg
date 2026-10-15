@@ -26,3 +26,14 @@ def test_judge_model_can_still_be_overridden(monkeypatch: pytest.MonkeyPatch) ->
     monkeypatch.setenv("AFG_JUDGE_MODEL", "mistral-small3.2:24b")
     settings = Settings(_env_file=None)  # type: ignore[call-arg]
     assert settings.judge_model == "mistral-small3.2:24b"
+
+
+def test_openkos_executable_defaults_to_the_path_lookup(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("AFG_OPENKOS_EXECUTABLE", raising=False)
+    assert Settings(_env_file=None).openkos_executable == "openkos"  # type: ignore[call-arg]
+
+
+def test_openkos_executable_can_be_overridden(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("AFG_OPENKOS_EXECUTABLE", "/opt/openkos-0.6/bin/openkos")
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+    assert settings.openkos_executable == "/opt/openkos-0.6/bin/openkos"
