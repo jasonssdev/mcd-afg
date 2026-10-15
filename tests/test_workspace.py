@@ -316,6 +316,7 @@ class TestLoadAnnotationPlan:
             plan.annotator("zz")
         assert "zz" in str(excinfo.value)
         assert "gv" in str(excinfo.value), "the error must list the valid initials"
+        assert "jss" not in str(excinfo.value), "the maintainer does not annotate"
 
     def test_phases_are_shared_by_every_annotator(self, plan: AnnotationPlan) -> None:
         assert plan.annotator("gv").phase1_series == ("ES2015",)
@@ -875,6 +876,66 @@ class TestValidateHalfFilledRows:
         _fill_decisions(path, annotator="")
         report = validate_annotator(plan, "gv", paths=sources, series="ES2015")
         assert any(i.column == "annotator" for i in report.issues)
+
+
+class TestValidateHeaderAndNotes:
+    def test_renamed_decision_column_is_reported_as_missing_column(
+        self, plan: AnnotationPlan, sources: WorkspacePaths
+    ) -> None:
+        _prepared(plan, sources)
+        path = sources.decisions_dir / "ES2015.decisions.gv.csv"
+        text = path.read_text(encoding="utf-8")
+        path.write_text(text.replace("status", "estado", 1), encoding="utf-8")
+        report = validate_annotator(plan, "gv", paths=sources, series="ES2015")
+        messages = " ".join(i.message for i in report.issues)
+        assert "falta la columna `status`" in messages
+        assert "¿la renombraste?" in messages
+        assert "decision_content" in messages, "the expected columns are listed"
+        assert "a medio llenar" not in messages
+
+    def test_renamed_candidate_column_is_reported_as_missing_column(
+        self, plan: AnnotationPlan, sources: WorkspacePaths
+    ) -> None:
+        _prepared(plan, sources)
+        path = sources.relations_dir / "ES2015.candidates.gv.csv"
+        text = path.read_text(encoding="utf-8")
+        path.write_text(text.replace("confidence", "confianza", 1), encoding="utf-8")
+        report = validate_annotator(plan, "gv", paths=sources, series="ES2015")
+        messages = " ".join(i.message for i in report.issues)
+        assert "falta la columna `confidence`" in messages
+        assert "a medio llenar" not in messages
+
+    def test_unknown_id_cites_the_base_file_without_initials(
+        self, plan: AnnotationPlan, sources: WorkspacePaths
+    ) -> None:
+        _prepared(plan, sources)
+        path = sources.decisions_dir / "ES2015.decisions.gv.csv"
+        rows = _fill_decisions(path)
+        invented = dict(rows[0])
+        invented["decision_id"] = "ES2015z.d99"
+        rows.append(invented)
+        _write_csv(path, _DECISION_COLUMNS, rows)
+        report = validate_annotator(plan, "gv", paths=sources, series="ES2015")
+        message = next(i.message for i in report.issues if i.row_id == "ES2015z.d99")
+        assert "archivo base ES2015.decisions.csv" in message
+
+    def test_direction_no_without_notes_is_blocking(
+        self, plan: AnnotationPlan, sources: WorkspacePaths
+    ) -> None:
+        _prepared(plan, sources)
+        path = sources.relations_dir / "ES2015.candidates.gv.csv"
+        _fill_candidates(path, direction_ok=DirectionOk.NO.value, notes="")
+        report = validate_annotator(plan, "gv", paths=sources, series="ES2015")
+        assert any(i.column == "notes" and "direction_ok" in i.message for i in report.issues)
+
+    def test_direction_no_with_notes_passes(
+        self, plan: AnnotationPlan, sources: WorkspacePaths
+    ) -> None:
+        _prepared(plan, sources)
+        path = sources.relations_dir / "ES2015.candidates.gv.csv"
+        _fill_candidates(path, direction_ok=DirectionOk.NO.value, notes="el orden está invertido")
+        report = validate_annotator(plan, "gv", paths=sources, series="ES2015")
+        assert report.ok
 
 
 class TestValidateMachineColumns:

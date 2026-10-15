@@ -23,15 +23,24 @@ from __future__ import annotations
 
 import csv
 from collections import Counter
-from collections.abc import Collection
+from collections.abc import Callable, Collection, Sequence
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
 
+from afg.conditions.c1_chunking import load_frozen_turns
 from afg.domain.decision import EvidenceSpan
 from afg.domain.question import Question, QuestionStratum, parse_reference_evidence
-from afg.shared.config import load_corpus_config, load_experiments_config
+from afg.shared.config import (
+    load_annotation_config,
+    load_corpus_config,
+    load_experiments_config,
+)
 from afg.shared.csvio import CsvFormatError, open_csv_reader, semicolon_hint
+from afg.shared.paths import TRANSCRIPTS_DIR
+
+ActLookup = Callable[[str], Collection[str] | None]
+"""``meeting_id -> its dialogue act ids``, or ``None`` when the transcript is not on disk."""
 
 BANK_COLUMNS = (
     "id",
@@ -112,11 +121,54 @@ def _meeting_belongs(meeting_id: str, series: str, letters: Collection[str]) -> 
     )
 
 
+_EVIDENCE_FORMAT = (
+    "El formato es `reunión:id_de_acto`; los actos de una misma reunión se separan con `;` "
+    "y las reuniones con `|`."
+)
+
+
+def _evidence_format_problems(cell: str, series: str) -> list[str]:
+    """Spanish format problems of a ``reference_evidence`` cell, one message per kind."""
+    example = f"{series or 'ES2016'}a:ID1;ID2|{series or 'ES2016'}b:ID3"
+    if not cell.strip():
+        return []
+    missing_meeting = False
+    commas = False
+    no_acts = False
+    for raw in cell.split("|"):
+        meeting, separator, acts = raw.strip().partition(":")
+        if not separator or not meeting.strip():
+            missing_meeting = True
+        elif "," in acts:
+            commas = True
+        elif not any(a.strip() for a in acts.split(";")):
+            no_acts = True
+    problems: list[str] = []
+    if missing_meeting:
+        problems.append(
+            "evidencia sin la reunión: cada tramo empieza con la reunión y dos puntos "
+            f"(por ejemplo `{series or 'ES2016'}a:ID1`). {_EVIDENCE_FORMAT} Ejemplo: `{example}`."
+        )
+    if commas:
+        problems.append(
+            "evidencia con `,` entre ids: la coma no separa actos y se leería como un solo id. "
+            f"{_EVIDENCE_FORMAT} Ejemplo: `{example}`."
+        )
+    if no_acts:
+        problems.append(
+            f"evidencia sin ids de acto después de los dos puntos. Ejemplo: `{example}`."
+        )
+    return problems
+
+
 def _check_content(
     row: dict[str, str],
     stratum: QuestionStratum | None,
     study_series: Collection[str],
     letters: Collection[str],
+    development_series: Collection[str] = (),
+    act_ids_of: ActLookup | None = None,
+    unchecked_meetings: set[str] | None = None,
 ) -> tuple[list[str], tuple[EvidenceSpan, ...]]:
     """Content problems of a validated row, and its parsed evidence."""
     problems: list[str] = []
@@ -125,20 +177,42 @@ def _check_content(
         problems.append("texto de la pregunta vacío.")
     if not series:
         problems.append("serie vacía.")
+    elif series in development_series:
+        problems.append(
+            f"la serie {series!r} es de desarrollo: las preguntas del banco salen solo de series "
+            "de evaluación (ADR 0005, #32)."
+        )
     elif series not in study_series:
         problems.append(f"la serie {series!r} no es una de las series del estudio.")
 
     spans: tuple[EvidenceSpan, ...] = ()
-    try:
-        spans = parse_reference_evidence(row["reference_evidence"])
-    except ValueError as exc:
-        problems.append(f"evidencia mal formada: {exc}")
+    format_problems = _evidence_format_problems(row["reference_evidence"], series)
+    if format_problems:
+        problems.extend(format_problems)
+    else:
+        try:
+            spans = parse_reference_evidence(row["reference_evidence"])
+        except ValueError as exc:
+            problems.append(f"evidencia mal formada: {exc}")
     if series:
         for span in spans:
             if not _meeting_belongs(span.meeting_id, series, letters):
                 problems.append(
                     f"evidencia: la reunión {span.meeting_id!r} no pertenece a la serie {series!r}."
                 )
+            elif act_ids_of is not None:
+                known = act_ids_of(span.meeting_id)
+                if known is None:
+                    if unchecked_meetings is not None:
+                        unchecked_meetings.add(span.meeting_id)
+                    continue
+                unknown = [a for a in span.dialogue_act_ids if a not in known]
+                if unknown:
+                    listed = ", ".join(repr(a) for a in unknown)
+                    problems.append(
+                        f"evidencia: no existe en la reunión {span.meeting_id} el acto de "
+                        f"diálogo {listed}. Búscalo con `uv run afg gold evidencia`."
+                    )
 
     answer = row["reference_answer"].strip()
     has_evidence = bool(row["reference_evidence"].strip())
@@ -155,6 +229,9 @@ def _check_content(
     return problems, spans
 
 
+_UNWRITTEN = "sin escribir (la fila está vacía)."
+
+
 def load_question_bank(
     path: Path,
     *,
@@ -162,6 +239,9 @@ def load_question_bank(
     meeting_letters: Collection[str],
     min_per_stratum: int = 0,
     require_complete: bool = False,
+    development_series: Collection[str] = (),
+    valid_validators: Sequence[str] | None = None,
+    act_ids_of: ActLookup | None = None,
 ) -> QuestionBankReport:
     """Load ``path`` and validate it row by row.
 
@@ -169,7 +249,12 @@ def load_question_bank(
     every row, pending or not, because those columns are machine-written. Content checks
     run on rows that carry a ``validated_by``. A row whose validator equals its author is a
     blocking error and is never usable. A row without validator is *pending*; with
-    ``require_complete`` it is a blocking error instead.
+    ``require_complete`` it is a blocking error instead (and still counts as pending).
+
+    Optional stricter checks, off by default: ``development_series`` (bank questions come
+    only from evaluation series, ADR 0005), ``valid_validators`` (initials allowed in
+    ``validated_by``) and ``act_ids_of`` (each cited dialogue act must exist in the meeting's
+    transcript; meetings without a transcript give a single warning, not an error).
 
     The per-stratum minimum counts validated rows: a warning on a partial bank (the bank is
     still being written), a blocking error with ``require_complete``.
@@ -199,6 +284,15 @@ def load_question_bank(
     blank_rows: list[tuple[str, str, QuestionStratum]] = []
     seen: set[str] = set()
     counts: Counter[QuestionStratum] = Counter()
+    unchecked: set[str] = set()
+    lookups: dict[str, Collection[str] | None] = {}
+
+    def cached_acts(meeting_id: str) -> Collection[str] | None:
+        if act_ids_of is None:
+            return None
+        if meeting_id not in lookups:
+            lookups[meeting_id] = act_ids_of(meeting_id)
+        return lookups[meeting_id]
 
     for number, row in enumerate(rows, start=2):
         row_id = row["id"].strip()
@@ -230,14 +324,33 @@ def load_question_bank(
             if min_per_stratum > 0 and stratum is not None and _is_blank(row) and not found:
                 blank_rows.append((row_id, label, stratum))
                 continue
+            pending.append(row_id)
             if require_complete:
-                found.append((Severity.ERROR, "sin validar (falta validated_by)."))
-            else:
-                pending.append(row_id)
+                blank = _is_blank(row)
+                found.append(
+                    (Severity.ERROR, _UNWRITTEN if blank else "sin validar (falta validated_by).")
+                )
         else:
             if validator == author:
                 found.append((Severity.ERROR, "el validador no puede ser el autor."))
-            content, spans = _check_content(row, stratum, study_series, meeting_letters)
+            if valid_validators is not None and validator not in valid_validators:
+                found.append(
+                    (
+                        Severity.ERROR,
+                        f"validated_by={validator!r} no es un validador válido. Iniciales "
+                        f"válidas: {', '.join(sorted(valid_validators))} (el validador es distinto "
+                        "del autor).",
+                    )
+                )
+            content, spans = _check_content(
+                row,
+                stratum,
+                study_series,
+                meeting_letters,
+                development_series,
+                cached_acts if act_ids_of is not None else None,
+                unchecked,
+            )
             found.extend((Severity.ERROR, message) for message in content)
             if notes:
                 found.append(
@@ -273,12 +386,10 @@ def load_question_bank(
     for row_id, label, row_stratum in blank_rows:
         if per_stratum[row_stratum] >= min_per_stratum:
             optional.append(row_id)
-        elif require_complete:
-            issues.append(
-                QuestionBankIssue(label, Severity.ERROR, "sin validar (falta validated_by).")
-            )
         else:
             pending.append(row_id)
+            if require_complete:
+                issues.append(QuestionBankIssue(label, Severity.ERROR, _UNWRITTEN))
     severity = Severity.ERROR if require_complete else Severity.WARNING
     for stratum_value, count in per_stratum.items():
         if count < min_per_stratum:
@@ -290,6 +401,17 @@ def load_question_bank(
                     f"de {min_per_stratum}.",
                 )
             )
+    if unchecked:
+        shown = sorted(unchecked)
+        names = ", ".join(shown[:5]) + (f" y {len(shown) - 5} más" if len(shown) > 5 else "")
+        issues.append(
+            QuestionBankIssue(
+                "-",
+                Severity.WARNING,
+                f"no se pudo comprobar que los ids de acto existan: faltan las transcripciones "
+                f"de {names}. Corre `uv run afg gold setup` para generarlas.",
+            )
+        )
     return QuestionBankReport(
         usable=tuple(usable),
         pending_ids=tuple(pending),
@@ -300,17 +422,45 @@ def load_question_bank(
     )
 
 
+def _transcript_act_ids(meeting_id: str) -> frozenset[str] | None:
+    """Dialogue act ids of a frozen transcript, or ``None`` when it is not on disk."""
+    try:
+        turns = load_frozen_turns(meeting_id, TRANSCRIPTS_DIR)
+    except FileNotFoundError:
+        return None
+    return frozenset(act for turn in turns for act in turn.dialogue_act_ids)
+
+
+def annotator_initials() -> tuple[str, ...]:
+    """Initials of the people who annotate (``role = "annotator"``), in config order."""
+    people = load_annotation_config()["annotation"]["annotators"]
+    return tuple(p["initials"] for p in people if p.get("role", "annotator") == "annotator")
+
+
 def load_configured_question_bank(
-    path: Path, *, require_complete: bool = False
+    path: Path, *, require_complete: bool = False, strict: bool = False
 ) -> QuestionBankReport:
-    """:func:`load_question_bank` with the series and minimum from ``config/``."""
+    """:func:`load_question_bank` with the series and minimum from ``config/``.
+
+    ``strict`` adds the checks of ``afg gold questions-check``: development series are
+    refused, ``validated_by`` must be an annotator's initials, and cited dialogue acts must
+    exist in ``data/interim/transcripts``.
+    """
     corpus = load_corpus_config()
+    extra: dict[str, object] = {}
+    if strict:
+        extra = {
+            "development_series": frozenset(corpus["oe1"]["development_series"]),
+            "valid_validators": annotator_initials(),
+            "act_ids_of": _transcript_act_ids,
+        }
     return load_question_bank(
         path,
         study_series=frozenset(corpus["oe1"]["series"]),
         meeting_letters=tuple(corpus["corpus"]["series"]["meeting_letters"]),
         min_per_stratum=int(load_experiments_config()["question_bank"]["min_questions"]),
         require_complete=require_complete,
+        **extra,  # type: ignore[arg-type]
     )
 
 

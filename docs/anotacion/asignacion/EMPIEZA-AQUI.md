@@ -62,11 +62,12 @@ Con la serie que indique «Qué hacer ahora» (o `Siguiente:` en `status`; el de
 `tareas-<iniciales>.md`; el orden de las fases está en [`README.md`](README.md) §2):
 
 - **Tarea A** (`<serie>.decisions.<iniciales>.csv`): `status`, `decision_object`,
-  `decision_content`, `notes` si hace falta.
+  `decision_content`, `notes` si hace falta (obligatoria con `sin_soporte`).
 - **Tarea B** (`<serie>.candidates.<iniciales>.csv`): `relation`, `direction_ok`,
-  `confidence`, `notes` si hace falta.
+  `confidence`, `notes` si hace falta (obligatoria si `direction_ok` es `no`).
 
-`annotator` ya viene puesto. Ninguna columna de máquina se toca; los valores permitidos de
+`annotator` ya viene puesto. Ninguna columna de máquina se toca ni se renombra (si falta o
+cambió de nombre una columna, `validate` indica cuál); los valores permitidos de
 cada columna están en tu documento personal, §2.
 
 > **Editar el CSV.** Usa VS Code o LibreOffice Calc. Excel sirve solo si guardas con

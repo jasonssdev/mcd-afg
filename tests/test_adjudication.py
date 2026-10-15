@@ -224,7 +224,7 @@ def series(paths: WorkspacePaths) -> WorkspacePaths:
         [
             _rel("ES2015.p001", "gv", "refina", "si"),
             _rel("ES2015.p002", "gv", "revierte", "si"),
-            _rel("ES2015.p003", "gv", "reafirma", "no"),
+            _rel("ES2015.p003", "gv", "reafirma", "no", notes="orden invertido"),
         ],
     )
     return paths

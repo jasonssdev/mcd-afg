@@ -448,11 +448,17 @@ uv run afg gold questions-check              # tolera un banco a medias
 uv run afg gold questions-check --complete   # solo al cierre: exige el mínimo validado por estrato
 ```
 
-Comprueba, en cada fila ya validada, que la serie sea una del estudio, que la evidencia esté
-bien formada y pertenezca a esa serie, que la respuesta y la evidencia estén presentes (y que
-una E4 no lleve ninguna de las dos), y que el validador no sea el autor. Las filas aún sin
+Comprueba, en cada fila ya validada, que la serie sea una **serie de evaluación** (las de
+desarrollo —ES2015, IS1004 y TS3009— no aportan preguntas al banco: ADR 0005), que la evidencia
+esté bien formada y pertenezca a esa serie, que cada acto de diálogo citado **exista** en la
+transcripción de la reunión, que la respuesta y la evidencia estén presentes (y que una E4 no
+lleve ninguna de las dos), y que `validated_by` sean las iniciales de quien valida (`gm` o `gv`),
+distintas del autor. En la evidencia los actos de una misma reunión se separan con `;` y las
+reuniones con `|`; una coma entre ids se rechaza con un ejemplo del formato correcto. Si faltan
+las transcripciones, avisa una sola vez y se corre `uv run afg gold setup`. Las filas aún sin
 validar quedan como pendientes y el mínimo por estrato es un aviso; con `--complete` ambos
-pasan a ser errores. Las filas de más sobre el mínimo que siguen **completamente vacías** (sin
+pasan a ser errores, y los errores repetidos se agrupan en una línea con su cuenta (por
+ejemplo, «115 filas (q001, q002, q003 y 112 más): sin escribir»). Las filas de más sobre el mínimo que siguen **completamente vacías** (sin
 texto, respuesta, evidencia, serie ni validador) se informan como *opcionales sin usar*: no
 son pendientes ni errores, y el Experimento B las ignora. Sale con código 1 si hay errores: se corrigen antes del PR.
 

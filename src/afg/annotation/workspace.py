@@ -264,7 +264,7 @@ class AnnotationPlan:
         for person in self.annotators:
             if person.initials == initials:
                 return person
-        known = ", ".join(person.initials for person in self.annotators)
+        known = ", ".join(person.initials for person in self.annotators if person.annotates)
         raise UnknownAnnotatorError(
             f"No existe el anotador {initials!r} en config/annotation.toml. "
             f"Iniciales válidas: {known}."
@@ -424,6 +424,13 @@ def _row_id_column_for(kind: TaskKind) -> str:
 
 def _machine_columns_for(kind: TaskKind) -> tuple[str, ...]:
     return _DECISION_MACHINE_COLUMNS if kind is TaskKind.DECISIONS else _CANDIDATE_MACHINE_COLUMNS
+
+
+def _expected_columns_for(kind: TaskKind) -> tuple[str, ...]:
+    """Every column a workspace file of ``kind`` must carry (id, machine and human)."""
+    if kind is TaskKind.DECISIONS:
+        return (_DECISION_ID_COLUMN, *_DECISION_MACHINE_COLUMNS, *_DECISION_HUMAN_COLUMNS)
+    return (_PAIR_ID_COLUMN, *_CANDIDATE_MACHINE_COLUMNS, *_CANDIDATE_HUMAN_COLUMNS)
 
 
 def file_contains_annotation(path: Path, kind: TaskKind) -> bool:
@@ -721,6 +728,7 @@ def _check_machine_columns(
     kind: TaskKind,
     rows: Sequence[Mapping[str, str]],
     reference: Mapping[str, Mapping[str, str]],
+    source_name: str,
 ) -> list[ValidationIssue]:
     """Compare every machine column against the generated base file.
 
@@ -760,7 +768,7 @@ def _check_machine_columns(
                     value=row_id,
                     message=(
                         f"{path.name}, fila {row_id}: ese id no existe en el archivo base "
-                        f"{path.name.replace(f'.{kind.value}.', f'.{kind.value}.')}. "
+                        f"{source_name}. "
                         "Las filas nuevas solo son válidas como hijas de una fila "
                         "`compuesta`, con el sufijo -1, -2, ..."
                     ),
@@ -922,6 +930,20 @@ def _check_candidate_row(path: Path, row: Mapping[str, str]) -> tuple[bool, list
                 )
             )
 
+    if values["direction_ok"] == DirectionOk.NO.value and not row.get("notes", "").strip():
+        issues.append(
+            ValidationIssue(
+                path=path,
+                row_id=row_id,
+                column="notes",
+                value="",
+                message=(
+                    f"{path.name}, fila {row_id}: `direction_ok = no` exige que `notes` explique "
+                    "por qué el orden del par no respeta la convención (manual §4)."
+                ),
+            )
+        )
+
     if not annotator:
         issues.append(
             ValidationIssue(
@@ -988,11 +1010,33 @@ def _validate_file(
             0,
             [ValidationIssue(path=path, row_id="-", column="-", value="", message=hint)],
         )
+    expected_columns = _expected_columns_for(kind)
+    absent = [column for column in expected_columns if column not in fieldnames]
+    if absent:
+        listed = ", ".join(f"`{column}`" for column in absent)
+        plural = "las columnas" if len(absent) > 1 else "la columna"
+        return (
+            0,
+            len(rows),
+            [
+                ValidationIssue(
+                    path=path,
+                    row_id="-",
+                    column=absent[0],
+                    value="",
+                    message=(
+                        f"{path.name}: falta {plural} {listed} (¿la renombraste?). No se "
+                        "cambian los nombres de la cabecera. Columnas esperadas: "
+                        f"{', '.join(expected_columns)}."
+                    ),
+                )
+            ],
+        )
     _, reference_rows = _read_rows(source)
     id_column = _row_id_column_for(kind)
     reference = {row[id_column]: row for row in reference_rows if row.get(id_column, "").strip()}
 
-    issues = _check_machine_columns(path, kind, rows, reference)
+    issues = _check_machine_columns(path, kind, rows, reference, source.name)
     check_row = _check_decision_row if kind is TaskKind.DECISIONS else _check_candidate_row
     filled = 0
     for row in rows:

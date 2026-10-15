@@ -15,7 +15,7 @@ from rich.console import Console
 from rich.markup import escape
 
 if TYPE_CHECKING:
-    from collections.abc import Collection
+    from collections.abc import Collection, Sequence
 
     from afg.annotation.workspace import AnnotationPlan, WorkspacePaths
     from afg.conditions.c1_chunking import FrozenTurn
@@ -128,8 +128,8 @@ from afg.evaluation.judge_calibration_worksheet import (
     write_worksheet,
 )
 from afg.experiments.question_bank import (
+    QuestionBankIssue,
     QuestionBankReport,
-    format_issue,
     is_question_bank,
     load_configured_question_bank,
 )
@@ -1522,10 +1522,27 @@ def _print_question_bank_report(report: QuestionBankReport) -> None:
     )
     for stratum, count in report.usable_per_stratum.items():
         console.print(f"  {stratum.value}: {count} validada(s)")
-    for issue in report.errors:
-        console.print(f"[bold red]  error {escape(format_issue(issue))}[/bold red]")
-    for issue in report.warnings:
-        console.print(f"[yellow]  aviso {escape(format_issue(issue))}[/yellow]")
+    for line in _collapsed_issue_lines(report.errors):
+        console.print(f"[bold red]  error {escape(line)}[/bold red]")
+    for line in _collapsed_issue_lines(report.warnings):
+        console.print(f"[yellow]  aviso {escape(line)}[/yellow]")
+
+
+def _collapsed_issue_lines(issues: Sequence[QuestionBankIssue]) -> list[str]:
+    """One line per kind of problem: repeated messages become a count with a few row ids."""
+    by_message: dict[str, list[str]] = {}
+    for issue in issues:
+        by_message.setdefault(issue.message, []).append(issue.row_id)
+    lines: list[str] = []
+    for message, row_ids in by_message.items():
+        if len(row_ids) == 1:
+            lines.append(f"{row_ids[0]}: {message}")
+            continue
+        shown = ", ".join(row_ids[:3])
+        rest = len(row_ids) - 3
+        examples = f"{shown} y {rest} más" if rest > 0 else shown
+        lines.append(f"{len(row_ids)} filas ({examples}): {message}")
+    return lines
 
 
 @gold_app.command("questions-check")
@@ -1557,7 +1574,7 @@ def gold_questions_check(
                 f"[bold red]{_short(bank_path)} no tiene el formato del banco.[/bold red]"
             )
             raise typer.Exit(code=1)
-        report = load_configured_question_bank(bank_path, require_complete=complete)
+        report = load_configured_question_bank(bank_path, require_complete=complete, strict=True)
     except (ValueError, FileNotFoundError) as exc:
         console.print(f"[bold red]{exc}[/bold red]")
         raise typer.Exit(code=1) from exc

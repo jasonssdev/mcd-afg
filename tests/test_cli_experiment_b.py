@@ -174,8 +174,11 @@ def _check(path: Path, *args: str) -> Any:
     return CliRunner().invoke(afg_cli.app, ["gold", "questions-check", "--path", str(path), *args])
 
 
-def test_questions_check_reports_without_running(env: dict[str, Any]) -> None:
-    _bank(env, _BANK_OK, _BANK_PENDING)
+def test_questions_check_reports_without_running(
+    env: dict[str, Any], monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    _strict_env(monkeypatch, tmp_path)
+    _bank(env, _row("ES2016a:ES2016a.A.dialog-act.x.1"), _BANK_PENDING)
     result = _check(env["questions"])
     assert result.exit_code == 0, result.output
     assert "1 validada" in _out(result) and "1 pendiente" in _out(result)
@@ -223,3 +226,115 @@ def test_questions_check_explains_a_semicolon_file(env: dict[str, Any]) -> None:
     result = _check(env["questions"])
     assert result.exit_code == 1
     assert "`;`" in _out(result) and "comas" in _out(result)
+
+
+# --- questions-check: collapsed report and stricter evidence checks ----------------------------
+
+
+def _strict_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    transcripts = tmp_path / "transcripts"
+    transcripts.mkdir()
+    turn = {
+        "meeting_id": "ES2016a",
+        "turn_index": 0,
+        "speaker": "A",
+        "role": "PM",
+        "text": "hello",
+        "start": 0.0,
+        "end": 1.0,
+        "char_start": 0,
+        "char_end": 5,
+        "dialogue_act_ids": ["ES2016a.A.dialog-act.x.1", "ES2016a.A.dialog-act.x.2"],
+    }
+    (transcripts / "ES2016a.jsonl").write_text(json.dumps(turn) + "\n", encoding="utf-8")
+    monkeypatch.setattr("afg.experiments.question_bank.TRANSCRIPTS_DIR", transcripts)
+
+
+def _row(evidence: str, *, series: str = "ES2016", validator: str = "gv") -> str:
+    return f'q001,{series},E1_point_fact,Q?,A,"{evidence}",gm,{validator},\n'
+
+
+def test_questions_check_complete_on_blank_bank_collapses_repeated_errors(
+    env: dict[str, Any],
+) -> None:
+    rows = "".join(f"q{i:03d},,E1_point_fact,,,,gm,,\n" for i in range(1, 31))
+    _bank(env, rows)
+    result = _check(env["questions"], "--complete")
+    out = _out(result)
+    assert result.exit_code == 1
+    assert "30 filas" in out and "sin escribir" in out and "q001" in out
+    assert out.count("sin escribir") == 1, out
+    assert "30 pendiente(s)" in out
+
+
+def test_questions_check_rejects_comma_separated_acts(
+    env: dict[str, Any], monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    _strict_env(monkeypatch, tmp_path)
+    _bank(env, _row("ES2016a:ES2016a.A.dialog-act.x.1,ES2016a.A.dialog-act.x.2"))
+    result = _check(env["questions"])
+    out = _out(result)
+    assert result.exit_code == 1
+    assert "`;`" in out and "`|`" in out and "ES2016a:" in out
+
+
+def test_questions_check_reports_unknown_act_ids(
+    env: dict[str, Any], monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    _strict_env(monkeypatch, tmp_path)
+    _bank(env, _row("ES2016a:ES2016a.A.dialog-act.x.1;ES2016a.A.dialog-act.zzz.9"))
+    result = _check(env["questions"])
+    out = _out(result)
+    assert result.exit_code == 1
+    assert "zzz.9" in out and "uv run afg gold evidencia" in out
+
+
+def test_questions_check_accepts_known_act_ids(
+    env: dict[str, Any], monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    _strict_env(monkeypatch, tmp_path)
+    _bank(env, _row("ES2016a:ES2016a.A.dialog-act.x.1;ES2016a.A.dialog-act.x.2"))
+    result = _check(env["questions"])
+    assert result.exit_code == 0, result.output
+
+
+def test_questions_check_warns_once_when_transcripts_are_missing(
+    env: dict[str, Any], monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr("afg.experiments.question_bank.TRANSCRIPTS_DIR", tmp_path / "nada")
+    _bank(env, _row("ES2016a:a.1"), "q002,ES2016,E1_point_fact,Q?,A,ES2016b:b.1,gm,gv,\n")
+    result = _check(env["questions"])
+    out = _out(result)
+    assert result.exit_code == 0, result.output
+    assert out.count("uv run afg gold setup") == 1
+
+
+def test_questions_check_reports_evidence_without_meeting_in_spanish(
+    env: dict[str, Any], monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    _strict_env(monkeypatch, tmp_path)
+    _bank(env, _row("ES2016a.A.dialog-act.x.1"))
+    out = _out(_check(env["questions"]))
+    assert "malformed" not in out and "reunión" in out and "ES2016a:" in out
+
+
+def test_questions_check_rejects_development_series(
+    env: dict[str, Any], monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    _strict_env(monkeypatch, tmp_path)
+    _bank(env, _row("ES2015a:x.1", series="ES2015"))
+    result = _check(env["questions"])
+    out = _out(result)
+    assert result.exit_code == 1
+    assert "desarrollo" in out and "ADR 0005" in out
+
+
+def test_questions_check_rejects_validators_that_are_not_annotators(
+    env: dict[str, Any], monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    _strict_env(monkeypatch, tmp_path)
+    _bank(env, _row("ES2016a:ES2016a.A.dialog-act.x.1", validator="jss"))
+    result = _check(env["questions"])
+    out = _out(result)
+    assert result.exit_code == 1
+    assert "jss" in out and "gm, gv" in out

@@ -441,10 +441,12 @@ uv run afg gold questions-check              # tolera un banco a medias
 uv run afg gold questions-check --complete   # solo al cierre: exige el mínimo validado por estrato
 ```
 
-En cada fila que marcaste con `gv` comprueba que la serie sea una del estudio, que la
-evidencia esté bien formada y pertenezca a esa serie, que la respuesta y la evidencia estén
-presentes (y que una E4 no lleve ninguna de las dos), y que validador y autor sean personas
-distintas. Avisa si una fila validada conserva `validation_notes`. No juzga criterio: que la
+En cada fila que marcaste con `gv` comprueba que la serie sea una serie de evaluación (las de
+desarrollo —ES2015, IS1004 y TS3009— no aportan preguntas al banco: ADR 0005), que la evidencia
+esté bien formada (actos de una misma reunión separados con `;`, reuniones con `|`) y pertenezca
+a esa serie, que cada acto de diálogo citado exista en la transcripción, que la respuesta y la
+evidencia estén presentes (y que una E4 no lleve ninguna de las dos), y que `validated_by`
+tenga las iniciales de quien valida (`gm` o `gv`) y sean distintas del autor. Avisa si una fila validada conserva `validation_notes`. No juzga criterio: que la
 respuesta salga de la evidencia o que una E4 sea realmente incontestable lo sigues revisando
 tú. E3 puede traer entre 25 y 40 preguntas: las filas de E3 sobre el mínimo que sigan vacías
 son opcionales y no se validan. Sale con código 1 si hay errores.
