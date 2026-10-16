@@ -4,7 +4,7 @@
 |---|---|
 | **Entrega** | Video de avance #1 de AFG2 (semana 2) — análisis exploratorio |
 | **Fecha de envío** | Pendiente |
-| **Versión** | 1.1 |
+| **Versión** | 1.2 |
 | **Construido desde** | `docs/avances/01-jss-problema.md` v1.2 · `docs/avances/02-jss-fuente-de-datos.md` v1.3 · `docs/avances/07-jss-analisis-exploratorio.md` v1.0 · `notebooks/03-jss-eda.ipynb` (análisis exploratorio completo; fuente de las cifras) · `docs/avances/08-jss-metricas-y-criterio-de-exito.md` v1.0 · `notebooks/11-jss-figuras-video-eda.ipynb` (figuras) |
 | **Duración objetivo** | 8:41 a 145 palabras por minuto (máximo del guion: 9:00; la rúbrica fija 8:00, ver más abajo) |
 | **Formato** | Tres presentadores en cuatro bloques consecutivos, en este orden: Jason, Germán, Gustavo, Jason. Con diapositivas de apoyo |
@@ -23,6 +23,7 @@
 |---|---|---|---|
 | 1.0 | 2026-10-15 | Versión inicial: guion del primer video de avance de AFG2, centrado en el análisis exploratorio de datos y escrito para una audiencia no técnica. | Rúbrica del video de avance #1 y retroalimentación del video final de AFG1. |
 | 1.1 | 2026-10-15 | Se amplía el tope a 9:00 (de 1.115 a 1.259 palabras). Se agregan cinco temas del análisis exploratorio: valores atípicos y política de limpieza, duplicados como reafirmaciones, límites de la muestra, estadísticas descriptivas básicas y ventana de contexto del modelo. Se condensan pasajes existentes sin quitar ninguno. | El equipo decidió cubrir todos los hallazgos del análisis exploratorio (`notebooks/03-jss-eda.ipynb`) y optó por una versión más larga que el máximo de la rúbrica. |
+| 1.2 | 2026-10-15 | Se reescribe la explicación de la figura 5: qué agrupa cada punto, por qué el coeficiente solo deja pasar tanto con frases cortas (basta una palabra en común), que desde cuatro palabras ambas líneas coinciden y que los 92 pares dan como mucho 92 relaciones. Se condensa la frase de descriptivos; sus cifras completas quedan en la lámina. Extensión sin cambios (1.259 palabras). | La explicación anterior de la figura 5 no dejaba claro qué mide el gráfico. |
 
 ## Qué pide el curso y dónde se cubre
 
@@ -173,13 +174,13 @@ Pero con frases muy cortas el coeficiente se infla: "cambiar color" frente a "el
 
 Resultado: de 3.071 pares quedan 92, y las horas bajan de unas 77 a unas 2,3. El par del botón turbo se conserva.
 
-Veamos los datos. Una reunión dura unos 32 minutos, con unas 5.010 palabras, 462 turnos y 6,1 decisiones en promedio, entre 1 y 15. Cada decisión es una frase telegráfica de unas seis palabras de contenido; lo más común, tres. Los turnos también son cortos: mediana de cuatro palabras, y 31,5 % de una sola.
+Veamos los datos. Una reunión dura unos 32 minutos: unas 5.010 palabras, 462 turnos y 6,1 decisiones. Cada decisión tiene unas seis palabras de contenido; lo más común, tres. Y los turnos, una mediana de cuatro palabras.
 
 > **▶ Figura 5 — se muestra al decir «Pero hay un límite».**
 >
 > ![Porcentaje de pares que pasan cada criterio según las palabras de contenido de la decisión más corta del par: con 2 y 3 palabras el coeficiente solo deja pasar 36,6 % y 42,1 %, y el filtro completo 0,3 % y 2,0 %](figuras/eda-filtro-segun-longitud-de-frase.png)
 
-Pero hay un límite. En este gráfico, la línea naranja es el coeficiente solo y la verde, el filtro completo. Con una frase de tres palabras, el coeficiente solo deja pasar 42,1 % de los pares, por casualidad; el filtro completo, 2,0 %. Corrige el exceso, pero casi no deja pasar pares entre frases cortas, y las reversiones suelen ser cortas. Además, lo calibramos con un solo par de control. Por eso 92 es un máximo, no el total de relaciones que existen.
+Pero hay un límite. Cada punto agrupa pares según el largo de la frase más corta; la altura es cuántos pasan. La línea naranja es el coeficiente solo; la verde, el filtro completo. Con frases de tres palabras, el coeficiente solo deja pasar 42,1 %: basta una palabra en común. El filtro completo, 2,0 %. Desde cuatro palabras, las dos líneas coinciden. El costo: entre frases cortas casi no pasa nada, y las reversiones suelen ser cortas. Además, lo calibramos con un solo par de control. Así que habrá como mucho 92 relaciones, y quizá otras que el filtro dejó fuera.
 
 Jason resume qué sigue.
 
@@ -187,7 +188,7 @@ Jason resume qué sigue.
 
 Figura 4: `figuras/eda-embudo-del-filtro-lexico.png`. En pantalla: "De 3.071 pares a 92", "≈ 77 horas → ≈ 2,3 horas", "El par del botón turbo se conserva". Antes del gráfico, una lámina con el ejemplo de las dos frases y la cuenta "2 ÷ 3 = 0,67" (frases del ejemplo ilustrativo de `docs/avances/07-jss-analisis-exploratorio.md` §7.3).
 
-Figura 5: `figuras/eda-filtro-segun-longitud-de-frase.png`. En pantalla: "Frases cortas: el filtro casi no deja pasar pares", "Calibrado con un solo par de control", "92 es un máximo, no el total de relaciones". Antes de la figura, una lámina breve con los descriptivos: "Reunión: ≈ 32 min · ≈ 5.010 palabras · 462 turnos · 6,1 decisiones", "Decisión: ≈ 6 palabras de contenido (lo más común: 3)", "Turnos: mediana de 4 palabras · 31,5 % de una sola".
+Figura 5: `figuras/eda-filtro-segun-longitud-de-frase.png`. En pantalla: "Frases cortas: el filtro casi no deja pasar pares", "Calibrado con un solo par de control", "Como mucho 92 relaciones; puede haber otras fuera del filtro". Antes de la figura, una lámina breve con los descriptivos: "Reunión: ≈ 32 min · ≈ 5.010 palabras · 462 turnos · 6,1 decisiones", "Decisión: ≈ 6 palabras de contenido (lo más común: 3)", "Turnos: mediana de 4 palabras · 31,5 % de una sola".
 
 Nota de entrega: es el bloque más denso. Hacer una pausa breve después de "0,67". En el ejemplo, mostrar en la lámina las palabras compartidas ("botón", "turbo") resaltadas. Las cifras 36,6 % y 0,3 % se quedan en la imagen; en la voz solo 42,1 % y 2,0 %.
 
@@ -235,6 +236,6 @@ Nota de entrega: pasar despacio por los cuatro pasos y mirar a cámara en la fra
 | 77 horas a 1,5 minutos por par; 92 pares y 2,3 horas | `docs/avances/07-jss-analisis-exploratorio.md` §7.1 y §7.3; notebook 11, figura 4 |
 | Ejemplo ilustrativo: 2 ÷ 3 = 0,67 con el coeficiente; "cambiar color" = 0,50; umbral de 0,30 y 2 palabras | `docs/avances/07-jss-analisis-exploratorio.md` §7.3 (ejemplos ilustrativos, no datos del corpus) |
 | 42,1 % frente a 2,0 % con frases de tres palabras | `docs/avances/07-jss-analisis-exploratorio.md` §7.6; notebook 11, figura 5 |
-| Filtro calibrado con un solo par de control; 92 es un máximo | `docs/avances/07-jss-analisis-exploratorio.md` §7.4 |
+| Filtro calibrado con un solo par de control; como mucho 92 relaciones | `docs/avances/07-jss-analisis-exploratorio.md` §7.4 |
 | Muestra de pares rechazados, generada y sin anotar (Tarea C) | `docs/avances/07-jss-analisis-exploratorio.md` §7.5 |
 | Criterio de éxito fijado antes de correr el experimento | `docs/avances/08-jss-metricas-y-criterio-de-exito.md` §2.1 |
