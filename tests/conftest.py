@@ -15,6 +15,13 @@ import pytest
 # A fixed, wide console makes the tests assert on content, never on where a line wrapped.
 os.environ["COLUMNS"] = "200"
 
+# Typer forces a colour terminal for ``--help`` when it sees GITHUB_ACTIONS, FORCE_COLOR or
+# PY_COLORS (read once, at import), and the ANSI codes then sit between the box border and the
+# command name, so ``"│ setup "`` is no longer a substring of the output. Tests must see the
+# same plain help everywhere; conftest runs before any module imports typer.
+for _flag in ("GITHUB_ACTIONS", "FORCE_COLOR", "PY_COLORS"):
+    os.environ.pop(_flag, None)
+
 
 @pytest.fixture
 def rng() -> Iterator[np.random.Generator]:
