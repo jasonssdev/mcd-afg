@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 03 — Objetivos |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 2.3 |
+| **Versión** | 2.4 |
 | **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
@@ -17,6 +17,7 @@
 | 2.1 | 2026-09-20 | Aporte propositivo explícito; origen de la observación de H3; punto de decisión de AFG2; nota de sincronización del plan | Revisión final de AFG1 |
 | 2.2 | 2026-10-01 | Reescritura completa de la redacción: cada objetivo se presenta desde la pregunta que responde, cada término técnico se explica al aparecer y se agrega un glosario breve. El objetivo general, los objetivos específicos, los criterios de cumplimiento, las hipótesis y las cifras no cambian. | Retroalimentación de la revisión entre equipos de la semana 8: el problema y la metodología no se entendían, menos aún para una audiencia no técnica. |
 | 2.3 | 2026-10-15 | Se agrega, en cada objetivo específico, un párrafo «Cómo se mide» que remite a la sección correspondiente del [documento 08](08-jss-metricas-y-criterio-de-exito.md), y una subsección sobre el criterio de éxito del experimento (D16). El objetivo general, los objetivos específicos, los criterios de cumplimiento, las hipótesis y las cifras no cambian. | Retroalimentación del profesor sobre las métricas: faltaba ver, objetivo por objetivo, qué se mide y con qué regla se lee el resultado. |
+| 2.4 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (ground truth, precision, recall, accuracy, LLM-as-a-judge). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -57,7 +58,7 @@ respuesta con ellos; documento 01, §2).
 El aporte no es solo una medición. El proyecto propone cuatro cosas que no existen en el
 estado del arte revisado:
 
-1. Un **conjunto de referencia con enlaces tipados entre decisiones de reuniones
+1. Un **ground truth con enlaces tipados entre decisiones de reuniones
    sucesivas** sobre un corpus real. Es un conjunto de reuniones donde personas marcaron a
    mano qué decisiones hay y cómo se relacionan entre reuniones (por ejemplo, "esta
    decisión revierte aquella"). Ninguna capa de anotación publicada lo ofrece.
@@ -80,13 +81,13 @@ Primero se construye la referencia contra la que se mide todo (OE1). Después se
 bien extrae la máquina (OE2). Luego se compara el sistema completo contra las alternativas
 (OE3). Y al final se explica cada error (OE4).
 
-### OE1 — Construir un conjunto de referencia de decisiones con evolución entre reuniones
+### OE1 — Construir un ground truth de decisiones con evolución entre reuniones
 
 **La pregunta.** ¿Contra qué se compara lo que extrae la máquina? Hace falta una "respuesta
 correcta" por cada reunión: la lista de decisiones y, para cada par de reuniones de la misma
 serie, qué decisión revisa a cuál.
 
-**Qué se hace.** Se deriva un conjunto de referencia a partir de las capas de anotación ya
+**Qué se hace.** Se deriva un ground truth a partir de las capas de anotación ya
 existentes en AMI (resumen abstractivo, `summlink`, capa DDS como validación; documento 02,
 §3), extendiéndolas con la única anotación que el corpus no posee: el enlace temporal entre
 reuniones. Cada enlace lleva una etiqueta de un conjunto cerrado,
@@ -110,14 +111,14 @@ acuerdo que descuenta las coincidencias por azar; se reporta por separado porque
 fácil coincidir en que dos decisiones se relacionan que en el tipo exacto de relación, y
 mezclar las tres preguntas en una sola cifra ocultaría dónde está el desacuerdo.
 
-**Criterio de cumplimiento:** el conjunto de referencia existe para las 14 series (343
+**Criterio de cumplimiento:** el ground truth existe para las 14 series (343
 decisiones, 92 pares candidatos adjudicados), con kappa reportado en los tres niveles y
 adjudicación documentada para todo desacuerdo.
 
 **Cómo se mide.** Con kappa de Cohen, un valor por cada eje (existencia, tipo y dirección), sobre
 4 series de control con doble anotación, más 2 series de calibración. No tiene umbral de
 aceptación por diseño: un kappa bajo se reporta como hallazgo. El detalle está en el
-[documento 08, §4.1](08-jss-metricas-y-criterio-de-exito.md#41-oe1-el-conjunto-de-referencia-y-su-confiabilidad); el recall del filtro que selecciona los pares a anotar, en el
+[documento 08, §4.1](08-jss-metricas-y-criterio-de-exito.md#41-oe1-el-ground-truth-y-su-confiabilidad); el recall del filtro que selecciona los pares a anotar, en el
 [documento 08, §4.2](08-jss-metricas-y-criterio-de-exito.md#42-el-filtro-léxico-y-su-recall).
 
 ### OE2 — Medir la calidad de la extracción automática (Experimento A)
@@ -127,16 +128,16 @@ decisiones que encontró una persona? ¿Y detecta igual de bien que una decisió
 cambió a una anterior?
 
 **Qué se hace.** Se cuantifica la capacidad de modelos de lenguaje de ejecución local para
-extraer decisiones y sus relaciones temporales, contra el conjunto de referencia de OE1.
+extraer decisiones y sus relaciones temporales, contra el ground truth de OE1.
 
-- **Nivel decisión:** precisión, cobertura y F1. Precisión es qué proporción de lo que la
-  máquina extrajo era realmente una decisión; cobertura, qué proporción de las decisiones
+- **Nivel decisión:** precision, recall y F1. Precision es qué proporción de lo que la
+  máquina extrajo era realmente una decisión; recall, qué proporción de las decisiones
   reales encontró; F1 combina ambas en un solo número. Para decidir si una decisión extraída
   "es la misma" que una de la referencia, se usa el protocolo de alineamiento del documento
   06 (asignación húngara, curva sobre τ): se emparejan las decisiones de la máquina con las
   de la referencia buscando la mejor correspondencia global, y se reporta cómo cambia el
   resultado según cuán estricto sea el parecido exigido (τ).
-- **Nivel relación temporal:** exactitud de la etiqueta y, reportada por separado, exactitud
+- **Nivel relación temporal:** accuracy (qué fracción de las relaciones clasifica bien) de la etiqueta y, reportada por separado, accuracy
   de la **dirección**: si el sistema identifica correctamente cuál decisión revisa a cuál.
   Decir que dos decisiones se relacionan es una cosa; decir cuál vino después y cambió a la
   otra es otra, y se espera que sea más difícil (H3).
@@ -147,12 +148,12 @@ extraer decisiones y sus relaciones temporales, contra el conjunto de referencia
   documento 05, §2).
 
 **Criterio de cumplimiento:** P/R/F1 a nivel decisión reportados como curva sobre τ;
-exactitud de tipo y de dirección reportadas por separado; desglose por rol publicado aunque
+accuracy de tipo y de dirección reportadas por separado; desglose por rol publicado aunque
 no se detecte diferencia.
 
-**Cómo se mide.** Precisión, cobertura y F1 tras emparejar decisiones con una regla fija, con el
+**Cómo se mide.** Precision, recall y F1 tras emparejar decisiones con una regla fija, con el
 F1 reportado como curva sobre τ (de 0,50 a 0,90) y cada corrida repetida al menos tres veces.
-La exactitud de tipo y de dirección se reportan por separado. Por ahora no existe un criterio
+La accuracy de tipo y de dirección se reportan por separado. Por ahora no existe un criterio
 de éxito para OE2 ni una regla para elegir τ; el documento 08 lo declara como decisión abierta
 ([§4.3](08-jss-metricas-y-criterio-de-exito.md#43-oe2-la-extracción-automática) y
 [§7, A](08-jss-metricas-y-criterio-de-exito.md#a-no-hay-criterio-de-éxito-para-oe1-y-oe2-ni-regla-para-elegir-τ)).
@@ -203,7 +204,7 @@ veces sobre muestras tomadas al azar del mismo banco, para saber cuánto podría
 resultado con otras preguntas parecidas.
 
 **Cómo se mide.** La métrica principal es la corrección de la respuesta en el estrato E3
-(evolución), calificada por un juez automático validado con personas. Las demás (soporte de
+(evolución), calificada por un LLM-as-a-judge (un segundo modelo que califica las respuestas) validado con personas. Las demás (soporte de
 evidencia, citación correcta, corrección del rechazo y costo amortizado) son descriptivas. El
 resultado se lee con el criterio de éxito D16, explicado más abajo, y el detalle está en el
 [documento 08, §4.4](08-jss-metricas-y-criterio-de-exito.md#44-oe3-la-utilidad-funcional-experimento-b).
@@ -249,7 +250,7 @@ El proyecto se desarrolla a lo largo de tres cursos. El reparto es el siguiente:
 
 | Curso | Qué se entrega | Objetivos |
 |---|---|---|
-| **AFG1** | Problema, estado del arte, metodología, ética, conjunto de referencia listo para anotar (herramientas de OE1) y anotación iniciada en desarrollo | OE1 (herramientas) |
+| **AFG1** | Problema, estado del arte, metodología, ética, ground truth listo para anotar (herramientas de OE1) y anotación iniciada en desarrollo | OE1 (herramientas) |
 | **AFG2** | OE1 cerrado (anotación + kappa); OE2 sobre las 14 series con una escala de modelo (3 corridas); OE3 con banco de preguntas ≥100 y las tres condiciones, versión mínima | OE1, OE2, OE3 (mínimo) |
 | **AFG3** | OE4, análisis de errores, intervalos bootstrap, conclusiones | OE4 |
 
@@ -270,13 +271,13 @@ toma en esa fecha y se registra en `docs/decisions/`, no se descubre en la seman
 |---|---|---|
 | **OE1** | 14 series anotadas, kappa en 3 niveles, adjudicación | — |
 | **OE2** | Una escala (qwen3:8b o equivalente), 3 corridas, curva sobre τ, desglose por rol | Segunda escala |
-| **OE3** | Banco ≥100 preguntas (25 × 4 estratos), tres condiciones, juez automático con validación humana del 20 % | Validación humana ampliada |
+| **OE3** | Banco ≥100 preguntas (25 × 4 estratos), tres condiciones, LLM-as-a-judge con validación humana del 20 % | Validación humana ampliada |
 | **OE4** | Clasificación determinista de todas las respuestas fallidas de C2 | — |
 
 "Escala" se refiere al tamaño del modelo de lenguaje, medido en miles de millones de
 parámetros; "corridas" son repeticiones completas del experimento con el mismo modelo, para
-ver cuánto varía. El "juez automático" es un segundo modelo que califica si una respuesta es
-correcta, y la validación humana del 20 % comprueba que ese juez califica como lo haría una
+ver cuánto varía. El "LLM-as-a-judge" es un segundo modelo que califica si una respuesta es
+correcta, y la validación humana del 20 % comprueba que ese LLM-as-a-judge califica como lo haría una
 persona.
 
 ## Hipótesis
@@ -319,15 +320,15 @@ tasa de positivos 45,5 % (5/11), IC 95 % Wilson [21,3 % – 72,0 %], proyectado 
 alcanza el mínimo, la cota inferior del intervalo no. El intervalo de confianza (IC) expresa
 el rango en que podría estar la cifra real dado lo poco que se ha visto; con 11 casos, ese
 rango es ancho. Estas etiquetas fueron puestas por una máquina, sirven sólo para decidir si
-vale la pena anotar, y no son el conjunto de referencia de OE1.
+vale la pena anotar, y no son el ground truth de OE1.
 
 ## Glosario breve
 
 | Término | Qué significa en este documento |
 |---|---|
-| Conjunto de referencia | Las decisiones y relaciones marcadas a mano contra las que se mide todo lo demás. Es OE1. |
+| Ground truth | Las decisiones y relaciones marcadas a mano contra las que se mide todo lo demás. Es OE1. |
 | C1, C2, C3 | Las tres condiciones que se comparan: buscar en las transcripciones (C1), base construida por la máquina (C2), base construida desde la anotación humana (C3). |
-| Precisión, cobertura, F1 | De lo extraído, cuánto era correcto; de lo correcto, cuánto se extrajo; y la combinación de ambas. |
+| Precision, recall, F1 | De lo extraído, cuánto era correcto; de lo correcto, cuánto se extrajo; y la combinación de ambas. |
 | τ (tau) | El umbral de parecido a partir del cual dos decisiones se consideran la misma. Los resultados se reportan para varios valores. |
 | Estrato (E1–E4) | Tipo de pregunta del banco, desde el hecho puntual (E1) hasta las preguntas incontestables (E4), pasando por las de evolución (E3). |
 | Costo amortizado | A partir de cuántas consultas compensa haber construido la base. |

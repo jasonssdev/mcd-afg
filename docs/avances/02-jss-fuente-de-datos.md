@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 02 — Fuente de datos |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.3 |
+| **Versión** | 1.4 |
 | **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
@@ -16,6 +16,7 @@
 | 1.1 | 2026-09-20 | Redacción en voz impersonal / de equipo. | El proyecto es de un equipo de tres personas; ningún documento se redacta en primera persona singular. |
 | 1.2 | 2026-10-01 | Reescritura completa de la redacción: el corpus se presenta desde lo que contiene una serie de reuniones, cada término técnico se explica al aparecer y se agrega un glosario breve. Las cifras, las referencias, las decisiones y la numeración de secciones no cambian. | Retroalimentación de la revisión entre equipos de la semana 8: el problema y la metodología no se entendían, menos aún para una audiencia no técnica. |
 | 1.3 | 2026-10-15 | Se agrega la sección 7, «Calidad y relevancia de los datos»: resumen de lo que el análisis exploratorio ([documento 07](07-jss-analisis-exploratorio.md)) encontró sobre valores faltantes, duplicados y valores atípicos, y de la relevancia de los datos para el problema, con las cifras del documento 07 y su fuente. Se agregan filas de trazabilidad. No cambia ninguna cifra, decisión ni sección anterior. | La rúbrica del pre-informe de AFG2 (sección 3) pide describir el origen, el tipo, la calidad y la relevancia de los datos; este documento cubría origen y tipo, y la calidad y la relevancia estaban solo en el documento 07. |
+| 1.4 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (ground truth, baseline, overlap coefficient, filtro léxico (*blocking*)). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -65,7 +66,7 @@ La serie es lo que hace posible el proyecto. Para medir si una decisión evoluci
 falta ver al mismo equipo decidir algo y volver sobre ello después. Con reuniones sueltas de
 equipos distintos no existe "evolución de una decisión" que medir. Por eso, cuando se elige
 qué datos usar, la unidad que se elige no es la reunión sino la **serie completa**: o entran
-las cuatro reuniones o no entra ninguna. Esto aplica al conjunto de referencia (OE1) y al
+las cuatro reuniones o no entra ninguna. Esto aplica al *ground truth* (OE1: las decisiones y relaciones marcadas a mano, contra las que se mide todo lo demás) y al
 Experimento B.
 
 ## 3. Capas usadas y cadena de evidencia
@@ -134,7 +135,7 @@ detalle del criterio y las series descartadas está en
 
 Las 14 series se dividen en dos grupos con funciones distintas. No es la partición
 *train/test* habitual del aprendizaje automático, porque aquí nada se entrena. Separa los
-datos que se usan para **tomar decisiones de diseño** (qué parámetros usa la línea base C1,
+datos que se usan para **tomar decisiones de diseño** (qué parámetros usa el baseline C1, el punto de comparación,
 qué umbral de alineamiento τ se aplica, dónde se fija el filtro de candidatos) de los datos
 que se usan para **reportar resultados**. La regla es la de cualquier examen: no se puede
 practicar con las mismas preguntas que después se califican.
@@ -160,18 +161,18 @@ sobre los archivos y no cambian.
 | Reuniones | 56 (14 series × 4) | Medido, fijo |
 | Frases `DECISIONS` | 343 | Medido, fijo |
 | Pares entre reuniones | 3.071 | Medido, fijo |
-| Pares candidatos (bloqueador) | 92 | Medido, fijo |
+| Pares candidatos (filtro léxico, *blocking*) | 92 | Medido, fijo |
 
-El paso de 3.071 a 92 lo hace el **bloqueador**: un filtro automático que descarta los pares
+El paso de 3.071 a 92 lo hace el **filtro léxico**: un filtro automático que descarta los pares
 de decisiones que, por sus palabras, es casi imposible que hablen de lo mismo, y conserva
 los que vale la pena que una persona lea. Compara las palabras de las dos frases y exige dos
-cosas a la vez: un **coeficiente de solapamiento ≥ 0,30**, es decir, que de las palabras de
+cosas a la vez: un **overlap coefficient ≥ 0,30**, es decir, que de las palabras de
 la frase más corta, al menos esa proporción aparezca también en la otra, y **`\|A∩B\| ≥ 2`**,
 que compartan al menos dos palabras en términos absolutos.
 
-La segunda condición importa. Sólo con el coeficiente, el bloqueador seleccionaba 712 de
+La segunda condición importa. Sólo con el coeficiente, el filtro léxico seleccionaba 712 de
 3.071 pares (23,2 %, ≈18 h de anotación); con el mínimo absoluto de palabras compartidas
-añadido, 92 (3,0 %, ≈2,3 h). Y lo hizo sin perder el **caso de regresión** del bloqueador:
+añadido, 92 (3,0 %, ≈2,3 h). Y lo hizo sin perder el **caso de regresión** del filtro léxico:
 el par del botón turbo, `IS1004c` → `IS1004d` (D9). Un caso de regresión es un ejemplo que
 se guarda a propósito para comprobar, cada vez que se cambia el filtro, que sigue pasando.
 
@@ -180,11 +181,11 @@ reversión que el resumen abstractivo afirmaba nunca ocurrió (§5;
 [`../../notebooks/01-jss-viabilidad-e3.ipynb`](../../notebooks/01-jss-viabilidad-e3.ipynb)).
 Se conserva por su forma, no por su contenido: las dos frases son cortas y comparten pocas
 palabras, por lo que es el par de solape más exigente medido en el piloto. Con el
-coeficiente de solapamiento da 0,400; con Jaccard, otra medida habitual que divide por el
+overlap coefficient da 0,400; con Jaccard, otra medida habitual que divide por el
 total de palabras distintas de ambas frases en lugar de por la frase más corta, da 0,118 y
 el par se pierde (D5). Por eso el caso acota el punto de operación por ambos lados: umbral
 ≤ 0,40 **y** mínimo ≤ 2. Que la relación resultara falsa no debilita la prueba: lo que el
-caso fija es que el bloqueador sea sensible a una frase corta, no que exista un enlace.
+caso fija es que el filtro léxico sea sensible a una frase corta, no que exista un enlace.
 
 ### 4.5 Composición lingüística
 
@@ -243,7 +244,7 @@ que el proyecto puede o no puede afirmar por su causa.
   este corpus es indistinguible de un efecto de sitio de grabación.
 - **Huecos en la capa de decisiones.** La capa `decisionlink` de AMI existe en el diseño
   pero no distribuye datos (documento 01, §4). Y el análisis de casos del piloto encontró una
-  relación real entre dos reuniones (IS1004b → IS1004c) que el bloqueador **no** seleccionó
+  relación real entre dos reuniones (IS1004b → IS1004c) que el filtro léxico **no** seleccionó
   como candidata: un falso negativo confirmado, es decir, un par que debía pasar el filtro y
   no pasó. Proviene de una revisión dirigida, no de la muestra formal con que se medirá
   cuántos pares se pierden.
@@ -258,7 +259,7 @@ que el proyecto puede o no puede afirmar por su causa.
 
 Frente a esos riesgos, cuatro reglas de trabajo.
 
-1. **Nunca decidir en la capa automática.** Todo lo que el bloqueo y la normalización
+1. **Nunca decidir en la capa automática.** Todo lo que el filtro léxico y la normalización
    automática producen son *sugerencias* en una columna `machine_flags`
    (`sin_evidencia`, `posible_compuesta`, `frase_corta`), nunca en la columna `status`. La
    máquina puede avisar "esta frase parece no tener evidencia"; sólo un humano decide si
@@ -271,7 +272,7 @@ Frente a esos riesgos, cuatro reglas de trabajo.
    descuenta las coincidencias por azar. Se mide por separado para cada pregunta (¿existe la
    relación? ¿de qué tipo es? ¿en qué dirección va?), nunca combinado, y cada desacuerdo se
    resuelve en una adjudicación documentada.
-4. **Congelar antes de anotar.** El punto de operación del bloqueador, el criterio de
+4. **Congelar antes de anotar.** El punto de operación del filtro léxico, el criterio de
    selección de series y el split quedan fijados en
    [`../../config/corpus.toml`](../../config/corpus.toml) antes de que empiece la anotación
    humana, para que ningún ajuste posterior pueda leerse como sobreajuste a los resultados.
@@ -346,9 +347,9 @@ y no se extrapolan a otros corpus (documento 07, [§9](07-jss-analisis-explorato
 | Capa de anotación | Marcas hechas a mano por los investigadores del corpus sobre la transcripción: resúmenes, enlaces, intervenciones, temas. |
 | Resumen abstractivo | El resumen escrito a mano de cada reunión, con un apartado de decisiones. Es el punto de partida de cada decisión, pero puede estar equivocado. |
 | Cadena de evidencia | El camino desde una frase del resumen hasta las palabras exactas de la conversación que la respaldan. |
-| Par candidato | Dos decisiones de reuniones distintas de la misma serie que el bloqueador considera que podrían estar relacionadas. |
-| Bloqueador | Filtro automático que reduce los 3.071 pares posibles a los 92 que una persona revisará. |
-| Coeficiente de solapamiento | Proporción de palabras de la frase más corta que también están en la otra. Jaccard, la alternativa, divide por el total de palabras distintas y castiga a las frases cortas. |
+| Par candidato | Dos decisiones de reuniones distintas de la misma serie que el filtro léxico considera que podrían estar relacionadas. |
+| Filtro léxico | Filtro automático que reduce los 3.071 pares posibles a los 92 que una persona revisará. |
+| Overlap coefficient | Proporción de palabras de la frase más corta que también están en la otra. Jaccard, la alternativa, divide por el total de palabras distintas y castiga a las frases cortas. |
 | Desarrollo / evaluación | Las series donde se ajusta y se prueba, frente a las series donde sólo se reportan resultados. |
 | Kappa | Medida de acuerdo entre dos anotadores que descuenta las coincidencias por azar. |
 
@@ -359,8 +360,8 @@ y no se extrapolan a otros corpus (documento 07, [§9](07-jss-analisis-explorato
 | Marco muestral: de 6 series DDS (136 decisiones) a 33 series con resumen abstractivo (649), reduciéndose a 14 series seleccionadas | Medición directa sobre `ami_public_manual_1.6.2`; decisión D1 |
 | El balanceo de la muestra es por **sitio**, no por lengua materna | La lengua está perfectamente anidada en el sitio (D7, D8); TS3005/bloque TS entero sin datos en `participants.xml` |
 | El eje nativo/no-nativo baja de estratificación obligatoria a limitación declarada | 30,3 % de participantes desconocidos en las 33 series; ver documento 03 y 05 |
-| El conteo de candidatos pasó de una extrapolación de ~170 a 92 medidos | El bloqueador con sólo coeficiente daba 712/3.071 (23,2 %); con `\|A∩B\|≥2` añadido, 92 (3,0 %) — D9 |
-| El bloqueador usa coeficiente de solapamiento, no Jaccard | Jaccard = 0,118 pierde el par del botón turbo; solapamiento = 0,400 lo captura — D5 |
+| El conteo de candidatos pasó de una extrapolación de ~170 a 92 medidos | El filtro léxico con sólo coeficiente daba 712/3.071 (23,2 %); con `\|A∩B\|≥2` añadido, 92 (3,0 %) — D9 |
+| El filtro léxico usa overlap coefficient, no Jaccard | Jaccard = 0,118 pierde el par del botón turbo; overlap coefficient = 0,400 lo captura — D5 |
 | La reversión del botón turbo, identificada a ojo en el piloto, resultó **falsa** al contrastar con la transcripción | Documentado en [`../anotacion/manual-anotacion-oe1.md`](../anotacion/manual-anotacion-oe1.md) §3 |
 
 La versión 1.2 cambia la forma de contarlo, no el contenido: las cifras, las decisiones y la
@@ -382,7 +383,7 @@ numeración de secciones son las mismas de la versión 1.1.
 | Autoría por rol (PM 47,0 % etc.) | [`../../notebooks/00-jss-corpus-y-auditoria.ipynb`](../../notebooks/00-jss-corpus-y-auditoria.ipynb) |
 | Anclaje a evidencia 317/343 (92,4 %) | [`../../notebooks/00-jss-corpus-y-auditoria.ipynb`](../../notebooks/00-jss-corpus-y-auditoria.ipynb) |
 | Proxy de tópico: 9,0 % / 16,5 % | [`../../notebooks/00-jss-corpus-y-auditoria.ipynb`](../../notebooks/00-jss-corpus-y-auditoria.ipynb) |
-| Bloqueador: 712/3.071 con sólo coeficiente, 92 con mínimo absoluto | [`../decisions/README.md`](../decisions/README.md), decisión D9 |
+| Filtro léxico: 712/3.071 con sólo coeficiente, 92 con mínimo absoluto | [`../decisions/README.md`](../decisions/README.md), decisión D9 |
 | Botón turbo: falso positivo del resumen abstractivo | [`../anotacion/manual-anotacion-oe1.md`](../anotacion/manual-anotacion-oe1.md) §3 |
-| Caso IS1004b → IS1004c no seleccionado por el bloqueador | [`../../notebooks/01-jss-viabilidad-e3.ipynb`](../../notebooks/01-jss-viabilidad-e3.ipynb) |
+| Caso IS1004b → IS1004c no seleccionado por el filtro léxico | [`../../notebooks/01-jss-viabilidad-e3.ipynb`](../../notebooks/01-jss-viabilidad-e3.ipynb) |
 | Calidad: faltantes (32/56, 64/224, 26/343), duplicados (4 y 8), atípicos (15 de 56 reuniones; 0 eliminadas, 0 corregidas, 0 imputadas), segmentación en 6 de 14 series | [`07-jss-analisis-exploratorio.md`](07-jss-analisis-exploratorio.md) §4–5; [`../../notebooks/03-jss-eda.ipynb`](../../notebooks/03-jss-eda.ipynb) §2.4, §3, §5 |
