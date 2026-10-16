@@ -44,7 +44,7 @@ from afg.corpus.transcripts import (
     render_meeting_transcript,
 )
 from afg.shared.config import load_corpus_config
-from afg.shared.csvio import open_csv_writer
+from afg.shared.csvio import open_csv_reader, open_csv_writer
 from afg.shared.logging import get_logger
 from afg.shared.paths import PROJECT_ROOT, TABLES_DIR
 
@@ -423,7 +423,7 @@ def _read_manifest_rows(path: Path) -> dict[str, ManifestRow]:
     if not path.exists():
         return {}
     rows: dict[str, ManifestRow] = {}
-    with path.open("r", newline="") as fh:
+    with open_csv_reader(path) as fh:
         reader = csv.DictReader(fh)
         for record in reader:
             rows[record["meeting_id"]] = ManifestRow(

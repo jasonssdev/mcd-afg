@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import inspect
 import json
 import sys
 import types
@@ -17,7 +18,6 @@ from afg.evaluation.judge_calibration_generation import (
     ABSTAIN_MARKER,
     ABSTENTION_TEXT,
     ANSWER_MAX_TOKENS,
-    QUESTIONS_TEMPLATE_PATH,
     CalibrationQuestion,
     OllamaGenerationBackend,
     generate_answers,
@@ -33,6 +33,7 @@ from afg.evaluation.judge_calibration_set import (
     variants_path,
 )
 from afg.evaluation.passage import judge_evidence_passage
+from afg.shared.paths import JUDGE_CALIBRATION_DIR
 
 QUESTION_HEADER = "id,series_id,stratum,question,reference_answer,reference_evidence\n"
 
@@ -286,7 +287,8 @@ class TestLoadQuestions:
             load_calibration_questions(_write_questions(tmp_path, row))
 
     def test_shipped_template_is_header_only_and_loadable(self) -> None:
-        assert load_calibration_questions(QUESTIONS_TEMPLATE_PATH) == []
+        template = JUDGE_CALIBRATION_DIR / "_plantilla-preguntas-calibracion.csv"
+        assert load_calibration_questions(template) == []
 
     def test_reads_a_file_with_bom(self, tmp_path: Path) -> None:
         path = _write_questions(tmp_path, Q1)
@@ -295,6 +297,11 @@ class TestLoadQuestions:
 
 
 class TestGenerateCalibrationSet:
+    def test_the_questions_file_is_a_required_argument(self) -> None:
+        """No default path: the only real question source is the worksheet the CLI passes."""
+        parameter = inspect.signature(generate_calibration_set).parameters["questions_path"]
+        assert parameter.default is inspect.Parameter.empty
+
     def test_empty_question_file_does_nothing_and_says_so(
         self, tmp_path: Path, transcripts: Path
     ) -> None:

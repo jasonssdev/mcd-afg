@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from afg.shared.csvio import CsvFormatError, open_csv_reader
+from afg.shared.csvio import CsvFormatError, open_csv_reader, read_rows
 
 
 def _rows(path: Path) -> list[dict[str, str]]:
@@ -65,3 +65,37 @@ def test_missing_file_still_raises_file_not_found(tmp_path: Path) -> None:
 
 def test_error_is_a_value_error(tmp_path: Path) -> None:
     assert issubclass(CsvFormatError, ValueError)
+
+
+def test_read_rows_returns_plain_string_dicts(tmp_path: Path) -> None:
+    path = tmp_path / "a.csv"
+    path.write_text("id,texto\nq1,hola\n", encoding="utf-8")
+    assert read_rows(path) == [{"id": "q1", "texto": "hola"}]
+
+
+def test_read_rows_tolerates_utf8_bom(tmp_path: Path) -> None:
+    path = tmp_path / "a.csv"
+    path.write_bytes(b"\xef\xbb\xbfid,texto\nq1,hola\n")
+    assert read_rows(path) == [{"id": "q1", "texto": "hola"}]
+
+
+def test_read_rows_normalizes_missing_cells_to_empty_string(tmp_path: Path) -> None:
+    path = tmp_path / "a.csv"
+    path.write_text("id,texto,nota\nq1,hola\n", encoding="utf-8")
+    assert read_rows(path) == [{"id": "q1", "texto": "hola", "nota": ""}]
+
+
+def test_read_rows_rejects_semicolon_separated_file(tmp_path: Path) -> None:
+    path = tmp_path / "punto-y-coma.csv"
+    path.write_text("id;texto\nq1;hola\n", encoding="utf-8")
+    with pytest.raises(CsvFormatError) as caught:
+        read_rows(path)
+    assert "punto-y-coma.csv" in str(caught.value)
+    assert "`;`" in str(caught.value)
+
+
+def test_read_rows_propagates_encoding_errors(tmp_path: Path) -> None:
+    path = tmp_path / "latin.csv"
+    path.write_bytes("id,texto\nq1,decisión\n".encode("latin-1"))
+    with pytest.raises(CsvFormatError):
+        read_rows(path)

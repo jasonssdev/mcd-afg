@@ -56,7 +56,7 @@ def monotonic_trend(
     for the tiny n of a single series.
     """
     if method not in {"kendall", "spearman"}:
-        raise ValueError(f"método no soportado: {method!r} (use 'kendall' o 'spearman')")
+        raise ValueError(f"unsupported method: {method!r} (use 'kendall' or 'spearman')")
     subsets: list[tuple[str, pd.DataFrame]] = []
     if group is not None:
         subsets.extend((str(key), part) for key, part in df.groupby(group, sort=True))

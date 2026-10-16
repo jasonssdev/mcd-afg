@@ -32,18 +32,6 @@ def compute_agreement(labels_a: list[str], labels_b: list[str]) -> float:
     return cohen_kappa(labels_a, labels_b)
 
 
-def agreement_meets_threshold(kappa: float, *, threshold: float = 0.60) -> bool:
-    """Whether a kappa value meets the reliability bar this project reports against.
-
-    Thesis section 1.4 documents prior decision-annotation kappa in the 0.63-0.73 range
-    (and, cautionarily, a negative kappa between two independent schemes on the same
-    data). 0.60 is used here as a conventional "substantial agreement" cutoff
-    (Landis & Koch, 1977), not a claim of thesis-specified reliability -- the thesis
-    itself does not assume agreement and instead requires reporting the observed value.
-    """
-    return kappa >= threshold
-
-
 # --- Task D: series-level agreement from candidate-pair CSVs (manual section 6) -----------
 
 

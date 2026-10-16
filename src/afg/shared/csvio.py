@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     import _csv
 
-__all__ = ["CsvFormatError", "open_csv_reader", "open_csv_writer", "semicolon_hint"]
+__all__ = ["CsvFormatError", "open_csv_reader", "open_csv_writer", "read_rows", "semicolon_hint"]
 
 
 @contextmanager
@@ -94,3 +94,22 @@ def semicolon_hint(path: Path, fieldnames: Sequence[str]) -> str | None:
             "docs/anotacion/asignacion/EMPIEZA-AQUI.md)."
         )
     return None
+
+
+def read_rows(path: Path) -> list[dict[str, str]]:
+    """Read a CSV into plain ``dict[str, str]`` rows: UTF-8 (BOM tolerated), no ``None``.
+
+    Missing cells (a short row) come back as ``""``. Goes through :func:`open_csv_reader`, so
+    UTF-16 / non-UTF-8 files raise :class:`CsvFormatError`; a ``;``-separated file raises it
+    too, with the :func:`semicolon_hint` text, instead of yielding one mangled column.
+
+    Raises:
+        CsvFormatError: the file is not UTF-8 text or is saved with ``;`` as separator.
+        FileNotFoundError: ``path`` does not exist.
+    """
+    with open_csv_reader(path) as handle:
+        reader = csv.DictReader(handle)
+        hint = semicolon_hint(path, reader.fieldnames or [])
+        if hint is not None:
+            raise CsvFormatError(hint)
+        return [{k: v or "" for k, v in row.items() if k is not None} for row in reader]

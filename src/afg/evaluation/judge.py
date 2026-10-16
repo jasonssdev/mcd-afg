@@ -18,6 +18,7 @@ from typing import Any, Literal, Protocol
 from pydantic import BaseModel, ConfigDict, ValidationError
 
 from afg.domain.question import Answer, Question, QuestionStratum
+from afg.shared.config import load_experiments_config
 
 
 class JudgeConfigurationError(ValueError):
@@ -53,7 +54,9 @@ class JudgeFailure:
     raw_output: str
 
 
-def require_distinct_model_families(judge_model: str, generative_model: str) -> None:
+def require_distinct_model_families(
+    judge_model: str, generative_model: str, *, must_differ: bool | None = None
+) -> None:
     """Enforce thesis section 5.7: judge and extractor must not share a model family.
 
     This is a structural guard, not a full family-detection heuristic: it only rejects the
@@ -62,16 +65,22 @@ def require_distinct_model_families(judge_model: str, generative_model: str) -> 
     (e.g. two different Qwen sizes) -- that judgment belongs to whoever configures
     ``config/experiments.toml`` and ``.env``, not to string matching here.
 
+    ``must_differ`` is ``[judge].must_differ_from_generative_model`` of
+    ``config/experiments.toml`` when omitted. ``False`` disables only the identity check; a
+    blank judge model is always rejected.
+
     Raises:
-        JudgeConfigurationError: if ``judge_model`` is empty or identical to
-            ``generative_model``.
+        JudgeConfigurationError: if ``judge_model`` is empty, or identical to
+            ``generative_model`` while ``must_differ`` is on.
     """
+    if must_differ is None:
+        must_differ = bool(load_experiments_config()["judge"]["must_differ_from_generative_model"])
     if not judge_model:
         raise JudgeConfigurationError(
             "AFG_JUDGE_MODEL is not set. Thesis section 5.7 requires a judge model from a "
             "different family than the extractor; set it explicitly before judging."
         )
-    if judge_model == generative_model:
+    if must_differ and judge_model == generative_model:
         raise JudgeConfigurationError(
             f"Judge model {judge_model!r} is identical to the generative/extractor model "
             f"{generative_model!r}. Thesis section 5.7 requires them to differ to avoid "

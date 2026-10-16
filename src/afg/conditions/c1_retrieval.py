@@ -29,7 +29,6 @@ from __future__ import annotations
 
 import json
 import math
-import os
 import re
 import urllib.error
 import urllib.request
@@ -39,7 +38,7 @@ from dataclasses import dataclass, field
 from typing import Any, Protocol
 
 from afg.conditions.c1_chunking import Chunk
-from afg.shared.config import load_experiments_config
+from afg.shared.config import get_settings, load_experiments_config
 
 DEFAULT_OLLAMA_HOST = "http://localhost:11434"
 MIN_POOL = 10
@@ -77,8 +76,9 @@ class Embedder(Protocol):
 
 
 def resolve_ollama_host() -> str:
-    """``OLLAMA_HOST`` (``http://`` prefixed when it has no scheme) or the local default."""
-    raw = os.environ.get("OLLAMA_HOST", "").strip()
+    """The configured Ollama host (``AFG_OLLAMA_HOST``, else ``OLLAMA_HOST``), ``http://``
+    prefixed when it has no scheme, or the local default when blank."""
+    raw = get_settings().ollama_host.strip()
     if not raw:
         return DEFAULT_OLLAMA_HOST
     if "://" not in raw:

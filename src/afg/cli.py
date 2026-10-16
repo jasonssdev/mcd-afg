@@ -144,7 +144,7 @@ from afg.experiments.runner import (
     default_excerpt_for,
     run_experiment_b,
 )
-from afg.shared.config import get_settings, load_corpus_config, load_experiments_config
+from afg.shared.config import Settings, get_settings, load_corpus_config, load_experiments_config
 from afg.shared.logging import configure_logging, get_logger, quiet_http_logs
 from afg.shared.paths import (
     AMI_DIR,
@@ -205,8 +205,12 @@ app.add_typer(skills_app, name="skills", rich_help_panel=_PANEL_MAINTENANCE)
 
 
 @app.callback()
-def main(log_level: str = typer.Option("INFO", help="Nivel de registro (log).")) -> None:
-    configure_logging(log_level)
+def main(
+    log_level: str | None = typer.Option(
+        None, help="Nivel de registro (log). Si se omite, usa AFG_LOG_LEVEL o INFO."
+    ),
+) -> None:
+    configure_logging(log_level or Settings().log_level)
     ensure_dirs()
 
 
@@ -1949,7 +1953,7 @@ def judge_calibration_agreement(
 
 
 def make_c1_embedder() -> OllamaEmbedder:
-    """The embedder C1 retrieval uses (model from the config, host from ``OLLAMA_HOST``)."""
+    """The embedder C1 retrieval uses (model from the config, host from the Ollama settings)."""
     return OllamaEmbedder.from_config()
 
 
