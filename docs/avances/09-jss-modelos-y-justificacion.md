@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 09 — Modelos y su justificación |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.2 |
+| **Versión** | 1.3 |
 | **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
@@ -15,6 +15,7 @@
 | 1.0 | 2026-10-15 | Versión inicial. Reúne en un solo documento los modelos y técnicas del proyecto, la justificación de cada elección con su evidencia, las primeras pruebas realizadas y las dificultades abiertas. No introduce decisiones ni cifras nuevas: cada dato remite al registro de decisiones, a la configuración o al notebook donde ya consta. | Entrega del video de modelado de datos (semana 4) y sección «Modelo de aprendizaje de máquinas» del pre-informe. |
 | 1.1 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (ground truth, baseline, accuracy, precision, LLM-as-a-judge, context window, cosine similarity). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
 | 1.2 | 2026-10-15 | Se agrega la sección «Trazabilidad»; se corrige la referencia del recuento de unas 900 respuestas (notebook 07, el motor de corrida) y se indican los denominadores de las cifras de ES2015 (29 decisiones con acuerdo evaluado; 27 decisiones finales). El pendiente de confirmación con el tutor indica responsable y fecha. No cambia ninguna cifra ni decisión. | Auditoría de gobernanza del 2026-10-15: el recuento citaba el notebook 05 (selección del juez) en lugar del 07; las cifras de ES2015 usaban denominadores distintos sin decirlo; el pendiente no tenía responsable. |
+| 1.3 | 2026-10-15 | Se retira la mención al extra `retrieval` (`rank-bm25`): el canal léxico BM25 está implementado en el paquete y la dependencia se eliminó de `pyproject.toml`. No cambia ninguna cifra ni decisión. | Corrección de código del 2026-10-15 (rama `fix/auditoria-codigo`): la dependencia declarada no se importaba en ninguna parte. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -145,9 +146,9 @@ base débil haría que cualquier propuesta pareciera buena, por lo que el diseñ
 **Librerías.** El buscador BM25 está implementado dentro del proyecto
 (`src/afg/conditions/c1_retrieval.py`, con las constantes habituales k1 = 1,5 y b = 0,75) y
 los *embeddings* y la generación se piden al servidor local de modelos Ollama. En
-`pyproject.toml` figuran los extras opcionales `ollama>=0.4` (modelos locales),
-`rank-bm25>=0.2.2` (canal léxico) y `sentence-transformers>=3.3` (*embeddings*, protocolo de
-alineación).
+`pyproject.toml` figuran los extras opcionales `ollama>=0.4` (modelos locales) y
+`sentence-transformers>=3.3` (*embeddings*, protocolo de alineación). El canal léxico BM25 está
+implementado dentro del paquete (`src/afg/conditions/c1_retrieval.py`), sin dependencia externa.
 
 **Parámetros clave y evidencia.** El tamaño del fragmento, el solapamiento y el número de
 fragmentos recuperados (K) se ajustaron sobre ES2015, una serie de desarrollo, con una regla

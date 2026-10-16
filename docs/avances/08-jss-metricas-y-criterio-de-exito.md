@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 08 — Métricas y criterio de éxito |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.2 |
+| **Versión** | 1.3 |
 | **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
@@ -15,6 +15,7 @@
 | 1.0 | 2026-10-15 | Versión inicial. Reúne en un solo lugar qué se mide, sobre qué objeto, cómo se calcula, qué umbral o intervalo aplica y cómo se sabrá si el experimento tuvo éxito; declara las decisiones que siguen abiertas. No fija ninguna cifra ni regla nueva: cada dato remite al documento, ADR, configuración o notebook donde ya está definido. | Retroalimentación del profesor: faltaba tener claras las métricas del proyecto. El material del curso pide métricas aunque sean preliminares, como línea base (pre-informe del curso, p. 12, pregunta frecuente 5). |
 | 1.1 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (ground truth, precision, recall, accuracy, LLM-as-a-judge, filtro léxico (*blocking*)). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
 | 1.2 | 2026-10-15 | Se agrega la sección «Trazabilidad», con las funciones, pruebas, notebooks y decisiones en que se apoya cada métrica. No cambia ninguna cifra, decisión ni sección anterior. | Auditoría de gobernanza del 2026-10-15: los documentos 06 a 09 no tenían la sección de trazabilidad que sí tienen los documentos 01 a 05. |
+| 1.3 | 2026-10-15 | La sección E de decisiones abiertas pasa a resuelta: la función `agreement_meets_threshold` se eliminó del código. No cambia ninguna cifra ni métrica. | Corrección de código del 2026-10-15 (rama `fix/auditoria-codigo`): el código sugería un umbral de kappa que el diseño rechaza. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -431,20 +432,18 @@ uno se indica dónde se manifiesta, las opciones con su contrapartida y qué blo
 - **Qué bloquea.** No bloquea anotar la muestra. Sí condiciona qué se hace con el resultado,
   y cualquier cambio del filtro invalida los candidatos ya generados (`BLOCKER_VERSION`).
 
-### E. `agreement_meets_threshold` usa 0,60 y los documentos dicen "sin umbral"
+### E. `agreement_meets_threshold` usaba 0,60 y los documentos dicen "sin umbral" (resuelto)
 
-- **Dónde se ve.** `src/afg/annotation/agreement.py` define
-  `agreement_meets_threshold(kappa, threshold=0.60)`, con el comentario de que es un corte
-  convencional (Landis y Koch) y no un umbral de la tesis. Los documentos 03 y 06 y el
-  manual dicen que el kappa de anotación no tiene umbral. La función solo se usa en una
-  prueba (`tests/test_annotation.py`); no está conectada a ningún informe.
-- **Opciones.**
-  1. *Eliminar la función o dejarla marcada como auxiliar*, para que el código no sugiera un
-     umbral que el diseño rechaza.
-  2. *Adoptar 0,60 como regla de lectura* y actualizar los documentos. Coherente con el
-     código, pero contradice la decisión de no obligar a coincidir (documento 06, §1).
-- **Qué bloquea.** Nada, mientras la función no se use para decidir. Conviene resolverlo antes
-  de reportar kappas para evitar una lectura ambigua.
+- **Dónde se veía.** `src/afg/annotation/agreement.py` definía
+  `agreement_meets_threshold(kappa, threshold=0.60)`, un corte convencional (Landis y Koch) que
+  no era un umbral de la tesis. Los documentos 03 y 06 y el manual dicen que el kappa de
+  anotación no tiene umbral. La función solo se usaba en una prueba; no estaba conectada a
+  ningún informe.
+- **Resolución (2026-10-15).** Se eliminó la función y su prueba (rama `fix/auditoria-codigo`,
+  commit `c9f6b63`), porque `config/annotation.toml` no define ningún umbral de kappa y el
+  diseño no obliga a coincidir (documento 06, §1). El código ya no sugiere un umbral que el
+  diseño rechaza.
+- **Qué bloquea.** Nada.
 
 ### F. No hay corrección por comparaciones múltiples
 

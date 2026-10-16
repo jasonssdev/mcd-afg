@@ -373,7 +373,6 @@ No se instalan por defecto, para que `uv sync` sea rápido:
 ```bash
 uv sync --extra instrument    # openkos, el motor bajo evaluación
 uv sync --extra llm           # ollama, modelos locales
-uv sync --extra retrieval     # rank-bm25, canal léxico de C1
 uv sync --extra embeddings    # sentence-transformers (pesado)
 ```
 
