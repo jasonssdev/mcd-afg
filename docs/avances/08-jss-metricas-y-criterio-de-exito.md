@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 08 — Métricas y criterio de éxito |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.0 |
+| **Versión** | 1.1 |
 | **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
@@ -13,6 +13,7 @@
 | Versión | Fecha | Cambio | Motivo |
 |---|---|---|---|
 | 1.0 | 2026-10-15 | Versión inicial. Reúne en un solo lugar qué se mide, sobre qué objeto, cómo se calcula, qué umbral o intervalo aplica y cómo se sabrá si el experimento tuvo éxito; declara las decisiones que siguen abiertas. No fija ninguna cifra ni regla nueva: cada dato remite al documento, ADR, configuración o notebook donde ya está definido. | Retroalimentación del profesor: faltaba tener claras las métricas del proyecto. El material del curso pide métricas aunque sean preliminares, como línea base (pre-informe del curso, p. 12, pregunta frecuente 5). |
+| 1.1 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (ground truth, precision, recall, accuracy, LLM-as-a-judge, filtro léxico (*blocking*)). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -34,7 +35,7 @@ para reportar) y simulaciones con datos sintéticos. Cada una está marcada como
 ## Términos que se usan
 
 - **OE1 a OE4.** Los cuatro objetivos específicos ([documento 03](03-jss-objetivos.md)). OE1
-  construye el conjunto de referencia, anotado por personas. OE2 mide qué tan bien extrae
+  construye el ground truth (la referencia de decisiones marcadas a mano), anotado por personas. OE2 mide qué tan bien extrae
   decisiones la máquina (Experimento A). OE3 compara la utilidad de tres condiciones al
   responder preguntas (Experimento B). OE4 atribuye cada error a su etapa.
 - **C1, C2 y C3.** Las tres condiciones que se comparan. C1 busca fragmentos de texto y
@@ -80,7 +81,7 @@ del rechazo).
 El proyecto usa dos clases de regla que conviene no mezclar.
 
 - Un **umbral de validez** responde: *¿se puede confiar en la medición?* Por ejemplo, si el
-  juez automático (un segundo modelo que califica las respuestas) coincide poco con las
+  LLM-as-a-judge (un segundo modelo que califica las respuestas) coincide poco con las
   personas, sus calificaciones no sirven. Cumplir un umbral de validez **no** significa que el
   proyecto haya tenido éxito; incumplirlo significa que cierta medición no se puede usar tal
   cual.
@@ -123,17 +124,17 @@ La diferencia promedio es +0,5. La ventaja de este enfoque: una pregunta difíci
 las dos condiciones, y esa dificultad común se cancela en la diferencia. Por eso detecta
 mejoras reales con menos preguntas que comparar dos intervalos independientes (§5).
 
-### 2.4 Precisión, cobertura y F1
+### 2.4 Precision, recall y F1
 
 Miden la extracción de decisiones (OE2). Ejemplo ilustrativo: la referencia tiene 16 decisiones
 reales y la máquina extrae 10, de las cuales 8 son reales y 2 son sobras.
 
-- **Precisión**: de lo extraído, qué parte era correcta. 8 de 10 = 0,80.
-- **Cobertura** (*recall*): de lo que existe, qué parte se encontró. 8 de 16 = 0,50.
+- **Precision**: de lo extraído, qué parte era correcta. 8 de 10 = 0,80.
+- **Recall**: de lo que existe, qué parte se encontró. 8 de 16 = 0,50.
 - **F1**: un solo número que combina ambas y baja si cualquiera es baja:
   2 × 0,80 × 0,50 / (0,80 + 0,50) ≈ 0,62.
 
-Una máquina que extrae poco y acierta siempre tiene precisión alta y cobertura baja; el F1
+Una máquina que extrae poco y acierta siempre tiene precision alta y recall bajo; el F1
 impide quedarse con una sola de las dos caras.
 
 ### 2.5 Kappa de Cohen
@@ -158,28 +159,28 @@ implementada y además tener una cifra preliminar sobre desarrollo.
 | Métrica | Qué mide (en simple) | Se aplica a | Cómo se calcula | Umbral / intervalo / regla de lectura | Dónde está definida | Estado |
 |---|---|---|---|---|---|---|
 | **Kappa de anotación** (existencia, tipo, dirección) | Cuánto coinciden dos personas al marcar si dos decisiones se relacionan, cómo y en qué sentido | Series de control con doble anotación (4 de las 11 series de evaluación, 36,4 %; más 2 series de calibración de desarrollo) | Kappa de Cohen, un valor por cada uno de los tres ejes, nunca combinados | **Sin umbral de aceptación, por diseño.** Se reporta tal como salga; un kappa bajo es un hallazgo | Doc. 06 §1 y §5–6; manual de anotación §6; `annotation/agreement.py` | Implementada. Medida solo como diagnóstico en la calibración (kappa de estado 0,094 en ES2015); series de control pendientes |
-| **Recall del filtro léxico** | Qué parte de las relaciones reales deja pasar el filtro que decide qué pares se anotan | 200 pares rechazados (50 por serie × IS1004, ES2016, IS1003, TS3005) | Relaciones reales halladas entre los rechazados, sobre el total muestreado; por sitio y en conjunto, con IC bootstrap | **Sin umbral.** Se reporta la cifra y su intervalo | Doc. 06 §2; manual de anotación §5; `annotation/blocking.py`; `config/annotation.toml` `[annotation.recall_sample]` | Muestra generada, sin anotar. Pendiente |
-| **Precisión, cobertura y F1** (OE2) | Qué tan bien la máquina encuentra las decisiones de la referencia | Decisiones extraídas por la máquina frente a las 343 de la referencia | Conteos de aciertos, sobras y faltantes tras el alineamiento (§4.3); F1 como **curva sobre τ** | Sin umbral ni criterio de éxito; curva con τ de 0,50 a 0,90 en pasos de 0,05 | Propuesta §5.4 y §5.6; [`docs/protocols/alignment.md`](../protocols/alignment.md); [`config/experiments.toml`](../../config/experiments.toml) `[alignment]` | Implementada. Pendiente de medir (no hay extracción real de evaluación) |
-| **Exactitud de tipo y de dirección** (OE2) | Si la máquina acierta qué relación hay entre dos decisiones y cuál revisa a cuál | Relaciones entre decisiones | Fracción de relaciones con etiqueta (o sentido) igual a la referencia; se reportan por separado | Sin umbral | Propuesta §5.6; `evaluation/metrics.py` | Implementada. Pendiente |
+| **Recall del filtro léxico** (*blocking*) | Qué parte de las relaciones reales deja pasar el filtro que decide qué pares se anotan | 200 pares rechazados (50 por serie × IS1004, ES2016, IS1003, TS3005) | Relaciones reales halladas entre los rechazados, sobre el total muestreado; por sitio y en conjunto, con IC bootstrap | **Sin umbral.** Se reporta la cifra y su intervalo | Doc. 06 §2; manual de anotación §5; `annotation/blocking.py`; `config/annotation.toml` `[annotation.recall_sample]` | Muestra generada, sin anotar. Pendiente |
+| **Precision, recall y F1** (OE2) | Qué tan bien la máquina encuentra las decisiones de la referencia | Decisiones extraídas por la máquina frente a las 343 de la referencia | Conteos de aciertos, sobras y faltantes tras el alineamiento (§4.3); F1 como **curva sobre τ** | Sin umbral ni criterio de éxito; curva con τ de 0,50 a 0,90 en pasos de 0,05 | Propuesta §5.4 y §5.6; [`docs/protocols/alignment.md`](../protocols/alignment.md); [`config/experiments.toml`](../../config/experiments.toml) `[alignment]` | Implementada. Pendiente de medir (no hay extracción real de evaluación) |
+| **Accuracy de tipo y de dirección** (OE2) | Si la máquina acierta qué relación hay entre dos decisiones y cuál revisa a cuál | Relaciones entre decisiones | Fracción de relaciones con etiqueta (o sentido) igual a la referencia; se reportan por separado | Sin umbral | Propuesta §5.6; `evaluation/metrics.py` | Implementada. Pendiente |
 | **Concordancia del alineamiento** | Si la regla automática que empareja decisiones coincide con el emparejamiento manual | Muestra de al menos 100 pares | Pares coincidentes entre ambos emparejamientos sobre la unión de pares emparejados | **≥ 0,80**; si no, se revisa la grilla de τ y se repite | Doc. 06 §1; [`docs/protocols/alignment.md`](../protocols/alignment.md); `evaluation/alignment.py` (`concordance`) | Implementada. Pendiente de medir |
-| **Corrección de respuesta** (OE3) | Si la respuesta acierta frente a la referencia | Preguntas del banco; **métrica principal en el estrato E3** | Promedio por pregunta de las corridas calificadas por el juez; IC bootstrap | Ver criterio D16 (§6): IC de la diferencia pareada C2 − C1 por encima de 0 | Doc. 06 §1; D16 y D17 (`docs/decisions/README.md`); [ADR 0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md); `experiments/analysis.py` | Implementada. Pendiente de medir |
-| **Soporte de evidencia** (OE3) | Si cada afirmación de la respuesta tiene respaldo en la transcripción | Preguntas del banco | Marca del juez por respuesta; promedio por pregunta | Secundaria y descriptiva. Verificación humana con su propia marca de confiable o no confiable (kappa ≥ 0,70) | Propuesta §5.6; [ADR 0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md) | Implementada. Pendiente |
-| **Citación correcta** y **precisión de la citación** (OE3) | Si la fuente citada contiene la evidencia de la pregunta; qué fracción de lo citado es pertinente | Respuestas a preguntas con respuesta (no E4) | Correcta si **al menos un** pasaje citado toca la evidencia; sin cita cuenta como falla. Precisión = pasajes que aciertan / pasajes citados | Secundaria y descriptiva. Riesgo declarado: podría favorecer a C1, que cita fragmentos grandes | [ADR 0009](../decisions/0009-adr-regla-de-citacion-correcta.md); doc. 06 §1; `evaluation/citation.py` | Implementada. Pendiente |
+| **Corrección de respuesta** (OE3) | Si la respuesta acierta frente a la referencia | Preguntas del banco; **métrica principal en el estrato E3** | Promedio por pregunta de las corridas calificadas por el LLM-as-a-judge; IC bootstrap | Ver criterio D16 (§6): IC de la diferencia pareada C2 − C1 por encima de 0 | Doc. 06 §1; D16 y D17 (`docs/decisions/README.md`); [ADR 0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md); `experiments/analysis.py` | Implementada. Pendiente de medir |
+| **Soporte de evidencia** (OE3) | Si cada afirmación de la respuesta tiene respaldo en la transcripción | Preguntas del banco | Marca del LLM-as-a-judge por respuesta; promedio por pregunta | Secundaria y descriptiva. Verificación humana con su propia marca de confiable o no confiable (kappa ≥ 0,70) | Propuesta §5.6; [ADR 0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md) | Implementada. Pendiente |
+| **Citación correcta** y **precision de la citación** (OE3) | Si la fuente citada contiene la evidencia de la pregunta; qué fracción de lo citado es pertinente | Respuestas a preguntas con respuesta (no E4) | Correcta si **al menos un** pasaje citado toca la evidencia; sin cita cuenta como falla. Precision = pasajes que aciertan / pasajes citados | Secundaria y descriptiva. Riesgo declarado: podría favorecer a C1, que cita fragmentos grandes | [ADR 0009](../decisions/0009-adr-regla-de-citacion-correcta.md); doc. 06 §1; `evaluation/citation.py` | Implementada. Pendiente |
 | **Corrección del rechazo** (OE3) | Si el sistema sabe decir "no hay información" cuando no la hay | Estrato E4 (preguntas sin respuesta) | Fracción de preguntas E4 en que el sistema se abstiene | Secundaria y descriptiva | Propuesta §5.6; `experiments/analysis.py` | Implementada. Pendiente |
 | **Costo amortizado** (OE3) | Desde cuántas consultas compensa haber construido la base | C2 (y C3) frente a C1 | Menor *n* tal que `costo_compilación + n · costo_consulta_estructurada < n · costo_consulta_RAG` | Si la consulta estructurada no es más barata que la RAG, no hay punto de equilibrio y eso es un resultado | Propuesta §5.6; doc. 06 §7–8; `evaluation/amortization.py` | Implementada. Pendiente |
 | **Recall@K de recuperación** | Si entre los K fragmentos recuperados está la evidencia | Solo la etapa de recuperación de C1 y C2 | Fracción de la evidencia de referencia que aparece entre los K recuperados | Sin umbral; se usa para ajustar C1 sobre ES2015 con una regla fijada antes de correr | Propuesta §5.4; [ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md); `config/experiments.toml` `[retrieval.tuning]` | Implementada y usada en desarrollo ([notebook 06](../../notebooks/06-jss-ajuste-c1.ipynb)) |
 | **Atribución del error** (OE4) | En qué etapa nació cada respuesta fallida de C2 | Respuestas fallidas de C2 | Reglas fijas en orden: extracción, luego recuperación, luego síntesis | Cada error cae en una y solo una categoría; la proporción atribuible a extracción es la cifra principal | Doc. 03 (OE4); doc. 06 §7–8; `evaluation/attribution.py` | Implementada. Pendiente |
-| **Concordancia juez–humano** | Si el juez automático coincide con las personas | 20 % de las respuestas juzgadas (una corrida sorteada por pregunta y condición), por etiqueta | Kappa de Cohen; siempre se informan también el acuerdo observado y la prevalencia | **Kappa ≥ 0,70** por etiqueta; kappa indefinido cuenta como «no cumple» | Doc. 06 §1 y §5–6; [ADR 0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md); `evaluation/judge_human_check.py` | Implementada. Pendiente sobre el Experimento B |
-| **Calibración del juez** | Si un modelo candidato sirve de juez | 42 respuestas etiquetadas a mano sobre ES2015 | Kappa y otras cinco comprobaciones ([documento 09](09-jss-modelos-y-justificacion.md), §4) | Seis requisitos fijados antes de correr ([`config/experiments.toml`](../../config/experiments.toml) `[judge.calibration]`) | Doc. 06 §5–6; [notebook 05](../../notebooks/05-jss-seleccion-juez.ipynb) | **Medida**: `gpt-oss:20b` cumple todos; kappa 0,951 |
+| **Concordancia LLM-as-a-judge–humano** | Si el LLM-as-a-judge coincide con las personas | 20 % de las respuestas juzgadas (una corrida sorteada por pregunta y condición), por etiqueta | Kappa de Cohen; siempre se informan también el acuerdo observado y la prevalencia | **Kappa ≥ 0,70** por etiqueta; kappa indefinido cuenta como «no cumple» | Doc. 06 §1 y §5–6; [ADR 0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md); `evaluation/judge_human_check.py` | Implementada. Pendiente sobre el Experimento B |
+| **Calibración del LLM-as-a-judge** | Si un modelo candidato sirve de LLM-as-a-judge | 42 respuestas etiquetadas a mano sobre ES2015 | Kappa y otras cinco comprobaciones ([documento 09](09-jss-modelos-y-justificacion.md), §4) | Seis requisitos fijados antes de correr ([`config/experiments.toml`](../../config/experiments.toml) `[judge.calibration]`) | Doc. 06 §5–6; [notebook 05](../../notebooks/05-jss-seleccion-juez.ipynb) | **Medida**: `gpt-oss:20b` cumple todos; kappa 0,951 |
 | **Viabilidad de E3** | Si habrá suficientes relaciones reales para sostener el estrato que prueba la tesis | 11 pares candidatos adjudicados de desarrollo | Proporción de relaciones reales; IC de Wilson; proyección a evaluación | E3 exige ≥ 25 preguntas. Provisional | Doc. 06 §7–8; D12; [notebook 01](../../notebooks/01-jss-viabilidad-e3.ipynb) | **Medida**: 45,5 % (5/11), IC [21,3 – 72,0 %]; proyección ≈ 37 relaciones, IC [17 – 58] |
 | **Potencia del criterio D16** | Con 25 preguntas, qué tan seguido el criterio detecta una mejora real | Simulación con datos sintéticos | 1.000 experimentos simulados por escenario | Informativa; no es un umbral | D17; [ADR 0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md); [notebook 10](../../notebooks/10-jss-potencia-criterio-d16.ipynb); `experiments/power.py` | **Medida** (sintética): 57,5 % para +0,15 y 79,5 % para +0,20 (n = 25, base 0,5) |
 
 ## 4. Las métricas, objetivo por objetivo
 
-### 4.1 OE1: el conjunto de referencia y su confiabilidad
+### 4.1 OE1: el ground truth y su confiabilidad
 
 **Qué se mide.** Antes de medir a la máquina hay que medir a las personas. OE1 construye el
-conjunto de referencia (14 series, 56 reuniones, 343 decisiones) y debe demostrar que dos
+ground truth (14 series, 56 reuniones, 343 decisiones) y debe demostrar que dos
 personas lo anotan de forma consistente. El documento 01 muestra que dos equipos expertos
 obtuvieron un kappa negativo anotando decisiones sobre este mismo corpus; por eso el
 proyecto **mide** la confiabilidad y no la supone.
@@ -220,7 +221,7 @@ filtro recuperó N de M relaciones en una muestra aleatoria de pares rechazados"
 anotación, §5).
 
 **Cómo leer el resultado.** No hay umbral. La cifra dice cuánto se perdió y si la pérdida es
-pareja entre sitios; una pérdida alta no invalida el conjunto de referencia, pero obliga a
+pareja entre sitios; una pérdida alta no invalida el ground truth, pero obliga a
 declararlo como limitación.
 
 **Estado.** La muestra está generada y **sin anotar**; no hay cifra. En el código existe el
@@ -229,7 +230,7 @@ muestreo, y el cálculo del recall se hará con el intervalo bootstrap general.
 ### 4.3 OE2: la extracción automática
 
 **Qué se mide.** Qué tan bien la máquina reencuentra las decisiones de la referencia
-(precisión, cobertura y F1) y, sobre las relaciones, qué tan bien acierta su tipo y su
+(precision, recall y F1) y, sobre las relaciones, qué tan bien acierta su tipo y su
 dirección.
 
 **Cómo se mide.** Para decidir si una decisión extraída es "la misma" que una de la
@@ -248,7 +249,7 @@ existe un criterio de éxito ni una regla para elegir τ** (ver decisión abiert
 
 Un riesgo ya observado: en una prueba sobre ES2015 con OpenKOS 0.5.2, la máquina extrajo 4
 objetos Decision frente a 29 en la anotación adjudicada. Es una serie y una corrida con una
-versión que se está corrigiendo (documento 06, §7–8), pero anticipa una cobertura baja.
+versión que se está corrigiendo (documento 06, §7–8), pero anticipa un recall bajo.
 
 ### 4.4 OE3: la utilidad funcional (Experimento B)
 
@@ -258,10 +259,10 @@ una decisión: el estrato que prueba la tesis) y E4 (sin respuesta en el materia
 es de 25 preguntas por estrato; E3 admite hasta 40.
 
 **Cómo se mide.** Las respuestas (al menos unas 900: 100 preguntas como mínimo × 3
-condiciones × 3 corridas; hasta 115 preguntas si E3 llega a 40) las califica un juez
-automático, `gpt-oss:20b`. Se eligió con una prueba propia sobre 42 respuestas de ES2015
+condiciones × 3 corridas; hasta 115 preguntas si E3 llega a 40) las califica un LLM-as-a-judge,
+`gpt-oss:20b`. Se eligió con una prueba propia sobre 42 respuestas de ES2015
 etiquetadas a mano, con seis requisitos fijados antes de correr (acuerdo con las personas,
-estabilidad ante cambios de orden y de semilla, exactitud en E4, formato válido y no premiar la
+estabilidad ante cambios de orden y de semilla, accuracy en E4, formato válido y no premiar la
 verbosidad); cumplió todos (kappa 0,951). El detalle de la elección está en el
 [documento 09](09-jss-modelos-y-justificacion.md), §4. Como protección adicional, una persona
 vuelve a juzgar el 20 % de las respuestas del experimento y la concordancia debe alcanzar
@@ -276,7 +277,7 @@ Las métricas secundarias se leen así:
 
 - **Soporte de evidencia**: ¿cada afirmación está respaldada por la transcripción?
 - **Citación correcta**: ¿al menos una fuente citada contiene la evidencia marcada por las
-  personas? Se informa además la precisión de la citación, que deja a la vista a quien cita
+  personas? Se informa además la precision de la citación, que deja a la vista a quien cita
   de más (ADR 0009).
 - **Corrección del rechazo (E4)**: ¿se abstiene el sistema donde no hay respuesta?
 - **Costo amortizado**: ¿a partir de cuántas consultas se recupera la inversión de construir
@@ -286,7 +287,7 @@ Las métricas secundarias se leen así:
 conclusión se apoya en diferencias que caigan dentro de él (propuesta §5.0). Todas las
 métricas secundarias son descriptivas: ninguna decide el éxito.
 
-La limitación de la calibración del juez (el identificador de cada respuesta dejaba ver cómo
+La limitación de la calibración del LLM-as-a-judge (el identificador de cada respuesta dejaba ver cómo
 se había generado, así que el acuerdo podría estar algo inflado) se declara en el
 [documento 09](09-jss-modelos-y-justificacion.md), §4; la verificación humana del 20 % es la
 salvaguarda.
@@ -309,7 +310,7 @@ La redacción original de D16 (13 de octubre) pedía que el intervalo de C2 qued
 del de C1 sin solaparse. Se enmendó el 15 de octubre (D17, ADR 0010), antes de que existiera
 cualquier corrida de evaluación, porque con las 25 preguntas mínimas de E3 esa lectura casi
 nunca concluye aunque la mejora sea real. Una simulación con datos sintéticos (notebook 10;
-1.000 experimentos por escenario) dio, con n = 25, exactitud base de C1 de 0,5 y dificultad
+1.000 experimentos por escenario) dio, con n = 25, accuracy base de C1 de 0,5 y dificultad
 compartida moderada:
 
 | Mejora verdadera de C2 sobre C1 | Criterio pareado (vigente) | No solapamiento (robustez) |
@@ -350,13 +351,13 @@ solapan. Acompaña al veredicto y no lo reemplaza: si el criterio pareado respal
 hipótesis y los intervalos independientes no se solapan, la conclusión es más sólida; si solo
 la respalda el pareado, es la lectura prevista con 25 preguntas.
 
-**Qué no entra al criterio.** Precisión, cobertura y F1; exactitud de tipo y de dirección;
+**Qué no entra al criterio.** Precision, recall y F1; accuracy de tipo y de dirección;
 soporte de evidencia; citación; corrección del rechazo; costo amortizado; los estratos E1, E2
 y E4; y la comparación de C2 con C3 son secundarios y descriptivos (D16). Un buen F1 de OE2 no
 compensa un resultado no concluyente en E3, ni al revés.
 
 **Condiciones previas para que el veredicto cuente.** Que el kappa de corrección de respuesta
-entre juez y personas alcance 0,70 (si no, ese veredicto se reporta solo con evaluación
+entre el LLM-as-a-judge y las personas alcance 0,70 (si no, ese veredicto se reporta solo con evaluación
 humana); que E3 alcance el tamaño mínimo (ver decisión abierta C); y que se fije una versión
 publicada de OpenKOS antes de tocar una serie de evaluación (documento 06, §7–8).
 

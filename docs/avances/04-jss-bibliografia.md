@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 04 — Bibliografía |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.3 |
+| **Versión** | 1.4 |
 | **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
@@ -16,6 +16,7 @@
 | 1.1 | 2026-09-20 | Correcciones de autores, títulos y sufijos a/b; entrada de la licencia AMI en refs.bib. | Verificación contra la API de arXiv y DOI, 2026-09-20. |
 | 1.2 | 2026-10-01 | Se agrega una guía de lectura al inicio y, en cada sección temática, un párrafo que explica en lenguaje llano para qué sirve ese grupo de fuentes en el proyecto. Las entradas bibliográficas no cambian: ni una letra. | Retroalimentación de la revisión entre equipos de la semana 8: el problema y la metodología no se entendían, menos aún para una audiencia no técnica. |
 | 1.3 | 2026-10-15 | Se agrega la sección «Trabajos relacionados y su vínculo con el proyecto»: análisis de cuatro grupos de trabajos ya incluidos en la bibliografía (GraphRAG; detección de decisiones en AMI; auditoría de decisiones; modelos de lenguaje como jueces), con lo que el proyecto toma de cada uno y el vacío que aborda frente a él. No se agrega ni se modifica ninguna entrada bibliográfica. | La rúbrica de la presentación final de AFG2 pide al menos dos trabajos relacionados, con un análisis claro de cómo se relacionan con el proyecto y lo complementan. |
+| 1.4 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (LLM-as-a-judge). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -223,9 +224,9 @@ Ji et al. se toma la distinción entre inventar algo que contradice la fuente y 
 que la fuente no dice. "Atribución" es que la respuesta señale el pasaje que la respalda;
 Rashkin et al. y Bohnet et al. definen cómo medirla, y es la base de la regla del documento
 05 según la cual una respuesta sin fuente cuenta como falla. Las tres últimas entradas
-tratan sobre usar un modelo de lenguaje como juez de otro: Zheng et al. muestran que puede
+tratan sobre usar un modelo de lenguaje como juez de otro (la técnica llamada LLM-as-a-judge): Zheng et al. muestran que puede
 funcionar, y Wang et al. y Panickssery et al. muestran sus sesgos, en particular que un
-modelo tiende a favorecer sus propias respuestas. Por eso el juez del proyecto pertenece a
+modelo tiende a favorecer sus propias respuestas. Por eso el LLM-as-a-judge del proyecto pertenece a
 otra familia de modelos y se valida con personas.
 
 Ji, Z., Lee, N., Frieske, R., Yu, T., Su, D., Xu, Y., Ishii, E., Bang, Y., Madotto, A., &
@@ -431,18 +432,18 @@ elige y anota series completas (documento 02, §2).
 de referencia reutilizable y, sobre él, mide si una máquina puede hacer ese seguimiento y a
 qué costo, algo que una auditoría hecha por personas no responde.
 
-### Modelos de lenguaje como jueces: Zheng et al. (2023), con Wang et al. (2024) y Panickssery et al. (2024)
+### LLM-as-a-judge: Zheng et al. (2023), con Wang et al. (2024) y Panickssery et al. (2024)
 
 *Qué hacen.* Zheng et al. muestran que un modelo de lenguaje puede calificar las respuestas de
 otro de manera útil. Wang et al. y Panickssery et al. muestran sus sesgos; en particular, que
 un modelo tiende a favorecer sus propias respuestas (sección 4).
 
 *Qué toma el proyecto.* Ambas lecciones. Califica las unas 900 respuestas del Experimento B un
-juez automático (`gpt-oss:20b`), de una familia de modelos distinta de la del modelo que
+LLM-as-a-judge (`gpt-oss:20b`), de una familia de modelos distinta de la del modelo que
 extrae, y una persona verifica al menos el 20 % de sus veredictos (documento 09, §4).
 
 *Qué vacío aborda.* Ningún banco público mide la tarea de calificar respuestas sobre
-decisiones de reuniones (documento 09, §4), así que el proyecto calibra su propio juez con 42
+decisiones de reuniones (documento 09, §4), así que el proyecto calibra su propio LLM-as-a-judge con 42
 respuestas etiquetadas a mano, con seis requisitos fijados antes de ver resultados (kappa
 0,951), y declara la limitación de esa calibración (documento 09, §4).
 
@@ -456,4 +457,4 @@ respuestas etiquetadas a mano, con seis requisitos fijados antes de ver resultad
 | Verificación contra fuente primaria | [`../../bibliography/refs.bib`](../../bibliography/refs.bib), cabecera del archivo |
 | Preprints marcados: Edge et al. 2024, Cai & O'Connor 2025, Zhang & Li 2026, Bohnet et al. 2022 | [`../../bibliography/refs.bib`](../../bibliography/refs.bib), campo `keywords` |
 | Página de licencia AMI como fuente de datos pública | [`../../config/corpus.toml`](../../config/corpus.toml) |
-| Sección «Trabajos relacionados»: cifras de Hsueh y Moore / Fernández et al. y del juez | [`01-jss-problema.md`](01-jss-problema.md) §2–3; [`09-jss-modelos-y-justificacion.md`](09-jss-modelos-y-justificacion.md) §4 |
+| Sección «Trabajos relacionados»: cifras de Hsueh y Moore / Fernández et al. y del LLM-as-a-judge | [`01-jss-problema.md`](01-jss-problema.md) §2–3; [`09-jss-modelos-y-justificacion.md`](09-jss-modelos-y-justificacion.md) §4 |

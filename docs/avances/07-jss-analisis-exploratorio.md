@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 07 — Análisis exploratorio de datos |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.0 |
+| **Versión** | 1.1 |
 | **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
@@ -13,6 +13,7 @@
 | Versión | Fecha | Cambio | Motivo |
 |---|---|---|---|
 | 1.0 | 2026-10-15 | Versión inicial. El análisis exploratorio de datos se redacta para un lector no técnico: organización de los datos, calidad, valores atípicos, estadísticas descriptivas, filtro léxico, dificultades e implicancias para los pasos siguientes. | El video de avance 1 y las secciones 3 (caracterización de los datos) y 4 (análisis exploratorio) del pre-informe necesitan un texto que explique cada figura y cada cifra. Fuente de todas las cifras: [notebook 03](../../notebooks/03-jss-eda.ipynb) y [notebook 11](../../notebooks/11-jss-figuras-video-eda.ipynb). |
+| 1.1 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (ground truth, overlap coefficient, context window, tokens, PCA, filtro léxico (*blocking*)). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -301,7 +302,7 @@ alguna ("el control será amarillo" frente a "la reunión termina a las 5").
 
 Si dos decisiones hablan de lo mismo, probablemente **comparten palabras**. Antes de que una
 persona mire un par, una regla automática descarta los que casi no comparten palabras. Es un
-**filtro léxico** (mira solo palabras) y también se le llama **bloqueo**. El filtro **no
+**filtro léxico** (*blocking*; mira solo palabras). El filtro **no
 asigna la etiqueta**: solo decide qué pares vale la pena que una persona revise
 ([avance 06](06-jss-metodologia.md), sección del filtro léxico; notebook 11, figura 4).
 
@@ -311,27 +312,27 @@ asigna la etiqueta**: solo decide qué pares vale la pena que una persona revise
    tres letras o más y se eliminan las **palabras vacías** ("de", "que", "el"; en el corpus,
    "the", "and"), que aparecen en todas las frases y no dicen nada del tema. Lo que queda son
    las **palabras de contenido**.
-2. **Medir cuánto se parecen.** Se calcula el **coeficiente de solapamiento**: palabras
+2. **Medir cuánto se parecen.** Se calcula el **overlap coefficient**: palabras
    compartidas dividido por el número de palabras de la frase **más corta**. Responde a la
    pregunta: ¿qué parte de la frase corta está contenida en la larga?
 
    > *Ejemplo ilustrativo (en español; el corpus está en inglés).* Frase A, larga: "el control
    > tendrá rueda de desplazamiento, pantalla, botón turbo, botón de encendido y carcasa
    > amarilla" (10 palabras de contenido). Frase B, corta: "se elimina el botón turbo" (3:
-   > *elimina, botón, turbo*). Comparten 2 (*botón, turbo*). Solapamiento = 2 / 3 = **0,67**,
+   > *elimina, botón, turbo*). Comparten 2 (*botón, turbo*). Overlap coefficient = 2 / 3 = **0,67**,
    > sobre el umbral de 0,30: el par pasa.
 
 3. **Por qué no Jaccard**, la medida más usada. Jaccard divide por **todas** las palabras
    distintas de las dos frases: en el ejemplo, 2 / 11 = **0,18**, y el par se pierde. Una
    reversión suele ser una frase corta posterior que apunta a una larga anterior, y Jaccard
    castiga justo esa diferencia de largo. Con el caso real del botón turbo, Jaccard da 0,118 y
-   el solapamiento 0,400: el primero perdería el único caso de reversión revisado a mano
+   el overlap coefficient 0,400: el primero perdería el único caso de reversión revisado a mano
    (notebook 11, figura 4).
 4. **Por qué además se exigen 2 palabras en común.** El coeficiente se infla con frases muy
    cortas.
 
    > *Ejemplo ilustrativo.* Frase B: "cambiar color" (2 palabras de contenido). Frase A: "el
-   > color del logo es azul". Comparten 1 (*color*). Solapamiento = 1 / 2 = **0,50**: el par
+   > color del logo es azul". Comparten 1 (*color*). Overlap coefficient = 1 / 2 = **0,50**: el par
    > pasa sin tener relación.
 
    Una coincidencia suelta puede ser casualidad; dos ya indican que las frases hablan de lo
@@ -361,7 +362,7 @@ Un filtro así introduce sesgos que se declaran ([avance 06](06-jss-metodologia.
 3. El punto de operación se calibró con **un solo** par de control; el par del botón turbo se
    conserva con el menor margen posible (sobrevive en 4 de 9 combinaciones probadas).
 4. El presupuesto de horas influyó en la elección del punto de operación.
-5. El conjunto de referencia favorece a los métodos que trabajan con palabras.
+5. El ground truth (las decisiones y relaciones marcadas a mano) favorece a los métodos que trabajan con palabras.
 
 Por eso **92 es lo máximo que este filtro deja anotar, no el número de relaciones que existen
 en el corpus**. Los 92 candidatos se reparten en ES 44, IS 22 y TS 26, una proporción parecida
@@ -407,7 +408,7 @@ de efecto** dice qué tan grande es la diferencia, no solo si es detectable.
 | La primera reunión tiene alrededor de la mitad de decisiones | El banco de preguntas de evolución se apoya en las reuniones b, c y d | §9 |
 | **Un filtro que puede perder relaciones entre frases cortas**, medido con un solo par de control (secciones 7.4 y 7.6) | Mantener el punto de operación, declarar el sesgo y medir el recall con la Tarea C antes de apoyarse en él | §10.3, §10.4 |
 | Los turnos son muy cortos (mediana de 4 palabras; 31,5 % de una sola) | En la condición de fragmentos, el fragmento no puede ser el turno: debe agrupar varios | §10.1, §11.3 |
-| **La ventana de lectura del modelo.** El modelo de lenguaje lee a la vez un máximo de 12.288 unidades de texto (unas 9.452 palabras). Según la estimación, las 56 reuniones caben, pero la mayor ocupa el 96,4 % y seis superan el 80 %. La estimación es optimista: en una prueba con una reunión que ocupa el 59,8 % de la ventana, el sistema leyó un extracto y no la reunión entera. Ninguna serie completa cabe: tienen entre 14.990 y 26.204 palabras, de 1,6 a 2,8 veces la ventana | Planificar la extracción por segmentos o con margen reservado y medir la ventana real | §10.1, §11.3 |
+| **La context window del modelo.** El modelo de lenguaje lee a la vez un máximo de 12.288 tokens, trozos de palabra (unas 9.452 palabras). Según la estimación, las 56 reuniones caben, pero la mayor ocupa el 96,4 % y seis superan el 80 %. La estimación es optimista: en una prueba con una reunión que ocupa el 59,8 % de la ventana, el sistema leyó un extracto y no la reunión entera. Ninguna serie completa cabe: tienen entre 14.990 y 26.204 palabras, de 1,6 a 2,8 veces la ventana | Planificar la extracción por segmentos o con margen reservado y medir la ventana real | §10.1, §11.3 |
 | Las series difieren mucho (de 1 a 14 candidatos por serie) | Limitar cuántas preguntas salen de cada serie para que ninguna domine | §6.1, §11.3 |
 | **Sitio y lengua van juntos** (sección 6.3); sitio y posición bastan como estratos y el tamaño es una sola dimensión | Usar sitio y posición como variables de control y una sola medida de tamaño; la lengua no puede estudiarse como eje independiente | §6.2, §7, §8, §11.3 |
 | **Pocas series.** Con 14 series o 56 reuniones, muchos efectos de tamaño mediano no alcanzan significancia estadística, y los valores p de los hablantes y de los pares son optimistas porque esos registros no son independientes entre sí | Informar tamaños de efecto y no solo valores p | §6.3, §11.3 |
@@ -423,7 +424,7 @@ se reduce al normalizar por volumen de habla (notebook 03, §11.4).
 
 - **Muestra no aleatoria.** 14 series elegidas por criterios, de un único dominio y con habla
   actuada: no se extrapola a otros corpus.
-- **Tamaño de reunión estimado.** Se estimó con 1,3 unidades de texto por palabra, una regla
+- **Tamaño de reunión estimado.** Se estimó con 1,3 tokens por palabra, una regla
   práctica optimista; no se dispone del medidor del propio modelo.
 - **Clasificaciones apoyadas en la estructura.** Como las series de evaluación no pueden
   leerse, la distinción entre error y fenómeno real se apoya en la estructura y en el chequeo
@@ -440,7 +441,7 @@ se reduce al normalizar por volumen de habla (notebook 03, §11.4).
 
 Los análisis secundarios solo se resumen en la sección 6.3; están completos en el
 [notebook 03](../../notebooks/03-jss-eda.ipynb): correlaciones con tres coeficientes y
-colinealidad (§7); componentes principales y agrupamiento (§8); análisis temporal completo (§9);
+colinealidad (§7); PCA (análisis de componentes principales) y agrupamiento (§8); análisis temporal completo (§9);
 sensibilidad del filtro a su punto de operación (§10.4); distancia entre las reuniones de los
 pares candidatos (§10.2); y la respuesta a las nueve preguntas orientadoras (§10.5). Las cinco
 figuras con su justificación, y las figuras del notebook 03 que quedan fuera del video, están

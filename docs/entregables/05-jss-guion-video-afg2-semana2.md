@@ -4,11 +4,11 @@
 |---|---|
 | **Entrega** | Video de avance #1 de AFG2 (semana 2) — análisis exploratorio |
 | **Fecha de envío** | Pendiente |
-| **Versión** | 1.2 |
-| **Construido desde** | `docs/avances/01-jss-problema.md` v1.2 · `docs/avances/02-jss-fuente-de-datos.md` v1.3 · `docs/avances/07-jss-analisis-exploratorio.md` v1.0 · `notebooks/03-jss-eda.ipynb` (análisis exploratorio completo; fuente de las cifras) · `docs/avances/08-jss-metricas-y-criterio-de-exito.md` v1.0 · `notebooks/11-jss-figuras-video-eda.ipynb` (figuras) |
-| **Duración objetivo** | 8:41 a 145 palabras por minuto (máximo del guion: 9:00; la rúbrica fija 8:00, ver más abajo) |
+| **Versión** | 1.3 |
+| **Construido desde** | `docs/avances/01-jss-problema.md` v1.2 · `docs/avances/02-jss-fuente-de-datos.md` v1.4 · `docs/avances/07-jss-analisis-exploratorio.md` v1.1 · `notebooks/03-jss-eda.ipynb` (análisis exploratorio completo; fuente de las cifras) · `docs/avances/08-jss-metricas-y-criterio-de-exito.md` v1.1 · `notebooks/11-jss-figuras-video-eda.ipynb` (figuras) |
+| **Duración objetivo** | 8:39 a 145 palabras por minuto (máximo del guion: 9:00; la rúbrica fija 8:00, ver más abajo) |
 | **Formato** | Tres presentadores en cuatro bloques consecutivos, en este orden: Jason, Germán, Gustavo, Jason. Con diapositivas de apoyo |
-| **Extensión hablada** | 1.259 palabras: 297 + 371 + 385 + 206. A 145 palabras por minuto son 8:41; a 140, 8:59 |
+| **Extensión hablada** | 1.255 palabras: 284 + 377 + 386 + 208. A 145 palabras por minuto son 8:39; a 140, 8:58 |
 
 > **Por qué existe este documento.** En el video final del primer curso, la retroalimentación
 > fue que no se entendió bien. Este guion prioriza la claridad por encima de la cantidad: un
@@ -24,6 +24,7 @@
 | 1.0 | 2026-10-15 | Versión inicial: guion del primer video de avance de AFG2, centrado en el análisis exploratorio de datos y escrito para una audiencia no técnica. | Rúbrica del video de avance #1 y retroalimentación del video final de AFG1. |
 | 1.1 | 2026-10-15 | Se amplía el tope a 9:00 (de 1.115 a 1.259 palabras). Se agregan cinco temas del análisis exploratorio: valores atípicos y política de limpieza, duplicados como reafirmaciones, límites de la muestra, estadísticas descriptivas básicas y ventana de contexto del modelo. Se condensan pasajes existentes sin quitar ninguno. | El equipo decidió cubrir todos los hallazgos del análisis exploratorio (`notebooks/03-jss-eda.ipynb`) y optó por una versión más larga que el máximo de la rúbrica. |
 | 1.2 | 2026-10-15 | Se reescribe la explicación de la figura 5: qué agrupa cada punto, por qué el coeficiente solo deja pasar tanto con frases cortas (basta una palabra en común), que desde cuatro palabras ambas líneas coinciden y que los 92 pares dan como mucho 92 relaciones. Se condensa la frase de descriptivos; sus cifras completas quedan en la lámina. Extensión sin cambios (1.259 palabras). | La explicación anterior de la figura 5 no dejaba claro qué mide el gráfico. |
+| 1.3 | 2026-10-15 | Se nombran y explican en voz las cuatro técnicas de valores atípicos (Z-score, regla de Tukey, LOF y MCD), se precisa que 12 de las 15 reuniones marcadas lo son solo por MCD y que TS3005d, marcada por las cuatro, es real; se agrega una lámina con las reglas de cada técnica. Se acortan explicaciones de conceptos básicos (análisis exploratorio, valor faltante, imputación, mediana). Extensión: 1.255 palabras. Se usan los nombres estándar de métricas y técnicas sin traducir (Z-score, overlap coefficient, context window, tokens, *blocking*). | El profesor evalúa solo el video: el trabajo técnico debe verse en él, sin simplificarlo de más. Convención del equipo: los nombres de métricas y técnicas no se traducen. |
 
 ## Qué pide el curso y dónde se cubre
 
@@ -39,7 +40,7 @@ hasta 9 minutos para cubrir todos los hallazgos del análisis exploratorio.
 | Limpieza inicial | Bloque 2 (Germán): faltantes, por qué no se imputa ni se borra nada; figura 2. Valores atípicos (15 de 56 reuniones marcadas, ninguna fila eliminada) y duplicados conservados como reafirmaciones |
 | Visualizaciones o estadística descriptiva | Bloque 2 (figura 3, diagrama de caja con medianas); bloque 3 (descriptivos básicos de reuniones, decisiones y turnos; figuras 4 y 5, el filtro y su efecto según el largo de la frase) |
 | Hallazgos preliminares | Bloque 2 (26 decisiones sin evidencia; la primera reunión tiene menos decisiones); bloque 3 (de 3.071 a 92 pares) |
-| Retos encontrados | Bloque 2 (decisiones sin evidencia); bloque 3 (el filtro y las frases cortas, calibrado con un solo caso de control); bloque 4 (ventana de contexto del modelo y resumen) |
+| Retos encontrados | Bloque 2 (decisiones sin evidencia); bloque 3 (el filtro y las frases cortas, calibrado con un solo caso de control); bloque 4 (context window del modelo y resumen) |
 | Influencia en los siguientes pasos | Cada bloque cierra con "qué cambia"; bloque 4 los reúne y nombra el criterio de éxito |
 | Conexión con el problema de investigación | Bloque 1 (el botón turbo y la pregunta del proyecto); todos los bloques vuelven a ella; bloque 4 cierra con el mismo caso |
 
@@ -47,12 +48,12 @@ hasta 9 minutos para cubrir todos los hallazgos del análisis exploratorio.
 
 | Bloque | Persona | Palabras | Tiempo (145 ppm) | Mensaje central |
 |---|---|---|---|---|
-| Contexto, qué cubre el video y organización de los datos | Jason Sepúlveda | 297 | 0:00 – 2:03 | El botón turbo; qué es un análisis exploratorio; cinco niveles de datos: pocas series, muchos pares; la muestra no se generaliza |
-| Calidad, limpieza inicial y primer hallazgo | Germán Vega | 371 | 2:03 – 4:36 | 26 decisiones sin evidencia; no se inventa ni se borra nada; atípicos marcados, no eliminados; duplicados como reafirmaciones; la primera reunión tiene menos decisiones |
-| El filtro léxico y su límite | Gustavo Martínez | 385 | 4:36 – 7:16 | De 3.071 pares a 92 con una regla simple; cómo son las reuniones y las frases; funciona peor con frases cortas |
-| Retos, próximos pasos y cierre | Jason Sepúlveda | 206 | 7:16 – 8:41 | La ventana de contexto obliga a leer por partes; qué cambia en cada paso; cómo se juzgará el éxito |
+| Contexto, qué cubre el video y organización de los datos | Jason Sepúlveda | 284 | 0:00 – 1:58 | El botón turbo; qué es un análisis exploratorio; cinco niveles de datos: pocas series, muchos pares; la muestra no se generaliza |
+| Calidad, limpieza inicial y primer hallazgo | Germán Vega | 377 | 1:58 – 4:34 | 26 decisiones sin evidencia; no se inventa ni se borra nada; atípicos revisados con cuatro técnicas, marcados y no eliminados; duplicados como reafirmaciones; la primera reunión tiene menos decisiones |
+| El filtro léxico (*blocking*) y su límite | Gustavo Martínez | 386 | 4:34 – 7:13 | De 3.071 pares a 92 con una regla simple; cómo son las reuniones y las frases; funciona peor con frases cortas |
+| Retos, próximos pasos y cierre | Jason Sepúlveda | 208 | 7:13 – 8:39 | La context window obliga a leer por partes; qué cambia en cada paso; cómo se juzgará el éxito |
 
-Reparto por persona: Jason 503 palabras, Germán 371, Gustavo 385. Jason abre y cierra porque
+Reparto por persona: Jason 492 palabras, Germán 377, Gustavo 386. Jason abre y cierra porque
 presenta el contexto y reúne los pasos siguientes; el filtro léxico, que es lo más difícil de
 explicar, queda completo en un solo bloque a cargo de Gustavo.
 
@@ -64,7 +65,7 @@ explicar, queda completo en un solo bloque a cargo de Gustavo.
 - Cada término técnico se explica en la misma oración en que aparece. Si al ensayar una frase
   necesita que la audiencia ya sepa algo, se reescribe.
 - Cronometrar un ensayo completo antes de grabar. El margen sobre el tope de 9:00 es de unos
-  22 segundos a 145 palabras por minuto y de solo 3 segundos a 140. Hablar a un ritmo ágil y
+  21 segundos a 145 palabras por minuto y de solo 2 segundos a 140. Hablar a un ritmo ágil y
   sin pausas largas entre bloques. La frase sobre Jaccard (bloque 3) se recortó por tiempo; sigue
   explicada en el avance 07. Los valores atípicos (bloque 2) sí se incluyen en esta versión.
 - Las líneas que empiezan con ▶ no se dicen: marcan el momento exacto en que cambia la lámina,
@@ -76,7 +77,7 @@ explicar, queda completo en un solo bloque a cargo de Gustavo.
 
 ---
 
-## Bloque 1 — Jason Sepúlveda (0:00 – 2:03)
+## Bloque 1 — Jason Sepúlveda (0:00 – 1:58)
 
 ### Texto hablado
 
@@ -88,7 +89,7 @@ Cuando un equipo se reúne varias veces, sus decisiones cambian de una reunión 
 
 Saber cuál es la respuesta correcta no es trivial. En un caso real de nuestros datos, un equipo diseña un control remoto en cuatro reuniones. El resumen oficial dice que se eliminó el botón "turbo", pero en la grabación se mantuvo. Por eso hay que conocer muy bien los datos antes de comparar.
 
-Antes de usar los datos hicimos un **análisis exploratorio**: mirarlos con calma, como revisar los ingredientes antes de cocinar.
+Para eso hicimos un **análisis exploratorio**.
 
 > **▶ Figura 1 — se muestra al decir «Empiezo por la organización».**
 >
@@ -110,13 +111,13 @@ Nota de entrega: durante la historia del botón turbo puede mostrarse una lámin
 
 ---
 
-## Bloque 2 — Germán Vega (2:03 – 4:36)
+## Bloque 2 — Germán Vega (1:58 – 4:34)
 
 ### Texto hablado
 
 Gracias, Jason. Soy **Germán Vega**. Hablo de la calidad de los datos.
 
-Un **valor faltante** es una casilla vacía en una tabla. Revisamos las 77 variables, las columnas que describen cada registro, como la duración. Solo tres tienen casillas vacías; dos son datos sueltos, como la hora de inicio, que no afectan nuestro trabajo. La tercera sí importa.
+Revisamos los **valores faltantes** de las 77 variables del conjunto. Solo tres tienen casillas vacías; dos no afectan nuestro trabajo. La tercera sí importa.
 
 > **▶ Figura 2 — se muestra al decir «Es la evidencia de una decisión».**
 >
@@ -124,9 +125,9 @@ Un **valor faltante** es una casilla vacía en una tabla. Revisamos las 77 varia
 
 Es la **evidencia** de una decisión: las intervenciones de la conversación que la respaldan. De 343 decisiones, 26 no tienen ninguna. No faltan al azar: en la primera reunión no falta ninguna, y desde la tercera, alrededor de 11 de cada 100. Una de ellas es la del botón turbo equivocado. Es una sospecha, no un resultado: con un solo caso no sabemos si todas son errores.
 
-¿Qué hacemos? No **imputamos**, es decir, no llenamos esas casillas con un valor estimado: sería inventar un respaldo que no existe. Tampoco borramos nada. Las marcamos y las revisaremos a mano.
+No **imputamos** esas casillas con un valor estimado: sería inventar un respaldo que no existe. Tampoco borramos nada. Las marcamos y las revisaremos a mano.
 
-Aplicamos la misma regla a los **valores atípicos**: reuniones que se alejan mucho del resto. Usamos cuatro métodos, y 15 de las 56 quedaron marcadas por al menos uno. No eliminamos, corregimos ni imputamos ninguna fila: las marcamos y las revisamos, porque una reunión larga es un fenómeno real. Pero la estadística solo detecta tamaños raros: la frase equivocada del botón turbo tiene un largo normal, cinco palabras, y ningún método la señala.
+Aplicamos la misma regla a los **valores atípicos**: reuniones que se alejan mucho del resto. Usamos cuatro técnicas. Dos miran una variable a la vez: el **Z-score** y la **regla de Tukey**. Dos miran varias a la vez, como duración, palabras y turnos: **LOF**, que compara cada reunión con sus vecinas, y **MCD**, que mide su distancia al centro de los datos. Marcaron 15 de 56 reuniones, pero 12 solo por MCD, que exagera cuando los datos no tienen forma de campana. Solo una, TS3005d, la marcan las cuatro: es la más larga, y comprobamos que es real. No eliminamos, corregimos ni imputamos ninguna fila. Pero la estadística solo detecta tamaños raros: la frase equivocada del botón turbo tiene un largo normal, cinco palabras, y ningún método la señala.
 
 También hay 4 frases idénticas y 8 casi idénticas, siempre en reuniones consecutivas. Las conservamos con una marca: son reafirmaciones y sirven para las preguntas de evolución.
 
@@ -134,7 +135,7 @@ También hay 4 frases idénticas y 8 casi idénticas, siempre en reuniones conse
 >
 > ![Diagrama de caja del número de decisiones por reunión según su posición en la serie: la mediana es 3,5 en a, 8,0 en b, 6,5 en c y 7,0 en d](figuras/eda-decisiones-por-posicion.png)
 
-Ahora, un primer hallazgo. Este es un **diagrama de caja**. La caja encierra a la mitad central de las reuniones, y la línea gruesa marca la **mediana**: el valor del medio, que deja a la mitad de las reuniones con menos decisiones y a la otra mitad con más. La primera reunión tiene una mediana de 3,5 decisiones. Las otras tres, 8,0, 6,5 y 7,0: la primera tiene cerca de la mitad.
+Ahora, un primer hallazgo. Este es un **diagrama de caja**. La caja encierra a la mitad central de las reuniones, y la línea gruesa marca la **mediana**. La primera reunión tiene una mediana de 3,5 decisiones. Las otras tres, 8,0, 6,5 y 7,0: la primera tiene cerca de la mitad.
 
 Por eso, las preguntas sobre cómo evoluciona una decisión se apoyarán sobre todo en las reuniones b, c y d. Aún no sabemos si esto se debe al diseño del escenario o a un cambio real.
 
@@ -142,7 +143,18 @@ Gustavo explica cómo elegimos qué pares revisar.
 
 ### Láminas
 
-Figura 2: `figuras/eda-decisiones-sin-evidencia-por-posicion.png`. En pantalla: "26 de 343 decisiones sin evidencia", "No se imputa, no se borra: se marca", "15 de 56 reuniones con algún valor atípico: se marcan, no se eliminan", "4 frases idénticas · 8 casi idénticas: reafirmaciones, se conservan con marca".
+Figura 2: `figuras/eda-decisiones-sin-evidencia-por-posicion.png`. En pantalla: "26 de 343 decisiones sin evidencia", "No se imputa, no se borra: se marca", "4 frases idénticas · 8 casi idénticas: reafirmaciones, se conservan con marca".
+
+Lámina de valores atípicos (sin figura, al decir «valores atípicos»). Título: "Valores atípicos: cuatro técnicas". Tabla en pantalla:
+
+| Técnica | Mira | Regla |
+|---|---|---|
+| Z-score | una variable | más de 3 desviaciones estándar de la media |
+| Regla de Tukey (IQR) | una variable | fuera de Q1 − 1,5·IQR o Q3 + 1,5·IQR |
+| LOF (*Local Outlier Factor*) | varias variables | el 5 % de reuniones más aisladas de sus vecinas |
+| MCD (*Minimum Covariance Determinant*) | varias variables | distancia de Mahalanobis robusta sobre el cuantil 0,975 de χ² |
+
+Bajo la tabla: "15 de 56 reuniones marcadas · 12 solo por MCD (marca de más con datos no normales)", "TS3005d, marcada por las cuatro: la más larga (9.112 palabras, 1.194 turnos); real, según la brecha de duración de 2,9 %", "0 filas eliminadas · 0 corregidas · 0 imputadas".
 
 Figura 3: `figuras/eda-decisiones-por-posicion.png`. En pantalla: "Mediana de decisiones por reunión: 3,5 frente a 8,0 · 6,5 · 7,0", "Las preguntas de evolución se apoyan en b, c y d".
 
@@ -150,7 +162,7 @@ Nota de entrega: cambiar de la figura 2 a la figura 3 al decir "Ahora, un primer
 
 ---
 
-## Bloque 3 — Gustavo Martínez (4:36 – 7:16)
+## Bloque 3 — Gustavo Martínez (4:34 – 7:13)
 
 ### Texto hablado
 
@@ -158,9 +170,9 @@ Gracias, Germán. Soy **Gustavo Martínez**. Explico el filtro.
 
 Una persona tiene que revisar cada par y decidir si una decisión cambia, revierte o repite a la otra. Son 3.071 pares: unas 77 horas. Casi todos sin relación: "el control será amarillo" frente a "la reunión termina a las cinco".
 
-Si dos decisiones hablan de lo mismo, probablemente comparten palabras. Así que, antes de que una persona mire un par, una regla automática descarta los que casi no comparten. Es un **filtro léxico**, porque solo mira palabras: no da la respuesta, solo decide qué pares vale la pena revisar.
+Si dos decisiones hablan de lo mismo, probablemente comparten palabras. Así que, antes de que una persona mire un par, una regla automática descarta los que casi no comparten. Es un **filtro léxico**, o *blocking*, porque solo mira palabras: no da la respuesta, solo decide qué pares vale la pena revisar.
 
-Primero se quitan las palabras vacías, como "de" o "el"; quedan las **palabras de contenido**. Luego se calcula el **coeficiente de solapamiento**: palabras compartidas, divididas por las de la frase más corta. ¿Qué parte de la corta está dentro de la larga?
+Primero se quitan las palabras vacías, como "de" o "el"; quedan las **palabras de contenido**. Luego se calcula el **overlap coefficient**: palabras compartidas, divididas por las de la frase más corta. ¿Qué parte de la corta está dentro de la larga?
 
 > **▶ Lámina del ejemplo: las dos frases con «botón» y «turbo» resaltadas y la cuenta «2 ÷ 3 = 0,67».**
 
@@ -194,13 +206,13 @@ Nota de entrega: es el bloque más denso. Hacer una pausa breve después de "0,6
 
 ---
 
-## Bloque 4 — Jason Sepúlveda (7:16 – 8:41)
+## Bloque 4 — Jason Sepúlveda (7:13 – 8:39)
 
 ### Texto hablado
 
 Gracias, Gustavo. Cierro con un último reto y los próximos pasos.
 
-El reto es la **ventana de contexto**: lo máximo que el modelo lee de una vez, unas 12.288 unidades, unas 9.452 palabras. Estimamos que las 56 reuniones caben una por una, aunque la mayor ocupa el 96,4 % y seis pasan del 80 %. Ninguna serie completa cabe: cada una es de 1,6 a 2,8 veces la ventana. El modelo tendrá que leerla por partes, y eso condiciona el diseño.
+El reto es la **context window**: lo máximo que el modelo lee de una vez, unos 12.288 **tokens**, trozos de palabra: unas 9.452 palabras. Estimamos que las 56 reuniones caben una por una, aunque la mayor ocupa el 96,4 % y seis pasan del 80 %. Ninguna serie completa cabe: cada una es de 1,6 a 2,8 veces la ventana. El modelo tendrá que leerla por partes, y eso condiciona el diseño.
 
 > **▶ Lámina de cierre con los cuatro pasos (ver abajo).**
 
@@ -212,7 +224,7 @@ Todo parte de lo que nos enseñó el botón turbo: los números por sí solos no
 
 ### Lámina
 
-Sin figura nueva. Antes del cierre, una lámina con la ventana de contexto: "Ventana: 12.288 unidades ≈ 9.452 palabras", "Cada reunión cabe (la mayor, 96,4 %)", "Ninguna serie cabe: 1,6 a 2,8 veces la ventana". Lámina de cierre con cuatro líneas, una por paso: "Revisar a mano las 26 decisiones sin evidencia", "Preguntas de evolución sobre las reuniones b, c y d", "Mantener el filtro, declarar su sesgo y medir su recall", "Informar el tamaño de cada diferencia". Opcional: volver a la lámina de título del bloque 1 ("¿Se eliminó el botón turbo?") durante la última frase.
+Sin figura nueva. Antes del cierre, una lámina con la context window: "Context window: 12.288 tokens ≈ 9.452 palabras", "Cada reunión cabe (la mayor, 96,4 %)", "Ninguna serie cabe: 1,6 a 2,8 veces la ventana". Lámina de cierre con cuatro líneas, una por paso: "Revisar a mano las 26 decisiones sin evidencia", "Preguntas de evolución sobre las reuniones b, c y d", "Mantener el filtro, declarar su sesgo y medir su recall", "Informar el tamaño de cada diferencia". Opcional: volver a la lámina de título del bloque 1 ("¿Se eliminó el botón turbo?") durante la última frase.
 
 Nota de entrega: pasar despacio por los cuatro pasos y mirar a cámara en la frase final.
 
@@ -228,10 +240,10 @@ Nota de entrega: pasar despacio por los cuatro pasos y mirar a cámara en la fra
 | 26 de 343 decisiones sin evidencia; 0 % en la reunión a y alrededor de 11 % desde la c | `docs/avances/07-jss-analisis-exploratorio.md` §4.1; notebook 11, figura 2 |
 | No se imputa ni se elimina nada | `docs/avances/07-jss-analisis-exploratorio.md` §4.2 y §5 |
 | Medianas de decisiones por reunión: 3,5 frente a 8,0, 6,5 y 7,0 | `docs/avances/07-jss-analisis-exploratorio.md` §6.2; notebook 11, figura 3 |
-| 15 de 56 reuniones marcadas como atípicas; 0 filas eliminadas, corregidas o imputadas; la frase del botón turbo tiene 5 palabras de contenido y ningún método la marca | `docs/avances/07-jss-analisis-exploratorio.md` §5; notebook 03, §5 y §11.2 |
+| Cuatro técnicas (Z-score, Tukey, LOF, MCD); 15 de 56 reuniones marcadas, 12 solo por MCD; TS3005d marcada por las cuatro y real; 0 filas eliminadas, corregidas o imputadas; la frase del botón turbo tiene 5 palabras de contenido y ningún método la marca | `docs/avances/07-jss-analisis-exploratorio.md` §5; notebook 03, §5 y §11.2 |
 | 4 frases idénticas y 8 casi idénticas, en reuniones consecutivas; se conservan con marca | `docs/avances/07-jss-analisis-exploratorio.md` §4.3; notebook 03, §2.4 y §11.3 |
 | Reunión de unos 32 minutos, 5.010 palabras, 462 turnos y 6,1 decisiones (rango 1 a 15); decisión de 6,1 palabras de contenido (moda 3); turnos con mediana de 4 palabras y 31,5 % de una sola | `docs/avances/07-jss-analisis-exploratorio.md` §6.1; notebook 03, §4.1, §4.2 y §10.1 |
-| Ventana de 12.288 unidades (≈ 9.452 palabras); las 56 reuniones caben, la mayor ocupa 96,4 % y 6 superan 80 %; ninguna serie completa cabe (1,6 a 2,8 veces) | `docs/avances/07-jss-analisis-exploratorio.md` §8; notebook 03, §10.1 y §11.3 |
+| Context window de 12.288 tokens (≈ 9.452 palabras); las 56 reuniones caben, la mayor ocupa 96,4 % y 6 superan 80 %; ninguna serie completa cabe (1,6 a 2,8 veces) | `docs/avances/07-jss-analisis-exploratorio.md` §8; notebook 03, §10.1 y §11.3 |
 | 14 series elegidas por criterio entre 33 elegibles; un solo dominio; habla actuada | `docs/avances/07-jss-analisis-exploratorio.md` §1 y §9; notebook 03, §1.3 y §1.4 |
 | 77 horas a 1,5 minutos por par; 92 pares y 2,3 horas | `docs/avances/07-jss-analisis-exploratorio.md` §7.1 y §7.3; notebook 11, figura 4 |
 | Ejemplo ilustrativo: 2 ÷ 3 = 0,67 con el coeficiente; "cambiar color" = 0,50; umbral de 0,30 y 2 palabras | `docs/avances/07-jss-analisis-exploratorio.md` §7.3 (ejemplos ilustrativos, no datos del corpus) |

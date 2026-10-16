@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 06 — Metodología |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 3.7 |
+| **Versión** | 3.8 |
 | **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
@@ -27,6 +27,7 @@
 | 3.5 | 2026-10-15 | Se registran dos decisiones provisionales de la puntuación del Experimento A (§1) y se declara una limitación de los intervalos. (1) Ámbito de la alineación: una decisión extraída solo puede emparejarse con una decisión de referencia cuya reunión esté entre las reuniones de origen de la extraída; la alineación sobre toda la serie se calcula aparte, como análisis de sensibilidad. (2) Rol de una decisión con evidencia de varias personas: el rol que más habló es el principal; contar la decisión en cada rol involucrado es el análisis de sensibilidad. Ambas decisiones son provisionales y se confirman o cambian con un análisis sobre la primera extracción real de una serie de desarrollo. No cambian otras cifras ni umbrales. | La decisión extraída puede reunir en un solo concepto una decisión repetida en varias reuniones, y la referencia de ES2015 tiene 9 de 27 decisiones con evidencia de más de un rol; sin extracción real no hay datos para elegir con evidencia (issue #99, bloqueado por #95). |
 | 3.6 | 2026-10-15 | Se declara que el banco admite hasta 40 preguntas de E3 (§1, umbral del estrato E3). El mínimo prerregistrado de 25 por estrato no cambia; las filas de E3 sobre ese mínimo son opcionales y quedan vacías si el material de evolución no alcanza. | Aumentar la probabilidad de detectar una mejora real más pequeña en E3: la simulación de potencia da alrededor de 57 % con 25 preguntas y 76 % con 40 para una mejora de 15 puntos ([notebook 10](../../notebooks/10-jss-potencia-criterio-d16.ipynb)); el tope lo fija el material disponible ([notebook 01](../../notebooks/01-jss-viabilidad-e3.ipynb)). |
 | 3.7 | 2026-10-15 | Se agregan referencias cruzadas a los documentos [07](07-jss-analisis-exploratorio.md), [08](08-jss-metricas-y-criterio-de-exito.md) y [09](09-jss-modelos-y-justificacion.md), donde ahora vive el detalle del filtro léxico, de las métricas y del criterio D16, y de las condiciones, el juez y los parámetros: una nota «Documentos relacionados» al inicio y una línea de remisión al comienzo de las secciones 1, 2, 3–4 y 5–6. No se elimina contenido y no cambia ninguna cifra, umbral ni decisión. | Los documentos 07 a 09 de AFG2 desarrollan partes de esta metodología; sin enlaces, el lector no sabe dónde está el detalle. |
+| 3.8 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (ground truth, precision, recall, accuracy, LLM-as-a-judge, baseline, overlap coefficient, context window, cosine similarity, filtro léxico (*blocking*)). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -38,11 +39,11 @@ Este documento fija el diseño completo. Tres documentos posteriores desarrollan
 con más detalle y con las cifras ya medidas:
 
 - [Documento 07, análisis exploratorio](07-jss-analisis-exploratorio.md): la calidad de los
-  datos y el filtro léxico en lenguaje simple (§7).
+  datos y el filtro léxico (*blocking*) en lenguaje simple (§7).
 - [Documento 08, métricas y criterio de éxito](08-jss-metricas-y-criterio-de-exito.md): qué se
   mide en cada objetivo, con qué umbral o intervalo, y el criterio D16 (§6).
 - [Documento 09, modelos y su justificación](09-jss-modelos-y-justificacion.md): las tres
-  condiciones, el juez automático y los parámetros, con su evidencia.
+  condiciones, el LLM-as-a-judge (un segundo modelo que califica las respuestas) y los parámetros, con su evidencia.
 
 ## El experimento en una página
 
@@ -55,7 +56,7 @@ puede leer de una vez. Se llaman **condiciones**:
 |---|---|---|---|
 | **C1** | RAG documental | Buscar en las transcripciones los fragmentos parecidos a la pregunta y redactar una respuesta con ellos. Es la práctica actual. | El piso: lo que cualquiera haría hoy. |
 | **C2** | Base construida por la máquina | Un modelo de lenguaje lee las transcripciones, extrae las decisiones y las guarda en una base con sus relaciones. Es la propuesta. | Lo que se evalúa. |
-| **C3** | Base construida por personas | La misma base de C2, pero llenada con la anotación humana del conjunto de referencia. Sin errores de extracción. | Separa dos cosas: la distancia C1→C3 es el valor de tener la base; la distancia C3→C2 es el costo de los errores de la máquina. |
+| **C3** | Base construida por personas | La misma base de C2, pero llenada con la anotación humana del ground truth (las decisiones marcadas a mano). Sin errores de extracción. | Separa dos cosas: la distancia C1→C3 es el valor de tener la base; la distancia C3→C2 es el costo de los errores de la máquina. |
 
 Sin C3 no se podría distinguir si una mala respuesta de C2 se debe a que la idea de la base
 no sirve o a que la máquina la llenó mal. Esa es la limitación de los trabajos previos que
@@ -63,7 +64,7 @@ se señala en el documento 01, y la razón de ser de este diseño.
 
 El trabajo se organiza en **cuatro fases**, en orden, porque cada una necesita la anterior:
 
-1. **El conjunto de referencia.** Personas marcan a mano las decisiones de 14 series de
+1. **El ground truth.** Personas marcan a mano las decisiones de 14 series de
    reuniones y cómo se relacionan entre reuniones. Aporta el patrón contra el cual se mide
    todo lo demás; sin él, ninguna otra fase mide nada.
 2. **La extracción automática.** Se mide qué tan bien la máquina encuentra esas mismas
@@ -92,14 +93,14 @@ propuesta abierta) y anclada (identifica el objeto y el contenido: sobre qué se
 qué). Las propuestas no aceptadas se registran como no-decisiones: hacen falta para medir
 falsos positivos, es decir, los casos en que la máquina diga "decisión" donde no la hubo.
 
-**Métricas de OE2** (fase 2): precisión, cobertura y F1 a nivel decisión; exactitud de tipo
-y de dirección a nivel relación temporal, reportadas por separado. Precisión es qué parte de
-lo que la máquina extrajo era realmente una decisión; cobertura, qué parte de las decisiones
+**Métricas de OE2** (fase 2): precision, recall y F1 a nivel decisión; accuracy de tipo
+y de dirección a nivel relación temporal (la fracción de relaciones clasificadas bien), reportadas por separado. Precision es qué parte de
+lo que la máquina extrajo era realmente una decisión; recall, qué parte de las decisiones
 reales encontró; F1 las combina. **Métricas de OE3** (fase 3): corrección de respuesta,
 soporte de evidencia, citación correcta, corrección del rechazo (si el sistema sabe decir
 "no hay información" cuando no la hay), y costo amortizado (§7).
 
-**Dos decisiones provisionales de la puntuación de OE2.** Antes de que exista una extracción real, la puntuación fija dos valores por defecto y calcula siempre, junto a cada uno, una alternativa de sensibilidad (un análisis de sensibilidad repite el cálculo con la otra opción para ver cuánto cambia el resultado). (1) **Ámbito de la alineación.** Una decisión extraída solo puede emparejarse con una decisión de referencia si la reunión de esta última figura entre las reuniones de origen de la extraída: el sistema puede reunir en un solo concepto una decisión repetida en varias reuniones, de modo que la extraída puede tener más de una reunión de origen. La alineación sobre toda la serie, sin esa restricción, se calcula aparte como sensibilidad. (2) **Rol del hablante.** Cuando la evidencia de una decisión proviene de personas con roles distintos, el rol que más habló es el principal; la sensibilidad cuenta la decisión en cada rol involucrado, tanto en cobertura como, cuando se conoce el rol de lo extraído, en precisión. Ambas decisiones son provisionales: se confirmarán o se cambiarán con un cuaderno de análisis sobre la primera extracción real de una serie de desarrollo (issues #95 y #99), y entonces quedarán registradas en un ADR. Se declara además una limitación: los intervalos de precisión, cobertura y F1 tratan las decisiones como independientes e ignoran su agrupación por reunión y por serie, por lo que son optimistas en ese sentido.
+**Dos decisiones provisionales de la puntuación de OE2.** Antes de que exista una extracción real, la puntuación fija dos valores por defecto y calcula siempre, junto a cada uno, una alternativa de sensibilidad (un análisis de sensibilidad repite el cálculo con la otra opción para ver cuánto cambia el resultado). (1) **Ámbito de la alineación.** Una decisión extraída solo puede emparejarse con una decisión de referencia si la reunión de esta última figura entre las reuniones de origen de la extraída: el sistema puede reunir en un solo concepto una decisión repetida en varias reuniones, de modo que la extraída puede tener más de una reunión de origen. La alineación sobre toda la serie, sin esa restricción, se calcula aparte como sensibilidad. (2) **Rol del hablante.** Cuando la evidencia de una decisión proviene de personas con roles distintos, el rol que más habló es el principal; la sensibilidad cuenta la decisión en cada rol involucrado, tanto en recall como, cuando se conoce el rol de lo extraído, en precision. Ambas decisiones son provisionales: se confirmarán o se cambiarán con un cuaderno de análisis sobre la primera extracción real de una serie de desarrollo (issues #95 y #99), y entonces quedarán registradas en un ADR. Se declara además una limitación: los intervalos de precision, recall y F1 tratan las decisiones como independientes e ignoran su agrupación por reunión y por serie, por lo que son optimistas en ese sentido.
 
 **Citación correcta (ADR 0009).** Esta métrica busca el caso en que la respuesta es correcta
 pero la fuente que cita no la respalda. En términos simples: una respuesta cita uno o varios
@@ -109,7 +110,7 @@ por **correcta cuando al menos un pasaje acierta**, e **incorrecta cuando ningun
 cuando la respuesta no cita nada** (una afirmación sin fuente cuenta como falla aunque sea
 correcta). Se descartó exigir que *todos* los pasajes acierten, porque castigaba por igual
 citar una fuente ajena y citar la fuente correcta junto con un repaso válido de la misma
-idea. Como la regla admite citar de más, se informa además la **precisión de la citación**
+idea. Como la regla admite citar de más, se informa además la **precision de la citación**
 (la fracción de los pasajes citados que aciertan), que deja a la vista a quien cita todo.
 Queda un riesgo declarado: C1 cita fragmentos grandes y C2 y C3 citarán decisiones más
 puntuales, de modo que la regla podría favorecer a C1; se revisará con los primeros datos de
@@ -122,7 +123,7 @@ datos y cualquier cambio se registra en `docs/decisions/`.
 | Qué | Umbral | Qué pasa si no se cumple |
 |---|---|---|
 | Concordancia del alineamiento automático con el emparejamiento manual (100 pares) | ≥ 0,80 | Se revisa la grilla de τ y se repite la validación |
-| Concordancia juez automático – humano (20 % de las respuestas, una corrida por pregunta y condición), por etiqueta | kappa ≥ 0,70 | Si falla la corrección de respuesta, se descarta el juicio automático de la métrica principal y se reporta solo la evaluación humana; si falla el soporte de evidencia, esa métrica se reporta solo con evaluación humana o marcada como no confiable |
+| Concordancia LLM-as-a-judge – humano (20 % de las respuestas, una corrida por pregunta y condición), por etiqueta | kappa ≥ 0,70 | Si falla la corrección de respuesta, se descarta el juicio automático de la métrica principal y se reporta solo la evaluación humana; si falla el soporte de evidencia, esa métrica se reporta solo con evaluación humana o marcada como no confiable |
 | Tamaño del estrato E3 | ≥ 25 preguntas (el banco admite hasta 40) | E3 se reformula como análisis de casos con reporte cualitativo |
 | Diferencia entre condiciones (criterio principal D16) | Intervalo bootstrap del 95 % de la diferencia pareada C2 − C1 por encima de 0 | No se afirma diferencia; se reporta como no concluyente |
 | Kappa de la anotación (existencia, tipo, dirección) | Sin umbral de aceptación, por diseño | Se reporta tal como salga; un kappa bajo es un hallazgo (documento 01, §3) |
@@ -144,8 +145,8 @@ preguntas, una pregunta difícil lo es para las dos y esa dificultad común se c
 diferencia. Si el intervalo incluye el 0, el resultado se reporta como no concluyente y nunca
 como éxito. Como cifra de **robustez** se informa además si los intervalos del 95 % de C2 y de
 C1, calculados cada uno por separado, se solapan; esa cifra acompaña al criterio principal y no
-lo reemplaza. Todo lo demás es secundario y descriptivo: precisión, cobertura y F1 de OE2,
-exactitud de tipo y de dirección, soporte de evidencia, citación, corrección del rechazo, costo
+lo reemplaza. Todo lo demás es secundario y descriptivo: precision, recall y F1 de OE2,
+accuracy de tipo y de dirección, soporte de evidencia, citación, corrección del rechazo, costo
 amortizado, los estratos E1, E2 y E4, y la comparación C2 frente a C3. Cómo se calculan los
 intervalos se explica en los pasos 7–8.
 
@@ -191,16 +192,16 @@ desarrollo/evaluación, los cuatro N, composición lingüística, autoría por r
 evidencia, riesgos y plan de saneamiento— está en
 [`02-jss-fuente-de-datos.md`](02-jss-fuente-de-datos.md). El resultado que condiciona todo lo
 que sigue: 14 series, 56 reuniones, 343 decisiones, 3.071 pares entre reuniones, 92 pares
-candidatos tras el bloqueo. Esos 92 pares son los que las personas anotan en la fase 1.
+candidatos tras el filtro léxico. Esos 92 pares son los que las personas anotan en la fase 1.
 
 **El filtro léxico y sus sesgos.** Como esos 92 pares condicionan todo el conjunto de
 referencia, conviene explicar cómo se llega a ellos. Cada frase de decisión se pasa a
 minúsculas, se conservan solo las palabras de al menos 3 letras y se descartan las palabras
 vacías ("de", "que", "el"). Luego, para cada par de decisiones de reuniones distintas, se
-calcula el **coeficiente de solapamiento**: palabras compartidas dividido por el tamaño de la
+calcula el **overlap coefficient**: palabras compartidas dividido por el tamaño de la
 frase más corta. Se usa este coeficiente y no Jaccard porque una reversión suele ser una
 frase corta posterior que apunta a una larga anterior: en el par del botón turbo, Jaccard da
-0,118 y pierde el caso, mientras que el solapamiento da 0,400 y lo conserva. Un par es
+0,118 y pierde el caso, mientras que el overlap coefficient da 0,400 y lo conserva. Un par es
 candidato si el coeficiente es ≥ 0,30 **y** comparte al menos 2 palabras. Solo con el
 coeficiente pasarían 712 de 3.071 pares (23,2 %, ≈18 h de anotación); con ambas condiciones,
 92 (3,0 %, ≈2,3 h). El punto de operación está acotado por ambos lados: si el umbral sube
@@ -212,7 +213,7 @@ control); si se relaja, vuelven los 712.
 Un filtro así introduce sesgos que se declaran: (1) se pierden las paráfrasis con
 vocabulario distinto; (2) se penaliza a las frases muy cortas, y las reversiones tienden a
 ser cortas; (3) la cota se calibró con un solo par de control; (4) el presupuesto de horas
-entró en la elección del punto de operación; (5) el conjunto de referencia favorece a los
+entró en la elección del punto de operación; (5) el ground truth favorece a los
 métodos léxicos (D6 evita el sesgo inverso, no este). Una comprobación medida: la proporción
 de candidatos por sitio de grabación en el punto de operación es parecida (ES 44 pares,
 3,2 %; IS 22, 3,1 %; TS 26, 2,6 %), pero eso **no** demuestra que la pérdida sea igual en
@@ -228,7 +229,7 @@ relaciones que existen en el corpus. La evidencia está en
 [`../../notebooks/00-jss-corpus-y-auditoria.ipynb`](../../notebooks/00-jss-corpus-y-auditoria.ipynb)
 §4.1 y la implementación en `src/afg/annotation/blocking.py`.
 
-## 3–4. Diseño analítico y líneas base
+## 3–4. Diseño analítico y baselines
 
 *Fase 3: las tres condiciones y la regla de "todo lo demás igual".*
 
@@ -243,10 +244,10 @@ por el modelo.
 
 - **C1 — RAG documental.** Transcripciones segmentadas en fragmentos e indexadas con
   búsqueda híbrida (léxica, por palabras exactas, y densa, por parecido de significado).
-  **Línea base honesta:** una línea base es el punto de comparación, y una línea base
+  **Baseline honesto:** un baseline es el punto de comparación, y un baseline
   débil hace que cualquier propuesta parezca buena. Por eso los parámetros de segmentación
   y el número de fragmentos recuperados se ajustan sobre el conjunto de desarrollo (77
-  decisiones, 11 candidatos), no se fijan arbitrariamente. Una línea base debilitada
+  decisiones, 11 candidatos), no se fijan arbitrariamente. Un baseline debilitado
   invalida el experimento completo. El ajuste se hizo sobre la serie de desarrollo ES2015,
   con una regla fijada antes de correr y con una medida precisa: el recall de evidencia
   (qué parte de los pasajes que respaldan la respuesta aparece entre lo recuperado), contado
@@ -265,14 +266,14 @@ por el modelo.
 - **C3 — Compilación desde la referencia.** Idéntica a C2 salvo que los objetos provienen de
   la anotación humana de OE1.
 
-**El bloqueador de candidatos** pertenece a la fase 1, pero sigue el mismo principio. Es el
+**El filtro léxico de candidatos** pertenece a la fase 1, pero sigue el mismo principio. Es el
 filtro que decide qué pares de decisiones se ofrecen a anotación humana, porque leer los
-3.071 pares posibles no es viable. Se ajusta también sobre desarrollo, y exige coeficiente
-de solapamiento ≥ 0,30 **y** al menos 2 tokens compartidos. El coeficiente de solapamiento
+3.071 pares posibles no es viable. Se ajusta también sobre desarrollo, y exige overlap
+coefficient ≥ 0,30 **y** al menos 2 tokens compartidos. El overlap coefficient
 mide qué proporción de las palabras de la frase más corta aparece en la otra; un token es
-una palabra. Se usa solapamiento y no Jaccard (que divide por el total de palabras distintas
+una palabra. Se usa el overlap coefficient y no Jaccard (que divide por el total de palabras distintas
 de ambas frases y castiga a las frases cortas) porque Jaccard pierde el caso de regresión
-del bloqueador: el par del botón turbo, Jaccard 0,118 frente a solapamiento 0,400. Ese par
+del filtro léxico: el par del botón turbo, Jaccard 0,118 frente a overlap coefficient 0,400. Ese par
 es el de solape léxico más exigente medido en el piloto y **no** una relación confirmada: la
 verificación contra transcripción mostró después que esa reversión no ocurrió (documento 02,
 §4.4). Se conserva como prueba de que el filtro sigue dejando pasar frases cortas. Y se
@@ -285,13 +286,13 @@ el piloto; con el mínimo añadido, 92 (3,0 %, ≈2,3 h), sin perder el caso de 
 *Fases 1 y 2: con qué modelos se extrae, cómo se decide si acertaron y por qué la referencia
 la hacen personas.*
 
-*Más detalle:* la elección y la calibración del juez automático, en el [documento 09](09-jss-modelos-y-justificacion.md) (§4); la cuenta de parámetros, en su §5.
+*Más detalle:* la elección y la calibración del LLM-as-a-judge, en el [documento 09](09-jss-modelos-y-justificacion.md) (§4); la cuenta de parámetros, en su §5.
 
 **Modelos.** Modelos generativos de ejecución local (familia Qwen o equivalente, en escalas
 contrastables) y un modelo de *embeddings* multilingüe. "Ejecución local" significa que
 corren en un computador propio, sin enviar datos a servicios externos; "escalas
 contrastables" significa tamaños de modelo distintos que se puedan comparar. Versiones
-exactas, semilla, tamaño de ventana de contexto y parámetros de muestreo se fijan y se
+exactas, semilla, tamaño de la context window (lo que el modelo lee de una vez) y parámetros de muestreo se fijan y se
 publican, para que cualquiera pueda repetir la corrida.
 
 **Varianza no determinista.** La extracción con un modelo de lenguaje no es determinista
@@ -304,7 +305,7 @@ afortunada o la desafortunada.
 referencia dice "el equipo conserva el botón turbo", ¿es la misma decisión? Hace falta una
 regla fija para decidirlo, acordada antes de ver resultados. El protocolo determina si una
 decisión extraída corresponde a una de referencia en cuatro pasos: (1) candidatos por
-similitud coseno de *embeddings* sobre el par (objeto, contenido) por encima de un umbral τ,
+cosine similarity de *embeddings* sobre el par (objeto, contenido) por encima de un umbral τ,
 es decir, se consideran parecidas las decisiones cuya representación numérica supera cierto
 parecido mínimo; (2) emparejamiento uno-a-uno por asignación de costo máximo —algoritmo
 húngaro—, no por vecino más cercano codicioso: se busca el mejor emparejamiento global de
@@ -316,13 +317,13 @@ dé mejor resultado. Se descartan PR-AUC y matrices de confusión como métricas
 porque el sistema emite conjuntos en lenguaje natural, no puntajes sobre clases fijas;
 Recall@K se conserva sólo para la etapa de recuperación dentro de C1 y C2.
 
-**El filtro de candidatos y su punto de operación** es el mismo bloqueador de §3–4, aplicado
+**El filtro de candidatos y su punto de operación** es el mismo filtro léxico de §3–4, aplicado
 antes de la anotación humana: 92 pares candidatos de 3.071 posibles, versionado
 (`BLOCKER_VERSION`) para que cambiar el punto de operación invalide explícitamente los
 candidatos ya generados en vez de mezclarlos en silencio. Si el filtro cambia, los pares
 anotados con el filtro anterior quedan marcados como de otra versión, no mezclados.
 
-**Anotación humana, por qué no se automatiza.** Las etiquetas del conjunto de referencia las
+**Anotación humana, por qué no se automatiza.** Las etiquetas del ground truth las
 pone siempre un humano. Si un modelo las produjera, la condición C3 tendría errores de
 extracción por construcción y la brecha C2 − C3 —que es todo OE4— dejaría de medir nada: se
 estaría comparando los errores de una máquina contra los errores de otra. Los modelos sólo
@@ -350,15 +351,15 @@ la conversación la contradice o no la contiene; y se agregó un criterio para d
 una propuesta llegó a ser decisión. Como lo exige el protocolo, se vuelve a calibrar antes
 de tocar una serie de evaluación: las dos personas anotan otra serie de desarrollo, TS3009,
 con la guía corregida, y solo después comienzan las series de control. TS3009 sigue en el
-conjunto de referencia, ahora con doble anotación; las series doblemente anotadas pasan de
+ground truth, ahora con doble anotación; las series doblemente anotadas pasan de
 cinco a seis, y la proporción de doble anotación sobre la evaluación (36,4 %) no cambia.
 
-**El juez automático, elegido con evidencia propia.** El Experimento B produce unas 900
-respuestas, demasiadas para calificarlas a mano. Las califica un juez automático: un segundo
+**El LLM-as-a-judge, elegido con evidencia propia.** El Experimento B produce unas 900
+respuestas, demasiadas para calificarlas a mano. Las califica un LLM-as-a-judge: un segundo
 modelo que lee la pregunta, la respuesta de referencia, la respuesta del sistema y el pasaje de
 la transcripción donde está la evidencia, y decide si la respuesta es correcta y si cada
 afirmación está respaldada por la transcripción. Para no favorecer sus propias respuestas, el
-juez no puede ser de la familia de ningún modelo que use OpenKOS (ni Qwen ni Gemma). Ningún
+LLM-as-a-judge no puede ser de la familia de ningún modelo que use OpenKOS (ni Qwen ni Gemma). Ningún
 ranking público mide esta tarea, así que se eligió con una prueba propia: una persona del
 equipo escribió 21 preguntas sobre ES2015 y etiquetó a mano 42 respuestas, y cada uno de los
 tres candidatos calificó esas mismas respuestas. Los requisitos se fijaron antes de correr
@@ -380,12 +381,12 @@ saberlo. El equipo decidió declararlo en lugar de volver a etiquetar; los casos
 etiquetas contradicen ese identificador indican que se etiquetó por el contenido, pero el
 acuerdo podría estar algo inflado. Como protección adicional, el Experimento B mantiene la
 verificación humana sobre el 20 % de las respuestas (§1) y la decide **por etiqueta**, porque
-las dos etiquetas del juez no se usan igual. La **corrección de respuesta** es la métrica del
+las dos etiquetas del LLM-as-a-judge no se usan igual. La **corrección de respuesta** es la métrica del
 criterio principal (D16): si su acuerdo con las personas cae bajo 0,70 (kappa), el juicio
 automático se descarta y esa métrica se reporta solo con evaluación humana. El **soporte de
 evidencia** es secundario y tiene su propia marca: si su kappa cae bajo 0,70, se reporta solo
 con evaluación humana o marcada como no confiable, sin afectar a la métrica principal. Un
-kappa que no se puede calcular (juez y personas usan una sola clase de respuesta) cuenta como
+kappa que no se puede calcular (el LLM-as-a-judge y las personas usan una sola clase de respuesta) cuenta como
 «no cumple»; en todos los casos se informan además el **acuerdo observado** (la fracción de
 respuestas en que coinciden) y la **prevalencia** (la fracción de «sí» de cada lado), porque
 un kappa solo puede engañar cuando casi todas las respuestas son de una misma clase. La muestra
@@ -492,13 +493,13 @@ no el esfuerzo; si se queda corto de 40, se declara como limitación de potencia
 | Término | Qué significa en este documento |
 |---|---|
 | Condición (C1, C2, C3) | Cada una de las tres maneras de responder preguntas que se comparan con todo lo demás igual. |
-| Línea base | El punto de comparación (C1). Debe ser lo mejor que se pueda hacer con la práctica actual, no una versión débil. |
-| Conjunto de referencia | Las decisiones y relaciones marcadas a mano, contra las que se mide la máquina. |
-| Bloqueador | Filtro que reduce los 3.071 pares posibles a los 92 que las personas revisan. |
+| Baseline | El punto de comparación (C1). Debe ser lo mejor que se pueda hacer con la práctica actual, no una versión débil. |
+| Ground truth | Las decisiones y relaciones marcadas a mano, contra las que se mide la máquina. |
+| Filtro léxico | Filtro (*blocking*) que reduce los 3.071 pares posibles a los 92 que las personas revisan. |
 | Alineamiento | La regla para decidir si una decisión extraída por la máquina es la misma que una de la referencia. |
 | τ (tau) | El parecido mínimo exigido en el alineamiento. Los resultados se reportan para varios valores, no para uno elegido. |
 | Fuga | Usar información del futuro (reuniones posteriores) al anotar o extraer una decisión. |
-| Juez automático | Un segundo modelo que califica si una respuesta es correcta; se comprueba contra personas sobre una muestra. |
+| LLM-as-a-judge | Un segundo modelo que califica si una respuesta es correcta; se comprueba contra personas sobre una muestra. |
 | Costo amortizado | A partir de cuántas consultas compensa haber construido la base. |
 | Intervalo de confianza (IC) | Rango de valores compatibles con lo observado, dado el tamaño de la muestra. Un IC ancho indica poca información. |
 | Wilson | Método para calcular el IC de una proporción con pocos casos; no produce límites fuera de 0 y 1. |
@@ -506,18 +507,18 @@ no el esfuerzo; si se queda corto de 40, se declara como limitación de potencia
 | Sesgo | Desviación sistemática: del filtro (pierde cierto tipo de pares), de la fuente (el corpus ya favorece a ciertos roles) o del sistema (agrega una desviación propia). |
 | Kappa | Medida de acuerdo entre dos personas que descuenta el acuerdo que se daría por azar: 1 es acuerdo total y 0 es lo mismo que el azar. |
 | Calibración | Anotación de prueba sobre una serie que no se evalúa, para comprobar que las personas entienden la guía igual antes de anotar lo que se reporta. |
-| Recall (cobertura) | De lo que realmente existe, qué proporción logra encontrar un filtro o un sistema. |
+| Recall | De lo que realmente existe, qué proporción logra encontrar un filtro o un sistema. |
 
 ## Principios rectores
 
 Se cierra con los dos principios que el curso exige para toda la metodología:
 
 **Alineada al problema, no a una técnica de moda.** Cada elección metodológica —el
-bloqueador, el protocolo de alineamiento, las tres condiciones— responde a una pregunta de
+filtro léxico, el protocolo de alineamiento, las tres condiciones— responde a una pregunta de
 investigación declarada en el documento 03, no a la disponibilidad de una técnica.
 
-**Transparente y reproducible.** Versiones exactas de modelos, semilla, ventana de contexto y
-parámetros de muestreo publicados; el punto de operación del bloqueador versionado; y el
+**Transparente y reproducible.** Versiones exactas de modelos, semilla, context window y
+parámetros de muestreo publicados; el punto de operación del filtro léxico versionado; y el
 principio general del proyecto (`CONTRIBUTING.md` §7.1): si un número no puede reproducirse
 desde `src/afg/` a través de un notebook, no entra en la tesis.
 
@@ -534,17 +535,17 @@ riesgo de C2; la numeración de secciones no cambia.
 |---|---|
 | Las 8 secciones y el diseño experimental completo | [`../propuesta.md`](../propuesta.md) §5 |
 | Cronología verificada vía `startTime` | [`../../config/corpus.toml`](../../config/corpus.toml), sección `[corpus.phases]` |
-| Bloqueador: coeficiente ≥0,30 y `\|A∩B\|≥2`; 712 vs 92 | [`../decisions/README.md`](../decisions/README.md), decisiones D5 y D9 |
+| Filtro léxico: coeficiente ≥0,30 y `\|A∩B\|≥2`; 712 vs 92 | [`../decisions/README.md`](../decisions/README.md), decisiones D5 y D9 |
 | Piloto: 3/6 casos confirmados; botón turbo falso | [`../anotacion/manual-anotacion-oe1.md`](../anotacion/manual-anotacion-oe1.md) §3; [`../../notebooks/01-jss-viabilidad-e3.ipynb`](../../notebooks/01-jss-viabilidad-e3.ipynb) |
 | Viabilidad de E3 (provisional): 45,5 % [21,3–72,0 %], proyección ~37 [17–58] | [`../../notebooks/01-jss-viabilidad-e3.ipynb`](../../notebooks/01-jss-viabilidad-e3.ipynb) |
 | Regla "todo número reproducible desde `src/afg/`" | [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md) §7.1 |
 | Filtro léxico: sesgos, comparación por sitio y Tarea C | [`../../notebooks/00-jss-corpus-y-auditoria.ipynb`](../../notebooks/00-jss-corpus-y-auditoria.ipynb) §4.1; `src/afg/annotation/blocking.py` |
 | Wilson y bootstrap percentil | [`../../notebooks/01-jss-viabilidad-e3.ipynb`](../../notebooks/01-jss-viabilidad-e3.ipynb) §2; `src/afg/evaluation/metrics.py` (`wilson_interval`, `bootstrap_ci`); [`../../config/experiments.toml`](../../config/experiments.toml) |
 | Acumulación por serie (D15) y criterio de éxito (D16) | [`../decisions/README.md`](../decisions/README.md), decisiones D15 y D16 |
-| Enmienda de D16 (diferencia pareada), decisión de la verificación humana del juez, kappa indefinido y muestra de una corrida por pregunta | [`../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md`](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md); [`../../notebooks/10-jss-potencia-criterio-d16.ipynb`](../../notebooks/10-jss-potencia-criterio-d16.ipynb); `src/afg/experiments/power.py` |
+| Enmienda de D16 (diferencia pareada), decisión de la verificación humana del LLM-as-a-judge, kappa indefinido y muestra de una corrida por pregunta | [`../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md`](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md); [`../../notebooks/10-jss-potencia-criterio-d16.ipynb`](../../notebooks/10-jss-potencia-criterio-d16.ipynb); `src/afg/experiments/power.py` |
 | Ajuste de C1: 1.200 caracteres, 1 turno de solapamiento, K = 5; contexto de unos 7.400 caracteres | [`../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md`](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md) (enmienda 2026-10-15); [`../../notebooks/06-jss-ajuste-c1.ipynb`](../../notebooks/06-jss-ajuste-c1.ipynb) |
 | Fechas de reunión: hora real en 6 de 14 series, sintética en 8 | [`../decisions/0008-adr-fechas-de-reunion-para-openkos.md`](../decisions/0008-adr-fechas-de-reunion-para-openkos.md); [`../../notebooks/08-jss-fechas-de-reunion.ipynb`](../../notebooks/08-jss-fechas-de-reunion.ipynb) |
 | Riesgo de C2 (4 frente a 29 decisiones en ES2015) | `jasonssdev/openkos#1348`, `#1349`, `#1350`, `#1384`; [`../decisions/0005-adr-development-evaluation-split.md`](../decisions/0005-adr-development-evaluation-split.md); [`../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md`](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) |
 | Calibración: kappa 0,094 en ES2015, guía corregida y recalibración sobre TS3009 | [`../../notebooks/04-jss-anotacion-f1-calibracion.ipynb`](../../notebooks/04-jss-anotacion-f1-calibracion.ipynb); [`../anotacion/manual-anotacion-oe1.md`](../anotacion/manual-anotacion-oe1.md) §2 y §6; [`../anotacion/asignacion/README.md`](../anotacion/asignacion/README.md) (Fase 1) |
-| Juez automático: `gpt-oss:20b`, kappa 0,95; acuerdo humano 1,00 y 0,87; limitación del identificador | [`../../notebooks/05-jss-seleccion-juez.ipynb`](../../notebooks/05-jss-seleccion-juez.ipynb); [`../../config/experiments.toml`](../../config/experiments.toml), sección `[judge]`; [`../anotacion/calibracion-juez.md`](../anotacion/calibracion-juez.md) |
+| LLM-as-a-judge: `gpt-oss:20b`, kappa 0,95; acuerdo humano 1,00 y 0,87; limitación del identificador | [`../../notebooks/05-jss-seleccion-juez.ipynb`](../../notebooks/05-jss-seleccion-juez.ipynb); [`../../config/experiments.toml`](../../config/experiments.toml), sección `[judge]`; [`../anotacion/calibracion-juez.md`](../anotacion/calibracion-juez.md) |
 | Las cuatro fases y su aporte | [`03-jss-objetivos.md`](03-jss-objetivos.md), objetivos específicos OE1–OE4 |

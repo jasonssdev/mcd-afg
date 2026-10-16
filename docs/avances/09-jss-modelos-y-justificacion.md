@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 09 — Modelos y su justificación |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.0 |
+| **Versión** | 1.1 |
 | **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
@@ -13,6 +13,7 @@
 | Versión | Fecha | Cambio | Motivo |
 |---|---|---|---|
 | 1.0 | 2026-10-15 | Versión inicial. Reúne en un solo documento los modelos y técnicas del proyecto, la justificación de cada elección con su evidencia, las primeras pruebas realizadas y las dificultades abiertas. No introduce decisiones ni cifras nuevas: cada dato remite al registro de decisiones, a la configuración o al notebook donde ya consta. | Entrega del video de modelado de datos (semana 4) y sección «Modelo de aprendizaje de máquinas» del pre-informe. |
+| 1.1 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (ground truth, baseline, accuracy, precision, LLM-as-a-judge, context window, cosine similarity). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -60,7 +61,7 @@ distinta:
 |---|---|---|
 | **Sistemas bajo comparación** | Las tres condiciones: C1 (buscar en fragmentos de texto), C2 (base de decisiones construida por la máquina) y C3 (la misma base, construida por personas). Son las «hipótesis de modelado» que el proyecto contrasta. | Secciones 3.1 a 3.3 |
 | **Modelos de lenguaje que las componen** | Un modelo que **genera** las respuestas, un modelo de *embeddings* (convierte texto en números para medir qué tan parecidos son dos textos) y el modelo que **extrae** decisiones al construir la base de C2. | Sección 3 y tabla de la sección 5 |
-| **Instrumento de evaluación** | El **juez automático**: un segundo modelo de lenguaje que califica si cada respuesta es correcta. No es un modelo a evaluar, es la regla de medir. | Sección 4 |
+| **Instrumento de evaluación** | El **LLM-as-a-judge**: un segundo modelo de lenguaje que califica si cada respuesta es correcta. No es un modelo a evaluar, es la regla de medir. | Sección 4 |
 
 **Por qué este encuadre responde a la pauta.** El curso pide «al menos un modelo» y que se
 explique la elección de técnicas, librerías y parámetros. La pregunta de este proyecto no es
@@ -74,7 +75,7 @@ la corrida.
 
 > **Por confirmar con el tutor.** Este encuadre es una interpretación del equipo sobre cómo
 > aplicar la pauta de modelado a un proyecto sin modelo entrenado. Conviene confirmarlo con el
-> tutor antes de la entrega, en particular si acepta que el juez se presente como instrumento
+> tutor antes de la entrega, en particular si acepta que el LLM-as-a-judge se presente como instrumento
 > y no como modelo bajo prueba.
 
 ## 2. Qué es igual en las tres condiciones
@@ -85,7 +86,7 @@ información, todo lo demás se mantiene igual. La configuración común está f
 
 - el mismo modelo generativo, `qwen3:8b`;
 - el mismo modelo de *embeddings*, `bge-m3`;
-- el mismo límite de texto que el modelo lee de una vez (su «ventana de contexto»);
+- el mismo límite de texto que el modelo lee de una vez (su «context window»);
 - las mismas instrucciones para redactar la respuesta (los *prompts* de **OpenKOS**, el motor
   de código abierto con que se construye y consulta la base de decisiones de C2 y C3, sección
   3.2; copiados byte a byte en C1 y verificados con una huella digital, ADR 0006);
@@ -98,7 +99,7 @@ del sistema (por ejemplo, cuántos fragmentos se recuperan). Los parámetros com
 |---|---|---|
 | `generative_model` | `qwen3:8b` | Modelo que redacta la respuesta; ejecución local, sin enviar datos a terceros. |
 | `embedding_model` | `bge-m3` | Modelo multilingüe que convierte texto en números para medir parecido. |
-| `context_window_tokens` | 12.288 | Tamaño de la ventana de contexto (valor por defecto de OpenKOS, ADR 0006). |
+| `context_window_tokens` | 12.288 | Tamaño de la context window (valor por defecto de OpenKOS, ADR 0006). |
 | `max_generation_tokens` | 8.192 | Largo máximo de la respuesta generada. |
 | `temperature` | 0,1 | Grado de azar al redactar; un valor bajo vuelve las respuestas más estables. |
 | `seed` | 42 | Semilla del azar, para poder repetir la corrida. |
@@ -117,7 +118,7 @@ reciben las mismas opciones (`src/afg/conditions/c1_document_rag.py`).
 **Qué hace, en simple.** RAG significa *generación aumentada por recuperación*: antes de
 contestar, el sistema recupera del texto disponible los pasajes más relacionados con la
 pregunta y se los entrega al modelo para que redacte la respuesta con ellos. Es lo que
-cualquier organización haría hoy con sus transcripciones, y por eso es la línea base: el
+cualquier organización haría hoy con sus transcripciones, y por eso es el baseline: el
 punto de comparación contra el cual se mide la propuesta.
 
 **Por qué se eligió.** Responde a la pregunta del proyecto en su forma más directa: si la
@@ -231,13 +232,13 @@ versión (sección 6).
 ### 3.3 C3: la misma base, construida por personas
 
 **Qué hace, en simple.** Es la misma base de decisiones de C2, pero llenada con la anotación
-humana del conjunto de referencia: personas marcaron a mano las decisiones y sus relaciones.
+humana del ground truth: personas marcaron a mano las decisiones y sus relaciones.
 No tiene errores de extracción.
 
 **Por qué se eligió.** Sin C3, una mala respuesta de C2 no se podría atribuir: no sabríamos
 si la idea de la base no sirve o si la máquina la llenó mal. La distancia C1 → C3 mide el
 valor de tener la base; la distancia C3 → C2 mide el costo de los errores de la máquina
-(documento 03, OE3). Por eso las etiquetas del conjunto de referencia las pone siempre una
+(documento 03, OE3). Por eso las etiquetas del ground truth las pone siempre una
 persona (D3): si un modelo las produjera, C3 heredaría errores por construcción y la
 comparación dejaría de medir algo (documento 06, §5–6).
 
@@ -252,21 +253,21 @@ personas que anotan en ES2015 dio un acuerdo bajo (kappa de 0,094, 13 de 29 deci
 que llevó a corregir la guía y a recalibrar con otra serie antes de las series de control
 (documento 06, §5–6; issues #78 y #79 para TS3009).
 
-## 4. El juez automático: un instrumento de medida
+## 4. El LLM-as-a-judge: un instrumento de medida
 
 **Qué es y por qué hace falta.** El Experimento B genera al menos unas 900 respuestas (100
 preguntas como mínimo × 3 condiciones × 3 corridas, notebook 05; hasta 115 preguntas si E3 llega a 40). Calificarlas a mano es inviable para un
-equipo de tres personas, así que las califica un **juez automático**: un segundo modelo de
+equipo de tres personas, así que las califica un **LLM-as-a-judge**: un segundo modelo de
 lenguaje que lee la pregunta, la respuesta de referencia, la respuesta del sistema y el
 pasaje de la transcripción donde está la evidencia, y decide si la respuesta es correcta y si
 cada afirmación tiene respaldo. A cambio, una persona verifica al menos el 20 % de lo que el
-juez califica (`human_validation_fraction` = 0,20).
+LLM-as-a-judge califica (`human_validation_fraction` = 0,20).
 
 **Por qué no es un modelo bajo prueba.** Su veredicto no es una predicción que se evalúe: es
 el aparato con el que se mide. Por eso se lo valida contra personas antes de usarlo y se lo
 vuelve a verificar durante el experimento.
 
-**Criterios de elección, fijados antes de ver resultados.** Un juez de la misma familia que
+**Criterios de elección, fijados antes de ver resultados.** Un LLM-as-a-judge de la misma familia que
 el modelo que extrae podría favorecer sus propias respuestas, por lo que se excluyeron las
 familias Qwen (extractor de OpenKOS) y Gemma (adjudicador interno de OpenKOS). Se probaron
 tres candidatos sobre un conjunto propio: 21 preguntas de ES2015 escritas por una persona y
@@ -279,7 +280,7 @@ se declararon antes de correr cualquier candidato (`config/experiments.toml`,
 | Acuerdo con las personas (kappa de Cohen, sobre «correcta») | ≥ 0,70 | Que juzgue como lo haría una persona. |
 | Consistencia al invertir el orden de presentación | ≥ 0,90 | Que no dependa de qué texto aparece primero. |
 | Consistencia entre semillas | ≥ 0,95 | Que el veredicto sea estable. |
-| Exactitud en preguntas sin respuesta (E4) | ≥ 0,80 | Que reconozca cuando no hay respuesta. |
+| Accuracy en preguntas sin respuesta (E4) | ≥ 0,80 | Que reconozca cuando no hay respuesta. |
 | Salidas válidas | ≥ 0,99 | Que el formato de salida se pueda leer. |
 | Cambio de veredicto al alargar una respuesta errada | ≤ 0,10 | Que no premie la verbosidad. |
 
@@ -295,7 +296,7 @@ Dos candidatos cumplen todo con el mismo kappa; la regla fijada de antemano dese
 rapidez y gana `gpt-oss:20b`, de la familia OpenAI de pesos abiertos, distinta de Qwen. Se
 descartaron además `phi4:14b` (contexto de 16 K insuficiente), Llama 3.3 70B (43 GB, no cabe
 en el hardware) y las destilaciones de DeepSeek-R1 de base Qwen (heredan la familia del
-extractor) (notebook 05, sección 3.2). Parámetros del juez: temperatura 0, semilla fija,
+extractor) (notebook 05, sección 3.2). Parámetros del LLM-as-a-judge: temperatura 0, semilla fija,
 razonamiento acotado a nivel `low` (los modelos de razonamiento, sin ese tope, piensan largo
 antes de dar el veredicto y la corrida sería impracticable), y una ventana de 5 turnos de
 diálogo antes y después de la evidencia (`[judge]` y `[judge.calibration.think]`).
@@ -312,15 +313,15 @@ coincidió en 15 de 15 sobre «correcta» (kappa 1,00) y en 14 de 15 sobre «res
 - El identificador de cada ítem delataba cómo se generó la respuesta, de modo que quienes
   etiquetaron podían saberlo. Se declaró en lugar de reetiquetar; el acuerdo podría estar algo
   inflado y no se puede cuantificar cuánto (notebook 05, sección 9.2).
-- El juez no evalúa las citas: su corrección se calcula con una regla determinista (ADR 0009),
-  porque el juez no sabe qué fuentes citó la respuesta.
+- El LLM-as-a-judge no evalúa las citas: su corrección se calcula con una regla determinista (ADR 0009),
+  porque el LLM-as-a-judge no sabe qué fuentes citó la respuesta.
 
 ## 5. Resumen: componentes, técnicas, parámetros y evidencia
 
 | Componente | Técnica / librería | Parámetro clave | Valor | Por qué | Evidencia |
 |---|---|---|---|---|---|
 | Generador (C1, C2, C3) | `qwen3:8b`, local, vía Ollama | `temperature` / `seed` | 0,1 / 42 | Mismo modelo en las tres condiciones para atribuir la diferencia a la representación | [`config/experiments.toml`](../../config/experiments.toml) `[shared_budget]`; [ADR 0006](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) |
-| Generador | Ventana de contexto | `context_window_tokens` | 12.288 | Valor por defecto de OpenKOS; contexto efectivo de unos 7.400 caracteres | [ADR 0006](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md); [ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md) (enmienda) |
+| Generador | Context window | `context_window_tokens` | 12.288 | Valor por defecto de OpenKOS; contexto efectivo de unos 7.400 caracteres | [ADR 0006](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md); [ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md) (enmienda) |
 | *Embeddings* (C1, C2, C3) | `bge-m3` | Modelo | `bge-m3` | Multilingüe; mismo modelo en las tres condiciones | `[shared_budget]`; [ADR 0006](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) |
 | C1 fragmentación | Turnos completos con tope de caracteres | `max_chars` | 1.200 | Ganador de la regla prerregistrada sobre ES2015 | [ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md) (enmienda); [notebook 06](../../notebooks/06-jss-ajuste-c1.ipynb) |
 | C1 fragmentación | Solapamiento de turnos | `overlap_turns` | 1 | Ídem | [ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md); [notebook 06](../../notebooks/06-jss-ajuste-c1.ipynb) |
@@ -329,10 +330,10 @@ coincidió en 15 de 15 sobre «correcta» (kappa 1,00) y en 14 de 15 sobre «res
 | C2 y C3 consulta | `openkos query`, sin modificar | `--limit` | 5 | Valor por defecto de OpenKOS; presupuesto de texto igual, no K igual | [ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md), decisiones 3 a 5 |
 | C2 orden de reuniones | Fecha de evento con hora real o sintética | `time_source` | `ami` (6 series) / `synthetic` (8) | Las cuatro reuniones comparten fecha; hace falta un orden | [ADR 0008](../decisions/0008-adr-fechas-de-reunion-para-openkos.md); [notebook 08](../../notebooks/08-jss-fechas-de-reunion.ipynb) |
 | C2 extracción | OpenKOS (instrumento) | Versión | Por fijar | Se espera la versión con las correcciones | [ADR 0006](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) (enmienda); issue #94 |
-| Juez | `gpt-oss:20b` | `min_kappa_correct` | ≥ 0,70 (obtenido 0,951) | Cumple todos los umbrales y es el más rápido entre los que cumplen; familia distinta a Qwen y Gemma | [notebook 05](../../notebooks/05-jss-seleccion-juez.ipynb); `[judge]` |
-| Juez | Razonamiento acotado | `think` | `low` | Hacer viable una corrida de cientos de llamadas | `[judge.calibration.think]` |
-| Juez | Verificación humana | `human_validation_fraction` | 0,20 | Validar el instrumento durante el experimento | `[evaluation]`; [ADR 0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md) |
-| Protocolo de alineación (Experimento A) | Similitud coseno + emparejamiento uno a uno (algoritmo húngaro, `scipy`) | `tau_grid` | 0,50 a 0,90 en pasos de 0,05 | Informar F1 como curva sobre τ, no en un solo punto | `[alignment]`; [documento 06](06-jss-metodologia.md), §5–6 |
+| LLM-as-a-judge | `gpt-oss:20b` | `min_kappa_correct` | ≥ 0,70 (obtenido 0,951) | Cumple todos los umbrales y es el más rápido entre los que cumplen; familia distinta a Qwen y Gemma | [notebook 05](../../notebooks/05-jss-seleccion-juez.ipynb); `[judge]` |
+| LLM-as-a-judge | Razonamiento acotado | `think` | `low` | Hacer viable una corrida de cientos de llamadas | `[judge.calibration.think]` |
+| LLM-as-a-judge | Verificación humana | `human_validation_fraction` | 0,20 | Validar el instrumento durante el experimento | `[evaluation]`; [ADR 0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md) |
+| Protocolo de alineación (Experimento A) | Cosine similarity (parecido entre representaciones numéricas) + emparejamiento uno a uno (algoritmo húngaro, `scipy`) | `tau_grid` | 0,50 a 0,90 en pasos de 0,05 | Informar F1 como curva sobre τ, no en un solo punto | `[alignment]`; [documento 06](06-jss-metodologia.md), §5–6 |
 | Análisis estadístico | *Bootstrap* sobre preguntas | Remuestreos / confianza | 10.000 / 0,95 | Cada resultado lleva intervalo de confianza | `[evaluation]`; [notebook 10](../../notebooks/10-jss-potencia-criterio-d16.ipynb) |
 | Criterio principal | Diferencia pareada C2 − C1 en E3 | Intervalo del 95 % | Por encima de 0 | Mayor potencia que comparar intervalos por separado, con falso positivo bajo 5 % | [ADR 0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md); [notebook 10](../../notebooks/10-jss-potencia-criterio-d16.ipynb) |
 
@@ -346,10 +347,10 @@ claridad lo que ya corrió de lo que sigue bloqueado.
 - **Ajuste de C1** sobre ES2015: 32 configuraciones con una regla fijada antes de correr; se
   encontró y corrigió un error de medición (contar fragmentos completos en lugar del texto
   entregado) y el ganador cambió de 1.600 / 0 / 8 a 1.200 / 1 / 5 (ADR 0007, notebook 06).
-- **Selección del juez** entre tres candidatos con 42 ítems etiquetados por personas (notebook
+- **Selección del LLM-as-a-judge** entre tres candidatos con 42 ítems etiquetados por personas (notebook
   05). Resultado: `gpt-oss:20b`, con el límite de validez declarado en la sección 4.
 - **Corrida de humo de C1** sobre 21 preguntas de calibración de ES2015: el motor del
-  Experimento B funciona de punta a punta con C1 y el juez reales, sin errores en los 21
+  Experimento B funciona de punta a punta con C1 y el LLM-as-a-judge reales, sin errores en los 21
   registros y con reanudación verificada. Tardó 272 segundos (184 respondiendo y 88 juzgando).
   Son cifras de desarrollo, no resultados: «no se concluye nada sobre la calidad de C1»
   ([notebook 07](../../notebooks/07-jss-runner-experimento-b.ipynb), sección 8).
@@ -358,7 +359,7 @@ claridad lo que ya corrió de lo que sigue bloqueado.
 - **Análisis de potencia** del criterio principal por simulación, sin ejecutar modelos
   (notebook 10): con 25 preguntas en E3 y una diferencia verdadera de +0,15, el criterio de
   diferencia pareada declara «respaldada» en 57,5 % de los experimentos simulados, frente a
-  10,4 % del criterio de intervalos separados (dispersión de dificultad 1 y exactitud base 0,5).
+  10,4 % del criterio de intervalos separados (dispersión de dificultad 1 y accuracy base 0,5).
 - **Primer intento de extracción** con OpenKOS 0.5.2 sobre ES2015: 4 objetos frente a 29
   decisiones de referencia (documento 06, §7–8).
 
@@ -370,13 +371,13 @@ claridad lo que ya corrió de lo que sigue bloqueado.
    borrar el registro original (ADR 0007).
 2. **La marca de atribución se pierde en algunos casos.** En 2 de 21 respuestas de la corrida
    de humo, el modelo escribió `USED:` al final de la frase y OpenKOS 0.5.4 solo lo reconoce
-   al inicio de línea; se citaron todos los fragmentos y la precisión de la citación bajó
+   al inicio de línea; se citaron todos los fragmentos y la precision de la citación bajó
    (0,33 y 0,50). Afecta solo a la citación, no a la corrección. Se corrige en OpenKOS; el
    siguiente paso es portar la corrección a C1 cuando se publique y repetir la corrida de humo
    (issue #87).
 3. **La regla de citación tuvo que revisarse.** La primera versión exigía que *todas* las
    citas respaldaran la respuesta y rechazaba 8 de 13 respuestas, y 7 de esas 8 eran correctas; se cambió a «al
-   menos una» y se informa la precisión aparte (ADR 0009, notebook 09). Queda abierto si el
+   menos una» y se informa la precision aparte (ADR 0009, notebook 09). Queda abierto si el
    tamaño distinto de las citas de C1 y C2 sesga la comparación (issue #97).
 4. **La versión de OpenKOS no está fijada.** La 0.5.4 trae `query --json` pero no el paso de
    decisión por reunión ni el orden dentro de un mismo día; las correcciones están en curso en

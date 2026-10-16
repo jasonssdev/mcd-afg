@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 05 — Aspectos éticos |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 2.1 |
+| **Versión** | 2.2 |
 | **Fecha** | 2026-10-13 |
 | **Estado** | Vigente |
 
@@ -18,6 +18,7 @@
 | 1.3 | 2026-10-01 | Reescritura completa de la redacción: cada principio se presenta primero con un caso real de los datos y después con la regla que se deriva, cada término técnico se explica al aparecer y se agrega un glosario breve. Los tres principios, las cifras, las partes involucradas y el marco de referencia no cambian. | Retroalimentación de la revisión entre equipos de la semana 8: el problema y la metodología no se entendían, menos aún para una audiencia no técnica. |
 | 2.0 | 2026-10-13 | La comparación del principio de justicia y equidad pasa a ser una métrica con nombre y fórmula, la amplificación por rol, con intervalo bootstrap del 95 %. | Retroalimentación del profesor sobre la metodología (AFG1/avance): recomendó definir desde ya con qué métrica se distinguirá el sesgo que viene de la fuente del que agrega el sistema. |
 | 2.1 | 2026-10-13 | La amplificación por rol queda implementada con pruebas en `afg.evaluation.metrics.role_amplification`. | La versión 2.0 la declaraba pendiente. |
+| 2.2 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (LLM-as-a-judge, accuracy). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -73,7 +74,7 @@ Cada principio tiene un lugar concreto en ese recorrido:
 |---|---|---|
 | Definición del problema | Responsabilidad | El riesgo de persistir errores se convierte en objeto de medición (OE4), no en advertencia |
 | Preprocesamiento y auditoría de datos | Justicia y equidad | Se auditan los ejes de rol y de lengua antes de modelar; la lengua se declara limitación por estar anidada en el sitio |
-| Modelado y evaluación | Transparencia y trazabilidad | Toda decisión extraída conserva su evidencia; el juez automático pertenece a otra familia de modelos y se valida con personas |
+| Modelado y evaluación | Transparencia y trazabilidad | Toda decisión extraída conserva su evidencia; el LLM-as-a-judge (un segundo modelo que califica las respuestas) pertenece a otra familia de modelos y se valida con personas |
 | Implementación y uso | Responsabilidad, transparencia | Ejecución local como requisito de diseño; resultados por hablante solo agregados por categoría |
 
 ## 1. Transparencia y trazabilidad
@@ -165,7 +166,7 @@ de C2 atribuibles a errores persistidos en la extracción** (documento 03, OE4; 
 se determina si el error nació al escribir la base, al buscar en ella o al redactar.
 
 Esta decisión no es cosmética: es la que separa este trabajo de la literatura que mide
-exactitud de extracción en una sola pasada. El riesgo real de una base persistente es que un
+accuracy (aciertos sobre el total) de extracción en una sola pasada. El riesgo real de una base persistente es que un
 error se escribe una vez y se lee muchas veces —adquiere apariencia de hecho verificado y se
 convierte en premisa de razonamientos posteriores (documento 01, §3)—. Medir esa cadena, no
 sólo el punto de extracción, es la operacionalización del principio: la forma concreta en
