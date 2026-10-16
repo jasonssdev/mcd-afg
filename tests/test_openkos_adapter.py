@@ -9,10 +9,12 @@ from pathlib import Path
 import pytest
 
 from afg.domain.decision import DecisionStatus
+from afg.extraction.openkos.bundle_reader import QuoteCounts
 from afg.extraction.openkos.commands import CommandResult
 from afg.extraction.openkos.workspace import OpenKosRunSettings
-from afg.extraction.openkos_adapter import OpenKosAdapter
+from afg.extraction.openkos_adapter import OpenKosAdapter, SeriesExtraction
 from afg.extraction.protocol import ExtractionResult
+from afg.shared.paths import PROJECT_ROOT
 from tests.openkos_bundle import decision_file, write_decision, write_meeting
 from tests.openkos_fake import FakeRunner
 
@@ -167,3 +169,31 @@ def test_the_per_meeting_extractor_entry_point_explains_why_it_is_not_supported(
     adapter = _adapter(tmp_path, transcripts, FakeRunner())
     with pytest.raises(NotImplementedError, match="extract_series"):
         adapter.extract("ES2015a", "text")
+
+
+def _extraction_at(workspace: Path, manifest: Path) -> SeriesExtraction:
+    return SeriesExtraction(
+        series_id="ES2015",
+        run=0,
+        result=ExtractionResult(decisions=()),
+        openkos_version="0.5.5",
+        workspace=workspace,
+        manifest_path=manifest,
+        quotes=QuoteCounts(),
+        unmapped=(),
+    )
+
+
+def test_to_record_paths_are_relative_to_the_project_root() -> None:
+    workspace = PROJECT_ROOT / "data" / "interim" / "openkos" / "ES2015" / "run-0"
+    record = _extraction_at(workspace, workspace.parent / "run-0.manifest.json").to_record()
+
+    assert record["workspace"] == "data/interim/openkos/ES2015/run-0"
+    assert record["manifest"] == "data/interim/openkos/ES2015/run-0.manifest.json"
+
+
+def test_to_record_keeps_paths_outside_the_project_root_as_given(tmp_path: Path) -> None:
+    record = _extraction_at(tmp_path / "ws", tmp_path / "m.json").to_record()
+
+    assert record["workspace"] == str(tmp_path / "ws")
+    assert record["manifest"] == str(tmp_path / "m.json")

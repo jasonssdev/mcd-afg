@@ -33,11 +33,19 @@ from afg.extraction.openkos.workspace import (
 )
 from afg.extraction.protocol import ExtractionResult, Extractor
 from afg.shared.logging import get_logger
-from afg.shared.paths import TRANSCRIPTS_DIR
+from afg.shared.paths import PROJECT_ROOT, TRANSCRIPTS_DIR
 
 logger = get_logger(__name__)
 
 BUNDLE_DIRNAME = "bundle"
+
+
+def _project_relative(path: Path) -> str:
+    """``path`` relative to the project root (POSIX form), or as given when outside it."""
+    try:
+        return path.relative_to(PROJECT_ROOT).as_posix()
+    except ValueError:
+        return str(path)
 
 
 @dataclass(frozen=True, slots=True)
@@ -59,8 +67,8 @@ class SeriesExtraction:
             "series_id": self.series_id,
             "run": self.run,
             "openkos_version": self.openkos_version,
-            "workspace": str(self.workspace),
-            "manifest": str(self.manifest_path),
+            "workspace": _project_relative(self.workspace),
+            "manifest": _project_relative(self.manifest_path),
             "n_decisions": len(self.result.decisions),
             "n_relations": len(self.result.relations),
             "quotes": asdict(self.quotes),
