@@ -77,8 +77,8 @@ de esa sesión.
 - Los dos PRs de esa serie están mergeados: `<serie>.decisions.gv.csv`,
   `<serie>.candidates.gv.csv`, `<serie>.decisions.gm.csv`, `<serie>.candidates.gm.csv`.
 - Los cuatro archivos están completos: ninguna celda humana vacía. `uv run afg gold status`
-  te lo confirma de un vistazo: la serie tiene que aparecer como **lista para entregar** para `gv` y
-  para `gm`; "en curso" o "sin preparar" significa que todavía falta trabajo.
+  te lo confirma de un vistazo: la serie tiene que aparecer como **entregada** (o **lista para entregar**, si el
+  checkout local de `main` no está al día) para `gv` y para `gm`; "en curso" o "sin preparar" significa que todavía falta trabajo.
 - Ninguna de las dos personas ha visto el archivo de la otra.
 
 ### 2.2 El comando
@@ -418,7 +418,7 @@ Nunca push directo a `main`, ni para cambios triviales.
 ## 10. Checklist de cierre de adjudicación
 
 ### Antes de la sesión
-- [ ] `uv run afg gold status` muestra la serie como **lista para entregar** para `gv` y para `gm`
+- [ ] `uv run afg gold status` muestra la serie como **entregada** para `gv` y para `gm` (con `main` actualizado)
 - [ ] Los cuatro archivos de la serie están mergeados (§2.1)
 - [ ] `uv run afg gold validate --annotator gv` y `--annotator gm` corrieron sin error en sus
       PRs respectivos (§4) — columnas de máquina intactas y valores legales ya verificados
