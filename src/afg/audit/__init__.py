@@ -17,7 +17,14 @@ Submodules:
 
 from __future__ import annotations
 
-from afg.audit.blocker import TURBO_BUTTON_PAIR, blocker_sensitivity
+from afg.audit.blocker import (
+    MINUTES_PER_PAIR,
+    TURBO_BUTTON_PAIR,
+    CandidateFunnel,
+    blocker_sensitivity,
+    candidate_funnel,
+    funnel_hours,
+)
 from afg.audit.coverage import layer_coverage, series_eligibility
 from afg.audit.decisions import (
     NON_DECISION_MARKERS,
@@ -30,13 +37,17 @@ from afg.audit.evidence import anchoring_rates, role_authorship
 from afg.audit.topics import TopicBoundaryOverlapResult, topic_decision_boundary_overlap
 
 __all__ = [
+    "MINUTES_PER_PAIR",
     "NON_DECISION_MARKERS",
     "TURBO_BUTTON_PAIR",
+    "CandidateFunnel",
     "TopicBoundaryOverlapResult",
     "anchoring_rates",
     "blocker_sensitivity",
+    "candidate_funnel",
     "decision_counts",
     "decisions_by_meeting_position",
+    "funnel_hours",
     "layer_coverage",
     "non_decision_markers",
     "role_authorship",

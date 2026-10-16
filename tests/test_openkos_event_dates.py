@@ -11,6 +11,7 @@ import pytest
 from afg.extraction.openkos.event_dates import (
     EventDateError,
     attach_event_dates,
+    date_availability_summary,
     meeting_date_table,
     read_series_event_dates,
     series_date_summary,
@@ -254,6 +255,45 @@ def test_series_date_summary_flags_decreasing_real_times(tmp_path: Path) -> None
     assert not row["event_dates_increasing"]
 
 
+def test_date_availability_summary_splits_real_none_and_partial_series(tmp_path: Path) -> None:
+    rows = {
+        **_series("IS1004", "23-11-2004", ("11h03", "12h03", "14h13", "15h34")),
+        **_series("ES2015", "09-03-05", ("", "", "", "")),
+        **_series("TS3003", "02-12-2004", (None, None, None, None)),
+        **_series("IS1003", "19-11-2004", ("09h35", "", "13h51", "15h13")),
+    }
+    table = meeting_date_table(_write(tmp_path, rows), ["IS1004", "ES2015", "TS3003", "IS1003"])
+    summary = date_availability_summary(table)
+    assert summary.real_series == ("IS1004",)
+    assert summary.none_series == ("ES2015", "TS3003")
+    assert summary.partial_series == ("IS1003",)
+    assert (summary.n_ami_meetings, summary.n_synthetic_meetings) == (7, 9)
+    assert summary.single_date_per_series is True
+    assert summary.event_dates_increasing is True
+
+
+def test_date_availability_summary_reports_the_gaps_between_real_starts(tmp_path: Path) -> None:
+    rows = _series("IS1004", "23-11-2004", ("11h03", "12h03", "14h13", "15h34"))
+    table = meeting_date_table(_write(tmp_path, rows), ["IS1004"])
+    summary = date_availability_summary(table)
+    assert summary.n_real_series_increasing == 1
+    assert (summary.gap_min, summary.gap_max, summary.gap_median) == (60, 130, 81)
+
+
+def test_date_availability_summary_without_real_times_has_no_gaps(tmp_path: Path) -> None:
+    rows = _series("ES2015", "09-03-05", ("", "", "", ""))
+    table = meeting_date_table(_write(tmp_path, rows), ["ES2015"])
+    summary = date_availability_summary(table)
+    assert summary.gap_min is None and summary.gap_max is None and summary.gap_median is None
+    assert summary.n_real_series_increasing == 0
+
+
+def test_date_availability_summary_lists_series_by_start_time_state(tmp_path: Path) -> None:
+    table = meeting_date_table(_mixed_xml(tmp_path), ["ES2015", "TS3003", "IS1004"])
+    states = date_availability_summary(table).series_by_start_time_state
+    assert states == {"absent": ["TS3003"], "empty": ["ES2015"], "present": ["IS1004"]}
+
+
 def test_study_series_lists_development_then_evaluation() -> None:
     series = study_series()
     assert len(series) == 14
@@ -279,3 +319,18 @@ def test_real_file_evidence_reproduces_adr_0008_figures() -> None:
     assert {s for s in state.index if state[s] == "absent"} == {
         "TS3003", "TS3005", "TS3009", "TS3011",
     }  # fmt: skip
+
+
+@requires_meetings_xml
+def test_date_availability_summary_matches_the_counts_adr_0008_cites() -> None:
+    summary = date_availability_summary(meeting_date_table(_MEETINGS_XML))
+    assert (len(summary.real_series), len(summary.none_series), len(summary.partial_series)) == (
+        6,
+        8,
+        0,
+    )
+    assert (summary.n_ami_meetings, summary.n_synthetic_meetings) == (24, 32)
+    assert summary.n_real_series_increasing == 6
+    assert (summary.gap_min, summary.gap_max, summary.gap_median) == (60, 141, 79.5)
+    assert summary.single_date_per_series is True
+    assert summary.event_dates_increasing is True

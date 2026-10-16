@@ -96,6 +96,20 @@ def load_candidates() -> tuple[str, ...]:
     return tuple(str(model) for model in section["candidates"])
 
 
+CANDIDATE_ROLES: dict[str, str] = {
+    "mistral-small3.2:24b": "primary",
+    "atla/selene-mini:q8_0": "evaluation-specialist",
+    "gpt-oss:20b": "reserve",
+}
+"""Why each candidate was shortlisted (notebook 05, section 3.1), keyed by model name so a
+reordered ``[judge.calibration].candidates`` list cannot shift a role onto another model."""
+
+
+def load_candidate_roles() -> dict[str, str]:
+    """Role of each configured candidate, in config order; ``"unassigned"`` if not catalogued."""
+    return {model: CANDIDATE_ROLES.get(model, "unassigned") for model in load_candidates()}
+
+
 def pad_to_double_length(text: str) -> str:
     """Repeat ``text`` once after itself: about twice the length, with the same content.
 

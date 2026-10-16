@@ -49,6 +49,8 @@ from afg.eda.stats import (
 )
 from afg.eda.tables import (
     DEFAULT_CONTEXT_TOKENS,
+    LEN_BINS,
+    LEN_LABELS,
     EdaTables,
     add_pair_features,
     build_decision_table,
@@ -57,6 +59,7 @@ from afg.eda.tables import (
     build_series_table,
     build_speaker_table,
     duration_coherence,
+    format_thousands,
     load_eda_tables,
     read_meeting_metadata,
     read_speaker_metadata,
@@ -67,6 +70,8 @@ from afg.eda.temporal import monotonic_trend, position_aggregates
 
 __all__ = [
     "DEFAULT_CONTEXT_TOKENS",
+    "LEN_BINS",
+    "LEN_LABELS",
     "VALID_ROLES",
     "VARIABLES",
     "Chi2Result",
@@ -90,6 +95,7 @@ __all__ = [
     "describe_categorical",
     "describe_numeric",
     "duration_coherence",
+    "format_thousands",
     "iqr_outliers",
     "kruskal_by_group",
     "load_eda_tables",

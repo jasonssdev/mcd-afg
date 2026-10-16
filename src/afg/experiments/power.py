@@ -35,6 +35,8 @@ from dataclasses import dataclass
 from functools import lru_cache
 from statistics import NormalDist
 
+import pandas as pd
+
 from afg.evaluation.scoring import IntervalSettings
 from afg.experiments.analysis import bootstrap_mean_interval, intervals_disjoint_above
 from afg.shared.config import load_experiments_config
@@ -250,3 +252,110 @@ def simulate_grid(
         return [simulate_scenario(scenario, settings) for scenario in scenarios]
     with ProcessPoolExecutor(max_workers=workers) as pool:
         return list(pool.map(_simulate_pair, [(s, settings) for s in scenarios]))
+
+
+# --- tables behind the notebook (10) --------------------------------------------------------
+
+_CRITERIA: tuple[tuple[str, str], ...] = (
+    ("nonoverlap", "power_nonoverlap"),
+    ("paired", "power_paired"),
+)
+
+
+def power_table(
+    results: Sequence[PowerResult], n_questions: int, base_accuracy: float
+) -> pd.DataFrame:
+    """Percentage of experiments declared supported, for one size and one base accuracy.
+
+    One row per ``(difficulty_sd, criterion)`` (``criterion`` is ``"nonoverlap"`` or
+    ``"paired"``), one column per true difference labelled ``"+0.15"``; values are percentages
+    rounded to one decimal. The ``+0.00`` column is the false-positive rate.
+    """
+    subset = [
+        r
+        for r in results
+        if r.scenario.n_questions == n_questions and r.scenario.base_accuracy == base_accuracy
+    ]
+    labels = [f"{d:+.2f}" for d in sorted({r.scenario.difference for r in subset})]
+    rows: list[dict[str, object]] = []
+    for sd in sorted({r.scenario.difficulty_sd for r in subset}):
+        at_sd = [r for r in subset if r.scenario.difficulty_sd == sd]
+        for criterion, attribute in _CRITERIA:
+            rows.append(
+                {
+                    "difficulty_sd": sd,
+                    "criterion": criterion,
+                    **{
+                        f"{r.scenario.difference:+.2f}": round(100 * getattr(r, attribute), 1)
+                        for r in sorted(at_sd, key=lambda r: r.scenario.difference)
+                    },
+                }
+            )
+    if not rows:
+        return pd.DataFrame(
+            index=pd.MultiIndex.from_arrays([[], []], names=["difficulty_sd", "criterion"])
+        )
+    return pd.DataFrame(rows).set_index(["difficulty_sd", "criterion"]).reindex(columns=labels)
+
+
+@dataclass(frozen=True, slots=True)
+class FalsePositiveRange:
+    """Min and max false-positive rate (proportions) over the scenarios with no true effect."""
+
+    n_scenarios: int
+    nonoverlap_min: float
+    nonoverlap_max: float
+    paired_min: float
+    paired_max: float
+
+
+def false_positive_range(results: Sequence[PowerResult]) -> FalsePositiveRange:
+    """Range of the false-positive rate of both criteria over the scenarios with ``difference = 0``.
+
+    Raises:
+        ValueError: if no scenario has a zero true difference.
+    """
+    null = [r for r in results if r.scenario.difference == 0.0]
+    if not null:
+        raise ValueError("no scenario with a true difference of 0 in the results")
+    nonoverlap = [r.power_nonoverlap for r in null]
+    paired = [r.power_paired for r in null]
+    return FalsePositiveRange(
+        n_scenarios=len(null),
+        nonoverlap_min=min(nonoverlap),
+        nonoverlap_max=max(nonoverlap),
+        paired_min=min(paired),
+        paired_max=max(paired),
+    )
+
+
+def power_by_question_count(
+    results: Sequence[PowerResult],
+    *,
+    base: float,
+    difficulty_sd: float,
+    differences: Sequence[float],
+) -> pd.DataFrame:
+    """Power (percent, one decimal) by number of questions, for the given true ``differences``.
+
+    Rows are ``n_questions``; columns are ``(criterion, difference)`` pairs.
+    """
+    wanted = set(differences)
+    cells: dict[int, dict[tuple[str, float], float]] = {}
+    for r in results:
+        s = r.scenario
+        if (
+            s.base_accuracy != base
+            or s.difficulty_sd != difficulty_sd
+            or s.difference not in wanted
+        ):
+            continue
+        for criterion, attribute in _CRITERIA:
+            cells.setdefault(s.n_questions, {})[(criterion, s.difference)] = round(
+                100 * getattr(r, attribute), 1
+            )
+    table = pd.DataFrame.from_dict(cells, orient="index").sort_index()
+    table.columns = pd.MultiIndex.from_tuples(table.columns)
+    table = table.sort_index(axis=1)
+    table.index.name = "n_questions"
+    return table

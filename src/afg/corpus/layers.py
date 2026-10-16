@@ -7,6 +7,7 @@ Segmentation* (DDS) layer; the layer catalogue and file discovery both live here
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
@@ -99,3 +100,22 @@ def discover_layer_files(ami_root: Path, layer: AnnotationLayer) -> list[LayerFi
 def discover_meetings_with_layer(ami_root: Path, layer: AnnotationLayer) -> set[str]:
     """Return the set of meeting ids that have at least one file for ``layer``."""
     return {f.meeting_id for f in discover_layer_files(ami_root, layer)}
+
+
+DISFLUENCY_GLOB = "*.disfluency.xml"
+"""Disfluency annotations (``disfluency/``). Not one of :class:`AnnotationLayer`: the project
+does not build on it, it only checks which series it covers (notebook 02, section 3)."""
+
+
+def disfluency_coverage(ami_root: Path, series_ids: Sequence[str]) -> dict[str, bool]:
+    """Whether each series in ``series_ids`` has at least one disfluency file.
+
+    Counts files only, never parses them. Series are the first six characters of the meeting
+    id (``ES2002a`` -> ``ES2002``). Keys follow the order of ``series_ids``; a missing corpus
+    covers nothing.
+    """
+    present = {
+        path.name.split(".", 1)[0][:6]
+        for path in discover_annotation_files(ami_root, DISFLUENCY_GLOB)
+    }
+    return {series: series in present for series in series_ids}

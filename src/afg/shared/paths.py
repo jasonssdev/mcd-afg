@@ -14,6 +14,7 @@ PROJECT_ROOT: Path = Path(__file__).resolve().parents[3]
 
 # --- top-level ---------------------------------------------------------------------
 CONFIG_DIR: Path = PROJECT_ROOT / "config"
+EXPERIMENTS_CONFIG_PATH: Path = CONFIG_DIR / "experiments.toml"
 BIBLIOGRAPHY_DIR: Path = PROJECT_ROOT / "bibliography"
 DATA_DIR: Path = PROJECT_ROOT / "data"
 REPORTS_DIR: Path = PROJECT_ROOT / "reports"

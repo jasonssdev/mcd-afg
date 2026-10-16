@@ -10,9 +10,11 @@ records written under an older rule up to the current one.
 
 from __future__ import annotations
 
+import csv
 import re
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from afg.domain.decision import EvidenceSpan
@@ -20,6 +22,7 @@ from afg.domain.question import Answer, Question, QuestionStratum
 from afg.evaluation.citation import citation_correct, citation_precision
 from afg.evaluation.citation_variants import citation_variants
 from afg.experiments.summary import has_inline_used_marker
+from afg.shared.csvio import open_csv_reader
 
 _CHUNK_HEADER_RE = re.compile(r"^\[concept_id:[^\]]*\]\n?")
 SNIPPET_CHARS = 140
@@ -210,3 +213,26 @@ def cited_chunk_summaries(
             )
         )
     return summaries
+
+
+def rows_with_inline_marker(
+    rows: Sequence[CitationComparison], *, marked: bool = True
+) -> list[CitationComparison]:
+    """The rows whose raw reply carries (``marked``) or lacks the inline ``USED:`` marker."""
+    return [row for row in rows if row.inline_used_marker is marked]
+
+
+def cited_columns(header: Iterable[str]) -> list[str]:
+    """Columns of a calibration CSV that could hold the evidence the answer cited.
+
+    A column counts when its name contains ``cit``, except ``citation_correct``: that one is
+    the annotators' label, with no cited acts behind it.
+    """
+    return [c for c in header if "cit" in c.lower() and c != "citation_correct"]
+
+
+def load_cited_columns(path: Path) -> tuple[list[str], list[str]]:
+    """``(header, cited_columns)`` of the CSV at ``path`` (UTF-8, with or without BOM)."""
+    with open_csv_reader(path) as handle:
+        header = next(csv.reader(handle))
+    return header, cited_columns(header)

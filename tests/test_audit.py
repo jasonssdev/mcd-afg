@@ -15,7 +15,13 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from afg.audit.blocker import TURBO_BUTTON_PAIR, blocker_sensitivity
+from afg.audit.blocker import (
+    MINUTES_PER_PAIR,
+    TURBO_BUTTON_PAIR,
+    blocker_sensitivity,
+    candidate_funnel,
+    funnel_hours,
+)
 from afg.audit.coverage import layer_coverage, series_eligibility
 from afg.audit.decisions import (
     NON_DECISION_MARKERS,
@@ -489,3 +495,34 @@ class TestBlockerSensitivity:
 
     def test_turbo_button_pair_constant(self) -> None:
         assert TURBO_BUTTON_PAIR == ("IS1004c.elana.s.29", "IS1004d.elana.s.22")
+
+
+class TestFunnelHours:
+    def test_default_rate_is_the_one_the_annotation_plan_uses(self) -> None:
+        assert MINUTES_PER_PAIR == 1.5
+
+    def test_hours_are_pairs_times_minutes_per_pair_over_sixty(self) -> None:
+        assert funnel_hours([3071, 712, 92]) == pytest.approx([76.775, 17.8, 2.3])
+
+    def test_a_custom_rate_is_honoured(self) -> None:
+        assert funnel_hours([60, 120], minutes_per_pair=2.0) == pytest.approx([2.0, 4.0])
+
+    def test_no_counts_give_no_hours(self) -> None:
+        assert funnel_hours([]) == []
+
+
+@requires_corpus
+class TestCandidateFunnel:
+    def test_counts_are_the_figures_cited_by_d9(self) -> None:
+        funnel = candidate_funnel(AMI_DIR, _oe1_series())
+        assert funnel.counts == (3071, 712, 92)
+
+    def test_the_control_pair_survives_the_operating_point(self) -> None:
+        funnel = candidate_funnel(AMI_DIR, _oe1_series())
+        assert funnel.turbo_survives_coefficient is True
+        assert funnel.turbo_survives_full is True
+
+    def test_counts_agree_with_the_sensitivity_grid(self) -> None:
+        funnel = candidate_funnel(AMI_DIR, ["IS1004"])
+        grid = blocker_sensitivity(AMI_DIR, ["IS1004"], thresholds=[0.30], min_overlaps=[1, 2])
+        assert funnel.counts[1:] == tuple(int(n) for n in grid["n_candidates"])
