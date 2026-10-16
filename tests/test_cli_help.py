@@ -92,7 +92,7 @@ def test_maintenance_group_help_is_in_spanish(args: tuple[str, ...]) -> None:
     assert not _ENGLISH_HELP.search(_help(*args))
 
 
-@pytest.mark.parametrize("args", [("gold", "link"), ("experiment", "a")])
+@pytest.mark.parametrize("args", [("gold", "link")])
 def test_stubs_state_they_are_unimplemented_and_wait_for_openkos(args: tuple[str, ...]) -> None:
     out = " ".join(_help(*args).split())
     assert "Sin implementar" in out
@@ -100,7 +100,7 @@ def test_stubs_state_they_are_unimplemented_and_wait_for_openkos(args: tuple[str
     assert "código 2" in out
 
 
-@pytest.mark.parametrize("args", [["gold", "link"], ["experiment", "a"]])
+@pytest.mark.parametrize("args", [["gold", "link"]])
 def test_stub_output_is_spanish_and_exits_with_code_2(args: list[str]) -> None:
     result = CliRunner().invoke(afg_cli.app, args)
     assert result.exit_code == 2

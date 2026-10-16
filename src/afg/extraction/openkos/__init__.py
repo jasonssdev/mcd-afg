@@ -7,9 +7,6 @@ records the version it executed against. Modules:
 * :mod:`~afg.extraction.openkos.capabilities` -- what the installed executable supports.
 * :mod:`~afg.extraction.openkos.workspace` -- one fresh workspace per (series, run).
 * :mod:`~afg.extraction.openkos.evidence` -- maps an evidence quote to dialogue act ids.
-
-TODO(T4): reading the compiled bundle back into :class:`~afg.domain.decision.Decision`
-objects and an :class:`~afg.extraction.protocol.ExtractionResult` waits for the OpenKOS
-release that defines the bundle layout. :func:`run_series_workspace` returns the workspace
-path and manifest that reader will consume.
+* :mod:`~afg.extraction.openkos.bundle_reader` -- reads ``bundle/decisions/*.md`` into
+  :class:`~afg.domain.decision.Decision` objects.
 """

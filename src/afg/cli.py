@@ -145,13 +145,18 @@ from afg.experiments.runner import (
     default_excerpt_for,
     run_experiment_b,
 )
+from afg.extraction.openkos.commands import OpenKosError, SubprocessRunner
+from afg.extraction.openkos.settings import openkos_run_settings
+from afg.extraction.openkos_adapter import OpenKosAdapter
 from afg.shared.config import Settings, get_settings, load_corpus_config, load_experiments_config
 from afg.shared.logging import configure_logging, get_logger, quiet_http_logs
 from afg.shared.paths import (
     AMI_DIR,
+    EXPERIMENT_A_DIR,
     EXPERIMENT_B_DIR,
     GOLD_DECISIONS_DIR,
     GOLD_RELATIONS_DIR,
+    OPENKOS_WORKSPACES_DIR,
     PROJECT_ROOT,
     QUESTIONS_DIR,
     SKILLS_DIR,
@@ -2153,18 +2158,127 @@ def c1_tune() -> None:
     console.print(f"Resultados guardados en {_short(C1_TUNING_RESULTS_PATH)}.")
 
 
-@experiment_app.command("a")
-def experiment_a() -> None:
-    """Experimento A: calidad de extracción frente a la referencia (OE2).
-
-    Sin implementar: espera OpenKOS ~0.6.0 (sale con código 2).
-    """
-    console.print(
-        "[yellow]Sin implementar: espera OpenKOS ~0.6.0 y un extractor operativo "
-        "(src/afg/extraction/openkos_adapter.py), además del conjunto de referencia de OE1. "
-        "Ver tesis, sección 3, OE2.[/yellow]"
+def make_openkos_adapter(base_dir: Path) -> OpenKosAdapter:
+    """The adapter wired to the local ``openkos`` executable, the frozen transcripts and the AMI
+    ``meetings.xml`` (event dates, ADR 0008); workspaces are created under ``base_dir``."""
+    meetings_xml = AMI_DIR / "corpusResources" / "meetings.xml"
+    return OpenKosAdapter(
+        runner=SubprocessRunner(),
+        settings=openkos_run_settings(),
+        base_dir=base_dir,
+        transcripts_dir=TRANSCRIPTS_DIR,
+        meetings_xml=meetings_xml if meetings_xml.exists() else None,
     )
-    raise typer.Exit(code=2)
+
+
+@experiment_app.command("a")
+def experiment_a(
+    series: Annotated[
+        str,
+        typer.Option(
+            "--series", help="Serie a extraer (solo de desarrollo, ADR 0005), por ejemplo ES2015."
+        ),
+    ],
+    runs: Annotated[
+        int | None,
+        typer.Option("--runs", min=1, help="Corridas (por defecto runs_per_config)."),
+    ] = None,
+    run_name: Annotated[
+        str | None,
+        typer.Option(
+            "--run-name",
+            help="Nombre de la carpeta en reports/experiment-a/. Un nombre ya usado se rechaza.",
+        ),
+    ] = None,
+) -> None:
+    """Experimento A: extracción de decisiones con OpenKOS sobre una serie (OE2).
+
+    Por cada corrida crea un espacio de trabajo nuevo de OpenKOS en `data/interim/openkos/`,
+    ingesta las cuatro reuniones de la serie en orden, lee las decisiones compiladas y agrega
+    una línea a `extracciones.jsonl` en `reports/experiment-a/<run-name>/`, junto con
+    `manifest.json`. Solo corre series de desarrollo: las de evaluación se niegan (ADR 0005)
+    hasta fijar la versión de OpenKOS (ADR 0006). La semilla de la corrida r es `seed + r`.
+    """
+    import json
+    from datetime import UTC, datetime
+
+    partition = configured_partition_of()(series)
+    if partition != "development":
+        console.print(
+            f"[bold red]{series} no es una serie de desarrollo (partición: {partition}). "
+            "El Experimento A solo corre series de desarrollo mientras la versión de OpenKOS "
+            "no esté fijada (ADR 0005 y ADR 0006).[/bold red]"
+        )
+        raise typer.Exit(code=1)
+
+    budget = load_experiments_config()["shared_budget"]
+    n_runs = runs if runs is not None else int(budget["runs_per_config"])
+    name = run_name or datetime.now(UTC).strftime("a-%Y%m%d-%H%M%S")
+    run_dir = EXPERIMENT_A_DIR / name
+    if run_dir.exists():
+        console.print(
+            f"[bold red]Ya existe {_short(run_dir)}. Usa otro --run-name: una corrida no se "
+            "sobrescribe ni se reanuda.[/bold red]"
+        )
+        raise typer.Exit(code=1)
+
+    run_settings = openkos_run_settings()
+    manifest: dict[str, Any] = {
+        "schema_version": 1,
+        "run_name": name,
+        "created_at": datetime.now(UTC).isoformat(),
+        "git_commit": current_git_commit(),
+        "series": series,
+        "partition": partition,
+        "runs": n_runs,
+        "openkos": {
+            "executable": run_settings.executable,
+            "generative_model": run_settings.generative_model,
+            "embedding_model": run_settings.embedding_model,
+            "seed": run_settings.base_seed,
+            "temperature": run_settings.temperature,
+            "versions": [],
+        },
+        "status": "running",
+        "completed_runs": [],
+        "error": None,
+    }
+    manifest_path = run_dir / "manifest.json"
+    records_path = run_dir / "extracciones.jsonl"
+
+    def save_manifest() -> None:
+        manifest["updated_at"] = datetime.now(UTC).isoformat()
+        manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+    run_dir.mkdir(parents=True)
+    save_manifest()
+    adapter = make_openkos_adapter(OPENKOS_WORKSPACES_DIR / name)
+    console.print(f"{series}: {n_runs} corrida(s) -> {_short(run_dir)}")
+    for run in range(n_runs):
+        try:
+            extraction = adapter.extract_series(series, run)
+        except (OpenKosError, FileNotFoundError) as exc:
+            manifest["status"] = "failed"
+            manifest["error"] = f"corrida {run}: {type(exc).__name__}: {exc}"
+            save_manifest()
+            console.print(f"[bold red]Corrida {run} fallida: {exc}[/bold red]")
+            raise typer.Exit(code=1) from exc
+        with records_path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(extraction.to_record(), ensure_ascii=False) + "\n")
+        manifest["completed_runs"].append(run)
+        if extraction.openkos_version not in manifest["openkos"]["versions"]:
+            manifest["openkos"]["versions"].append(extraction.openkos_version)
+        save_manifest()
+        quotes = extraction.quotes
+        console.print(
+            f"  corrida {run}: {len(extraction.result.decisions)} decisiones, "
+            f"{len(extraction.unmapped)} sin evidencia, "
+            f"{quotes.not_found} de {quotes.total} citas no encontradas "
+            f"(OpenKOS {extraction.openkos_version})."
+        )
+    manifest["status"] = "ok"
+    save_manifest()
+    console.print(f"Listo. Manifiesto en {_short(manifest_path)}.")
 
 
 def make_provenance_probe() -> ProvenanceProbe:
