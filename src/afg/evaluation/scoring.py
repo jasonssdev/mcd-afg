@@ -11,8 +11,8 @@ embedding backend.
 
 ## Matching
 
-One alignment per series and threshold ``tau``. PROVISIONAL (issue #99, to be confirmed with
-the first real extraction of a development series): a pair is admissible only if the
+One alignment per series and threshold ``tau``. Scope decided in ADR 0011 (issue #99, from
+notebook 14 on the first real extraction of a development series): a pair is admissible only if the
 reference decision's meeting is among the extracted decision's origin meetings
 (:attr:`afg.domain.decision.Decision.origin_meetings`; OpenKOS may merge a decision restated
 in several meetings into one concept). Inadmissible pairs are masked in the similarity matrix
@@ -27,15 +27,21 @@ decisions, ``FN`` the unmatched reference decisions. A zero denominator gives 0.
 
 ## Intervals
 
-Precision and recall are binomial proportions over a small number of decisions (tens per
-series), so they carry a Wilson interval (:func:`afg.evaluation.metrics.wilson_interval`),
-which stays inside [0, 1] where the normal approximation does not. F1 is not a binomial
-proportion, so it carries a percentile bootstrap over decisions: the extracted decisions and
-the reference decisions are each resampled with replacement (their hit flags, the matching
-being fixed), and F1 is recomputed. Resamples and level come from ``[evaluation]`` in
-``config/experiments.toml``, the seed from ``[shared_budget].seed``. Decisions are resampled
-as independent, which ignores clustering by meeting and series: the intervals are
-optimistic in that respect.
+PRIMARY (ADR 0011): a percentile bootstrap that resamples whole MEETINGS with replacement
+(:func:`meeting_cluster_intervals`), for precision, recall and F1. The decisions of a meeting
+share context (topic, speakers, transcript quality), so resampling them as independent is
+optimistic. Resamples and level come from ``[evaluation]`` in ``config/experiments.toml``,
+the seed from ``[shared_budget].seed``, so the interval is deterministic.
+
+REFERENCE (``*_interval_reference``): the intervals that treat decisions as independent.
+Precision and recall are binomial proportions over a small number of decisions, so they carry
+a Wilson interval (:func:`afg.evaluation.metrics.wilson_interval`); F1 is not a binomial
+proportion, so it carries a percentile bootstrap over decisions (the extracted and the
+reference decisions are each resampled with replacement, their hit flags being fixed).
+
+LIMITATION (declared): with few meetings the cluster bootstrap is coarse. A single series has
+4 meetings, hence only 35 distinct resamples, and the interval is fragile; it is more stable
+when pooling several evaluation series.
 
 ## Role stratification
 
@@ -45,7 +51,7 @@ extracted decision, so it is reported only when ``predicted_role_of`` is given (
 :func:`evidence_role_resolver`, which reads the role from the extracted decision's evidence
 turns).
 
-SENSITIVITY (``by_role_every_role``, provisional, issue #99): the same counts, but a decision
+SENSITIVITY (``by_role_every_role``, ratified in ADR 0011): the same counts, but a decision
 with evidence from several roles counts in every role involved (``ReferenceDecision.roles``;
 for extracted decisions, ``predicted_roles_of``, typically
 :func:`evidence_roles_resolver`).
@@ -63,6 +69,7 @@ from __future__ import annotations
 
 import random
 import statistics
+from collections import defaultdict
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -72,7 +79,7 @@ import numpy as np
 
 from afg.conditions.c1_chunking import FrozenTurn, load_frozen_turns
 from afg.domain.decision import Decision
-from afg.evaluation.alignment import align
+from afg.evaluation.alignment import Match, align
 from afg.evaluation.metrics import precision_recall_f1, wilson_interval
 from afg.evaluation.reference import ReferenceDecision, primary_role, roles_of
 from afg.extraction.runner import MIN_RUNS
@@ -80,6 +87,7 @@ from afg.shared.config import load_experiments_config
 from afg.shared.paths import TRANSCRIPTS_DIR
 
 __all__ = [
+    "ClusterIntervals",
     "DevelopmentResultError",
     "IntervalSettings",
     "PooledScore",
@@ -91,6 +99,7 @@ __all__ = [
     "evidence_role_resolver",
     "evidence_roles_resolver",
     "interval_settings_from_config",
+    "meeting_cluster_intervals",
     "pair_text",
     "pool_scores",
     "score_runs",
@@ -105,7 +114,16 @@ AlignmentScope = Literal["origin_meetings", "series"]
 """``origin_meetings`` is the primary scope; ``series`` is the sensitivity analysis."""
 
 UNKNOWN_ROLE = "unknown"
-_METHODS = {"precision": "wilson", "recall": "wilson", "f1": "bootstrap over decisions"}
+_METHODS = {
+    "precision": "meeting-cluster bootstrap",
+    "recall": "meeting-cluster bootstrap",
+    "f1": "meeting-cluster bootstrap",
+}
+_REFERENCE_METHODS = {
+    "precision": "wilson",
+    "recall": "wilson",
+    "f1": "bootstrap over decisions",
+}
 
 
 class DevelopmentResultError(RuntimeError):
@@ -177,20 +195,18 @@ class SeriesScore:
     n_ignored_non_decisions: int = 0
     by_role_every_role: Mapping[str, RoleScore] = field(default_factory=dict)
     alignment_scope: AlignmentScope = "origin_meetings"
+    predicted_meetings: tuple[str, ...] = ()
+    reference_meetings: tuple[str, ...] = ()
 
 
-def score_series(
-    series_id: str,
+def _align_series(
     reference: Sequence[ReferenceDecision],
     predicted: Sequence[Decision],
     similarity: SimilarityFn,
-    *,
     tau: float,
-    predicted_role_of: Callable[[Decision], str | None] | None = None,
-    predicted_roles_of: Callable[[Decision], Sequence[str]] | None = None,
-    alignment_scope: AlignmentScope = "origin_meetings",
-) -> SeriesScore:
-    """Align ``predicted`` to ``reference`` at ``tau`` and count TP/FP/FN (module docstring)."""
+    alignment_scope: AlignmentScope,
+) -> tuple[list[Decision], tuple[Match, ...]]:
+    """The scored (``ACCEPTED``) extracted decisions and their one-to-one matches."""
     accepted = [d for d in predicted if d.is_decision]
     if accepted and reference:
         matrix = np.asarray(
@@ -208,7 +224,22 @@ def score_series(
             dtype=bool,
         ).reshape(len(accepted), len(reference))
         matrix = np.where(admissible, matrix, -np.inf)
-    matches = align(matrix, tau).matches
+    return accepted, align(matrix, tau).matches
+
+
+def score_series(
+    series_id: str,
+    reference: Sequence[ReferenceDecision],
+    predicted: Sequence[Decision],
+    similarity: SimilarityFn,
+    *,
+    tau: float,
+    predicted_role_of: Callable[[Decision], str | None] | None = None,
+    predicted_roles_of: Callable[[Decision], Sequence[str]] | None = None,
+    alignment_scope: AlignmentScope = "origin_meetings",
+) -> SeriesScore:
+    """Align ``predicted`` to ``reference`` at ``tau`` and count TP/FP/FN (module docstring)."""
+    accepted, matches = _align_series(reference, predicted, similarity, tau, alignment_scope)
 
     predicted_hits = [False] * len(accepted)
     reference_hits = [False] * len(reference)
@@ -253,6 +284,8 @@ def score_series(
         n_ignored_non_decisions=len(predicted) - len(accepted),
         by_role_every_role=every_role,
         alignment_scope=alignment_scope,
+        predicted_meetings=tuple(d.meeting_id for d in accepted),
+        reference_meetings=tuple(r.meeting_id for r in reference),
     )
 
 
@@ -352,6 +385,87 @@ def _bootstrap_f1(
     return (lower, upper)
 
 
+@dataclass(frozen=True, slots=True)
+class ClusterIntervals:
+    """Point estimates and meeting-cluster bootstrap intervals (percentile)."""
+
+    n_clusters: int
+    precision: float
+    recall: float
+    f1: float
+    precision_interval: tuple[float, float]
+    recall_interval: tuple[float, float]
+    f1_interval: tuple[float, float]
+    confidence_level: float
+
+
+def _f1(precision: float, recall: float) -> float:
+    total = precision + recall
+    return 2 * precision * recall / total if total else 0.0
+
+
+def _percentiles(values: list[float], level: float) -> tuple[float, float]:
+    values.sort()
+    n = len(values)
+    alpha = 1.0 - level
+    return (values[max(0, int(alpha / 2 * n))], values[min(n - 1, int((1 - alpha / 2) * n))])
+
+
+def meeting_cluster_intervals(
+    predicted: Sequence[tuple[str, bool]],
+    reference: Sequence[tuple[str, bool]],
+    settings: IntervalSettings,
+) -> ClusterIntervals:
+    """Percentile bootstrap that resamples whole clusters (meetings) with replacement.
+
+    ``predicted`` and ``reference`` are ``(cluster, hit)`` pairs, e.g. the meeting of each
+    extracted decision with its hit flag, and the meeting of each reference decision with its
+    hit flag. Each resample draws as many clusters as there are, sums their counts and
+    recomputes precision, recall and F1 (a zero denominator gives 0.0, as in scoring).
+    Deterministic for ``settings.seed`` and ``settings.n_resamples``.
+    """
+    counts: dict[str, list[int]] = defaultdict(lambda: [0, 0, 0, 0])  # hits_p, n_p, hits_r, n_r
+    for cluster, hit in predicted:
+        counts[cluster][0] += int(hit)
+        counts[cluster][1] += 1
+    for cluster, hit in reference:
+        counts[cluster][2] += int(hit)
+        counts[cluster][3] += 1
+    clusters = sorted(counts)
+    n_p, n_r = len(predicted), len(reference)
+    precision = sum(c[0] for c in counts.values()) / n_p if n_p else 0.0
+    recall = sum(c[2] for c in counts.values()) / n_r if n_r else 0.0
+    if not clusters:
+        zero = (0.0, 0.0)
+        return ClusterIntervals(0, 0.0, 0.0, 0.0, zero, zero, zero, settings.confidence_level)
+
+    rng = random.Random(settings.seed)
+    ps: list[float] = []
+    rs: list[float] = []
+    fs: list[float] = []
+    for _ in range(settings.n_resamples):
+        total = [0, 0, 0, 0]
+        for _ in clusters:
+            for k, v in enumerate(counts[clusters[rng.randrange(len(clusters))]]):
+                total[k] += v
+        p = total[0] / total[1] if total[1] else 0.0
+        r = total[2] / total[3] if total[3] else 0.0
+        ps.append(p)
+        rs.append(r)
+        fs.append(_f1(p, r))
+    level = settings.confidence_level
+    return ClusterIntervals(
+        n_clusters=len(clusters),
+        precision=precision,
+        recall=recall,
+        f1=_f1(precision, recall),
+        precision_interval=_percentiles(ps, level),
+        recall_interval=_percentiles(rs, level),
+        f1_interval=_percentiles(fs, level),
+        confidence_level=level,
+    )
+
+
 def _wilson(successes: int, trials: int, level: float) -> tuple[float, float]:
     if trials <= 0:
         return (0.0, 0.0)
@@ -377,9 +491,16 @@ class PooledScore:
     confidence_level: float
     by_role: Mapping[str, RoleScore]
     partition: str
+    n_clusters: int = 0
+    precision_interval_reference: tuple[float, float] = (0.0, 0.0)
+    recall_interval_reference: tuple[float, float] = (0.0, 0.0)
+    f1_interval_reference: tuple[float, float] = (0.0, 0.0)
     by_role_every_role: Mapping[str, RoleScore] = field(default_factory=dict)
     alignment_scope: AlignmentScope = "origin_meetings"
     interval_methods: Mapping[str, str] = field(default_factory=lambda: dict(_METHODS))
+    reference_interval_methods: Mapping[str, str] = field(
+        default_factory=lambda: dict(_REFERENCE_METHODS)
+    )
 
     @property
     def development_only(self) -> bool:
@@ -402,13 +523,34 @@ def _require_reportable(partition: str, series: Sequence[str]) -> None:
         )
 
 
+def _cluster_hits(
+    scores: Sequence[SeriesScore],
+) -> tuple[list[tuple[str, bool]], list[tuple[str, bool]]]:
+    """``(meeting, hit)`` pairs of the extracted and the reference decisions of ``scores``.
+
+    A score built without meeting labels falls back to its series as the cluster.
+    """
+    predicted: list[tuple[str, bool]] = []
+    reference: list[tuple[str, bool]] = []
+    for s in scores:
+        p_labels = s.predicted_meetings or (s.series_id,) * len(s.predicted_hits)
+        r_labels = s.reference_meetings or (s.series_id,) * len(s.reference_hits)
+        predicted += zip(p_labels, s.predicted_hits, strict=True)
+        reference += zip(r_labels, s.reference_hits, strict=True)
+    return predicted, reference
+
+
 def pool_scores(
     scores: Sequence[SeriesScore],
     *,
     settings: IntervalSettings,
     partition_of: Callable[[str], str] | None = None,
 ) -> PooledScore:
-    """Pool per-series scores (micro average) and attach intervals and the partition flag."""
+    """Pool per-series scores (micro average) and attach intervals and the partition flag.
+
+    The primary intervals resample whole meetings (ADR 0011); the independent-decision
+    intervals are attached as ``*_interval_reference``.
+    """
     if not scores:
         raise ValueError("pool_scores is undefined for an empty list of series scores.")
     taus = {s.tau for s in scores}
@@ -423,6 +565,8 @@ def pool_scores(
     precision, recall, f1 = precision_recall_f1(tp, fp, fn)
     predicted_hits = [h for s in scores for h in s.predicted_hits]
     reference_hits = [h for s in scores for h in s.reference_hits]
+    clusters = _cluster_hits(scores)
+    cluster_intervals = meeting_cluster_intervals(*clusters, settings)
     pooled_roles: dict[str, RoleScore] = {}
     for s in scores:
         for role, counts in s.by_role.items():
@@ -441,12 +585,16 @@ def pool_scores(
         precision=precision,
         recall=recall,
         f1=f1,
-        precision_interval=_wilson(tp, tp + fp, level),
-        recall_interval=_wilson(tp, tp + fn, level),
-        f1_interval=_bootstrap_f1(predicted_hits, reference_hits, settings),
+        precision_interval=cluster_intervals.precision_interval,
+        recall_interval=cluster_intervals.recall_interval,
+        f1_interval=cluster_intervals.f1_interval,
         confidence_level=level,
         by_role=pooled_roles,
         partition=_combine_partitions(partition_of(s.series_id) for s in scores),
+        n_clusters=cluster_intervals.n_clusters,
+        precision_interval_reference=_wilson(tp, tp + fp, level),
+        recall_interval_reference=_wilson(tp, tp + fn, level),
+        f1_interval_reference=_bootstrap_f1(predicted_hits, reference_hits, settings),
         by_role_every_role=pooled_every_role,
         alignment_scope=scores[0].alignment_scope,
     )

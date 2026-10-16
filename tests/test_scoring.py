@@ -9,12 +9,14 @@ import numpy as np
 import pytest
 
 from afg.domain.decision import Decision, DecisionStatus, EvidenceSpan
+from afg.evaluation.metrics import wilson_interval
 from afg.evaluation.reference import ReferenceDecision
 from afg.evaluation.scoring import (
     DevelopmentResultError,
     IntervalSettings,
     SimilarityFn,
     evidence_roles_resolver,
+    meeting_cluster_intervals,
     pair_text,
     pool_scores,
     score_runs,
@@ -178,7 +180,14 @@ def test_pooled_score_is_micro_averaged_with_intervals() -> None:
     assert 0.0 <= lo < 0.75 < hi <= 1.0
     lo, hi = pooled.f1_interval
     assert 0.0 <= lo <= pooled.f1 <= hi <= 1.0
+    # Primary intervals: meeting-cluster bootstrap (ADR 0011); the independent-decision
+    # intervals (Wilson / decision-level bootstrap) are kept as REFERENCE.
     assert pooled.interval_methods == {
+        "precision": "meeting-cluster bootstrap",
+        "recall": "meeting-cluster bootstrap",
+        "f1": "meeting-cluster bootstrap",
+    }
+    assert pooled.reference_interval_methods == {
         "precision": "wilson",
         "recall": "wilson",
         "f1": "bootstrap over decisions",
@@ -327,7 +336,7 @@ def test_evidence_role_resolver_reads_the_role_from_the_frozen_turns(tmp_path: P
     assert role_of(_pred(1, act="other.act")) is None
 
 
-# --- provisional decisions of issue #99 -------------------------------------------------------
+# --- alignment scope and role decisions of issue #99 (ADR 0011) ---
 
 
 def _ref_in(i: int, meeting: str, roles: tuple[str, ...] = ("PM",)) -> ReferenceDecision:
@@ -502,3 +511,92 @@ def test_evidence_roles_resolver_returns_every_role_of_the_evidence(tmp_path: Pa
     )
 
     assert evidence_roles_resolver(tmp_path)(decision) == ("UI", "PM")
+
+
+def _two_meeting_scores() -> list:
+    ref = [_ref(1), _ref(2)]
+    other = ReferenceDecision(
+        decision_id="ES2015b.d03",
+        series_id="ES2015",
+        meeting_id="ES2015b",
+        decision_object="obj3",
+        content="cont3",
+        evidence=EvidenceSpan(meeting_id="ES2015b", dialogue_act_ids=("da.3",)),
+        evidence_method="sentence_id",
+        role="PM",
+        roles=("PM",),
+    )
+    predicted_b = Decision(
+        id="p3",
+        series_id="ES2015",
+        meeting_id="ES2015b",
+        decision_object="obj3",
+        content="cont3",
+        status=DecisionStatus.ACCEPTED,
+        evidence=EvidenceSpan(meeting_id="ES2015b", dialogue_act_ids=("da.3",)),
+    )
+    return [score_series("ES2015", [*ref, other], [_pred(1), _pred(9), predicted_b], SIM, tau=0.5)]
+
+
+def test_series_score_records_the_meeting_of_each_decision() -> None:
+    (score,) = _two_meeting_scores()
+
+    assert score.predicted_meetings == ("ES2015a", "ES2015a", "ES2015b")
+    assert score.reference_meetings == ("ES2015a", "ES2015a", "ES2015b")
+
+
+def test_pooled_primary_intervals_resample_whole_meetings() -> None:
+    scores = _two_meeting_scores()
+
+    pooled = pool_scores(scores, settings=SETTINGS, partition_of=EVAL)
+
+    expected = meeting_cluster_intervals(
+        [("ES2015a", True), ("ES2015a", False), ("ES2015b", True)],
+        [("ES2015a", True), ("ES2015a", False), ("ES2015b", True)],
+        SETTINGS,
+    )
+    assert pooled.n_clusters == 2
+    assert pooled.precision_interval == expected.precision_interval
+    assert pooled.recall_interval == expected.recall_interval
+    assert pooled.f1_interval == expected.f1_interval
+
+
+def test_pooled_reference_intervals_are_the_independent_decision_ones() -> None:
+    scores = _two_meeting_scores()
+
+    pooled = pool_scores(scores, settings=SETTINGS, partition_of=EVAL)
+
+    wilson = wilson_interval(2, 3, SETTINGS.confidence_level)
+    assert pooled.precision_interval_reference == (wilson.lower, wilson.upper)
+    assert pooled.recall_interval_reference == (wilson.lower, wilson.upper)
+    lo, hi = pooled.f1_interval_reference
+    assert 0.0 <= lo <= pooled.f1 <= hi <= 1.0
+
+
+def test_pooled_cluster_intervals_are_reproducible_for_a_seed() -> None:
+    scores = _two_meeting_scores()
+
+    first = pool_scores(scores, settings=SETTINGS, partition_of=EVAL)
+    second = pool_scores(scores, settings=SETTINGS, partition_of=EVAL)
+
+    assert first.recall_interval == second.recall_interval
+    assert first.f1_interval == second.f1_interval
+
+
+def test_pooled_clusters_span_series() -> None:
+    a = score_series("ES2015", [_ref(1)], [_pred(1)], SIM, tau=0.5)
+    b = score_series("IS1004", [_ref(1, series="IS1004")], [], SIM, tau=0.5)
+
+    pooled = pool_scores([a, b], settings=SETTINGS, partition_of=EVAL)
+
+    assert pooled.n_clusters == 2
+
+
+def test_cluster_intervals_live_in_scoring_and_resample_meetings() -> None:
+    predicted = [("a", True)] * 4 + [("b", False)] * 4
+    reference = [("a", True)] * 4 + [("b", False)] * 4
+
+    out = meeting_cluster_intervals(predicted, reference, SETTINGS)
+
+    assert out.n_clusters == 2
+    assert out.precision_interval == (0.0, 1.0)
