@@ -19,7 +19,7 @@ from typing import Any
 from pydantic import AliasChoices, Field, ValidationInfo, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from afg.shared.paths import CONFIG_DIR, ENV_PATH
+from afg.shared.paths import CONFIG_DIR, ENV_PATH, EXPERIMENTS_CONFIG_PATH
 
 
 class Settings(BaseSettings):
@@ -100,7 +100,7 @@ def load_corpus_config() -> dict[str, Any]:
 
 def load_experiments_config() -> dict[str, Any]:
     """Load ``config/experiments.toml`` (C1/C2/C3 params, models, seeds, tau grid)."""
-    return _load_toml(CONFIG_DIR / "experiments.toml")
+    return _load_toml(EXPERIMENTS_CONFIG_PATH)
 
 
 def load_annotation_config() -> dict[str, Any]:

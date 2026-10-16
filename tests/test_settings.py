@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 from typer.testing import CliRunner
 
 import afg.cli as afg_cli
+import afg.shared.config as config_module
 from afg.shared.config import Settings, load_experiments_config
 
 
@@ -105,3 +108,14 @@ def test_log_level_setting_drives_the_cli_when_no_flag_is_given(
     assert result.exit_code == 0, result.output
     result = CliRunner().invoke(afg_cli.app, ["--log-level", "ERROR", "skills", "--help"])
     assert seen == ["DEBUG", "ERROR"]
+
+
+def test_experiments_config_is_read_from_the_path_constant(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """``load_experiments_config`` follows ``EXPERIMENTS_CONFIG_PATH``, not a rebuilt path."""
+    custom = tmp_path / "otro.toml"
+    custom.write_text('marker = "custom"\n', encoding="utf-8")
+    monkeypatch.setattr(config_module, "EXPERIMENTS_CONFIG_PATH", custom)
+
+    assert load_experiments_config() == {"marker": "custom"}

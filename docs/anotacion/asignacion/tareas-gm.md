@@ -402,13 +402,14 @@ banco tiene **al menos 100 en total** (`docs/propuesta.md` §5.5). Solo E3 admit
 ### Los cuatro estratos
 
 Los valores de `stratum` son literalmente los de
-`src/afg/domain/question.py::QuestionStratum`:
+`src/afg/domain/question.py::QuestionStratum`. Las formas de ejemplo van en inglés porque el
+banco se escribe en inglés:
 
 | Valor | Estrato | Forma | Qué mide |
 |---|---|---|---|
-| `E1_point_fact` | E1 — hecho puntual | *¿Qué se decidió sobre X?* | Caso donde se espera **paridad** entre condiciones; si C2 pierde aquí, hay una regresión que explicar |
-| `E2_current_state` | E2 — estado vigente | *¿Cuál es la decisión vigente sobre X?* | Exige saber **cuál de varias versiones prevalece** |
-| `E3_evolution` | E3 — evolución | *¿Cambió X? ¿En qué reunión y por qué?* | **El estrato que prueba la tesis** |
+| `E1_point_fact` | E1 — hecho puntual | *What was decided about X?* | Caso donde se espera **paridad** entre condiciones; si C2 pierde aquí, hay una regresión que explicar |
+| `E2_current_state` | E2 — estado vigente | *What is the current decision on X?* | Exige saber **cuál de varias versiones prevalece** |
+| `E3_evolution` | E3 — evolución | *Did X change? In which meeting and why?* | **El estrato que prueba la tesis** |
 | `E4_unanswerable` | E4 — incontestable | Pregunta adyacente al dominio, sin respuesta en el material | Mide si el sistema **se abstiene o fabrica** |
 
 ### Cuántas preguntas de E3: hasta 40, nunca inventadas
@@ -554,7 +555,7 @@ con otra codificación o con `;` como separador, `questions-check` indica qué c
    que no aparece. Ejemplo verificado: en las cuatro transcripciones de ES2015 no hay
    ninguna ocurrencia de *warranty* ni de *guarantee*, así que preguntar por los años de
    garantía es incontestable con ese material.
-3. **Una E4 sigue siendo del dominio.** "¿Cuál es la capital de Francia?" no mide nada:
+3. **Una E4 sigue siendo del dominio.** "What is the capital of France?" no mide nada:
    cualquier sistema la contesta desde su entrenamiento. La E4 tiene que ser *adyacente* —
    sonar como una pregunta legítima sobre este control remoto— para que la tentación de
    fabricar exista.

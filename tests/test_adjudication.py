@@ -600,7 +600,7 @@ class TestAdjudicateCli:
         result = runner.invoke(afg_cli.app, ["gold", "agreement", "--series", "ES2015"])
         assert result.exit_code == 0, result.output
         assert "gm vs gv" in result.output
-        assert "Found 3 annotator files" not in result.output
+        assert "Se encontraron 3 archivos de anotadores" not in result.output
         rows = read_csv(afg_cli.TABLES_DIR / "ES2015.agreement.csv")
         assert {(r["annotator_a"], r["annotator_b"]) for r in rows} == {("gm", "gv")}
 
