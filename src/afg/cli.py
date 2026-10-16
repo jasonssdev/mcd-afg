@@ -1333,7 +1333,8 @@ def gold_status(
 
     Cada serie está en uno de estos estados: `pendiente (aún no)` (el mantenedor todavía no
     la abre), `sin preparar` (abierta pero sin archivos), `por empezar`, `en curso`,
-    `con errores`, `lista para entregar` (todo lleno y válido) o `adjudicada` (cerrada). Con
+    `con errores`, `lista para entregar` (todo lleno y válido), `entregada` (además, sus
+    archivos ya están en `main` sin cambios) o `adjudicada` (cerrada). Con
     `--annotator`, muestra solo la fila de esa persona, la Tarea C y el banco de preguntas
     si le tocan, y termina con una línea `Siguiente:` con lo único que toca hacer ahora.
     """
@@ -1368,6 +1369,7 @@ def gold_status(
         SeriesState.IN_PROGRESS: "yellow",
         SeriesState.ERRORS: "bold red",
         SeriesState.READY: "green",
+        SeriesState.DELIVERED: "green",
         SeriesState.ADJUDICATED: "green",
     }
     notes: list[str] = []

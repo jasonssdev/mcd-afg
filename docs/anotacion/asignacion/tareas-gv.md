@@ -65,7 +65,7 @@ recorre todas tus series asignadas. Si hay un error sale con código distinto de
 dice fila y columna exactas. `status --annotator gv` es solo lectura; te muestra tu propio
 avance, serie por serie, sin abrir un CSV. Cada serie está `pendiente (aún no)` (`jss`
 todavía no la abre; no hay archivos), `sin preparar`, `por empezar`, `en curso`, `con errores`,
-`lista para entregar` o `adjudicada`. Las filas de una serie cuentan también las partes de
+`lista para entregar`, `entregada` (el PR ya se mergeó: los dos archivos están en `main` sin cambios) o `adjudicada`. Las filas de una serie cuentan también las partes de
 las decisiones `compuesta` (p. ej. «32 filas = 29 originales + 3 partes»). Termina siempre
 con una línea `Siguiente: …`.
 También muestra el avance de la Tarea C y de la validación del banco.

@@ -11,14 +11,20 @@ here is derived from the state of the repository instead:
 * **Ready to deliver**: every row of Tasks A and B is filled and the files validate. The
   repository cannot tell whether the pull request was already opened, so the next-step text
   says "if you have not yet".
+* **Delivered**: a ready series whose two files are tracked on the local ``main`` branch with
+  no difference from the working tree, i.e. the pull request was merged. Asked of git; if git,
+  the repository or the ``main`` ref is unavailable the series simply stays "ready".
 * **In progress / to start / with errors / not prepared**: from the validation report.
 
 The next action is the first applicable of: work on the first open, unfinished series;
-deliver a finished series; do Task C; work on the question bank; wait for ``jss``.
+deliver a finished series (not yet on ``main``); do Task C; work on the question bank; wait
+for ``jss``.
 """
 
 from __future__ import annotations
 
+import subprocess
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
@@ -42,6 +48,7 @@ __all__ = [
     "SeriesState",
     "SeriesStatus",
     "annotator_status",
+    "is_delivered",
 ]
 
 
@@ -54,6 +61,7 @@ class SeriesState(StrEnum):
     IN_PROGRESS = "en curso"
     ERRORS = "con errores"
     READY = "lista para entregar"
+    DELIVERED = "entregada"
     ADJUDICATED = "adjudicada"
 
 
@@ -117,12 +125,46 @@ class AnnotatorStatus:
     next_action: NextAction
 
 
+def is_delivered(paths: Iterable[Path], ref: str = "main") -> bool:
+    """Whether every path is tracked on ``ref`` and identical to it in the working tree.
+
+    Never raises: no git, not a repository, a missing ref or any other git failure all answer
+    ``False``, so the caller falls back to "not delivered".
+    """
+    targets = list(paths)
+    if not targets:
+        return False
+    try:
+        for path in targets:
+            cwd = path.parent
+            in_ref = subprocess.run(
+                ["git", "cat-file", "-e", f"{ref}:./{path.name}"],
+                cwd=cwd,
+                capture_output=True,
+                check=False,
+            )
+            if in_ref.returncode != 0:
+                return False
+            same = subprocess.run(
+                ["git", "diff", "--quiet", ref, "--", path.name],
+                cwd=cwd,
+                capture_output=True,
+                check=False,
+            )
+            if same.returncode != 0:
+                return False
+    except (OSError, ValueError):
+        return False
+    return True
+
+
 def _series_state(
     plan: AnnotationPlan,
     initials: str,
     series_id: str,
     progress: SeriesProgress | None,
     paths: WorkspacePaths,
+    delivered: Callable[[Iterable[Path]], bool],
 ) -> SeriesState:
     if not plan.is_released(series_id):
         return SeriesState.NOT_YET
@@ -137,7 +179,11 @@ def _series_state(
     if not progress.ok:
         return SeriesState.ERRORS
     if progress.complete:
-        return SeriesState.READY
+        files = (
+            paths.target(TaskKind.DECISIONS, series_id, initials),
+            paths.target(TaskKind.CANDIDATES, series_id, initials),
+        )
+        return SeriesState.DELIVERED if delivered(files) else SeriesState.READY
     if progress.decisions_filled == 0 and progress.candidates_filled == 0:
         return SeriesState.TO_START
     return SeriesState.IN_PROGRESS
@@ -152,7 +198,7 @@ def _recall_statuses(
     recall = plan.recall_sample
     if recall.owner != initials:
         return ()
-    closed = {SeriesState.READY, SeriesState.ADJUDICATED}
+    closed = {SeriesState.READY, SeriesState.DELIVERED, SeriesState.ADJUDICATED}
     out: list[RecallStatus] = []
     for series_id in recall.series_ids:
         own = by_series.get(series_id)
@@ -327,9 +373,16 @@ def _next_action(
 
 
 def annotator_status(
-    plan: AnnotationPlan, initials: str, *, paths: WorkspacePaths
+    plan: AnnotationPlan,
+    initials: str,
+    *,
+    paths: WorkspacePaths,
+    delivered: Callable[[Iterable[Path]], bool] = is_delivered,
 ) -> AnnotatorStatus:
     """Derive the full status of one annotating person from the files.
+
+    ``delivered`` decides whether a complete series already reached ``main``; it is a
+    parameter so tests need no git repository.
 
     Raises:
         UnknownAnnotatorError: if ``initials`` is not in the plan.
@@ -344,7 +397,7 @@ def annotator_status(
             if plan.is_released(sid)
             else None
         )
-        state = _series_state(plan, initials, sid, progress, paths)
+        state = _series_state(plan, initials, sid, progress, paths, delivered)
         originals, parts = decision_row_counts(paths.target(TaskKind.DECISIONS, sid, initials))
         items.append(
             SeriesStatus(
