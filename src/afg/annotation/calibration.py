@@ -24,6 +24,8 @@ __all__ = [
     "DecisionAgreement",
     "FinalStatusCounts",
     "adjudicated_pairs",
+    "annotator_status_distribution",
+    "chance_agreement",
     "compuesta_children",
     "decision_agreement",
     "disagreement_groups",
@@ -131,6 +133,29 @@ def status_contingency(
     (a, b), base, _ = _split(series_id, paths)
     counts = Counter((r[f"{a}_status"], r[f"{b}_status"]) for r in base)
     return [(x, y, n) for (x, y), n in sorted(counts.items())]
+
+
+def annotator_status_distribution(
+    series_id: str, *, paths: WorkspacePaths | None = None
+) -> dict[str, dict[str, int]]:
+    """How often each annotator used each ``status`` on base rows, keyed by initials."""
+    (a, b), base, _ = _split(series_id, paths)
+    return {ini: dict(sorted(Counter(r[f"{ini}_status"] for r in base).items())) for ini in (a, b)}
+
+
+def chance_agreement(series_id: str, *, paths: WorkspacePaths | None = None) -> float:
+    """Agreement expected by chance on base-row ``status`` (the ``p_e`` of Cohen's kappa).
+
+    Sum over labels of the product of the two annotators' proportions. When one annotator
+    uses a single label for every row, this equals the observed agreement and kappa is 0.
+    """
+    (a, b), base, _ = _split(series_id, paths)
+    if not base:
+        return math.nan
+    counts_a = Counter(r[f"{a}_status"] for r in base)
+    counts_b = Counter(r[f"{b}_status"] for r in base)
+    n = len(base)
+    return sum(counts_a[label] * counts_b[label] for label in counts_a) / (n * n)
 
 
 def final_status_counts(
