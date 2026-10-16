@@ -8,12 +8,12 @@ body:
     attributes:
       value: |
         Este proyecto ya ha tenido varias correcciones de este tipo (ver D9 en
-        [`docs/BACKLOG.md`](../../docs/BACKLOG.md), donde ~170 candidatos
-        resultaron ser 712).
+        [`docs/decisions/README.md`](../../docs/decisions/README.md), donde ~170
+        candidatos resultaron ser 712).
 
         **Una cifra corregida se corrige en TODOS los lugares donde aparece.**
         CONTRIBUTING.md §7.5 (https://github.com/jasonssdev/mcd-afg/blob/main/CONTRIBUTING.md)
-        lo dice sin ambigüedad: un backlog (o una tesis) con dos respuestas
+        lo dice sin ambigüedad: un registro (o una tesis) con dos respuestas
         distintas a la misma pregunta es peor que no tener ninguna.
         No cierres este issue hasta haber arrastrado la corrección a cada
         archivo listado abajo.
@@ -32,10 +32,10 @@ body:
       label: Dónde está publicado
       description: >-
         Lista TODOS los archivos donde aparece esta afirmación o cifra
-        (backlog, ADRs, notebooks, entregables, tesis, README, etc.). No basta
+        (registro de decisiones, ADRs, avances, notebooks, entregables, tesis, README, etc.). No basta
         con el primero que encontraste.
       placeholder: |
-        - docs/BACKLOG.md, sección P1
+        - docs/decisions/README.md, decisión D9
         - notebooks/01-jss-viabilidad-e3.ipynb, celda de resumen
         - docs/avances/...
     validations:

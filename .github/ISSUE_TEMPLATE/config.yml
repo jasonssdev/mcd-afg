@@ -1,11 +1,11 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Backlog del proyecto
-    url: https://github.com/jasonssdev/mcd-afg/blob/main/docs/BACKLOG.md
+  - name: Registro de decisiones
+    url: https://github.com/jasonssdev/mcd-afg/blob/main/docs/decisions/README.md
     about: >-
-      Antes de abrir un issue, revisa si el ítem ya está listado (o ya resuelto)
-      en el backlog. Los ítems P1–P9 y las decisiones D1–D10 se están migrando
-      desde ahí.
+      Antes de abrir un issue, revisa si la decisión ya está tomada (D1–D17) y
+      con qué evidencia. El trabajo pendiente vive en los issues abiertos del
+      repositorio.
   - name: Convenciones del proyecto (CONTRIBUTING.md)
     url: https://github.com/jasonssdev/mcd-afg/blob/main/CONTRIBUTING.md
     about: >-

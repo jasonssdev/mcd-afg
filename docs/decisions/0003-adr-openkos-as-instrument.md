@@ -2,7 +2,7 @@
 
 ## Estado
 
-Aceptada
+Aceptada (2026-09-20)
 
 ## Contexto
 
@@ -42,4 +42,6 @@ OpenKOS-como-instrumento frente a una línea base de RAG documental.
 > **Riesgo registrado (2026-09-20).** El formato de persistencia de C2 y C3 es el Open
 > Knowledge Format (OKF) v0.1, un borrador sin versión estable. Antes de compilar en AFG2 se
 > fija la versión exacta de OpenKOS y de OKF en `config/experiments.toml`; si el formato cambia
-> después, las bases compiladas no se migran: se recompilan con la versión fijada.
+> después, las bases compiladas no se migran: se recompilan con la versión fijada. (El
+> [ADR 0006](0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) reemplaza este detalle: la
+> versión de OpenKOS se fija en `pyproject.toml` y `uv.lock`.)

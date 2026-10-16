@@ -58,10 +58,10 @@ Ejemplo: `fix/blocker-min-overlap-tokens`.
 **Nada llega a `main` sin pasar por revisión.**
 [@jasonssdev](https://github.com/jasonssdev) es el CODEOWNER responsable de la
 integración a `main` y quien hace el merge — ver
-[`.github/CODEOWNERS`](.github/CODEOWNERS): revisa **toda** PR que entre a
+[`.github/CODEOWNERS`](.github/CODEOWNERS): revisa **todo** PR que entre a
 `main`, venga de quien venga, incluidas las suyas propias.
 
-Las PR del resto del equipo las revisa el mantenedor. Las PR del mantenedor las
+Los PR del resto del equipo los revisa el mantenedor. Los PR del mantenedor los
 revisa él mismo, y eso es deliberado: la responsabilidad de lo que entra a `main`
 es suya de todos modos, así que exigir una firma ajena añadiría una espera sin
 añadir una mirada. Cualquier integrante puede revisar y comentar cualquier PR;
@@ -73,14 +73,14 @@ La rama `main` está protegida en GitHub, así que la regla la aplica la máquin
 
 | Regla | Efecto |
 |---|---|
-| 1 aprobación requerida | Una PR sin aprobar no se puede mergear |
+| 1 aprobación requerida | Un PR sin aprobar no se puede mergear |
 | Revisión de CODEOWNER obligatoria | No basta cualquier aprobación: tiene que ser la del mantenedor, porque [`.github/CODEOWNERS`](.github/CODEOWNERS) le asigna todo el repositorio |
 | Aprobaciones obsoletas descartadas | Si empujas un commit nuevo, la aprobación anterior caduca y hay que revisar otra vez |
 | Conversaciones resueltas | Un comentario de revisión abierto bloquea el merge |
 | Sin force push ni borrado de `main` | Sin excepciones, tampoco para el mantenedor |
 
 La protección **no** se aplica a administradores, y eso es deliberado: GitHub
-prohíbe aprobar tu propia PR, así que si le aplicara también al mantenedor
+prohíbe aprobar tu propio PR, así que si le aplicara también al mantenedor
 quedaría bloqueado en su propio repositorio. En la práctica significa que el
 resto del equipo no puede integrar nada sin su aprobación, y que él integra lo
 suyo bajo su propia responsabilidad.
@@ -178,7 +178,7 @@ sigue contando la historia completa. Si no, el trabajo no está terminado.
 |---|---|---|
 | Notebooks | `NN-{iniciales}-{nombre}.ipynb` | `01-jss-viabilidad-e3.ipynb` |
 | Documentos vivos (`docs/avances/`) | `NN-{iniciales}-{nombre}.md` | `03-jss-objetivos.md` |
-| Entregables (`docs/entregables/`) | `NN-{iniciales}-{nombre}.md` | `01-jss-guion-video-semana8.md` |
+| Entregables (`docs/entregables/`) | `NN-{iniciales}-{nombre}.md` | `04-jss-guion-video-semana8.md` |
 | ADRs | `NNNN-adr-{nombre}.md` | `0005-adr-development-evaluation-split.md` |
 | Ramas | `{tipo}/{descripcion-corta}` | `feat/blocker-min-overlap` |
 
@@ -194,7 +194,9 @@ agrega uno nuevo en vez de renumerar.
 - Naming: ver §7.2.
 - Escritos **en español, en voz impersonal o en primera persona del plural**
   (nunca en singular: el proyecto es de un equipo), académicos pero simples,
-  para un revisor que no programa.
+  para un revisor que no programa. Excepción: los guiones hablados de
+  `docs/entregables/` pueden usar primera persona, porque los lee una persona
+  en cámara.
 - **Versionados CON sus outputs.** Son entregables académicos; un revisor
   debe poder leer los resultados sin ejecutar nada ni tener el corpus. Los
   outputs son el registro.
@@ -223,8 +225,9 @@ del código va en inglés: código, identificadores, comentarios y comentarios d
 configuración. Las etiquetas de anotación (`introduce`, `reafirma`, `refina`,
 `revierte`, `reemplaza`, `no_relacionada`) se mantienen en español dentro del
 código: son el conjunto de etiquetas que define la tesis. La propuesta
-(`docs/propuesta.md`) es el texto original y no se edita; sus revisiones
-pendientes se siguen en los issues abiertos del repositorio.
+(`docs/propuesta.md`) es el texto original de AFG1, con enmiendas registradas en
+git (2026-09-21, 2026-10-07); se cita por sección y sus revisiones pendientes
+se siguen en los issues abiertos del repositorio.
 
 ### 7.5 Cifras
 
@@ -281,9 +284,9 @@ evaluación**.
 
 ### 7.9 Colaboración: avances y entregables
 
-- Una PR que cambia una cifra publicada debe decir **dónde más aparece esa
+- Un PR que cambia una cifra publicada debe decir **dónde más aparece esa
   cifra** y actualizar cada lugar (§7.5).
-- Una PR que agrega o cambia cómputo debe decir **qué notebook lo cubre**
+- Un PR que agrega o cambia cómputo debe decir **qué notebook lo cubre**
   (§7.1).
 - El trabajo pendiente vive en **issues de GitHub**;
   [`docs/decisions/README.md`](docs/decisions/README.md) es el registro de

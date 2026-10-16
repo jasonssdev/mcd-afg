@@ -2,7 +2,7 @@
 
 ## Estado
 
-Aceptada (2026-10-07)
+Aceptada (2026-10-07). Enmendada (2026-10-15): la versión de OpenKOS a fijar queda abierta (#94); ver la sección Enmienda.
 
 ## Contexto
 

@@ -254,7 +254,6 @@ $RECYCLE.BIN/
 data/raw/**
 !data/raw/.gitkeep
 !data/raw/README.md
-!data/raw/ami/.gitkeep
 data/interim/**
 !data/interim/.gitkeep
 # Small hand-adjudicated tables that notebook 01 reads; they must travel with the notebook.
@@ -270,6 +269,12 @@ bibliography/pdfs/**
 
 # Generated figures are reproducible from reports/tables + notebooks; do not commit binaries.
 reports/figures/*.png
+# Exception: the PNGs exported for the course videos are tracked in docs/entregables/figuras/
+# (frozen deliverable assets, produced by notebook 11); this rule does not reach that folder.
+!docs/entregables/figuras/*.png
+
+# CodeGraph local index (rebuilt per checkout).
+.codegraph/
 
 # OpenKOS local workspace and any local SQLite database files (retrieval indexes, caches).
 .openkos/

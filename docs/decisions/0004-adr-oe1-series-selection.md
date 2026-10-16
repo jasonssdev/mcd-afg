@@ -1,7 +1,9 @@
-# 4. Selección de series para OE1
+# 0004. Selección de series para OE1
 
-Fecha: 2026-09-20
-Estado: Aceptada (cifra de candidatos corregida por D9)
+## Estado
+
+Aceptada (2026-09-20). Cifra de candidatos corregida por D9. Reemplazada parcialmente por el
+[ADR 0005](0005-adr-development-evaluation-split.md) (series de control).
 
 ## Contexto
 
@@ -71,7 +73,7 @@ A la tasa de bloqueo medida de ~5,5 % (piloto, coeficiente de solapamiento ≥ 0
 produce **≈ 170 pares candidatos** para adjudicación humana — dentro del presupuesto de
 5 a 10 horas, frente a 3.071 pares exhaustivos.
 
-> **Corrección (2026-09-20, decisión D9 del backlog).** La tasa del piloto no era
+> **Corrección (2026-09-20, decisión D9 en `docs/decisions/README.md`).** La tasa del piloto no era
 > generalizable. Sobre las 14 series reales el bloqueador con solo el coeficiente
 > seleccionaba 712 pares (23,2 %); con el mínimo de 2 tokens compartidos quedan **92**
 > pares candidatos. La cifra vigente es 92; las 170 fueron una extrapolación desde las dos
@@ -95,7 +97,7 @@ Fijadas ahora, antes de la anotación, como exige OE1:
 > (33,5 %), una por sitio más la serie ES más grande. Tres de las cuatro también llevan DDS,
 > así que los desacuerdos pueden triangularse contra una capa de anotación independiente.
 
-Ambas anotadoras trabajan sobre copias limpias; el kappa de Cohen se reporta por separado
+Ambas personas que anotan trabajan sobre copias limpias; el kappa de Cohen se reporta por separado
 para existencia del enlace, tipo de relación y **dirección** (hipótesis H3 de la tesis).
 
 ## Consecuencias

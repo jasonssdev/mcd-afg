@@ -1,5 +1,5 @@
 name: "Tarea"
-description: Una unidad de trabajo concreta (equivalente a un ítem P del backlog).
+description: Una unidad de trabajo concreta (un ítem de trabajo pendiente).
 title: "[tarea] "
 labels:
   - tarea
@@ -7,8 +7,9 @@ body:
   - type: markdown
     attributes:
       value: |
-        Usa este formulario para una unidad de trabajo concreta, del mismo tipo que
-        los ítems `P1`–`P9` de [`docs/BACKLOG.md`](../../docs/BACKLOG.md).
+        Usa este formulario para una unidad de trabajo concreta, cuyo
+        seguimiento vive en los issues de GitHub. Las decisiones ya tomadas están en
+        [`docs/decisions/README.md`](../../docs/decisions/README.md).
 
   - type: textarea
     id: que-hay-que-hacer
@@ -38,7 +39,7 @@ body:
         tarea depende. Si no depende de nada, dilo explícitamente.
       placeholder: |
         - Depende de #12 (debe cerrarse primero)
-        - Depende de la decisión D9 (ya tomada, ver BACKLOG.md)
+        - Depende de la decisión D9 (ya tomada, ver docs/decisions/README.md)
     validations:
       required: true
 
@@ -59,7 +60,7 @@ body:
       description: >-
         CONTRIBUTING.md §7.1 (https://github.com/jasonssdev/mcd-afg/blob/main/CONTRIBUTING.md) exige que todo script que produzca un número, una decisión o
         un entregable sea reproducible y legible desde un notebook en `notebooks/`.
-        Indica cuál (existente o nuevo, con su nombre `NN-jss-tema.ipynb`) o
+        Indica cuál (existente o nuevo, con su nombre `NN-{autor}-tema.ipynb`) o
         justifica explícitamente por qué esta tarea no produce ningún número,
         decisión ni entregable.
     validations:
