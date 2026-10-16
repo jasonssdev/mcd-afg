@@ -558,9 +558,9 @@ def gold_build(
     rows = build_gold_decisions(ami_root, series)
     if not rows:
         console.print(
-            f"[bold red]No abstractive DECISIONS sentences found for series {series!r} "
-            f"under {ami_root}. Check the series id (e.g. 'IS1004') and that the corpus "
-            "was extracted correctly.[/bold red]"
+            f"[bold red]No se encontraron oraciones DECISIONS del resumen abstractivo para "
+            f"la serie {series!r} en {ami_root}. Revisa el identificador de la serie "
+            "(p. ej. 'IS1004') y que el corpus se haya extraído bien.[/bold red]"
         )
         raise typer.Exit(code=1)
 
@@ -576,22 +576,22 @@ def gold_build(
                 flag_counts[flag] = flag_counts.get(flag, 0) + 1
 
     console.print(
-        f"[bold]Series {series}[/bold]: {len(rows)} decision sentences across "
-        f"{len(per_meeting)} meetings."
+        f"[bold]Serie {series}[/bold]: {len(rows)} oraciones de decisión en "
+        f"{len(per_meeting)} reuniones."
     )
     for meeting_id in sorted(per_meeting):
         console.print(f"  {meeting_id}: {per_meeting[meeting_id]}")
 
     console.print(
-        "[bold]machine_flags[/bold] are triage hints, NOT a verdict -- status, "
-        "decision_object, decision_content, annotator, and notes were written EMPTY for "
-        "every row and must be filled in by a human annotator:"
+        "[bold]machine_flags[/bold] son pistas de triaje, NO un veredicto: status, "
+        "decision_object, decision_content, annotator y notes se escribieron VACÍOS en "
+        "todas las filas y las debe llenar una persona que anota:"
     )
     if flag_counts:
         for flag in sorted(flag_counts):
             console.print(f"  {flag}: {flag_counts[flag]}")
     else:
-        console.print("  (none raised)")
+        console.print("  (ninguna)")
 
     console.print(f"Escrito: {out_path}")
 
@@ -632,16 +632,17 @@ def gold_agreement(
     paths = annotator_csvs(GOLD_RELATIONS_DIR, series, "candidates")
     if len(paths) < 2:
         console.print(
-            f"[bold red]Need at least 2 annotator files matching "
-            f"data/processed/relations/{pattern} (found {len(paths)}). Each annotator's "
-            f"independent copy should be named <series>.candidates.<initials>.csv, per "
-            "manual de anotacion section 6.[/bold red]"
+            f"[bold red]Hacen falta al menos 2 archivos de anotadores que coincidan con "
+            f"data/processed/relations/{pattern} (hay {len(paths)}). La copia independiente "
+            "de cada anotador debe llamarse <serie>.candidates.<iniciales>.csv, según la "
+            "sección 6 del manual de anotación.[/bold red]"
         )
         raise typer.Exit(code=1)
     if len(paths) > 2:
         console.print(
-            f"[yellow]Found {len(paths)} annotator files; using the first two "
-            f"({paths[0].name}, {paths[1].name}) -- Cohen's kappa is pairwise.[/yellow]"
+            f"[yellow]Se encontraron {len(paths)} archivos de anotadores; se usan los dos "
+            f"primeros ({paths[0].name}, {paths[1].name}): el kappa de Cohen es de a pares."
+            "[/yellow]"
         )
 
     try:
@@ -654,34 +655,35 @@ def gold_agreement(
     write_agreement_csv(result, out_path)
 
     console.print(
-        f"[bold]Series {series}[/bold]: {result.annotator_a} vs {result.annotator_b} "
-        f"({result.n_items} paired items)."
+        f"[bold]Serie {series}[/bold]: {result.annotator_a} vs {result.annotator_b} "
+        f"({result.n_items} ítems pareados)."
     )
     console.print(
-        f"  existence kappa: {result.existence_kappa:.3f} "
-        f"({len(result.existence_disagreements)} disagreements)"
+        f"  kappa de existencia: {result.existence_kappa:.3f} "
+        f"({len(result.existence_disagreements)} desacuerdos)"
     )
     if result.type_kappa is not None:
         console.print(
-            f"  type kappa:      {result.type_kappa:.3f} "
-            f"({len(result.type_disagreements)} disagreements, over "
-            f"{result.n_type_items} pairs both annotators marked as existing links)"
+            f"  kappa de tipo:      {result.type_kappa:.3f} "
+            f"({len(result.type_disagreements)} desacuerdos, sobre "
+            f"{result.n_type_items} pares que ambos anotadores marcaron como vínculo existente)"
         )
     else:
         console.print(
-            "  type kappa:      n/a (no pair was marked as an existing link by both annotators)"
+            "  kappa de tipo:      n/d (ningún par fue marcado como vínculo existente por "
+            "ambos anotadores)"
         )
     console.print(
-        f"  direction kappa: {result.direction_kappa:.3f} "
-        f"({len(result.direction_disagreements)} disagreements)"
+        f"  kappa de dirección: {result.direction_kappa:.3f} "
+        f"({len(result.direction_disagreements)} desacuerdos)"
     )
     for axis, disagreements in (
-        ("existence", result.existence_disagreements),
-        ("type", result.type_disagreements),
-        ("direction", result.direction_disagreements),
+        ("existencia", result.existence_disagreements),
+        ("tipo", result.type_disagreements),
+        ("dirección", result.direction_disagreements),
     ):
         if disagreements:
-            console.print(f"  {axis} disagreements (adjudicate): {', '.join(disagreements)}")
+            console.print(f"  desacuerdos de {axis} (por adjudicar): {', '.join(disagreements)}")
 
     console.print(f"Escrito: {out_path}")
 
@@ -870,9 +872,9 @@ def _decisions_for_series_or_exit(ami_root: Path, series: str) -> list[Decision]
     decisions = decisions_from_abstractive(ami_root, series)
     if not decisions:
         console.print(
-            f"[bold red]No abstractive DECISIONS sentences found for series {series!r} "
-            f"under {ami_root}. Check the series id (e.g. 'IS1004') and that the corpus "
-            "was extracted correctly.[/bold red]"
+            f"[bold red]No se encontraron oraciones DECISIONS del resumen abstractivo para "
+            f"la serie {series!r} en {ami_root}. Revisa el identificador de la serie "
+            "(p. ej. 'IS1004') y que el corpus se haya extraído bien.[/bold red]"
         )
         raise typer.Exit(code=1)
     return decisions
@@ -921,8 +923,8 @@ def gold_candidates(
 
     pct = (len(candidates) / total_pairs * 100) if total_pairs else 0.0
     console.print(
-        f"Series {series}: {total_pairs} pairs considered, {len(candidates)} candidates "
-        f"selected ({pct:.1f}%) at threshold={threshold:.2f}, min_overlap={min_overlap}, "
+        f"Serie {series}: {total_pairs} pares considerados, {len(candidates)} candidatos "
+        f"seleccionados ({pct:.1f} %) con threshold={threshold:.2f}, min_overlap={min_overlap}, "
         f"blocker_version={BLOCKER_VERSION}."
     )
     console.print(f"Escrito: {out_path}")
@@ -979,7 +981,7 @@ def gold_recall_sample(
     write_candidate_pairs_csv(sample, out_path)
 
     console.print(
-        f"Series {series}: sampled {len(sample)} rejected pairs (seed={seed}), "
+        f"Serie {series}: muestra de {len(sample)} pares rechazados (semilla={seed}), "
         f"threshold={threshold:.2f}, min_overlap={min_overlap}, "
         f"blocker_version={BLOCKER_VERSION}."
     )

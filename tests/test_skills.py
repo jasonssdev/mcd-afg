@@ -69,7 +69,7 @@ def test_parse_checksums_reads_sha256sum_format(tmp_path: Path) -> None:
 def test_parse_checksums_rejects_malformed_line(tmp_path: Path) -> None:
     f = tmp_path / "assets.sha256"
     f.write_text("not-a-checksum-line\n", encoding="utf-8")
-    with pytest.raises(SkillAssetsError, match=r"assets\.sha256"):
+    with pytest.raises(SkillAssetsError, match=r"Línea 1 mal formada en .*assets\.sha256"):
         parse_checksums(f)
 
 
@@ -125,6 +125,16 @@ def test_sync_missing_file_fails_before_copying(tmp_path: Path) -> None:
     assert not (skill / "assets" / "a.pptx").exists()
 
 
+def test_sync_failure_message_is_spanish(tmp_path: Path) -> None:
+    skills = tmp_path / "skills"
+    _make_skill(skills, "demo", FILES)
+    source = tmp_path / "drive"
+    _make_source(source, "demo", {"a.pptx": b"alpha"})
+
+    with pytest.raises(SkillAssetsError, match="No se pueden instalar los archivos de 'demo'"):
+        sync_assets("demo", source, skills)
+
+
 def test_sync_hash_mismatch_fails_before_copying(tmp_path: Path) -> None:
     skills = tmp_path / "skills"
     skill = _make_skill(skills, "demo", FILES)
@@ -140,12 +150,12 @@ def test_sync_hash_mismatch_fails_before_copying(tmp_path: Path) -> None:
 def test_sync_missing_source_dir(tmp_path: Path) -> None:
     skills = tmp_path / "skills"
     _make_skill(skills, "demo", FILES)
-    with pytest.raises(SkillAssetsError, match="does not exist"):
+    with pytest.raises(SkillAssetsError, match="no existe"):
         sync_assets("demo", tmp_path / "nope", skills)
 
 
 def test_sync_unknown_skill(tmp_path: Path) -> None:
-    with pytest.raises(SkillAssetsError, match="Unknown skill"):
+    with pytest.raises(SkillAssetsError, match="Habilidad desconocida"):
         sync_assets("ghost", tmp_path, tmp_path / "skills")
 
 
@@ -168,6 +178,8 @@ def test_verify_installed_reports_missing_and_corrupt(tmp_path: Path) -> None:
         verify_installed("demo", skills)
     message = str(info.value)
     assert "a.pptx" in message and "b.docx" in message
+    assert "incompletos o alterados" in message
+    assert "faltante: b.docx" in message and "hash distinto: a.pptx" in message
     assert "make skill-assets" in message
 
 
@@ -237,7 +249,7 @@ def test_link_refuses_to_overwrite_real_path(tmp_path: Path) -> None:
     dest = repo / ".tools"
     (dest / "demo").mkdir(parents=True)
 
-    with pytest.raises(SkillAssetsError, match="not a symlink"):
+    with pytest.raises(SkillAssetsError, match="no es un enlace simbólico"):
         link_skill("demo", dest, skills, repo)
 
 

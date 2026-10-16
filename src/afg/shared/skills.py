@@ -49,7 +49,7 @@ def parse_checksums(path: Path) -> dict[str, str]:
         name = name.strip()
         if not sep or not name or len(digest) != _HASH_LENGTH:
             raise SkillAssetsError(
-                f"Malformed line {number} in {path}: expected '<sha256>  <filename>'."
+                f"Línea {number} mal formada en {path}: se esperaba '<sha256>  <archivo>'."
             )
         checksums[name] = digest.lower()
     return checksums
@@ -60,8 +60,8 @@ def _skill_paths(skill: str, skills_dir: Path) -> tuple[Path, dict[str, str]]:
     checksums_path = skill_dir / CHECKSUMS_FILE
     if not checksums_path.is_file():
         raise SkillAssetsError(
-            f"Unknown skill '{skill}': {checksums_path} not found. "
-            f"Available skills live under {skills_dir}."
+            f"Habilidad desconocida '{skill}': no se encontró {checksums_path}. "
+            f"Las habilidades disponibles están en {skills_dir}."
         )
     return skill_dir, parse_checksums(checksums_path)
 
@@ -72,15 +72,15 @@ def _problems(directory: Path, checksums: dict[str, str]) -> list[str]:
     for name, expected in checksums.items():
         candidate = directory / name
         if not candidate.is_file():
-            problems.append(f"missing: {name}")
+            problems.append(f"faltante: {name}")
         elif sha256_of(candidate) != expected:
-            problems.append(f"hash mismatch: {name}")
+            problems.append(f"hash distinto: {name}")
     return problems
 
 
 def _resolve_source(skill: str, source: Path) -> Path:
     if not source.is_dir():
-        raise SkillAssetsError(f"Source directory does not exist: {source}")
+        raise SkillAssetsError(f"La carpeta de origen no existe: {source}")
     nested = source / skill
     return nested if nested.is_dir() else source
 
@@ -99,8 +99,8 @@ def sync_assets(skill: str, source: Path, skills_dir: Path) -> list[str]:
     if problems:
         listing = "\n  ".join(problems)
         raise SkillAssetsError(
-            f"Cannot install assets for '{skill}' from {origin}:\n  {listing}\n"
-            "Check that the shared folder is fully synced and up to date."
+            f"No se pueden instalar los archivos de '{skill}' desde {origin}:\n  {listing}\n"
+            "Comprueba que la carpeta compartida esté sincronizada por completo y al día."
         )
     target = skill_dir / ASSETS_DIRNAME
     target.mkdir(parents=True, exist_ok=True)
@@ -121,8 +121,8 @@ def verify_installed(skill: str, skills_dir: Path) -> None:
     if problems:
         listing = "\n  ".join(problems)
         raise SkillAssetsError(
-            f"Assets of '{skill}' are incomplete or altered:\n  {listing}\n"
-            "Run `make skill-assets` to install them."
+            f"Los archivos de '{skill}' están incompletos o alterados:\n  {listing}\n"
+            "Ejecuta `make skill-assets` para instalarlos."
         )
 
 
@@ -137,7 +137,7 @@ def _exclude_file(repo_root: Path) -> Path:
         )
     except (OSError, subprocess.CalledProcessError) as error:
         raise SkillAssetsError(
-            f"Cannot locate .git/info/exclude for {repo_root}; is it a git repository?"
+            f"No se encuentra .git/info/exclude en {repo_root}; ¿es un repositorio git?"
         ) from error
     path = Path(result.stdout.strip())
     return path if path.is_absolute() else repo_root / path
@@ -169,10 +169,10 @@ def link_skill(skill: str, dest_dir: Path, skills_dir: Path, repo_root: Path) ->
     skill_dir = skill_dir.resolve()
     dest = dest_dir.resolve()
     if dest == skills_dir.resolve():
-        raise SkillAssetsError("The destination is the skills directory itself; pick another.")
+        raise SkillAssetsError("El destino es la propia carpeta de habilidades; elige otro.")
     link = dest / skill
     if link.exists() and not link.is_symlink():
-        raise SkillAssetsError(f"{link} exists and is not a symlink; refusing to overwrite it.")
+        raise SkillAssetsError(f"{link} existe y no es un enlace simbólico; no se sobrescribe.")
     dest.mkdir(parents=True, exist_ok=True)
     _ensure_excluded(dest, repo_root.resolve())
     if link.is_symlink():
