@@ -39,7 +39,7 @@ Ejemplo: `00-jss-corpus-y-auditoria.ipynb`
 | 08 | `08-jss-fechas-de-reunion.ipynb` | Fechas de evento de las reuniones que se entregan a OpenKOS: qué trae `meetings.xml` en las 14 series (fecha común, hora real en 6 y ausente en 8), por qué el orden a→d es necesario, alternativas descartadas y la regla de hora sintética que solo preserva el orden ([ADR 0008](../docs/decisions/0008-adr-fechas-de-reunion-para-openkos.md)). Análisis estructural, admisible en todas las series | ✅ |
 | 09 | `09-jss-regla-de-citacion.ipynb` | Análisis de la regla de citación correcta (§5.6, §6.2) sobre la corrida de humo con C1 en ES2015: tamaño de la evidencia de referencia y de las citas, cuatro variantes de la regla lado a lado (todos tocan, alguno toca, precisión, cobertura), cruce con el veredicto del juez y tres casos concretos. Describe y ofrece opciones; la decisión que tomó la dirección con este análisis (variante b como regla y c como cifra secundaria) está en el ADR 0009. Serie de desarrollo: sus cifras no entran en resultados (ADR 0005) | ✅ |
 | 10 | `10-jss-potencia-criterio-d16.ipynb` | Potencia del criterio principal D16 por simulación Monte Carlo con datos **sintéticos** (no se corrió ningún experimento ni modelo): intervalos independientes sin solapar frente a diferencia pareada C2 − C1 por encima de 0, con 3 corridas por pregunta, dificultad compartida entre condiciones, tamaños de 25, 40 y 50 preguntas y falsos positivos. Respalda la enmienda de D16 del [ADR 0010](../docs/decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md). Sus cifras describen el criterio de decisión, no a C1, C2 ni C3 | ✅ |
-| 11 | `11-jss-figuras-video-eda.ipynb` | Selección de cinco figuras para el video de avance #1 (máximo 8 minutos): criterios tomados de la rúbrica, versión legible para grabación de pantalla, justificación de cada figura, su efecto en los siguientes pasos y exportación como PNG a `docs/entregables/figuras/`. Cuatro provienen del [notebook 03](03-jss-eda.ipynb) y el embudo del filtro léxico (3.071 → 92 pares) sale de `afg.audit.blocker_sensitivity`; no se calcula nada nuevo | ✅ |
+| 11 | `11-jss-figuras-video-eda.ipynb` | Selección de cinco figuras para el video de avance #1 (máximo 8 minutos): criterios tomados de la rúbrica, versión legible para grabación de pantalla, justificación de cada figura, su efecto en los siguientes pasos y exportación como PNG a `docs/entregables/figuras/`. Cuatro provienen del [notebook 03](03-jss-eda.ipynb) y el embudo del filtro léxico (3.071 → 92 pares) sale de `afg.audit.candidate_funnel`; no se calcula nada nuevo | ✅ |
 | — | `NN-jss-anotacion-f2-control.ipynb` | Anotación humana, Fase 2: las cuatro series de control con doble anotación. El kappa **reportable** de OE1 | pendiente |
 | — | `NN-jss-anotacion-f3-referencia.ipynb` | Anotación humana, Fase 3: reparto individual y conjunto de referencia final de las 13 series | pendiente |
 | — | `NN-jss-experimento-a.ipynb` | OE2 — calidad de la extracción automática contra la referencia | pendiente |
@@ -67,7 +67,12 @@ solo apareció al correr la función real sobre el conjunto real. Una celda de n
 fuente de verdad paralela que nadie testea y que se desincroniza del CLI. Si "cuántas
 decisiones hay" admite dos respuestas distintas, alguna acabará citada en la tesis.
 
-La capa de cálculo de la auditoría vive en `src/afg/audit/`.
+La capa de cálculo de la auditoría vive en `src/afg/audit/`; la de cada tema, en el subpaquete
+que le corresponde (`corpus`, `eda`, `experiments`, `extraction`). Las cifras que algunas celdas
+calculaban en línea (el embudo del filtro y sus horas, la cobertura de la capa `disfluency`, el
+resumen del manifiesto, las fechas de las reuniones, la potencia del criterio D16, las columnas
+de citación y el rol de cada juez candidato) salen hoy de funciones con prueba, así que la regla
+se cumple en los doce notebooks.
 
 ## Regla de alcance: qué se puede mirar
 
