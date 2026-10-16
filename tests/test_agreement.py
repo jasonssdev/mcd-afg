@@ -82,11 +82,17 @@ class TestComputeSeriesAgreementBom:
         paths = []
         for ini in ("aa", "bb"):
             path = _write_candidates_csv(
-                tmp_path / f"IS1004.candidates.{ini}.csv", [_row("p1", "revierte", "si")]
+                tmp_path / f"IS1004.candidates.{ini}.csv",
+                [_row("p1", "revierte", "si"), _row("p2", "no_relacionada", "si")],
             )
             path.write_bytes(b"\xef\xbb\xbf" + path.read_bytes())
             paths.append(path)
-        compute_series_agreement(paths)
+        result = compute_series_agreement(paths)
+        assert result.n_items == 2
+        assert result.existence_kappa == pytest.approx(1.0)
+        assert result.existence_disagreements == ()
+        assert result.annotator_a == "aa"
+        assert result.annotator_b == "bb"
 
 
 class TestComputeSeriesAgreementIndependence:

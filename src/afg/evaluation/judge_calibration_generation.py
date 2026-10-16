@@ -56,7 +56,7 @@ from afg.evaluation.passage import (
     transcript_files_text,
 )
 from afg.shared.config import load_experiments_config
-from afg.shared.csvio import open_csv_reader, open_csv_writer
+from afg.shared.csvio import open_csv_reader, open_csv_writer, read_rows
 from afg.shared.paths import JUDGE_CALIBRATION_DIR, TRANSCRIPTS_DIR
 
 QUESTIONS_TEMPLATE_PATH: Path = JUDGE_CALIBRATION_DIR / "_plantilla-preguntas-calibracion.csv"
@@ -346,8 +346,7 @@ def generate_answers(
 def _read_rows(path: Path) -> list[dict[str, str]]:
     if not path.exists():
         return []
-    with open_csv_reader(path) as handle:
-        return [{c: row.get(c) or "" for c in COLUMNS} for row in csv.DictReader(handle)]
+    return [{c: row.get(c, "") for c in COLUMNS} for row in read_rows(path)]
 
 
 def generate_calibration_set(
