@@ -52,6 +52,7 @@ from afg.conditions.c1_tuning import (
     select_winner,
     series_meetings,
 )
+from afg.conditions.c2_compiled_auto import CompiledAutoCondition
 from afg.corpus.download import DownloadError, download_annotations
 from afg.corpus.inventory import (
     CorpusNotDownloadedError,
@@ -2306,6 +2307,11 @@ JUDGE_ORDER: PresentationOrder = "reference_first"
 JUDGE_TEMPERATURE = 0.0
 """The judge configuration of the calibration's primary run (reference first, temperature 0)."""
 
+C2_EXTRACTION_REQUIRED = (
+    "La condición C2 necesita `--c2-extraction <nombre>`: el `--run-name` de la corrida de "
+    "`afg experiment a` cuyos espacios de trabajo de OpenKOS consulta."
+)
+
 EXPERIMENT_B_CONDITIONS: tuple[str, ...] = ("c1", "c2", "c3")
 """Condition ids ``--conditions`` knows; only those in :func:`make_experiment_b_condition` run."""
 
@@ -2315,13 +2321,44 @@ def make_judge_backend() -> OllamaJudgeBackend:
     return OllamaJudgeBackend(think=load_think_settings())
 
 
-def make_experiment_b_condition(condition_id: str) -> Condition:
-    """The condition ``condition_id`` wired from the config (only C1 exists so far)."""
+def make_c2_condition(extraction_run: str) -> CompiledAutoCondition:
+    """C2 wired to the workspaces of the ``afg experiment a`` run ``extraction_run``.
+
+    Raises:
+        ValueError: that run has no workspaces under ``data/interim/openkos/``.
+    """
+    base_dir = OPENKOS_WORKSPACES_DIR
+    if not (base_dir / extraction_run).is_dir():
+        raise ValueError(
+            f"No hay espacios de trabajo de OpenKOS de la corrida {extraction_run!r} en "
+            f"{_short(base_dir)}. Genéralos antes con `afg experiment a --run-name "
+            f"{extraction_run}`."
+        )
+    return CompiledAutoCondition(
+        runner=SubprocessRunner(),
+        settings=openkos_run_settings(),
+        extraction_run=extraction_run,
+        base_dir=base_dir,
+        transcripts_dir=TRANSCRIPTS_DIR,
+    )
+
+
+def make_experiment_b_condition(
+    condition_id: str, *, c2_extraction: str | None = None
+) -> Condition:
+    """The condition ``condition_id`` wired from the config (C1 and C2; C3 does not exist yet).
+
+    ``c2_extraction`` is the ``--run-name`` of the ``afg experiment a`` run C2 queries.
+    """
     if condition_id == "c1":
         return make_c1_condition()
+    if condition_id == "c2":
+        if c2_extraction is None:
+            raise ValueError(C2_EXTRACTION_REQUIRED)
+        return make_c2_condition(c2_extraction)
     raise ValueError(
-        f"La condición {condition_id.upper()} no está disponible todavía: C2 y C3 dependen de "
-        "OpenKOS y de la anotación de oro (tesis, sección 5.3)."
+        f"La condición {condition_id.upper()} no está disponible todavía: C3 depende de la "
+        "anotación de oro (tesis, sección 5.3)."
     )
 
 
@@ -2338,8 +2375,17 @@ def experiment_b(
         ),
     ],
     conditions: Annotated[
-        str, typer.Option("--conditions", help="Condiciones separadas por coma; hoy solo `c1`.")
+        str,
+        typer.Option("--conditions", help="Condiciones separadas por coma: `c1` y `c2` (C3 no)."),
     ] = "c1",
+    c2_extraction: Annotated[
+        str | None,
+        typer.Option(
+            "--c2-extraction",
+            help="Obligatorio con `c2`: `--run-name` de la corrida de `afg experiment a` cuyos "
+            "espacios de trabajo consulta C2. La corrida r usa `run-r` de cada serie.",
+        ),
+    ] = None,
     runs: Annotated[
         int | None,
         typer.Option("--runs", min=1, help="Corridas por pregunta (por defecto runs_per_config)."),
@@ -2360,7 +2406,9 @@ def experiment_b(
     Por cada combinación obtiene la respuesta, la juzga con el modelo de `\\[judge]`, calcula la
     corrección de las citas y agrega un registro a `respuestas.jsonl`. Si se interrumpe, al
     repetir el comando con el mismo `--run-name` continúa donde quedó; los registros con error
-    se reintentan. La semilla de generación de la corrida r es `seed + r`.
+    se reintentan. La semilla de generación de la corrida r es `seed + r`. C2 responde con
+    `openkos query` sobre el espacio de trabajo `run-r` que `afg experiment a` compiló para la
+    serie de la pregunta y rechaza el espacio cuya semilla no sea `seed + r`.
     """
     from datetime import UTC, datetime
 
@@ -2373,8 +2421,17 @@ def experiment_b(
             f"Opciones: {', '.join(EXPERIMENT_B_CONDITIONS)}.[/bold red]"
         )
         raise typer.Exit(code=1)
+    if c2_extraction is not None and "c2" not in wanted:
+        console.print(
+            "[bold red]`--c2-extraction` solo tiene sentido con la condición c2: agrégala a "
+            "`--conditions` o quita la opción.[/bold red]"
+        )
+        raise typer.Exit(code=1)
     try:
-        built = {c.upper(): make_experiment_b_condition(c) for c in dict.fromkeys(wanted)}
+        built = {
+            c.upper(): make_experiment_b_condition(c, c2_extraction=c2_extraction)
+            for c in dict.fromkeys(wanted)
+        }
         if questions.exists() and is_question_bank(questions):
             bank_report = load_configured_question_bank(questions, strict=True)
             if not bank_report.has_errors:
@@ -2421,6 +2478,7 @@ def experiment_b(
         embedding_model=configured_embedding_model(),
         c1_params=config["retrieval"]["c1"],
         questions_path=questions,
+        c2_extraction=c2_extraction,
     )
 
     def report(done: int, total: int) -> None:

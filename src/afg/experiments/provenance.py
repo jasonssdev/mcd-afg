@@ -130,6 +130,7 @@ def collect_provenance(
     embedding_model: str,
     c1_params: Mapping[str, Any] | None = None,
     questions_path: Path | None = None,
+    c2_extraction: str | None = None,
 ) -> dict[str, Any]:
     """The reproducibility fields to merge into the run manifest (all JSON-ready)."""
     digests = probe.model_digests()
@@ -145,6 +146,7 @@ def collect_provenance(
         "c1_params": {
             key: c1_params[key] for key in C1_PARAM_KEYS if c1_params and key in c1_params
         },
+        "c2_extraction": c2_extraction,
         "questions_sha256": file_sha256(questions_path),
         "git_dirty": probe.git_dirty(),
     }

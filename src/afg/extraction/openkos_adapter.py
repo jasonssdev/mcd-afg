@@ -40,7 +40,7 @@ logger = get_logger(__name__)
 BUNDLE_DIRNAME = "bundle"
 
 
-def _project_relative(path: Path) -> str:
+def project_relative(path: Path) -> str:
     """``path`` relative to the project root (POSIX form), or as given when outside it."""
     try:
         return path.relative_to(PROJECT_ROOT).as_posix()
@@ -67,8 +67,8 @@ class SeriesExtraction:
             "series_id": self.series_id,
             "run": self.run,
             "openkos_version": self.openkos_version,
-            "workspace": _project_relative(self.workspace),
-            "manifest": _project_relative(self.manifest_path),
+            "workspace": project_relative(self.workspace),
+            "manifest": project_relative(self.manifest_path),
             "n_decisions": len(self.result.decisions),
             "n_relations": len(self.result.relations),
             "quotes": asdict(self.quotes),
