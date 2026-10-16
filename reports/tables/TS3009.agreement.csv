@@ -1,0 +1,4 @@
+series_id,annotator_a,annotator_b,axis,n_items,kappa,disagreeing_pair_ids
+TS3009,gm,gv,existence,4,0.0,TS3009.p003
+TS3009,gm,gv,type,3,0.5,TS3009.p001
+TS3009,gm,gv,direction,4,nan,
