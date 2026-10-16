@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -10,9 +11,12 @@ from afg.domain.decision import EvidenceSpan
 from afg.domain.question import Question, QuestionStratum
 from afg.experiments.citation_analysis import (
     cited_chunk_summaries,
+    cited_columns,
     compare_records,
+    load_cited_columns,
     reference_sizes,
     rescore_citation,
+    rows_with_inline_marker,
     tally_by_verdict,
     tally_variants,
 )
@@ -212,3 +216,30 @@ def test_rescore_citation_leaves_records_without_an_answer_untouched() -> None:
 def test_rescore_citation_rejects_an_unknown_question() -> None:
     with pytest.raises(KeyError):
         rescore_citation([_record("q99", [REF])], QUESTIONS)
+
+
+def test_rows_with_inline_marker_splits_the_comparison_rows() -> None:
+    marked = _record("q1", [_span("ES2015a", "a.1")], attribution="absent", raw_reply="X. USED: 2")
+    plain = _record("q2", [_span("ES2015a", "a.5")])
+    rows = compare_records([marked, plain], QUESTIONS)
+    assert [r.question for r in rows_with_inline_marker(rows)] == ["q1"]
+    assert [r.question for r in rows_with_inline_marker(rows, marked=False)] == ["q2"]
+
+
+def test_rows_with_inline_marker_of_nothing_is_empty() -> None:
+    assert rows_with_inline_marker([]) == []
+
+
+def test_cited_columns_pick_the_columns_that_carry_the_cited_evidence() -> None:
+    header = ["id", "answer_text", "cited_evidence", "Cited_acts", "citation_correct"]
+    assert cited_columns(header) == ["cited_evidence", "Cited_acts"]
+
+
+def test_cited_columns_exclude_the_annotator_label() -> None:
+    assert cited_columns(["id", "citation_correct"]) == []
+
+
+def test_load_cited_columns_reads_the_header_of_a_bom_csv(tmp_path: Path) -> None:
+    path = tmp_path / "calibration.csv"
+    path.write_bytes("\ufeffid,citation_correct,cited_acts\n1,True,a.1\n".encode())
+    assert load_cited_columns(path) == (["id", "citation_correct", "cited_acts"], ["cited_acts"])

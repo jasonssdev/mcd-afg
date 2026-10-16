@@ -64,6 +64,15 @@ DEFAULT_CONTEXT_TOKENS = 12288
 """The OpenKOS workspace default context window, in tokens."""
 TOKENS_PER_WORD = 1.3
 POSITION_LETTERS: tuple[str, ...] = ("a", "b", "c", "d")
+LEN_BINS: list[int] = [0, 1, 2, 3, 4, 6, 10, 30]
+"""Bin edges for the content-token count of the shorter decision of a pair (right-closed)."""
+LEN_LABELS: list[str] = ["1", "2", "3", "4", "5-6", "7-10", "11+"]
+"""One label per bin of :data:`LEN_BINS`."""
+
+
+def format_thousands(value: float, decimals: int = 0) -> str:
+    """Format a number the Spanish way: dot for thousands, comma for decimals."""
+    return f"{value:,.{decimals}f}".replace(",", "§").replace(".", ",").replace("§", ".")
 
 
 def _position(meeting_id: str) -> tuple[str, int]:

@@ -16,6 +16,7 @@ from matplotlib.figure import Figure
 
 from afg.eda.figures import (
     FIGURE_DPI,
+    apply_style,
     plot_funnel,
     plot_level_sizes,
     plot_position_boxes,
@@ -169,3 +170,22 @@ class TestPlotRateLines:
             "Solo el coeficiente",
             "Filtro completo",
         ]
+
+
+class TestApplyStyle:
+    def test_sets_the_exploration_defaults_the_notebooks_share(self) -> None:
+        with plt.rc_context():
+            apply_style()
+            assert tuple(plt.rcParams["figure.figsize"]) == (9, 4)
+            assert plt.rcParams["figure.dpi"] == 110
+            assert plt.rcParams["axes.grid"] is True
+            assert plt.rcParams["grid.alpha"] == 0.3
+            assert plt.rcParams["axes.spines.top"] is False
+            assert plt.rcParams["axes.spines.right"] is False
+
+    def test_is_idempotent(self) -> None:
+        with plt.rc_context():
+            apply_style()
+            first = dict(plt.rcParams)
+            apply_style()
+            assert dict(plt.rcParams) == first

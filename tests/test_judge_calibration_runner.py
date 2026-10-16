@@ -8,11 +8,13 @@ from typing import Any
 
 import pytest
 
+import afg.evaluation.judge_calibration_runner as runner_module
 from afg.domain.decision import EvidenceSpan
 from afg.domain.question import QuestionStratum
 from afg.evaluation.judge import JudgeConfigurationError, MissingTranscriptExcerptError
 from afg.evaluation.judge_calibration import CalibrationThresholds
 from afg.evaluation.judge_calibration_runner import (
+    load_candidate_roles,
     load_candidates,
     load_think_settings,
     pad_to_double_length,
@@ -385,6 +387,36 @@ def test_candidates_come_from_the_config() -> None:
         "atla/selene-mini:q8_0",
         "gpt-oss:20b",
     )
+
+
+class TestCandidateRoles:
+    def test_shipped_candidates_have_a_role_each(self) -> None:
+        roles = load_candidate_roles()
+        assert set(roles) == set(load_candidates())
+        assert roles["mistral-small3.2:24b"] == "primary"
+        assert roles["atla/selene-mini:q8_0"] == "evaluation-specialist"
+        assert roles["gpt-oss:20b"] == "reserve"
+
+    def test_a_reordered_config_still_yields_the_right_roles(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        config = {
+            "judge": {
+                "calibration": {"candidates": ["gpt-oss:20b", "mistral-small3.2:24b"]},
+            }
+        }
+        monkeypatch.setattr(runner_module, "load_experiments_config", lambda: config)
+        assert load_candidate_roles() == {
+            "gpt-oss:20b": "reserve",
+            "mistral-small3.2:24b": "primary",
+        }
+
+    def test_a_candidate_without_an_assigned_role_is_marked_unassigned(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        config = {"judge": {"calibration": {"candidates": ["new-model:7b"]}}}
+        monkeypatch.setattr(runner_module, "load_experiments_config", lambda: config)
+        assert load_candidate_roles() == {"new-model:7b": "unassigned"}
 
 
 class TestThinkSettings:

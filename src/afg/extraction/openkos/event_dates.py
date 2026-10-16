@@ -207,6 +207,63 @@ def series_date_summary(table: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+@dataclass(frozen=True, slots=True)
+class DateAvailability:
+    """What AMI offers to order the meetings of the study series (ADR 0008)."""
+
+    single_date_per_series: bool
+    """Every series has all four meetings on one date (the date alone orders nothing)."""
+    real_series: tuple[str, ...]
+    """Series whose four meetings have a real start time."""
+    none_series: tuple[str, ...]
+    """Series with no real start time at all."""
+    partial_series: tuple[str, ...]
+    """Series with real start times in some meetings only."""
+    series_by_start_time_state: dict[str, list[str]]
+    """Series grouped by the ``startTime`` state(s) of their meetings (present/empty/absent)."""
+    n_ami_meetings: int
+    n_synthetic_meetings: int
+    n_real_series_increasing: int
+    """Series with real times whose real starts grow strictly from a to d."""
+    gap_min: float | None
+    gap_max: float | None
+    gap_median: float | None
+    """Minutes between consecutive real starts (descriptive only); ``None`` without real times."""
+    event_dates_increasing: bool
+    """The resulting event dates grow strictly from a to d in every series."""
+
+
+def date_availability_summary(table: pd.DataFrame) -> DateAvailability:
+    """The counts ADR 0008 cites, from a :func:`meeting_date_table` result."""
+    summary = series_date_summary(table)
+    real = summary[summary["all_real_times"]]
+    none = summary[summary["n_real_times"] == 0]
+    partial = summary[(summary["n_real_times"] > 0) & ~summary["all_real_times"]]
+    states = (
+        table.groupby("series", sort=False)["start_time_state"]
+        .agg(lambda s: ", ".join(sorted(set(s))))
+        .reset_index()
+        .groupby("start_time_state")["series"]
+        .agg(list)
+    )
+    gaps = real[["gap_ab_min", "gap_bc_min", "gap_cd_min"]].stack()
+    has_gaps = not gaps.empty
+    return DateAvailability(
+        single_date_per_series=bool((summary["n_distinct_dates"] == 1).all()),
+        real_series=tuple(real["series"]),
+        none_series=tuple(none["series"]),
+        partial_series=tuple(partial["series"]),
+        series_by_start_time_state={state: list(ids) for state, ids in states.items()},
+        n_ami_meetings=int((table["time_source"] == "ami").sum()),
+        n_synthetic_meetings=int((table["time_source"] == "synthetic").sum()),
+        n_real_series_increasing=int(real["real_times_increasing"].sum()),
+        gap_min=float(gaps.min()) if has_gaps else None,
+        gap_max=float(gaps.max()) if has_gaps else None,
+        gap_median=float(gaps.median()) if has_gaps else None,
+        event_dates_increasing=bool(summary["event_dates_increasing"].all()),
+    )
+
+
 def attach_event_dates(
     sources: Sequence[MeetingSource], meetings_xml: Path, series_id: str
 ) -> list[MeetingSource]:

@@ -17,13 +17,24 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib.figure import Figure
 
+from afg.eda.tables import format_thousands as _es
+
 FIGURE_DPI = 150
 _COLORS = ["#0173B2", "#DE8F05", "#029E73", "#D55E00"]  # colour-blind-safe (seaborn "colorblind")
 
 
-def _es(value: float, decimals: int = 0) -> str:
-    """Format a number the Spanish way (dot for thousands, comma for decimals)."""
-    return f"{value:,.{decimals}f}".replace(",", "§").replace(".", ",").replace("§", ".")
+def apply_style() -> None:
+    """Set the matplotlib defaults of the exploration notebooks (screen-sized, light grid)."""
+    plt.rcParams.update(
+        {
+            "figure.figsize": (9, 4),
+            "figure.dpi": 110,
+            "axes.grid": True,
+            "grid.alpha": 0.3,
+            "axes.spines.top": False,
+            "axes.spines.right": False,
+        }
+    )
 
 
 @contextmanager

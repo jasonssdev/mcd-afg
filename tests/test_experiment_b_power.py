@@ -7,10 +7,14 @@ import pytest
 from afg.evaluation.scoring import IntervalSettings
 from afg.experiments.analysis import bootstrap_mean_interval, intervals_disjoint_above
 from afg.experiments.power import (
+    PowerResult,
     PowerScenario,
     PowerSettings,
     calibrate_intercept,
+    false_positive_range,
+    power_by_question_count,
     power_settings_from_config,
+    power_table,
     question_probabilities,
     scenarios_from_config,
     score_correlation,
@@ -128,3 +132,68 @@ def test_grid_results_do_not_depend_on_the_number_of_workers() -> None:
     small = PowerSettings(n_simulations=20, n_resamples=60, confidence_level=0.95, seed=2)
     assert simulate_grid(scenarios, small, workers=1) == simulate_grid(scenarios, small, workers=2)
     assert simulate_grid(scenarios, small, workers=1)[1] == simulate_scenario(scenarios[1], small)
+
+
+def _result(n: int, sd: float, base: float, diff: float, a: float, b: float) -> PowerResult:
+    return PowerResult(PowerScenario(n, 3, base, diff, sd), 1000, a, b)
+
+
+RESULTS = [
+    _result(25, 0.0, 0.5, 0.0, 0.008, 0.026),
+    _result(25, 0.0, 0.5, 0.15, 0.215, 0.503),
+    _result(25, 1.0, 0.5, 0.0, 0.0, 0.033),
+    _result(25, 1.0, 0.5, 0.15, 0.104, 0.575),
+    _result(25, 1.0, 0.4, 0.15, 0.09, 0.576),
+    _result(40, 1.0, 0.5, 0.15, 0.174, 0.757),
+    _result(40, 1.0, 0.5, 0.2, 0.491, 0.938),
+    _result(25, 1.0, 0.5, 0.2, 0.278, 0.795),
+]
+
+
+class TestPowerTable:
+    def test_one_row_per_spread_and_criterion_with_percentages_per_difference(self) -> None:
+        table = power_table(RESULTS, 25, 0.5)
+        assert list(table.index.names) == ["difficulty_sd", "criterion"]
+        assert list(table.index) == [
+            (0.0, "nonoverlap"),
+            (0.0, "paired"),
+            (1.0, "nonoverlap"),
+            (1.0, "paired"),
+        ]
+        assert list(table.columns) == ["+0.00", "+0.15", "+0.20"]
+        assert table.loc[(1.0, "paired"), "+0.15"] == 57.5
+        assert table.loc[(1.0, "nonoverlap"), "+0.15"] == 10.4
+
+    def test_only_the_requested_size_and_base_accuracy_are_used(self) -> None:
+        table = power_table(RESULTS, 40, 0.5)
+        assert list(table.index) == [(1.0, "nonoverlap"), (1.0, "paired")]
+        assert table.loc[(1.0, "paired"), "+0.20"] == 93.8
+
+    def test_a_scenario_missing_a_difference_leaves_a_gap(self) -> None:
+        table = power_table(RESULTS, 25, 0.4)
+        assert table.loc[(1.0, "paired"), "+0.15"] == 57.6
+        assert "+0.20" not in table.columns
+
+
+class TestFalsePositiveRange:
+    def test_min_and_max_over_the_scenarios_without_true_effect(self) -> None:
+        fp = false_positive_range(RESULTS)
+        assert fp.n_scenarios == 2
+        assert (fp.nonoverlap_min, fp.nonoverlap_max) == (0.0, 0.008)
+        assert (fp.paired_min, fp.paired_max) == (0.026, 0.033)
+
+    def test_no_null_scenarios_is_an_error(self) -> None:
+        with pytest.raises(ValueError, match="no scenario"):
+            false_positive_range([_result(25, 1.0, 0.5, 0.15, 0.1, 0.5)])
+
+
+class TestPowerByQuestionCount:
+    def test_one_row_per_size_with_both_criteria_per_difference(self) -> None:
+        table = power_by_question_count(
+            RESULTS, base=0.5, difficulty_sd=1.0, differences=(0.15, 0.2)
+        )
+        assert list(table.index) == [25, 40]
+        assert table.index.name == "n_questions"
+        assert table.loc[25, ("paired", 0.15)] == 57.5
+        assert table.loc[40, ("nonoverlap", 0.2)] == 49.1
+        assert table.loc[40, ("paired", 0.2)] == 93.8

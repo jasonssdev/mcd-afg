@@ -37,6 +37,8 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
+import pandas as pd
+
 from afg.corpus.layers import AnnotationLayer, discover_layer_files
 from afg.corpus.transcripts import (
     DialogueActTurn,
@@ -498,6 +500,66 @@ def write_manifest_csv(rows: Sequence[ManifestRow], out_dir: Path = TABLES_DIR) 
             )
     logger.info("Wrote transcripts manifest to %s", out_path)
     return out_path
+
+
+@dataclass(frozen=True, slots=True)
+class ManifestSummary:
+    """Structural counts of the frozen-transcripts manifest (notebook 02, section 6)."""
+
+    n_meetings: int
+    n_turns: int
+    n_characters: int
+    n_without_acts: int
+    """Meetings with no dialogue acts: the non-scenario recordings."""
+    prefixes_without_acts: tuple[str, ...]
+    exceptions_with_acts: tuple[str, ...]
+    """Meetings of a prefix in ``prefixes_without_acts`` that do have dialogue acts."""
+    n_study_meetings: int
+    n_study_with_acts: int
+
+
+def load_manifest(path: Path | None = None) -> pd.DataFrame:
+    """The frozen manifest as a table, plus ``prefix`` (the two letters of the series id)."""
+    manifest = pd.read_csv(path if path is not None else TABLES_DIR / MANIFEST_CSV_NAME)
+    manifest["prefix"] = manifest["series"].str[:2]
+    return manifest
+
+
+def manifest_summary(manifest: pd.DataFrame, series_ids: Sequence[str]) -> ManifestSummary:
+    """Counts of the whole manifest and of the meetings of ``series_ids`` (the study series)."""
+    prefix = manifest["series"].str[:2]
+    without_acts = manifest["dialogue_acts"] == 0
+    prefixes = sorted(prefix[without_acts].unique())
+    exceptions = manifest[prefix.isin(prefixes) & ~without_acts]
+    study = manifest[manifest["series"].isin(series_ids)]
+    return ManifestSummary(
+        n_meetings=len(manifest),
+        n_turns=int(manifest["turns"].sum()),
+        n_characters=int(manifest["characters"].sum()),
+        n_without_acts=int(without_acts.sum()),
+        prefixes_without_acts=tuple(prefixes),
+        exceptions_with_acts=tuple(exceptions["meeting_id"]),
+        n_study_meetings=len(study),
+        n_study_with_acts=int((study["dialogue_acts"] > 0).sum()),
+    )
+
+
+def manifest_prefix_summary(manifest: pd.DataFrame) -> pd.DataFrame:
+    """One row per series prefix: meetings, with/without dialogue acts, turns and characters."""
+    grouped = manifest.groupby(manifest["series"].str[:2])
+    table = pd.DataFrame(
+        {
+            "meetings": grouped["meeting_id"].count(),
+            "with_acts": grouped["dialogue_acts"].agg(lambda s: int((s > 0).sum())),
+            "turns": grouped["turns"].sum(),
+            "characters": grouped["characters"].sum(),
+        }
+    )
+    table["without_acts"] = table["meetings"] - table["with_acts"]
+    table.index.name = "prefix"
+    return table.reset_index()[
+        ["prefix", "meetings", "with_acts", "without_acts", "turns", "characters"]
+    ]
 
 
 @dataclass(frozen=True, slots=True)

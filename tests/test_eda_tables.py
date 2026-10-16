@@ -21,6 +21,8 @@ from afg.audit.evidence import anchoring_rates
 from afg.domain.decision import Decision, DecisionStatus, EvidenceSpan
 from afg.eda.dictionary import table_dictionary
 from afg.eda.tables import (
+    LEN_BINS,
+    LEN_LABELS,
     EdaTables,
     add_pair_features,
     build_decision_table,
@@ -29,6 +31,7 @@ from afg.eda.tables import (
     build_series_table,
     build_speaker_table,
     duration_coherence,
+    format_thousands,
     load_eda_tables,
     read_meeting_metadata,
     read_speaker_metadata,
@@ -484,3 +487,29 @@ class TestDurationCoherence:
         assert out.loc["m1", "gap_share"] == pytest.approx(0.1)
         assert math.isnan(out.loc["m2", "transcript_end_seconds"])
         assert math.isnan(out.loc["m2", "gap_seconds"])
+
+
+class TestFormatThousands:
+    @pytest.mark.parametrize(
+        ("value", "expected"),
+        [(0, "0"), (999, "999"), (1000, "1.000"), (5429041, "5.429.041"), (83868, "83.868")],
+    )
+    def test_integers_use_the_dot_as_thousands_separator(self, value: int, expected: str) -> None:
+        assert format_thousands(value) == expected
+
+    def test_decimals_use_the_comma(self) -> None:
+        assert format_thousands(1.3, 1) == "1,3"
+        assert format_thousands(9452.3, 0) == "9.452"
+        assert format_thousands(12288.456, 2) == "12.288,46"
+
+    def test_negative_numbers_keep_the_sign(self) -> None:
+        assert format_thousands(-1234) == "-1.234"
+
+
+class TestLengthBins:
+    def test_labels_name_every_bin(self) -> None:
+        assert len(LEN_LABELS) == len(LEN_BINS) - 1
+
+    def test_bins_cover_the_shortest_decision_phrases_up_to_eleven_or_more(self) -> None:
+        assert LEN_BINS == [0, 1, 2, 3, 4, 6, 10, 30]
+        assert LEN_LABELS == ["1", "2", "3", "4", "5-6", "7-10", "11+"]
