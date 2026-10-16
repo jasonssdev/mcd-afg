@@ -2171,6 +2171,15 @@ def make_openkos_adapter(base_dir: Path) -> OpenKosAdapter:
     )
 
 
+EXPERIMENT_A_PROVENANCE_KEYS = (
+    "generative_model_digest",
+    "embedding_model_digest",
+    "model_digest_source",
+    "ollama_version",
+)
+"""The :func:`collect_provenance` fields that apply to Experiment A (it has no judge or C1)."""
+
+
 @experiment_app.command("a")
 def experiment_a(
     series: Annotated[
@@ -2223,6 +2232,11 @@ def experiment_a(
         raise typer.Exit(code=1)
 
     run_settings = openkos_run_settings()
+    provenance = collect_provenance(
+        make_provenance_probe(),
+        generative_model=run_settings.generative_model,
+        embedding_model=run_settings.embedding_model,
+    )
     manifest: dict[str, Any] = {
         "schema_version": 1,
         "run_name": name,
@@ -2238,7 +2252,9 @@ def experiment_a(
             "seed": run_settings.base_seed,
             "temperature": run_settings.temperature,
             "versions": [],
+            **{key: provenance[key] for key in EXPERIMENT_A_PROVENANCE_KEYS},
         },
+        "git_dirty": provenance["git_dirty"],
         "status": "running",
         "completed_runs": [],
         "error": None,

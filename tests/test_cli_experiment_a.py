@@ -19,6 +19,23 @@ from afg.extraction.protocol import ExtractionResult
 SETTINGS = OpenKosRunSettings("openkos", "qwen3:8b", "bge-m3", 42, 0.1)
 
 
+class FakeProbe:
+    def __init__(self, digests: dict[str, str] | None) -> None:
+        self._digests = digests
+
+    def model_digests(self) -> dict[str, str] | None:
+        return self._digests
+
+    def ollama_version(self) -> str | None:
+        return "0.9.9"
+
+    def openkos_version(self) -> str | None:
+        return None
+
+    def git_dirty(self) -> bool | None:
+        return True
+
+
 class FakeAdapter:
     def __init__(self, base_dir: Path, fail_on_run: int | None = None) -> None:
         self.base_dir = base_dir
@@ -59,6 +76,11 @@ def fake(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> FakeAdapter:
     monkeypatch.setattr(afg_cli, "make_openkos_adapter", lambda base_dir: adapter)
     monkeypatch.setattr(afg_cli, "openkos_run_settings", lambda: SETTINGS)
     monkeypatch.setattr(afg_cli, "current_git_commit", lambda: "abc123")
+    monkeypatch.setattr(
+        afg_cli,
+        "make_provenance_probe",
+        lambda: FakeProbe({"qwen3:8b": "d-gen", "bge-m3:latest": "d-emb", "other:1b": "d-x"}),
+    )
     return adapter
 
 
@@ -104,6 +126,35 @@ def test_runs_a_development_series_and_persists_each_run(tmp_path: Path, fake: F
     assert first["decisions"][0]["decision_object"] == "battery"
     assert first["decisions"][0]["evidence"]["dialogue_act_ids"] == ["a1"]
     assert "2 corridas" in result.output or "corrida" in result.output
+
+
+def test_manifest_records_model_digests_and_machine_provenance(
+    tmp_path: Path, fake: FakeAdapter
+) -> None:
+    assert _run("--series", "ES2015", "--runs", "1", "--run-name", "prov").exit_code == 0
+
+    manifest = json.loads((tmp_path / "out" / "prov" / "manifest.json").read_text())
+    openkos = manifest["openkos"]
+    assert openkos["generative_model_digest"] == "d-gen"
+    assert openkos["embedding_model_digest"] == "d-emb"
+    assert openkos["model_digest_source"] == "ollama /api/tags"
+    assert openkos["ollama_version"] == "0.9.9"
+    assert manifest["git_dirty"] is True
+    assert "judge_model_digest" not in openkos
+    assert "questions_sha256" not in manifest
+
+
+def test_unreachable_ollama_records_null_digests_without_failing(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, fake: FakeAdapter
+) -> None:
+    monkeypatch.setattr(afg_cli, "make_provenance_probe", lambda: FakeProbe(None))
+    result = _run("--series", "ES2015", "--runs", "1", "--run-name", "sin-ollama")
+
+    assert result.exit_code == 0, result.output
+    manifest = json.loads((tmp_path / "out" / "sin-ollama" / "manifest.json").read_text())
+    assert manifest["openkos"]["generative_model_digest"] is None
+    assert manifest["openkos"]["embedding_model_digest"] is None
+    assert manifest["openkos"]["model_digest_source"].startswith("unavailable")
 
 
 def test_default_runs_come_from_the_shared_budget(tmp_path: Path, fake: FakeAdapter) -> None:
