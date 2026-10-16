@@ -22,8 +22,8 @@
 | Versión | Fecha | Cambio | Motivo |
 |---|---|---|---|
 | 1.0 | 2026-10-15 | Versión inicial: guion del primer video de avance de AFG2, centrado en el análisis exploratorio de datos y escrito para una audiencia no técnica. | Rúbrica del video de avance #1 y retroalimentación del video final de AFG1. |
-| 1.2 | 2026-10-15 | Se reescribe la explicación de la figura 5: qué agrupa cada punto, por qué el coeficiente solo deja pasar tanto con frases cortas (basta una palabra en común), que desde cuatro palabras ambas líneas coinciden y que los 92 pares dan como mucho 92 relaciones. Se condensa la frase de descriptivos; sus cifras completas quedan en la lámina. Extensión sin cambios (1.259 palabras). | La explicación anterior de la figura 5 no dejaba claro qué mide el gráfico. |
 | 1.1 | 2026-10-15 | Se amplía el tope a 9:00 (de 1.115 a 1.259 palabras). Se agregan cinco temas del análisis exploratorio: valores atípicos y política de limpieza, duplicados como reafirmaciones, límites de la muestra, estadísticas descriptivas básicas y ventana de contexto del modelo. Se condensan pasajes existentes sin quitar ninguno. | El equipo decidió cubrir todos los hallazgos del análisis exploratorio (`notebooks/03-jss-eda.ipynb`) y optó por una versión más larga que el máximo de la rúbrica. |
+| 1.2 | 2026-10-15 | Se reescribe la explicación de la figura 5: qué agrupa cada punto, por qué el coeficiente solo deja pasar tanto con frases cortas (basta una palabra en común), que desde cuatro palabras ambas líneas coinciden y que los 92 pares dan como mucho 92 relaciones. Se condensa la frase de descriptivos; sus cifras completas quedan en la lámina. Extensión sin cambios (1.259 palabras). | La explicación anterior de la figura 5 no dejaba claro qué mide el gráfico. |
 
 ## Qué pide el curso y dónde se cubre
 
