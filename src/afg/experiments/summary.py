@@ -12,6 +12,10 @@ from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
+from afg.conditions.c2_compiled_auto import SOURCE_FULL_TRANSCRIPT
+from afg.domain.question import Question
+from afg.evaluation.citation_width import summarize_widths, width_rows
+
 ABSTENTION_OUTCOME = "no_answer_in_context"
 ANSWERED_OUTCOME = "answered"
 
@@ -66,6 +70,25 @@ class CitationTally:
     @property
     def incorrect_rate(self) -> float:
         return self.incorrect / self.evaluated if self.evaluated else 0.0
+
+
+@dataclass(frozen=True, slots=True)
+class CitationWidthSummary:
+    """Width and coverage of the citations of a set of records (ADR 0009, amendment).
+
+    Reported beside ``citation_correct`` so that a condition that is right because it cites wide
+    stays visible. ``answered`` counts the answers the citation rule applies to; with none, the
+    width and coverage fields are ``None`` (unknown, never zero). ``source_citations`` counts the
+    citations to a full meeting transcript (``sources/*``), which are not evidence; it is ``None``
+    (unknown) when a record of a condition that can cite them does not say.
+    """
+
+    answered: int
+    cited_acts_min: int | None
+    cited_acts_median: float | None
+    cited_acts_max: int | None
+    mean_act_coverage: float | None
+    source_citations: int | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -189,6 +212,62 @@ def citation_tally(records: Sequence[Mapping[str, Any]]) -> CitationTally:
         incorrect_with_inline_marker=with_marker,
         incorrect_with_correct_answer=with_correct_answer,
         mean_precision=sum(precisions) / len(precisions) if precisions else 0.0,
+    )
+
+
+def source_citations(record: Mapping[str, Any]) -> int | None:
+    """Citations to a full meeting transcript (``sources/*``) in the record's trace.
+
+    C1 retrieves chunks, not OpenKOS concepts, so it has none (0). For any other condition the
+    count needs ``trace.unmapped_cited`` entries that carry a ``reason``; a missing list or
+    legacy entries that are bare concept ids (runs before the reason existed) read as unknown.
+    """
+    if record.get("condition") == "C1":
+        return 0
+    unmapped = _trace(record).get("unmapped_cited")
+    if not isinstance(unmapped, list) or not all(
+        isinstance(entry, Mapping) and "reason" in entry for entry in unmapped
+    ):
+        return None
+    return sum(1 for entry in unmapped if entry["reason"] == SOURCE_FULL_TRANSCRIPT)
+
+
+def _total_source_citations(records: Iterable[Mapping[str, Any]]) -> int | None:
+    """Sum over the answered records; unknown as soon as one record's count is unknown."""
+    total = 0
+    for record in records:
+        answer = record.get("answer")
+        if answer is None or answer.get("abstained"):
+            continue
+        count = source_citations(record)
+        if count is None:
+            return None
+        total += count
+    return total
+
+
+def citation_width_summary(
+    records: Iterable[Mapping[str, Any]], questions: Mapping[str, Question]
+) -> CitationWidthSummary:
+    """Citation width, act-level coverage and full-source citations over ``records``.
+
+    The act-level figures are read from the stored answers against the questions' reference
+    evidence, exactly as notebook 13 does, so they do not depend on the record's schema version
+    and exclude errors, abstentions, E4 questions and questions without reference evidence.
+
+    Raises:
+        KeyError: a record with an answer refers to a question not in ``questions``.
+    """
+    usable = [r for r in records if r.get("error") is None]
+    rows = width_rows(usable, questions)
+    stats = summarize_widths(rows)
+    return CitationWidthSummary(
+        answered=stats.answered,
+        cited_acts_min=stats.cited_acts_min if rows else None,
+        cited_acts_median=stats.cited_acts_median if rows else None,
+        cited_acts_max=stats.cited_acts_max if rows else None,
+        mean_act_coverage=stats.mean_act_recall if rows else None,
+        source_citations=_total_source_citations(usable),
     )
 
 

@@ -22,7 +22,15 @@ def _record(q: int, condition: str, run: int, *, partition: str) -> dict[str, An
         "stratum": "E3_evolution",
         "partition": partition,
         "trace": {"question": f"Question {q}?"},
-        "answer": {"text": f"answer {q}", "abstained": False},
+        "answer": {
+            "question_id": f"ES2015.q{q:03d}",
+            "condition": condition,
+            "text": f"answer {q}",
+            "cited_evidence": [
+                {"meeting_id": "ES2015a", "dialogue_act_ids": ["d", "e", "f", "g"][: 1 + q % 4]}
+            ],
+            "abstained": False,
+        },
         "verdict": {"correct": q % 2 == 0, "evidence_supported": True},
         "judge_failure": None,
         "citation_correct": True,
@@ -78,7 +86,7 @@ def _invoke(*args: str) -> Any:
 
 def test_report_refuses_development_records(out: Path) -> None:
     _write_run(out, "dev", "development")
-    result = _invoke("b-report", "--run-name", "dev")
+    result = _invoke("b-report", "--run-name", "dev", "--questions", "q.csv")
     assert result.exit_code == 1
     assert "descriptive" in result.output
     assert not (out / "dev" / "analisis.json").exists()
@@ -86,7 +94,7 @@ def test_report_refuses_development_records(out: Path) -> None:
 
 def test_descriptive_report_is_written_apart_and_marked(out: Path) -> None:
     run = _write_run(out, "dev", "development")
-    result = _invoke("b-report", "--run-name", "dev", "--descriptive")
+    result = _invoke("b-report", "--run-name", "dev", "--descriptive", "--questions", "q.csv")
     assert result.exit_code == 0, result.output
     payload = json.loads((run / "analisis-descriptivo.json").read_text(encoding="utf-8"))
     assert payload["reportable"] is False
@@ -95,14 +103,42 @@ def test_descriptive_report_is_written_apart_and_marked(out: Path) -> None:
 
 def test_report_on_evaluation_records_writes_reportable_file(out: Path) -> None:
     run = _write_run(out, "ev", "evaluation")
-    result = _invoke("b-report", "--run-name", "ev")
+    result = _invoke("b-report", "--run-name", "ev", "--questions", "q.csv")
     assert result.exit_code == 0, result.output
     payload = json.loads((run / "analisis.json").read_text(encoding="utf-8"))
     assert payload["reportable"] is True
 
 
+def _invoke_wide(*args: str) -> Any:
+    return CliRunner().invoke(afg_cli.app, ["experiment", *args], env={"COLUMNS": "300"})
+
+
+def test_report_shows_citation_width_beside_citation_correct(out: Path) -> None:
+    run = _write_run(out, "ev", "evaluation")
+    result = _invoke_wide("b-report", "--run-name", "ev", "--questions", "q.csv")
+    assert result.exit_code == 0, result.output
+    assert "Actos citados" in result.output
+    assert "Cobertura por acto" in result.output
+    assert "Citas a fuentes" in result.output
+    # Widths 1..4 over the 10 questions (median 2); the reference is the single act "d".
+    assert "2 (1-4)" in result.output
+    payload = json.loads((run / "analisis.json").read_text(encoding="utf-8"))
+    cell = next(c for c in payload["cells"] if c["condition"] == "C1" and c["stratum"] == "E3")
+    assert cell["citation_width"]["cited_acts_median"] == 2
+    assert cell["citation_width"]["mean_act_coverage"] == pytest.approx(1.0)
+    assert cell["citation_width"]["source_citations"] == 0
+
+
+def test_report_requires_the_question_bank(out: Path) -> None:
+    run = _write_run(out, "ev", "evaluation")
+    result = _invoke_wide("b-report", "--run-name", "ev")
+    assert result.exit_code == 1
+    assert "--questions" in result.output
+    assert not (run / "analisis.json").exists()
+
+
 def test_unknown_run_is_an_error(out: Path) -> None:
-    result = _invoke("b-report", "--run-name", "nada")
+    result = _invoke("b-report", "--run-name", "nada", "--questions", "q.csv")
     assert result.exit_code == 1
 
 
