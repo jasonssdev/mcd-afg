@@ -16,12 +16,19 @@ from afg.conditions.c2_compiled_auto import (
 )
 from afg.domain.decision import EvidenceSpan
 from afg.domain.question import Question, QuestionStratum
+from afg.experiments.runner import _jsonable
 from afg.extraction.openkos.capabilities import MissingCapabilitiesError
 from afg.extraction.openkos.query import QueryRejectedError
 from afg.extraction.openkos.workspace import OpenKosRunSettings
 from afg.extraction.openkos_adapter import project_relative
 from afg.shared.paths import PROJECT_ROOT
-from tests.openkos_bundle import decision_file, write_decision, write_meeting
+from tests.openkos_bundle import (
+    concept_file,
+    decision_file,
+    write_bundle_file,
+    write_decision,
+    write_meeting,
+)
 from tests.openkos_query import QueryRunner, query_report
 
 MEETINGS = ("ES2015a", "ES2015b", "ES2015c", "ES2015d")
@@ -37,7 +44,11 @@ def env(tmp_path: Path) -> dict[str, Path]:
     write_meeting(
         transcripts,
         "ES2015a",
-        [("PM", "Hello.", ("a.1",)), ("ME", SOURCE_QUOTE + " today", ("a.2", "a.3"))],
+        [
+            ("PM", "Hello.", ("a.1",)),
+            ("ME", SOURCE_QUOTE + " today", ("a.2", "a.3")),
+            ("UI", "Elks have big antlers.", ("a.4",)),
+        ],
     )
     for meeting in MEETINGS[1:]:
         write_meeting(transcripts, meeting, [("PM", "Nothing here.", (f"{meeting}.1",))])
@@ -51,6 +62,40 @@ def env(tmp_path: Path) -> dict[str, Path]:
             subject="remote control battery",
             value="The remote will use a kinetic battery.",
             quotes=[("es2015a", SOURCE_QUOTE)],
+        ),
+    )
+    bundle = workspace / "bundle"
+    write_bundle_file(
+        bundle,
+        "concepts",
+        "elks",
+        concept_file(
+            title="Elks",
+            description="About elks.",
+            turns=["UI: Elks have big antlers."],
+            provenance=["es2015a"],
+        ),
+    )
+    write_bundle_file(
+        bundle,
+        "events",
+        "lost",
+        concept_file(
+            title="Lost",
+            description="Nothing matches.",
+            turns=["PM: Never said in the meeting."],
+            provenance=["es2015a"],
+            type_="Event",
+        ),
+    )
+    write_decision(
+        bundle,
+        "orphan",
+        decision_file(
+            title="Orphan",
+            subject="colour",
+            value="The remote is red.",
+            quotes=[("es2015a", "this quote is not in the transcript")],
         ),
     )
     return {"transcripts": transcripts, "base": base, "workspace": workspace}
@@ -99,13 +144,56 @@ def test_answered_maps_cited_concepts_to_evidence_spans(env: dict[str, Path]) ->
     assert trace.unmapped_cited == ()
 
 
-def test_cited_concepts_without_evidence_are_listed_in_the_trace(env: dict[str, Path]) -> None:
-    extra = {"concept_id": "sources/es2015a", "title": "ES2015a", "excerpted": False}
-    gone = {"concept_id": "decisions/never-mapped", "title": "x", "excerpted": True}
-    report = _seeded(43, citations=[*query_report()["citations"], extra, gone])
-    answer, trace = make(env, QueryRunner([report])).answer_with_trace(question())
-    assert len(answer.cited_evidence) == 1
-    assert trace.unmapped_cited == ("sources/es2015a", "decisions/never-mapped")
+def _cite(*concept_ids: str) -> dict[str, object]:
+    citations = [
+        {"concept_id": concept_id, "title": concept_id, "excerpted": True}
+        for concept_id in concept_ids
+    ]
+    return _seeded(43, citations=citations)
+
+
+def test_cited_non_decision_concept_is_mapped_from_its_excerpt(env: dict[str, Path]) -> None:
+    answer, trace = make(env, QueryRunner([_cite("concepts/elks")])).answer_with_trace(question())
+    assert answer.cited_evidence == (EvidenceSpan(meeting_id="ES2015a", dialogue_act_ids=("a.4",)),)
+    assert trace.cited_acts == {"concepts/elks": {"ES2015a": ("a.4",)}}
+    assert trace.unmapped_cited == ()
+
+
+def test_spans_of_several_cited_concepts_are_deduplicated_in_order(env: dict[str, Path]) -> None:
+    runner = QueryRunner([_cite("concepts/elks", "decisions/battery", "concepts/elks")])
+    answer, _ = make(env, runner).answer_with_trace(question())
+    assert answer.cited_evidence == (
+        EvidenceSpan(meeting_id="ES2015a", dialogue_act_ids=("a.4",)),
+        EvidenceSpan(meeting_id="ES2015a", dialogue_act_ids=("a.2", "a.3")),
+    )
+
+
+def test_unmapped_citations_carry_an_explicit_reason(env: dict[str, Path]) -> None:
+    runner = QueryRunner(
+        [
+            _cite(
+                "sources/es2015a",
+                "events/lost",
+                "decisions/orphan",
+                "concepts/not-in-the-bundle",
+            )
+        ]
+    )
+    answer, trace = make(env, runner).answer_with_trace(question())
+    assert answer.cited_evidence == () and trace.cited_acts == {}
+    assert [(u.concept_id, u.reason) for u in trace.unmapped_cited] == [
+        ("sources/es2015a", "source_full_transcript"),
+        ("events/lost", "no_located_excerpt"),
+        ("decisions/orphan", "decision_without_evidence"),
+        ("concepts/not-in-the-bundle", "unknown_concept"),
+    ]
+
+
+def test_trace_with_unmapped_citations_serialises_as_runner_does(env: dict[str, Path]) -> None:
+    _, trace = make(env, QueryRunner([_cite("sources/es2015a")])).answer_with_trace(question())
+    assert _jsonable(trace)["unmapped_cited"] == [
+        {"concept_id": "sources/es2015a", "reason": "source_full_transcript"}
+    ]
 
 
 @pytest.mark.parametrize(
@@ -145,7 +233,7 @@ def test_concept_map_is_built_once_per_workspace(env: dict[str, Path]) -> None:
     runner = QueryRunner([_seeded(43)])
     condition = make(env, runner)
     condition.answer(question())
-    for path in (env["workspace"] / "bundle" / "decisions").glob("*.md"):
+    for path in (env["workspace"] / "bundle").glob("*/*.md"):
         path.unlink()  # a second read of the bundle would now find nothing
     answer = condition.answer(question("Again?"))
     assert len(answer.cited_evidence) == 1

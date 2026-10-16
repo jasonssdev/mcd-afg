@@ -20,9 +20,17 @@ Binding to Experiment A (``extraction_run`` is the ``--run-name`` of an ``afg ex
 * A report that withheld content, or that carries a null temperature or seed, is refused (an
   exception, which the runner stores as an error of that key); it is never turned into an answer.
 
-Citations are the concepts in the report's ``citations``, mapped to the dialogue acts of the
-quote that supports each decision (the bundle reader of Experiment A). A cited concept that is
-not a decision with locatable evidence yields no span and is listed in the trace.
+Citations are the concepts in the report's ``citations``, mapped to AMI dialogue acts by the
+bundle readers of the adapter package:
+
+* a decision: the dialogue acts of the quote that supports it (Experiment A's reader);
+* any other concept (``concepts/``, ``events/``, ``projects/``, ``people/``): the union of the
+  dialogue acts of the transcript excerpts in its body, one span per meeting of its provenance;
+* ``sources/*`` embed a whole transcript, so they are never mapped to dialogue acts. Whether and
+  how such a citation counts is a citation-rule decision (issue #97); until then it is recorded
+  in the trace with the reason ``source_full_transcript``.
+
+A cited concept without a span is listed in ``CompiledAutoTrace.unmapped_cited`` with the reason.
 """
 
 from __future__ import annotations
@@ -34,7 +42,11 @@ from pathlib import Path
 from afg.conditions.c1_document_rag import NO_ANSWER_IN_CONTEXT, NO_MATCH
 from afg.domain.decision import EvidenceSpan
 from afg.domain.question import Answer, Question
-from afg.extraction.openkos.bundle_reader import read_decision_bundle
+from afg.extraction.openkos.bundle_reader import (
+    SOURCES_DIRNAME,
+    read_concept_bundle,
+    read_decision_bundle,
+)
 from afg.extraction.openkos.capabilities import probe_capabilities, require_capabilities
 from afg.extraction.openkos.commands import CommandRunner, OpenKosError
 from afg.extraction.openkos.event_dates import POSITION_LETTERS
@@ -68,12 +80,27 @@ def configured_answer_limit() -> int:
     return int(load_experiments_config()["retrieval"]["answer_limit"])
 
 
+SOURCE_FULL_TRANSCRIPT = "source_full_transcript"
+NO_LOCATED_EXCERPT = "no_located_excerpt"
+DECISION_WITHOUT_EVIDENCE = "decision_without_evidence"
+UNKNOWN_CONCEPT = "unknown_concept"
+
+
+@dataclass(frozen=True, slots=True)
+class UnmappedCitation:
+    """A concept the report cites that yielded no evidence span, and why."""
+
+    concept_id: str
+    reason: str
+
+
 @dataclass(frozen=True, slots=True)
 class CompiledAutoTrace:
     """Everything a schema-v1 report says about one C2 answer, plus where it came from.
 
     ``cited_acts`` maps each cited concept that has evidence to ``{meeting_id: dialogue act
-    ids}``; ``unmapped_cited`` lists the cited concepts that do not (in citation order).
+    ids}`` (several meetings for a concept whose provenance has several); ``unmapped_cited`` lists
+    the cited concepts that do not, with the reason (in citation order).
     """
 
     outcome: str
@@ -94,7 +121,15 @@ class CompiledAutoTrace:
     workspace: str
     run: int
     cited_acts: dict[str, dict[str, tuple[str, ...]]] = field(default_factory=dict)
-    unmapped_cited: tuple[str, ...] = ()
+    unmapped_cited: tuple[UnmappedCitation, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class _WorkspaceEvidence:
+    """Concept id -> evidence spans of a workspace's bundle, and why the others have none."""
+
+    spans: dict[str, tuple[EvidenceSpan, ...]]
+    reasons: dict[str, str]
 
 
 @dataclass(slots=True)
@@ -102,7 +137,13 @@ class _Shared:
     """State shared by every copy made by ``with_seed`` (capabilities, evidence per workspace)."""
 
     capabilities_checked: bool = False
-    evidence: dict[Path, dict[str, EvidenceSpan]] = field(default_factory=dict)
+    evidence: dict[Path, _WorkspaceEvidence] = field(default_factory=dict)
+
+
+def _unmapped_reason(concept_id: str, evidence: _WorkspaceEvidence) -> str:
+    if concept_id.startswith(f"{SOURCES_DIRNAME}/"):
+        return SOURCE_FULL_TRANSCRIPT
+    return evidence.reasons.get(concept_id, UNKNOWN_CONCEPT)
 
 
 @dataclass(slots=True)
@@ -144,16 +185,27 @@ class CompiledAutoCondition:
             )
         return workspace
 
-    def _evidence(self, workspace: Path, series_id: str) -> dict[str, EvidenceSpan]:
-        """Concept id -> evidence span of the decisions of ``workspace``, read once."""
+    def _evidence(self, workspace: Path, series_id: str) -> _WorkspaceEvidence:
+        """Evidence of the decisions and the other concepts of ``workspace``, read once."""
         if workspace not in self._shared.evidence:
-            read = read_decision_bundle(
-                workspace / BUNDLE_DIRNAME,
+            bundle = workspace / BUNDLE_DIRNAME
+            meeting_ids = [f"{series_id}{letter}" for letter in POSITION_LETTERS]
+            decisions = read_decision_bundle(
+                bundle,
                 series_id=series_id,
-                meeting_ids=[f"{series_id}{letter}" for letter in POSITION_LETTERS],
+                meeting_ids=meeting_ids,
                 transcripts_dir=self.transcripts_dir,
             )
-            self._shared.evidence[workspace] = {d.id: d.evidence for d in read.decisions}
+            concepts = read_concept_bundle(
+                bundle, meeting_ids=meeting_ids, transcripts_dir=self.transcripts_dir
+            )
+            spans: dict[str, tuple[EvidenceSpan, ...]] = {
+                d.id: (d.evidence,) for d in decisions.decisions
+            }
+            spans.update(concepts.spans)
+            reasons = {u.concept_id: DECISION_WITHOUT_EVIDENCE for u in decisions.unmapped}
+            reasons.update({u.concept_id: NO_LOCATED_EXCERPT for u in concepts.unmapped})
+            self._shared.evidence[workspace] = _WorkspaceEvidence(spans, reasons)
         return self._shared.evidence[workspace]
 
     def _require_capabilities(self) -> None:
@@ -192,17 +244,21 @@ class CompiledAutoCondition:
 
         spans: list[EvidenceSpan] = []
         cited_acts: dict[str, dict[str, tuple[str, ...]]] = {}
-        unmapped: list[str] = []
+        unmapped: list[UnmappedCitation] = []
         if report.outcome == OUTCOME_ANSWERED:
             evidence = self._evidence(workspace, question.series_id)
             for cited in report.citations:
-                span = evidence.get(cited.concept_id)
-                if span is None:
-                    unmapped.append(cited.concept_id)
+                concept_id = cited.concept_id
+                concept_spans = evidence.spans.get(concept_id)
+                if concept_spans is None:
+                    unmapped.append(
+                        UnmappedCitation(concept_id, _unmapped_reason(concept_id, evidence))
+                    )
                     continue
-                cited_acts[cited.concept_id] = {span.meeting_id: tuple(span.dialogue_act_ids)}
-                if span not in spans:
-                    spans.append(span)
+                cited_acts[concept_id] = {
+                    span.meeting_id: tuple(span.dialogue_act_ids) for span in concept_spans
+                }
+                spans.extend(span for span in concept_spans if span not in spans)
 
         answered = report.outcome == OUTCOME_ANSWERED
         text = (

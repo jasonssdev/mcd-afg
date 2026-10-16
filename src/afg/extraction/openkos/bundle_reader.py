@@ -30,6 +30,18 @@ Mapping:
   :class:`~afg.domain.decision.EvidenceSpan` needs at least one dialogue act), so it is reported
   in :attr:`BundleDecisions.unmapped` instead of being dropped silently.
 * ``status`` is always ``ACCEPTED``: the decision pass only keeps decisions it considers made.
+
+Every other concept that is not a ``Source`` (``concepts/``, ``events/``, ``projects/``,
+``people/``; :func:`read_concept_bundle`) has the same frontmatter and, after ``# <title>`` and
+the description, a verbatim excerpt of the transcript: ``ROLE: text`` turns separated by blank
+lines (``people/`` files put the turns on one line). Its meetings are those of ``provenance``.
+The excerpt is a window of consecutive turns, so it is located as ONE quote first (joined with
+spaces, which is what the blank lines normalise to); if that fails, each turn is located on its
+own. A turn that occurs more than once in the meeting is not assigned to the first occurrence
+(``Mm-hmm.`` would point at an arbitrary turn): it counts as ``ambiguous``. The span of a
+concept is one :class:`~afg.domain.decision.EvidenceSpan` per meeting, with the union of the
+dialogue acts of its located excerpts. ``sources/`` files embed a whole transcript and are never
+read here (their treatment as citations is a research decision, issue #97).
 """
 
 from __future__ import annotations
@@ -42,7 +54,7 @@ from pathlib import Path
 import yaml
 
 from afg.conditions.c1_chunking import FrozenTurn
-from afg.domain.decision import Decision, DecisionStatus
+from afg.domain.decision import Decision, DecisionStatus, EvidenceSpan
 from afg.extraction.openkos.commands import OpenKosError
 from afg.extraction.openkos.evidence import (
     EvidenceMatch,
@@ -61,6 +73,11 @@ _QUOTE_LINE = re.compile(r"^>\s?(.*)$")
 _FRONT_MATTER = re.compile(r"\A---\n(.*?)\n---\n(.*)\Z", re.DOTALL)
 _SUBJECT_SEPARATOR = ": "
 NO_QUOTE = "no_quote"
+NO_EXCERPT = "no_excerpt"
+AMBIGUOUS = "ambiguous"
+SOURCE_TYPE = "Source"
+SOURCES_DIRNAME = "sources"
+_CONCEPT_SKIPPED_DIRNAMES = frozenset({DECISIONS_DIRNAME, SOURCES_DIRNAME})
 
 
 class BundleFormatError(OpenKosError):
@@ -262,3 +279,157 @@ def read_decision_bundle(
             )
         )
     return BundleDecisions(tuple(decisions), tuple(unmapped), QuoteCounts(**counts))
+
+
+@dataclass(frozen=True, slots=True)
+class ExcerptCounts:
+    """What happened to the transcript excerpts of the non-decision concepts.
+
+    One count per located unit: the whole excerpt when it matched as one window, otherwise each
+    of its turns.
+    """
+
+    total: int = 0
+    found: int = 0
+    not_found: int = 0
+    ambiguous: int = 0
+    no_dialogue_acts: int = 0
+    empty: int = 0
+
+
+@dataclass(frozen=True, slots=True)
+class UnmappedConcept:
+    """A non-decision concept none of whose excerpts could be located."""
+
+    concept_id: str
+    meeting_ids: tuple[str, ...]
+    reasons: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class BundleConcepts:
+    """The evidence of the non-decision, non-source concepts of one bundle."""
+
+    spans: dict[str, tuple[EvidenceSpan, ...]]
+    unmapped: tuple[UnmappedConcept, ...]
+    excerpts: ExcerptCounts
+
+
+def _excerpt_turns(body: str, title: str, description: str) -> list[str]:
+    """The transcript turns of a concept body, without the title, description and headings."""
+    blocks = _paragraphs(body)
+    if blocks and blocks[0] == f"# {title}":
+        blocks = blocks[1:]
+    if blocks and blocks[0] == description:
+        blocks = blocks[1:]
+    return [block for block in blocks if not block.startswith("#")]
+
+
+def _locate_unit(
+    text: str, meeting_ids: Sequence[str], meetings: _MeetingCache
+) -> tuple[EvidenceMatch | None, str]:
+    """First unique match of ``text`` in ``meeting_ids``, or ``(None, reason)``."""
+    reason = MissReason.NOT_FOUND.value
+    for meeting_id in meeting_ids:
+        body, turns = meetings.get(meeting_id)
+        outcome = locate_quote(meeting_id, body, turns, text)
+        if isinstance(outcome, EvidenceMatch):
+            if outcome.occurrences == 1:
+                return outcome, ""
+            reason = AMBIGUOUS
+        elif reason == MissReason.NOT_FOUND.value:
+            reason = outcome.reason.value
+    return None, reason
+
+
+def read_concept_bundle(
+    bundle_dir: Path,
+    *,
+    meeting_ids: Sequence[str],
+    transcripts_dir: Path = TRANSCRIPTS_DIR,
+) -> BundleConcepts:
+    """Locate the transcript excerpts of every concept of ``bundle_dir`` that is not a decision.
+
+    Reads ``bundle_dir/<folder>/*.md`` (folder and file name order) for every folder except
+    ``decisions/`` and ``sources/``, skipping files whose ``type`` is ``Decision`` or ``Source``.
+
+    Raises:
+        BundleFormatError: a file has no valid front matter or cites a source that is not one
+            of ``meeting_ids``.
+        FileNotFoundError: the frozen transcript of a cited meeting is missing.
+    """
+    by_slug = {meeting.casefold(): meeting for meeting in meeting_ids}
+    order = {meeting: index for index, meeting in enumerate(meeting_ids)}
+    meetings = _MeetingCache(transcripts_dir)
+    folders = (
+        sorted(
+            f
+            for f in bundle_dir.iterdir()
+            if f.is_dir() and not f.name.startswith(".") and f.name not in _CONCEPT_SKIPPED_DIRNAMES
+        )
+        if bundle_dir.is_dir()
+        else []
+    )
+
+    spans: dict[str, tuple[EvidenceSpan, ...]] = {}
+    unmapped: list[UnmappedConcept] = []
+    counts = dict.fromkeys(
+        ("total", "found", "not_found", "ambiguous", "no_dialogue_acts", "empty"), 0
+    )
+    by_reason = {
+        MissReason.NOT_FOUND.value: "not_found",
+        AMBIGUOUS: "ambiguous",
+        MissReason.NO_DIALOGUE_ACTS.value: "no_dialogue_acts",
+        MissReason.EMPTY_QUOTE.value: "empty",
+    }
+
+    for folder in folders:
+        for path in sorted(folder.glob("*.md")):
+            metadata, body = _split_front_matter(path.read_text(encoding="utf-8"), path)
+            if metadata.get("type") in (DECISION_TYPE, SOURCE_TYPE):
+                continue
+            provenance = _provenance(metadata, path)
+            origin = tuple(
+                sorted(
+                    dict.fromkeys(_meeting_of(source, by_slug, path) for source in provenance),
+                    key=order.__getitem__,
+                )
+            )
+            turns = _excerpt_turns(
+                body, str(metadata.get("title", "")).strip(), str(metadata.get("description", ""))
+            )
+            concept_id = f"{folder.name}/{path.stem}"
+            if not turns:
+                unmapped.append(UnmappedConcept(concept_id, origin, (NO_EXCERPT,)))
+                continue
+
+            acts: dict[str, dict[str, None]] = {}
+            reasons: list[str] = []
+            window, _ = _locate_unit(" ".join(turns), origin, meetings)
+            if window is not None:
+                matches = [window]
+                counts["total"] += 1
+            else:
+                matches = []
+                for turn in turns:
+                    match, reason = _locate_unit(turn, origin, meetings)
+                    if match is not None:
+                        matches.append(match)
+                    else:
+                        reasons.append(reason)
+                        counts[by_reason[reason]] += 1
+                counts["total"] += len(turns)
+            counts["found"] += len(matches)
+            for match in matches:
+                found = acts.setdefault(match.span.meeting_id, {})
+                found.update(dict.fromkeys(match.span.dialogue_act_ids))
+            if not acts:
+                unmapped.append(
+                    UnmappedConcept(concept_id, origin, tuple(reasons) or (NO_EXCERPT,))
+                )
+                continue
+            spans[concept_id] = tuple(
+                EvidenceSpan(meeting_id=meeting_id, dialogue_act_ids=tuple(ids))
+                for meeting_id, ids in sorted(acts.items(), key=lambda item: order[item[0]])
+            )
+    return BundleConcepts(spans, tuple(unmapped), ExcerptCounts(**counts))
