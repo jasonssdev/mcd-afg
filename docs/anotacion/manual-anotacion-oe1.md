@@ -44,7 +44,7 @@ decides **qué dice**.
 > **Estado de implementación (2026-09-20).** Todos los comandos que usa este manual están
 > implementados y con tests (ver `README.md`, sección "Comandos del proyecto").
 
-**Quien anota corre solo `setup`, `prepare`, `validate` y `evidence`** (y `status`, de solo
+**Quien anota corre solo `setup`, `prepare`, `validate`, `questions-check` y `evidencia`** (y `status`, de solo
 lectura). `build` y `candidates` los corre quien mantiene el repositorio, ya los corrió, y
 volver a correrlos sobrescribe el insumo. La tabla de abajo los lista como referencia.
 
