@@ -128,6 +128,7 @@ from afg.evaluation.judge_calibration_worksheet import (
     worksheet_questions,
     write_worksheet,
 )
+from afg.experiments.provenance import LiveProbe, ProvenanceProbe, collect_provenance
 from afg.experiments.question_bank import (
     QuestionBankIssue,
     QuestionBankReport,
@@ -2162,6 +2163,11 @@ def experiment_a() -> None:
     raise typer.Exit(code=2)
 
 
+def make_provenance_probe() -> ProvenanceProbe:
+    """The probe that reads model digests and versions from the local machine."""
+    return LiveProbe(openkos_executable=get_settings().openkos_executable)
+
+
 JUDGE_ORDER: PresentationOrder = "reference_first"
 JUDGE_TEMPERATURE = 0.0
 """The judge configuration of the calibration's primary run (reference first, temperature 0)."""
@@ -2274,6 +2280,14 @@ def experiment_b(
 
     name = run_name or datetime.now(UTC).strftime("b-%Y%m%d-%H%M%S")
     run_dir = EXPERIMENT_B_DIR / name
+    provenance = collect_provenance(
+        make_provenance_probe(),
+        generative_model=settings.generative_model,
+        judge_model=settings.judge_model,
+        embedding_model=configured_embedding_model(),
+        c1_params=config["retrieval"]["c1"],
+        questions_path=questions,
+    )
 
     def report(done: int, total: int) -> None:
         step = max(total // 10, 1)
@@ -2294,6 +2308,7 @@ def experiment_b(
             partition_of=configured_partition_of(),
             excerpt_for=default_excerpt_for,
             git_commit=current_git_commit(),
+            provenance=provenance,
             progress=report,
         )
     except (JudgeConfigurationError, ManifestMismatchError, RunAbortedError, ValueError) as exc:

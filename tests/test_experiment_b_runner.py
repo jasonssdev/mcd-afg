@@ -318,3 +318,19 @@ def test_records_are_flushed_one_by_one(tmp_path: Path) -> None:
 
     _run(tmp_path, [_question("q1"), _question("q2")], [FakeCondition()], progress=progress)
     assert seen == [1, 2, 3, 4]
+
+
+def test_provenance_is_merged_into_the_manifest(tmp_path: Path) -> None:
+    extra = {"generative_model_digest": "aaa", "git_dirty": False, "ollama_version": None}
+    _run(tmp_path, [_question("q1")], [FakeCondition()], provenance=extra)
+    manifest = json.loads((tmp_path / "run" / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["generative_model_digest"] == "aaa"
+    assert manifest["git_dirty"] is False
+    assert manifest["ollama_version"] is None
+    assert manifest["git_commit"] == "abc123"
+
+
+def test_manifest_without_provenance_keeps_the_previous_shape(tmp_path: Path) -> None:
+    _run(tmp_path, [_question("q1")], [FakeCondition()])
+    manifest = json.loads((tmp_path / "run" / "manifest.json").read_text(encoding="utf-8"))
+    assert "generative_model_digest" not in manifest
