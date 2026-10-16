@@ -52,6 +52,7 @@ from afg.conditions.c1_tuning import (
     select_winner,
     series_meetings,
 )
+from afg.conditions.c2_compiled_auto import CompiledAutoCondition
 from afg.corpus.download import DownloadError, download_annotations
 from afg.corpus.inventory import (
     CorpusNotDownloadedError,
@@ -145,13 +146,18 @@ from afg.experiments.runner import (
     default_excerpt_for,
     run_experiment_b,
 )
+from afg.extraction.openkos.commands import OpenKosError, SubprocessRunner
+from afg.extraction.openkos.settings import openkos_run_settings
+from afg.extraction.openkos_adapter import OpenKosAdapter
 from afg.shared.config import Settings, get_settings, load_corpus_config, load_experiments_config
 from afg.shared.logging import configure_logging, get_logger, quiet_http_logs
 from afg.shared.paths import (
     AMI_DIR,
+    EXPERIMENT_A_DIR,
     EXPERIMENT_B_DIR,
     GOLD_DECISIONS_DIR,
     GOLD_RELATIONS_DIR,
+    OPENKOS_WORKSPACES_DIR,
     PROJECT_ROOT,
     QUESTIONS_DIR,
     SKILLS_DIR,
@@ -2153,18 +2159,143 @@ def c1_tune() -> None:
     console.print(f"Resultados guardados en {_short(C1_TUNING_RESULTS_PATH)}.")
 
 
-@experiment_app.command("a")
-def experiment_a() -> None:
-    """Experimento A: calidad de extracción frente a la referencia (OE2).
-
-    Sin implementar: espera OpenKOS ~0.6.0 (sale con código 2).
-    """
-    console.print(
-        "[yellow]Sin implementar: espera OpenKOS ~0.6.0 y un extractor operativo "
-        "(src/afg/extraction/openkos_adapter.py), además del conjunto de referencia de OE1. "
-        "Ver tesis, sección 3, OE2.[/yellow]"
+def make_openkos_adapter(base_dir: Path) -> OpenKosAdapter:
+    """The adapter wired to the local ``openkos`` executable, the frozen transcripts and the AMI
+    ``meetings.xml`` (event dates, ADR 0008); workspaces are created under ``base_dir``."""
+    meetings_xml = AMI_DIR / "corpusResources" / "meetings.xml"
+    return OpenKosAdapter(
+        runner=SubprocessRunner(),
+        settings=openkos_run_settings(),
+        base_dir=base_dir,
+        transcripts_dir=TRANSCRIPTS_DIR,
+        meetings_xml=meetings_xml if meetings_xml.exists() else None,
     )
-    raise typer.Exit(code=2)
+
+
+EXPERIMENT_A_PROVENANCE_KEYS = (
+    "generative_model_digest",
+    "embedding_model_digest",
+    "model_digest_source",
+    "ollama_version",
+)
+"""The :func:`collect_provenance` fields that apply to Experiment A (it has no judge or C1)."""
+
+
+@experiment_app.command("a")
+def experiment_a(
+    series: Annotated[
+        str,
+        typer.Option(
+            "--series", help="Serie a extraer (solo de desarrollo, ADR 0005), por ejemplo ES2015."
+        ),
+    ],
+    runs: Annotated[
+        int | None,
+        typer.Option("--runs", min=1, help="Corridas (por defecto runs_per_config)."),
+    ] = None,
+    run_name: Annotated[
+        str | None,
+        typer.Option(
+            "--run-name",
+            help="Nombre de la carpeta en reports/experiment-a/. Un nombre ya usado se rechaza.",
+        ),
+    ] = None,
+) -> None:
+    """Experimento A: extracción de decisiones con OpenKOS sobre una serie (OE2).
+
+    Por cada corrida crea un espacio de trabajo nuevo de OpenKOS en `data/interim/openkos/`,
+    ingesta las cuatro reuniones de la serie en orden, lee las decisiones compiladas y agrega
+    una línea a `extracciones.jsonl` en `reports/experiment-a/<run-name>/`, junto con
+    `manifest.json`. Solo corre series de desarrollo: las de evaluación se niegan (ADR 0005)
+    hasta fijar la versión de OpenKOS (ADR 0006). La semilla de la corrida r es `seed + r`.
+    """
+    import json
+    from datetime import UTC, datetime
+
+    partition = configured_partition_of()(series)
+    if partition != "development":
+        console.print(
+            f"[bold red]{series} no es una serie de desarrollo (partición: {partition}). "
+            "El Experimento A solo corre series de desarrollo mientras la versión de OpenKOS "
+            "no esté fijada (ADR 0005 y ADR 0006).[/bold red]"
+        )
+        raise typer.Exit(code=1)
+
+    budget = load_experiments_config()["shared_budget"]
+    n_runs = runs if runs is not None else int(budget["runs_per_config"])
+    name = run_name or datetime.now(UTC).strftime("a-%Y%m%d-%H%M%S")
+    run_dir = EXPERIMENT_A_DIR / name
+    if run_dir.exists():
+        console.print(
+            f"[bold red]Ya existe {_short(run_dir)}. Usa otro --run-name: una corrida no se "
+            "sobrescribe ni se reanuda.[/bold red]"
+        )
+        raise typer.Exit(code=1)
+
+    run_settings = openkos_run_settings()
+    provenance = collect_provenance(
+        make_provenance_probe(),
+        generative_model=run_settings.generative_model,
+        embedding_model=run_settings.embedding_model,
+    )
+    manifest: dict[str, Any] = {
+        "schema_version": 1,
+        "run_name": name,
+        "created_at": datetime.now(UTC).isoformat(),
+        "git_commit": current_git_commit(),
+        "series": series,
+        "partition": partition,
+        "runs": n_runs,
+        "openkos": {
+            "executable": run_settings.executable,
+            "generative_model": run_settings.generative_model,
+            "embedding_model": run_settings.embedding_model,
+            "seed": run_settings.base_seed,
+            "temperature": run_settings.temperature,
+            "versions": [],
+            **{key: provenance[key] for key in EXPERIMENT_A_PROVENANCE_KEYS},
+        },
+        "git_dirty": provenance["git_dirty"],
+        "status": "running",
+        "completed_runs": [],
+        "error": None,
+    }
+    manifest_path = run_dir / "manifest.json"
+    records_path = run_dir / "extracciones.jsonl"
+
+    def save_manifest() -> None:
+        manifest["updated_at"] = datetime.now(UTC).isoformat()
+        manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+    run_dir.mkdir(parents=True)
+    save_manifest()
+    adapter = make_openkos_adapter(OPENKOS_WORKSPACES_DIR / name)
+    console.print(f"{series}: {n_runs} corrida(s) -> {_short(run_dir)}")
+    for run in range(n_runs):
+        try:
+            extraction = adapter.extract_series(series, run)
+        except (OpenKosError, FileNotFoundError) as exc:
+            manifest["status"] = "failed"
+            manifest["error"] = f"corrida {run}: {type(exc).__name__}: {exc}"
+            save_manifest()
+            console.print(f"[bold red]Corrida {run} fallida: {exc}[/bold red]")
+            raise typer.Exit(code=1) from exc
+        with records_path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(extraction.to_record(), ensure_ascii=False) + "\n")
+        manifest["completed_runs"].append(run)
+        if extraction.openkos_version not in manifest["openkos"]["versions"]:
+            manifest["openkos"]["versions"].append(extraction.openkos_version)
+        save_manifest()
+        quotes = extraction.quotes
+        console.print(
+            f"  corrida {run}: {len(extraction.result.decisions)} decisiones, "
+            f"{len(extraction.unmapped)} sin evidencia, "
+            f"{quotes.not_found} de {quotes.total} citas no encontradas "
+            f"(OpenKOS {extraction.openkos_version})."
+        )
+    manifest["status"] = "ok"
+    save_manifest()
+    console.print(f"Listo. Manifiesto en {_short(manifest_path)}.")
 
 
 def make_provenance_probe() -> ProvenanceProbe:
@@ -2176,6 +2307,11 @@ JUDGE_ORDER: PresentationOrder = "reference_first"
 JUDGE_TEMPERATURE = 0.0
 """The judge configuration of the calibration's primary run (reference first, temperature 0)."""
 
+C2_EXTRACTION_REQUIRED = (
+    "La condición C2 necesita `--c2-extraction <nombre>`: el `--run-name` de la corrida de "
+    "`afg experiment a` cuyos espacios de trabajo de OpenKOS consulta."
+)
+
 EXPERIMENT_B_CONDITIONS: tuple[str, ...] = ("c1", "c2", "c3")
 """Condition ids ``--conditions`` knows; only those in :func:`make_experiment_b_condition` run."""
 
@@ -2185,13 +2321,44 @@ def make_judge_backend() -> OllamaJudgeBackend:
     return OllamaJudgeBackend(think=load_think_settings())
 
 
-def make_experiment_b_condition(condition_id: str) -> Condition:
-    """The condition ``condition_id`` wired from the config (only C1 exists so far)."""
+def make_c2_condition(extraction_run: str) -> CompiledAutoCondition:
+    """C2 wired to the workspaces of the ``afg experiment a`` run ``extraction_run``.
+
+    Raises:
+        ValueError: that run has no workspaces under ``data/interim/openkos/``.
+    """
+    base_dir = OPENKOS_WORKSPACES_DIR
+    if not (base_dir / extraction_run).is_dir():
+        raise ValueError(
+            f"No hay espacios de trabajo de OpenKOS de la corrida {extraction_run!r} en "
+            f"{_short(base_dir)}. Genéralos antes con `afg experiment a --run-name "
+            f"{extraction_run}`."
+        )
+    return CompiledAutoCondition(
+        runner=SubprocessRunner(),
+        settings=openkos_run_settings(),
+        extraction_run=extraction_run,
+        base_dir=base_dir,
+        transcripts_dir=TRANSCRIPTS_DIR,
+    )
+
+
+def make_experiment_b_condition(
+    condition_id: str, *, c2_extraction: str | None = None
+) -> Condition:
+    """The condition ``condition_id`` wired from the config (C1 and C2; C3 does not exist yet).
+
+    ``c2_extraction`` is the ``--run-name`` of the ``afg experiment a`` run C2 queries.
+    """
     if condition_id == "c1":
         return make_c1_condition()
+    if condition_id == "c2":
+        if c2_extraction is None:
+            raise ValueError(C2_EXTRACTION_REQUIRED)
+        return make_c2_condition(c2_extraction)
     raise ValueError(
-        f"La condición {condition_id.upper()} no está disponible todavía: C2 y C3 dependen de "
-        "OpenKOS y de la anotación de oro (tesis, sección 5.3)."
+        f"La condición {condition_id.upper()} no está disponible todavía: C3 depende de la "
+        "anotación de oro (tesis, sección 5.3)."
     )
 
 
@@ -2208,8 +2375,17 @@ def experiment_b(
         ),
     ],
     conditions: Annotated[
-        str, typer.Option("--conditions", help="Condiciones separadas por coma; hoy solo `c1`.")
+        str,
+        typer.Option("--conditions", help="Condiciones separadas por coma: `c1` y `c2` (C3 no)."),
     ] = "c1",
+    c2_extraction: Annotated[
+        str | None,
+        typer.Option(
+            "--c2-extraction",
+            help="Obligatorio con `c2`: `--run-name` de la corrida de `afg experiment a` cuyos "
+            "espacios de trabajo consulta C2. La corrida r usa `run-r` de cada serie.",
+        ),
+    ] = None,
     runs: Annotated[
         int | None,
         typer.Option("--runs", min=1, help="Corridas por pregunta (por defecto runs_per_config)."),
@@ -2230,7 +2406,9 @@ def experiment_b(
     Por cada combinación obtiene la respuesta, la juzga con el modelo de `\\[judge]`, calcula la
     corrección de las citas y agrega un registro a `respuestas.jsonl`. Si se interrumpe, al
     repetir el comando con el mismo `--run-name` continúa donde quedó; los registros con error
-    se reintentan. La semilla de generación de la corrida r es `seed + r`.
+    se reintentan. La semilla de generación de la corrida r es `seed + r`. C2 responde con
+    `openkos query` sobre el espacio de trabajo `run-r` que `afg experiment a` compiló para la
+    serie de la pregunta y rechaza el espacio cuya semilla no sea `seed + r`.
     """
     from datetime import UTC, datetime
 
@@ -2243,8 +2421,17 @@ def experiment_b(
             f"Opciones: {', '.join(EXPERIMENT_B_CONDITIONS)}.[/bold red]"
         )
         raise typer.Exit(code=1)
+    if c2_extraction is not None and "c2" not in wanted:
+        console.print(
+            "[bold red]`--c2-extraction` solo tiene sentido con la condición c2: agrégala a "
+            "`--conditions` o quita la opción.[/bold red]"
+        )
+        raise typer.Exit(code=1)
     try:
-        built = {c.upper(): make_experiment_b_condition(c) for c in dict.fromkeys(wanted)}
+        built = {
+            c.upper(): make_experiment_b_condition(c, c2_extraction=c2_extraction)
+            for c in dict.fromkeys(wanted)
+        }
         if questions.exists() and is_question_bank(questions):
             bank_report = load_configured_question_bank(questions, strict=True)
             if not bank_report.has_errors:
@@ -2291,6 +2478,7 @@ def experiment_b(
         embedding_model=configured_embedding_model(),
         c1_params=config["retrieval"]["c1"],
         questions_path=questions,
+        c2_extraction=c2_extraction,
     )
 
     def report(done: int, total: int) -> None:

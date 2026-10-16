@@ -27,6 +27,7 @@ RAW_DIR: Path = DATA_DIR / "raw"
 AMI_DIR: Path = RAW_DIR / "ami"
 INTERIM_DIR: Path = DATA_DIR / "interim"
 TRANSCRIPTS_DIR: Path = INTERIM_DIR / "transcripts"
+OPENKOS_WORKSPACES_DIR: Path = INTERIM_DIR / "openkos"
 PROCESSED_DIR: Path = DATA_DIR / "processed"
 GOLD_DECISIONS_DIR: Path = PROCESSED_DIR / "decisions"
 GOLD_RELATIONS_DIR: Path = PROCESSED_DIR / "relations"
@@ -37,6 +38,7 @@ EXTERNAL_DIR: Path = DATA_DIR / "external"
 # --- reports/ --------------------------------------------------------------------------
 FIGURES_DIR: Path = REPORTS_DIR / "figures"
 TABLES_DIR: Path = REPORTS_DIR / "tables"
+EXPERIMENT_A_DIR: Path = REPORTS_DIR / "experiment-a"
 EXPERIMENT_B_DIR: Path = REPORTS_DIR / "experiment-b"
 
 # Directories that this project writes to at runtime. Anything not writable (config/,

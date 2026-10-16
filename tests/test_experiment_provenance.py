@@ -132,3 +132,10 @@ def test_live_probe_returns_none_when_ollama_is_unreachable(
     probe = LiveProbe(host="http://ollama.test:1")
     assert probe.model_digests() is None
     assert probe.ollama_version() is None
+
+
+def test_c2_extraction_run_is_recorded_or_null() -> None:
+    assert _collect(FakeProbe(), c2_extraction="es2015-explora-r3x")["c2_extraction"] == (
+        "es2015-explora-r3x"
+    )
+    assert _collect(FakeProbe())["c2_extraction"] is None

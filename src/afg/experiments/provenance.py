@@ -26,7 +26,7 @@ from typing import Any, Protocol
 from afg.conditions.c1_retrieval import resolve_ollama_host
 from afg.extraction.openkos.capabilities import parse_version
 from afg.extraction.openkos.commands import SubprocessRunner
-from afg.shared.paths import EXPERIMENT_B_DIR, PROJECT_ROOT
+from afg.shared.paths import EXPERIMENT_A_DIR, EXPERIMENT_B_DIR, PROJECT_ROOT
 
 DIGEST_SOURCE = "ollama /api/tags"
 C1_PARAM_KEYS = ("max_chars", "overlap_turns", "k")
@@ -84,11 +84,14 @@ class LiveProbe:
         return parse_version(done.stdout) if done.returncode == 0 else None
 
     def git_dirty(self) -> bool | None:
-        """Uncommitted changes outside ``reports/experiment-b`` (a resumed run writes there)."""
-        excluded = EXPERIMENT_B_DIR.relative_to(PROJECT_ROOT).as_posix()
+        """Uncommitted changes outside the experiment report folders (runs write there)."""
+        excluded = [
+            f":(exclude){d.relative_to(PROJECT_ROOT).as_posix()}"
+            for d in (EXPERIMENT_A_DIR, EXPERIMENT_B_DIR)
+        ]
         try:
             done = subprocess.run(
-                ["git", "status", "--porcelain", "--", ".", f":(exclude){excluded}"],
+                ["git", "status", "--porcelain", "--", ".", *excluded],
                 cwd=PROJECT_ROOT,
                 capture_output=True,
                 text=True,
@@ -123,23 +126,27 @@ def collect_provenance(
     probe: ProvenanceProbe,
     *,
     generative_model: str,
-    judge_model: str,
+    judge_model: str | None = None,
     embedding_model: str,
-    c1_params: Mapping[str, Any],
-    questions_path: Path | None,
+    c1_params: Mapping[str, Any] | None = None,
+    questions_path: Path | None = None,
+    c2_extraction: str | None = None,
 ) -> dict[str, Any]:
     """The reproducibility fields to merge into the run manifest (all JSON-ready)."""
     digests = probe.model_digests()
     return {
         "generative_model_digest": _digest_of(generative_model, digests),
-        "judge_model_digest": _digest_of(judge_model, digests),
+        "judge_model_digest": _digest_of(judge_model, digests) if judge_model else None,
         "embedding_model_digest": _digest_of(embedding_model, digests),
         "model_digest_source": (
             DIGEST_SOURCE if digests is not None else "unavailable: Ollama not reachable"
         ),
         "ollama_version": probe.ollama_version(),
         "openkos_version": probe.openkos_version(),
-        "c1_params": {key: c1_params[key] for key in C1_PARAM_KEYS if key in c1_params},
+        "c1_params": {
+            key: c1_params[key] for key in C1_PARAM_KEYS if c1_params and key in c1_params
+        },
+        "c2_extraction": c2_extraction,
         "questions_sha256": file_sha256(questions_path),
         "git_dirty": probe.git_dirty(),
     }

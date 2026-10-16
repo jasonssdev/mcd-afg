@@ -24,6 +24,7 @@ dependencies = [
   "httpx>=0.28",
   "bibtexparser>=1.4,<2",  # v2 changed the API entirely (Library/parse_string); pin to v1
   "tqdm>=4.67",
+  "pyyaml>=6.0",  # reads the frontmatter of the OpenKOS bundle files (afg.extraction.openkos)
   "matplotlib>=3.9",
 ]
 
@@ -32,7 +33,7 @@ dependencies = [
 # the corpus and an instrument backend are actually wired up; keeping them optional means
 # the default install never pays for weights or backends nobody asked for.
 [project.optional-dependencies]
-instrument = ["openkos>=0.2.14"]      # the engine under evaluation (thesis §5.9)
+instrument = ["openkos>=0.5.5"]       # the engine under evaluation (thesis §5.9); interim floor, ADR 0006 pin pending (#94)
 llm = ["ollama>=0.4"]                 # local generative models (§5.8)
 embeddings = ["sentence-transformers>=3.3"]  # heavy; only needed for the alignment protocol
 
