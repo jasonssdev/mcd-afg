@@ -350,7 +350,7 @@ distinto (`notebooks/README.md`):
 |---|---|---|
 | `04-jss-anotacion-f1-calibracion.ipynb` | Fase 1: calibración sobre ES2015 y recalibración sobre TS3009, kappas **diagnósticos** | abierto con ES2015; la sección de TS3009 se añade tras su adjudicación |
 | `NN-jss-anotacion-f2-control.ipynb` | Fase 2: cuatro series de control, kappa **reportable** | pendiente |
-| `NN-jss-anotacion-f3-referencia.ipynb` | Fase 3: reparto individual y conjunto de referencia final de las 13 series | pendiente |
+| `NN-jss-anotacion-f3-referencia.ipynb` | Fase 3: reparto individual y conjunto de referencia final de las 14 series | pendiente |
 
 Son el registro académico de la anotación humana: acuerdo, kappa, adjudicación y el conjunto
 de referencia resultante. El de la Fase 3 es el que cierra OE1. Los pendientes toman el

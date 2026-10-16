@@ -79,7 +79,7 @@ igual, y descartarlo es trabajo de la adjudicación humana, no del comando.
 ## 2. Tarea A — Normalizar decisiones
 
 **Archivo que abres:** `data/processed/decisions/IS1004.decisions.gv.csv` — tu copia, con
-tus iniciales. **Nunca edites `IS1004.decisions.csv`** (el archivo sin iniciales): es el
+tus iniciales (ejemplo ilustrativo; IS1004 se abre en la Fase 3). **Nunca edites `IS1004.decisions.csv`** (el archivo sin iniciales): es el
 insumo limpio que genera `afg gold build`. Si anotas ahí, `afg gold prepare` no lo detecta
 —solo mira si tu propio `<serie>.decisions.<iniciales>.csv` ya tiene anotación— y genera tu
 copia con las columnas humanas vacías: el trabajo desaparece sin ningún error en pantalla.
@@ -338,7 +338,7 @@ Un error ahí no se mide: se convierte en la vara con la que mides todo lo demá
 ## 4. Tarea B — Adjudicar pares candidatos
 
 **Archivo:** `data/processed/relations/IS1004.candidates.gv.csv` — tu copia, con tus
-iniciales. **Nunca edites `IS1004.candidates.csv`** (el archivo sin iniciales): es el
+iniciales (ejemplo ilustrativo; IS1004 se abre en la Fase 3). **Nunca edites `IS1004.candidates.csv`** (el archivo sin iniciales): es el
 insumo limpio que genera `afg gold candidates`, igual que en la Tarea A.
 **Ritmo esperado:** ~1–2 minutos por par.
 **Volumen esperado:** 92 pares en las 14 series (3,0 % de los 3.071 pares entre reuniones; ver
@@ -472,7 +472,8 @@ Exigido por OE1: **mínimo 25 % de las series, anotadas de forma independiente.*
    - **dirección**
 4. Los desacuerdos se resuelven en sesión de adjudicación y se registran en
    `data/processed/relations/IS1004.candidates.adjudicated.csv` (y, para la Tarea A,
-   `data/processed/decisions/IS1004.decisions.adjudicated.csv`): par, etiqueta de cada
+   `data/processed/decisions/IS1004.decisions.adjudicated.csv`; nombres de ejemplo
+   ilustrativo, IS1004 se abre en la Fase 3): par, etiqueta de cada
    anotador, etiqueta final, razón.
 
 ### Qué es el kappa de Cohen y cómo leerlo

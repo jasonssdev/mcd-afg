@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 07 — Análisis exploratorio de datos |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.1 |
+| **Versión** | 1.2 |
 | **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
@@ -14,6 +14,7 @@
 |---|---|---|---|
 | 1.0 | 2026-10-15 | Versión inicial. El análisis exploratorio de datos se redacta para un lector no técnico: organización de los datos, calidad, valores atípicos, estadísticas descriptivas, filtro léxico, dificultades e implicancias para los pasos siguientes. | El video de avance 1 y las secciones 3 (caracterización de los datos) y 4 (análisis exploratorio) del pre-informe necesitan un texto que explique cada figura y cada cifra. Fuente de todas las cifras: [notebook 03](../../notebooks/03-jss-eda.ipynb) y [notebook 11](../../notebooks/11-jss-figuras-video-eda.ipynb). |
 | 1.1 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (ground truth, overlap coefficient, context window, tokens, PCA, filtro léxico (*blocking*)). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
+| 1.2 | 2026-10-15 | Se agrega la sección «Trazabilidad», con los notebooks, funciones y pruebas en que se apoya cada afirmación del documento. No cambia ninguna cifra, decisión ni sección anterior. | Auditoría de gobernanza del 2026-10-15: los documentos 06 a 09 no tenían la sección de trazabilidad que sí tienen los documentos 01 a 05. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -449,3 +450,18 @@ en el [notebook 11](../../notebooks/11-jss-figuras-video-eda.ipynb). La regla de
 está implementada y probada en `src/afg/annotation/blocking.py`. Las decisiones de diseño que
 se apoyan en este análisis están en el [avance 06](06-jss-metodologia.md) y en los
 [ADR](../decisions/README.md).
+
+---
+
+## Trazabilidad
+
+| Afirmación | Dónde se verifica |
+|---|---|
+| Calidad: valores faltantes, duplicados y valores atípicos (§3–5) | [`../../notebooks/03-jss-eda.ipynb`](../../notebooks/03-jss-eda.ipynb); `src/afg/eda/quality.py`; `tests/test_eda_quality.py` |
+| Estadísticas descriptivas, correlaciones y patrones principales (§6) | [`../../notebooks/03-jss-eda.ipynb`](../../notebooks/03-jss-eda.ipynb); `src/afg/eda/stats.py`; `tests/test_eda_stats.py` |
+| Estructura multivariada (PCA y agrupamiento) | [`../../notebooks/03-jss-eda.ipynb`](../../notebooks/03-jss-eda.ipynb); `src/afg/eda/multivariate.py`; `tests/test_eda_multivariate.py` |
+| Eje temporal por serie | [`../../notebooks/03-jss-eda.ipynb`](../../notebooks/03-jss-eda.ipynb); `src/afg/eda/temporal.py` |
+| Tablas y figuras del análisis | `src/afg/eda/tables.py`, `src/afg/eda/figures.py`; `tests/test_eda_tables.py`, `tests/test_eda_figures.py` |
+| Las cinco figuras del video de avance #1 | [`../../notebooks/11-jss-figuras-video-eda.ipynb`](../../notebooks/11-jss-figuras-video-eda.ipynb); [`../entregables/figuras/`](../entregables/figuras/) |
+| Filtro léxico: regla, punto de operación y sensibilidad (§7) | `src/afg/annotation/blocking.py`; `tests/test_blocking.py`; [`../decisions/README.md`](../decisions/README.md), decisiones D5 y D9 |
+| Cifras del corpus (56 reuniones, 343 decisiones, 3.071 pares, 92 candidatos) | [`../README.md`](../README.md), sección «Las cifras del corpus» |

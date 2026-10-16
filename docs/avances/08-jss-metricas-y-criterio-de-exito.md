@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 08 — Métricas y criterio de éxito |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.1 |
+| **Versión** | 1.2 |
 | **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
@@ -14,6 +14,7 @@
 |---|---|---|---|
 | 1.0 | 2026-10-15 | Versión inicial. Reúne en un solo lugar qué se mide, sobre qué objeto, cómo se calcula, qué umbral o intervalo aplica y cómo se sabrá si el experimento tuvo éxito; declara las decisiones que siguen abiertas. No fija ninguna cifra ni regla nueva: cada dato remite al documento, ADR, configuración o notebook donde ya está definido. | Retroalimentación del profesor: faltaba tener claras las métricas del proyecto. El material del curso pide métricas aunque sean preliminares, como línea base (pre-informe del curso, p. 12, pregunta frecuente 5). |
 | 1.1 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (ground truth, precision, recall, accuracy, LLM-as-a-judge, filtro léxico (*blocking*)). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
+| 1.2 | 2026-10-15 | Se agrega la sección «Trazabilidad», con las funciones, pruebas, notebooks y decisiones en que se apoya cada métrica. No cambia ninguna cifra, decisión ni sección anterior. | Auditoría de gobernanza del 2026-10-15: los documentos 06 a 09 no tenían la sección de trazabilidad que sí tienen los documentos 01 a 05. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -473,3 +474,19 @@ uno se indica dónde se manifiesta, las opciones con su contrapartida y qué blo
      Evita tocar el documento entregado, pero el criterio de éxito no figura en la propuesta.
 - **Qué bloquea.** Nada técnico. Afecta la consistencia entre lo prerregistrado y lo
   entregado al curso, y el pre-informe (§5–6) que debe citarlo.
+
+---
+
+## Trazabilidad
+
+| Afirmación | Dónde se verifica |
+|---|---|
+| Kappa de Cohen y acuerdo entre quienes anotan (OE1) | `src/afg/annotation/agreement.py`, `src/afg/evaluation/metrics.py` (`cohen_kappa`); `tests/test_agreement.py`, `tests/test_metrics.py` |
+| Precision, recall y F1; exactitud de tipo y de dirección; intervalos Wilson y bootstrap | `src/afg/evaluation/metrics.py`; `tests/test_metrics.py` |
+| Alineamiento de decisiones extraídas con las de referencia (OE2) | `src/afg/evaluation/alignment.py`, `src/afg/evaluation/scoring.py`; `tests/test_alignment.py`, `tests/test_scoring.py`; [`../protocols/alignment.md`](../protocols/alignment.md) |
+| Citación correcta y precisión de las citas (OE3) | `src/afg/evaluation/citation.py`; `tests/test_citation.py`; [`../decisions/0009-adr-regla-de-citacion-correcta.md`](../decisions/0009-adr-regla-de-citacion-correcta.md) |
+| Atribución del error a su etapa (OE4) y costo amortizado | `src/afg/evaluation/attribution.py`, `src/afg/evaluation/amortization.py`; `tests/test_attribution.py`, `tests/test_amortization.py` |
+| Análisis del Experimento B: tasas, intervalos y diferencia pareada C2 − C1 | `src/afg/experiments/analysis.py`; `tests/test_experiment_b_analysis.py`; `afg experiment b-report` |
+| Potencia del criterio D16 por simulación | `src/afg/experiments/power.py`; `tests/test_experiment_b_power.py`; [`../../notebooks/10-jss-potencia-criterio-d16.ipynb`](../../notebooks/10-jss-potencia-criterio-d16.ipynb) |
+| Enmienda D17 y verificación humana del LLM-as-a-judge | [`../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md`](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md); `src/afg/evaluation/judge_human_check.py`; `tests/test_judge_human_check.py` |
+| Umbrales y parámetros prerregistrados | [`../../config/experiments.toml`](../../config/experiments.toml) |

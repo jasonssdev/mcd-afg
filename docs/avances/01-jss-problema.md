@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 01 — Problema |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.2 |
-| **Fecha** | 2026-10-01 |
+| **Versión** | 1.3 |
+| **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -15,6 +15,7 @@
 | 1.0 | 2026-09-20 | Versión inicial. Formulación del problema para AFG1. | Primera entrega del curso. |
 | 1.1 | 2026-09-20 | Citas Hsueh & Moore 2007a/2007b; enlace a la propuesta renombrado. | Corrección bibliográfica y renombre de archivo. |
 | 1.2 | 2026-10-01 | Reescritura completa de la redacción: el problema se cuenta desde un caso real del corpus, cada término técnico se explica al aparecer y se agrega un glosario breve. Las cifras, las referencias y la formulación del problema no cambian. | Retroalimentación de la revisión entre equipos de la semana 8: el problema y la metodología no se entendían, menos aún para una audiencia no técnica. |
+| 1.3 | 2026-10-15 | Se agrega a la lista de referencias Hsueh y Moore (2007b), que el historial de la versión 1.1 ya citaba, y se ordena la lista alfabéticamente; se elimina un párrafo que describía la versión 1.2 en pasado. No cambia ninguna cifra ni la formulación del problema. | Auditoría de gobernanza del 2026-10-15: la lista de referencias estaba incompleta respecto del historial y desordenada. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -171,11 +172,13 @@ cuánto aporta, dentro de esa base, registrar que una decisión cambió con el t
 
 La propuesta ya señalaba este vacío (§1.6). Lo que se agrega aquí es la verificación directa
 sobre la documentación del corpus —conteo de archivos y elementos de `decisionlink`—, que
-antes era una lectura de la guía de anotación y ahora es evidencia contrastada. La versión
-1.2 cambia la forma de contarlo, no el contenido: las cifras, las referencias y la
-formulación del problema son las mismas de la versión 1.1.
+antes era una lectura de la guía de anotación y ahora es evidencia contrastada.
 
 ## Referencias
+
+Edge, D., Trinh, H., Cheng, N., Bradley, J., Chao, A., Mody, A., Truitt, S., Metropolitansky,
+D., Ness, R. O., & Larson, J. (2024). *From local to global: A graph RAG approach to
+query-focused summarization* (arXiv:2404.16130) [Preprint, sin revisión por pares].
 
 Fernández, R., Frampton, M., Ehlen, P., Purver, M., & Peters, S. (2008). Modelling and
 detecting decisions in multi-party dialogue. En *Proceedings of the 9th SIGdial Workshop on
@@ -185,14 +188,14 @@ Hsueh, P.-Y., & Moore, J. D. (2007a). What decisions have you made? Automatic de
 detection in meeting conversations. En *Proceedings of NAACL-HLT 2007* (pp. 25–32).
 Association for Computational Linguistics.
 
+Hsueh, P.-Y., & Moore, J. D. (2007b). Automatic decision detection in meeting speech. En
+*Machine Learning for Multimodal Interaction (MLMI 2007)* (LNCS 4892, pp. 168–179). Springer.
+https://doi.org/10.1007/978-3-540-78155-4_15
+
 Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N., Küttler, H., Lewis,
 M., Yih, W., Rocktäschel, T., Riedel, S., & Kiela, D. (2020). Retrieval-augmented generation
 for knowledge-intensive NLP tasks. En *Advances in Neural Information Processing Systems 33*
 (pp. 9459–9474).
-
-Edge, D., Trinh, H., Cheng, N., Bradley, J., Chao, A., Mody, A., Truitt, S., Metropolitansky,
-D., Ness, R. O., & Larson, J. (2024). *From local to global: A graph RAG approach to
-query-focused summarization* (arXiv:2404.16130) [Preprint, sin revisión por pares].
 
 ---
 
@@ -202,7 +205,7 @@ query-focused summarization* (arXiv:2404.16130) [Preprint, sin revisión por par
 |---|---|
 | El botón turbo: el resumen de IS1004d afirma una eliminación que la transcripción contradice | [`02-jss-fuente-de-datos.md`](02-jss-fuente-de-datos.md) §5; [`../anotacion/manual-anotacion-oe1.md`](../anotacion/manual-anotacion-oe1.md) §3; [`../../notebooks/01-jss-viabilidad-e3.ipynb`](../../notebooks/01-jss-viabilidad-e3.ipynb) |
 | Estructura del corpus: series de cuatro reuniones, escenario del control remoto | [`02-jss-fuente-de-datos.md`](02-jss-fuente-de-datos.md) §1 y §2 |
-| Hsueh & Moore, 1,4 % de actos anotados como decisión | [`../propuesta.md`](../propuesta.md) §1.4; `bibliography/refs.bib` `hsueh2007whatdecisions` |
+| Hsueh & Moore (2007a), 1,4 % de actos anotados como decisión | [`../propuesta.md`](../propuesta.md) §1.4; `bibliography/refs.bib` `hsueh2007whatdecisions` |
 | Fernández et al., kappa negativo y 12,22 % de solapamiento | [`../propuesta.md`](../propuesta.md) §1.4; `bibliography/refs.bib` `fernandez2008modelling` |
 | `decisionlink`: 47 archivos, 288 elementos, cero punteros a resúmenes | Documentación de `ami_public_manual_1.6.2` (`corpusdoc/annot_decisionlink.html`, `AMI-metadata.xml`, `resource.xml`) y conteo directo sobre `decision/manual/`, verificado el 2026-09-20 |
 | Formulación del problema | [`../propuesta.md`](../propuesta.md) §1.5 (reformulada) |

@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 09 — Modelos y su justificación |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.1 |
+| **Versión** | 1.2 |
 | **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
@@ -14,6 +14,7 @@
 |---|---|---|---|
 | 1.0 | 2026-10-15 | Versión inicial. Reúne en un solo documento los modelos y técnicas del proyecto, la justificación de cada elección con su evidencia, las primeras pruebas realizadas y las dificultades abiertas. No introduce decisiones ni cifras nuevas: cada dato remite al registro de decisiones, a la configuración o al notebook donde ya consta. | Entrega del video de modelado de datos (semana 4) y sección «Modelo de aprendizaje de máquinas» del pre-informe. |
 | 1.1 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (ground truth, baseline, accuracy, precision, LLM-as-a-judge, context window, cosine similarity). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
+| 1.2 | 2026-10-15 | Se agrega la sección «Trazabilidad»; se corrige la referencia del recuento de unas 900 respuestas (notebook 07, el motor de corrida) y se indican los denominadores de las cifras de ES2015 (29 decisiones con acuerdo evaluado; 27 decisiones finales). El pendiente de confirmación con el tutor indica responsable y fecha. No cambia ninguna cifra ni decisión. | Auditoría de gobernanza del 2026-10-15: el recuento citaba el notebook 05 (selección del juez) en lugar del 07; las cifras de ES2015 usaban denominadores distintos sin decirlo; el pendiente no tenía responsable. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -73,7 +74,8 @@ primero se define qué se quiere contestar y después se eligen las piezas. Adem
 configuración de cada pieza queda fijada y registrada, de modo que cualquiera puede repetir
 la corrida.
 
-> **Por confirmar con el tutor.** Este encuadre es una interpretación del equipo sobre cómo
+> **Por confirmar con el tutor** (responsable: jss; abierto desde 2026-10-15, sin respuesta
+> todavía). Este encuadre es una interpretación del equipo sobre cómo
 > aplicar la pauta de modelado a un proyecto sin modelo entrenado. Conviene confirmarlo con el
 > tutor antes de la entrega, en particular si acepta que el LLM-as-a-judge se presente como instrumento
 > y no como modelo bajo prueba.
@@ -214,8 +216,8 @@ orden a, b, c, d en las 8 restantes (ADR 0008, notebook 08). Es una desviación 
 un dato temporal.
 
 **Evidencia de que el riesgo es real.** Una prueba sobre ES2015 con OpenKOS 0.5.2 y
-`qwen3:8b` extrajo 4 objetos de decisión para toda la serie, frente a 29 decisiones en la
-anotación adjudicada del equipo (documento 06, §7–8). Es una serie y una corrida, con una
+`qwen3:8b` extrajo 4 objetos de decisión para toda la serie, frente a 29 decisiones con acuerdo
+evaluado en la anotación adjudicada del equipo (27 son decisiones finales; documento 06, §7–8). Es una serie y una corrida, con una
 versión que ya no es la candidata; por eso se está corrigiendo OpenKOS antes de fijar la
 versión (sección 6).
 
@@ -249,14 +251,14 @@ adjudicación de los desacuerdos (documento 06, §5–6).
 **Limitaciones.** C3 es una *referencia*, no un «techo teórico»: una anotación humana con
 fiabilidad medida no es un límite superior demostrable (docstring de
 `src/afg/conditions/c3_compiled_gold.py` y documento 03). Además, la calibración de las dos
-personas que anotan en ES2015 dio un acuerdo bajo (kappa de 0,094, 13 de 29 decisiones), lo
+personas que anotan en ES2015 dio un acuerdo bajo (kappa de 0,094, 13 de 29 decisiones con acuerdo evaluado), lo
 que llevó a corregir la guía y a recalibrar con otra serie antes de las series de control
 (documento 06, §5–6; issues #78 y #79 para TS3009).
 
 ## 4. El LLM-as-a-judge: un instrumento de medida
 
 **Qué es y por qué hace falta.** El Experimento B genera al menos unas 900 respuestas (100
-preguntas como mínimo × 3 condiciones × 3 corridas, notebook 05; hasta 115 preguntas si E3 llega a 40). Calificarlas a mano es inviable para un
+preguntas como mínimo × 3 condiciones × 3 corridas, notebook 07; hasta 115 preguntas si E3 llega a 40). Calificarlas a mano es inviable para un
 equipo de tres personas, así que las califica un **LLM-as-a-judge**: un segundo modelo de
 lenguaje que lee la pregunta, la respuesta de referencia, la respuesta del sistema y el
 pasaje de la transcripción donde está la evidencia, y decide si la respuesta es correcta y si
@@ -361,7 +363,7 @@ claridad lo que ya corrió de lo que sigue bloqueado.
   diferencia pareada declara «respaldada» en 57,5 % de los experimentos simulados, frente a
   10,4 % del criterio de intervalos separados (dispersión de dificultad 1 y accuracy base 0,5).
 - **Primer intento de extracción** con OpenKOS 0.5.2 sobre ES2015: 4 objetos frente a 29
-  decisiones de referencia (documento 06, §7–8).
+  decisiones con acuerdo evaluado en la referencia (documento 06, §7–8).
 
 ### 6.2 Dificultades encontradas y siguiente paso
 
@@ -395,10 +397,28 @@ claridad lo que ya corrió de lo que sigue bloqueado.
    tipos de relación de la tesis, con dirección (issue #96).
 7. **Ámbito del Experimento A sin decidir.** Falta decidir si una decisión extraída puede
    alinearse con cualquier decisión de la serie o solo con las de su reunión, y cómo contar
-   decisiones con evidencia de varios hablantes (9 de 27 en ES2015). Y los intervalos
+   decisiones con evidencia de varios hablantes (9 de 27 decisiones finales en ES2015). Y los intervalos
    actuales no consideran la agrupación por reunión (issue #99). Siguiente paso: decidirlo con
    la primera extracción real y registrarlo en un ADR.
 8. **Anotación humana en curso.** Las recalibraciones, las series de control y el banco de
    preguntas siguen abiertos (issues #19, #27 a #33, #78 y #79); sin ellos no existen C3 ni
    el banco con que se mide. Siguiente paso: cerrar la anotación de referencia para poder
    construir C3 (issues #29 a #31).
+
+---
+
+## Trazabilidad
+
+| Afirmación | Dónde se verifica |
+|---|---|
+| Modelos, versiones y presupuesto compartido (`qwen3:8b`, `qwen3:32b`, `bge-m3`, juez) | [`../../config/experiments.toml`](../../config/experiments.toml) (`[shared_budget]`, `[judge]`) |
+| Ajuste de C1: 32 configuraciones, ganador 1.200 / 1 / 5 | [`../../notebooks/06-jss-ajuste-c1.ipynb`](../../notebooks/06-jss-ajuste-c1.ipynb); [`../../reports/c1-tuning/resultados.json`](../../reports/c1-tuning/resultados.json); `src/afg/conditions/c1_tuning.py`; [`../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md`](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md) |
+| C1: segmentación, recuperación híbrida y presupuesto de contexto | `src/afg/conditions/c1_chunking.py`, `c1_retrieval.py`, `c1_document_rag.py`, `c1_prompt_budget.py`; `tests/test_c1_chunking.py`, `test_c1_retrieval.py`, `test_c1_document_rag.py`, `test_c1_prompt_budget.py` |
+| C1 separado de OpenKOS, respuesta con los prompts de OpenKOS | [`../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md`](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md); `src/afg/conditions/answer_prompts.py` |
+| Selección del LLM-as-a-judge: tres candidatos, 42 ítems, `gpt-oss:20b` | [`../../notebooks/05-jss-seleccion-juez.ipynb`](../../notebooks/05-jss-seleccion-juez.ipynb); [`../../reports/judge-calibration/resultados.json`](../../reports/judge-calibration/resultados.json); [`../anotacion/calibracion-juez.md`](../anotacion/calibracion-juez.md) |
+| Acuerdo humano de la calibración del juez (1,00 y 0,87) | [`../../reports/judge-calibration/acuerdo-humano.json`](../../reports/judge-calibration/acuerdo-humano.json) |
+| Corrida de humo de C1 sobre ES2015 (21 registros, 272 s) | [`../../notebooks/07-jss-runner-experimento-b.ipynb`](../../notebooks/07-jss-runner-experimento-b.ipynb); [`../../reports/experiment-b/humo-c1-es2015/manifest.json`](../../reports/experiment-b/humo-c1-es2015/manifest.json) |
+| Regla de citación correcta | [`../../notebooks/09-jss-regla-de-citacion.ipynb`](../../notebooks/09-jss-regla-de-citacion.ipynb); [`../decisions/0009-adr-regla-de-citacion-correcta.md`](../decisions/0009-adr-regla-de-citacion-correcta.md) |
+| Fechas de reunión para OpenKOS | [`../../notebooks/08-jss-fechas-de-reunion.ipynb`](../../notebooks/08-jss-fechas-de-reunion.ipynb); [`../decisions/0008-adr-fechas-de-reunion-para-openkos.md`](../decisions/0008-adr-fechas-de-reunion-para-openkos.md) |
+| Potencia del criterio principal | [`../../notebooks/10-jss-potencia-criterio-d16.ipynb`](../../notebooks/10-jss-potencia-criterio-d16.ipynb) |
+| Primer intento de extracción de C2: 4 objetos frente a 29 decisiones con acuerdo evaluado (27 finales) | [`06-jss-metodologia.md`](06-jss-metodologia.md) §7–8; [`../../data/processed/decisions/ES2015.decisions.adjudicated.csv`](../../data/processed/decisions/ES2015.decisions.adjudicated.csv) |

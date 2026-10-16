@@ -81,8 +81,8 @@ uv run afg gold build      --series <ID>   # -> data/processed/decisions/<ID>.de
 uv run afg gold candidates --series <ID>   # -> data/processed/relations/<ID>.candidates.csv
 ```
 
-Son comandos de mantenimiento: quien anota no los corre (solo `setup`, `validate`,
-`status` y `evidencia`). No hay nada que hacer en esta fase. Si alguien vuelve a correr estos comandos sobre una
+Son comandos de mantenimiento: quien anota no los corre (solo `setup`, `prepare`,
+`validate`, `status`, `evidencia` y `questions-check`). No hay nada que hacer en esta fase. Si alguien vuelve a correr estos comandos sobre una
 serie que ya tiene archivos de anotador con trabajo cargado, `afg gold build` y `afg gold
 candidates` se niegan a regenerar la base: perder la división de una fila `compuesta` o
 desalinear las columnas de máquina que `afg gold validate` compara contra la base rompería

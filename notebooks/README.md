@@ -41,7 +41,7 @@ Ejemplo: `00-jss-corpus-y-auditoria.ipynb`
 | 10 | `10-jss-potencia-criterio-d16.ipynb` | Potencia del criterio principal D16 por simulación Monte Carlo con datos **sintéticos** (no se corrió ningún experimento ni modelo): intervalos independientes sin solapar frente a diferencia pareada C2 − C1 por encima de 0, con 3 corridas por pregunta, dificultad compartida entre condiciones, tamaños de 25, 40 y 50 preguntas y falsos positivos. Respalda la enmienda de D16 del [ADR 0010](../docs/decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md). Sus cifras describen el criterio de decisión, no a C1, C2 ni C3 | ✅ |
 | 11 | `11-jss-figuras-video-eda.ipynb` | Selección de cinco figuras para el video de avance #1 (máximo 8 minutos): criterios tomados de la rúbrica, versión legible para grabación de pantalla, justificación de cada figura, su efecto en los siguientes pasos y exportación como PNG a `docs/entregables/figuras/`. Cuatro provienen del [notebook 03](03-jss-eda.ipynb) y el embudo del filtro léxico (3.071 → 92 pares) sale de `afg.audit.blocker_sensitivity`; no se calcula nada nuevo | ✅ |
 | — | `NN-jss-anotacion-f2-control.ipynb` | Anotación humana, Fase 2: las cuatro series de control con doble anotación. El kappa **reportable** de OE1 | pendiente |
-| — | `NN-jss-anotacion-f3-referencia.ipynb` | Anotación humana, Fase 3: reparto individual y conjunto de referencia final de las 13 series | pendiente |
+| — | `NN-jss-anotacion-f3-referencia.ipynb` | Anotación humana, Fase 3: reparto individual y conjunto de referencia final de las 14 series | pendiente |
 | — | `NN-jss-experimento-a.ipynb` | OE2 — calidad de la extracción automática contra la referencia | pendiente |
 | — | `NN-jss-experimento-b.ipynb` | OE3/OE4 — C1 vs C2 vs C3 y atribución del error a su etapa | pendiente |
 
@@ -83,8 +83,9 @@ Mirar el **contenido** del conjunto de evaluación es contaminarlo.
 ## Reproducibilidad
 
 - El corpus está en `.gitignore`. Un clon fresco necesita `uv run afg corpus download`
-  antes de ejecutar cualquier notebook; todos empiezan con una guarda que falla con un
-  mensaje claro si falta.
+  antes de ejecutar un notebook que lee el corpus; esos notebooks empiezan con una guarda
+  que falla con un mensaje claro si falta. Los notebooks que trabajan solo con los CSV y los
+  reportes versionados (por ejemplo el 01, 04, 05, 06, 07, 09 y 10) no la llevan.
 - **Estos notebooks se versionan CON sus outputs.** Es lo contrario de la práctica habitual
   en repositorios de código, y es deliberado: aquí el notebook es un entregable académico,
   y un revisor tiene que poder leer los resultados sin ejecutar nada ni tener los 228 MB del
