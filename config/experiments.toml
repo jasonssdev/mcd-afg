@@ -8,7 +8,7 @@
 
 [shared_budget]
 generative_model = "qwen3:8b"        # the model `openkos query` answers with (ADR 0006); pin the exact tag before Experiment A/B (5.8)
-generative_model_large = "qwen3:32b" # second scale point (H3); an extension, not a committed run -- see docs/avances/03-jss-objetivos.md
+generative_model_large = "qwen3:32b" # read by the pending Experiment A/B code; keep. Second scale point (H3); an extension, not a committed run -- see docs/avances/03-jss-objetivos.md
 embedding_model = "bge-m3"
 context_window_tokens = 12288        # openkos num_ctx default (ADR 0006)
 max_generation_tokens = 8192         # openkos num_predict default (ADR 0006)
@@ -18,7 +18,7 @@ top_p = 0.9
 runs_per_config = 3                  # thesis section 5.8: minimum 3 runs, report mean + dispersion
 
 [retrieval]
-answer_limit = 5                     # `--limit` of `openkos query` for C2 and C3 (OpenKOS default, ADR 0006). Kept on purpose: the three conditions share a TEXT budget, not an equal K (ADR 0007). C1 uses [retrieval.c1].k
+answer_limit = 5                     # read by the pending Experiment A/B code; keep. `--limit` of `openkos query` for C2 and C3 (OpenKOS default, ADR 0006). Kept on purpose: the three conditions share a TEXT budget, not an equal K (ADR 0007). C1 uses [retrieval.c1].k
 rrf_k = 60                           # reciprocal rank fusion constant, as in openkos retrieval/fusion.py
 # Unweighted RRF over the lexical and dense channels, as in openkos retrieval/fusion.py.
 
@@ -56,6 +56,7 @@ k = 5                                # chunks sent to the answer prompt
 # Thesis section 5.4: cosine-similarity candidates over (decision object, content) pairs,
 # one-to-one matching via the Hungarian algorithm, F1 reported as a curve over tau, never
 # a single point.
+# Read by the pending Experiment A/B code; keep: tau_grid and manual_validation_sample_size.
 tau_grid = [0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90]
 manual_validation_sample_size = 100  # minimum sample for automatic-vs-manual concordance
 
@@ -76,7 +77,7 @@ human_validation_fraction = 0.20      # thesis section 5.7: >=20% human validati
 # it meets every pre-registered threshold and is the fastest of the candidates that do. A
 # different family from the generative model (OpenAI open-weight vs Qwen).
 model = "gpt-oss:20b"
-must_differ_from_generative_model = true
+must_differ_from_generative_model = true   # read by afg.evaluation.judge.require_distinct_model_families
 # Transcript excerpt the judge reads to decide `evidence_supported`: this many speaker turns
 # before and after the turns holding the reference dialogue acts (windows that overlap are
 # merged). AMI turns are short, so 5 turns each side is roughly one minute of talk: enough to

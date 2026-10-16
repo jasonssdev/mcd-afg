@@ -89,6 +89,31 @@ class TestGuard:
         with pytest.raises(JudgeConfigurationError):
             require_distinct_model_families("", "qwen3:8b")
 
+    def test_flag_false_allows_the_same_model(self) -> None:
+        require_distinct_model_families("qwen3:8b", "qwen3:8b", must_differ=False)
+
+    def test_flag_false_still_requires_a_judge(self) -> None:
+        with pytest.raises(JudgeConfigurationError):
+            require_distinct_model_families("", "qwen3:8b", must_differ=False)
+
+    def test_flag_true_rejects_the_same_model(self) -> None:
+        with pytest.raises(JudgeConfigurationError):
+            require_distinct_model_families("qwen3:8b", "qwen3:8b", must_differ=True)
+
+    @pytest.mark.parametrize("flag", [True, False])
+    def test_default_honors_the_configured_flag(
+        self, monkeypatch: pytest.MonkeyPatch, flag: bool
+    ) -> None:
+        monkeypatch.setattr(
+            "afg.evaluation.judge.load_experiments_config",
+            lambda: {"judge": {"must_differ_from_generative_model": flag}},
+        )
+        if flag:
+            with pytest.raises(JudgeConfigurationError):
+                require_distinct_model_families("qwen3:8b", "qwen3:8b")
+        else:
+            require_distinct_model_families("qwen3:8b", "qwen3:8b")
+
 
 class TestJudgeAnswer:
     def test_returns_validated_verdict(self) -> None:

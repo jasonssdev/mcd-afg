@@ -466,9 +466,16 @@ def test_ollama_invalid_json_raises(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_ollama_host_resolution(
     monkeypatch: pytest.MonkeyPatch, env: str | None, expected: str
 ) -> None:
+    monkeypatch.delenv("AFG_OLLAMA_HOST", raising=False)
     if env is None:
         monkeypatch.delenv("OLLAMA_HOST", raising=False)
     else:
         monkeypatch.setenv("OLLAMA_HOST", env)
     assert c1_retrieval.resolve_ollama_host() == expected
     assert OllamaEmbedder.from_config(model="m").host == expected
+
+
+def test_ollama_host_prefers_the_afg_setting(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("OLLAMA_HOST", "ignored:1")
+    monkeypatch.setenv("AFG_OLLAMA_HOST", "wanted:2/")
+    assert c1_retrieval.resolve_ollama_host() == "http://wanted:2"
