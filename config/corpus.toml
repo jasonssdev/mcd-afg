@@ -96,6 +96,12 @@ required_for_goldset = [
 # The three things thesis section 5.0 required verifying before committing the design.
 # `afg corpus inventory` implements this check; results are in
 # reports/tables/paso_cero_inventory.csv.
+# SCOPE: `afg corpus inventory` and `afg corpus participants` iterate over the six series of
+# [corpus.series] (the DDS validation subset, decision D2), NOT the 14 series of [oe1]. So
+# paso_cero_inventory.csv holds 24 meetings (6 x 4) and participants.csv only their
+# participants; neither says anything about the other eight OE1 series (the 14-series totals
+# live in [oe1]). Widening them would mean changing [corpus.series], which also drives the
+# DDS-layer audit, so it is not done here.
 # The decision log lives at docs/decisions/README.md (it replaced docs/BACKLOG.md,
 # retired 2026-09-21); the measured figures are produced by `uv run afg corpus inventory`.
 verify = [
