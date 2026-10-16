@@ -212,6 +212,7 @@ def run_experiment_b(
     partition_of: Callable[[str], str] | None = None,
     excerpt_for: ExcerptFor = default_excerpt_for,
     git_commit: str | None = None,
+    provenance: Mapping[str, Any] | None = None,
     max_consecutive_errors: int = DEFAULT_MAX_CONSECUTIVE_ERRORS,
     progress: Callable[[int, int], None] | None = None,
     clock: Callable[[], float] = time.perf_counter,
@@ -221,6 +222,8 @@ def run_experiment_b(
 
     ``conditions`` maps the condition id to the condition. ``progress(done, total)`` is called
     after each record written by this execution (``total`` counts only the pending keys).
+    ``provenance`` (see :func:`afg.experiments.provenance.collect_provenance`) is merged into
+    the manifest as reproducibility fields; omitted, the manifest keeps its previous shape.
 
     Raises:
         JudgeConfigurationError: if the judge and generative models coincide.
@@ -271,6 +274,8 @@ def run_experiment_b(
         ),
         "counts": {},
     }
+    if provenance:
+        manifest.update(provenance)
 
     done = {
         _key_of(r) for r in load_records(records_path, latest_only=True) if r.get("error") is None

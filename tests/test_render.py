@@ -30,11 +30,14 @@ from afg.corpus.render import (
     write_meeting_artifacts,
 )
 from afg.shared.paths import AMI_DIR
+from tests.markers import requires
 
 _CORPUS_AVAILABLE = (AMI_DIR / "words" / "IS1004d.A.words.xml").exists()
 
-requires_corpus = pytest.mark.skipif(
-    not _CORPUS_AVAILABLE, reason="AMI corpus not downloaded at data/raw/ami/"
+requires_corpus = requires(
+    "requires_corpus",
+    available=_CORPUS_AVAILABLE,
+    reason="AMI corpus not downloaded at data/raw/ami/",
 )
 
 _NITE_NS = 'xmlns:nite="http://nite.sourceforge.net/"'

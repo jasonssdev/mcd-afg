@@ -19,6 +19,7 @@ import pytest
 
 from afg.corpus.inventory import CorpusNotDownloadedError, build_inventory
 from afg.shared.paths import AMI_DIR
+from tests.markers import requires
 
 # Ground truth measured by hand against data/raw/ami/ (2026-09-20). Each tuple is
 # (abstractive_decision_sentences, dds_segment_count, external_flag_count,
@@ -62,8 +63,10 @@ _corpus_present = AMI_DIR.exists() and any(
     p.is_file() and p.name != ".gitkeep" and not p.name.startswith(".") for p in AMI_DIR.rglob("*")
 )
 
-requires_corpus = pytest.mark.skipif(
-    not _corpus_present, reason="AMI corpus not downloaded at data/raw/ami/"
+requires_corpus = requires(
+    "requires_corpus",
+    available=_corpus_present,
+    reason="AMI corpus not downloaded at data/raw/ami/",
 )
 
 

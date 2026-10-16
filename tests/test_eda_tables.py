@@ -37,6 +37,7 @@ from afg.eda.tables import (
 )
 from afg.shared.config import load_corpus_config
 from afg.shared.paths import AMI_DIR, TRANSCRIPTS_DIR
+from tests.markers import requires
 
 SPLIT = {"S1": "development", "S2": "evaluation"}
 
@@ -342,8 +343,10 @@ _ids = [f"{s}{letter}" for s in _oe1["series"] for letter in "abcd"]
 _corpus_ready = (AMI_DIR / "corpusResources" / "meetings.xml").exists() and all(
     (TRANSCRIPTS_DIR / f"{m}.jsonl").exists() for m in _ids
 )
-requires_corpus = pytest.mark.skipif(
-    not _corpus_ready, reason="AMI corpus or frozen transcripts not available locally"
+requires_corpus = requires(
+    "requires_corpus",
+    available=_corpus_ready,
+    reason="AMI corpus or frozen transcripts not available locally",
 )
 
 

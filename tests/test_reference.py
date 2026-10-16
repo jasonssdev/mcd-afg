@@ -17,6 +17,7 @@ from afg.evaluation.reference import (
     primary_role,
 )
 from afg.shared.paths import AMI_DIR, GOLD_DECISIONS_DIR, TRANSCRIPTS_DIR
+from tests.markers import requires
 
 MEETING = "ES2015a"
 HEADER = [
@@ -267,8 +268,9 @@ def test_series_loader_requires_the_adjudicated_file(tmp_path: Path) -> None:
 
 
 _REAL = GOLD_DECISIONS_DIR / "ES2015.decisions.adjudicated.csv"
-requires_data = pytest.mark.skipif(
-    not (_REAL.is_file() and (AMI_DIR / "extractive").is_dir() and TRANSCRIPTS_DIR.is_dir()),
+requires_data = requires(
+    "requires_data",
+    available=(_REAL.is_file() and (AMI_DIR / "extractive").is_dir() and TRANSCRIPTS_DIR.is_dir()),
     reason="needs the adjudicated reference, the AMI corpus and the frozen transcripts",
 )
 

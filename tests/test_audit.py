@@ -29,13 +29,16 @@ from afg.audit.evidence import anchoring_rates, role_authorship
 from afg.audit.topics import TopicBoundaryOverlapResult, topic_decision_boundary_overlap
 from afg.shared.config import load_corpus_config
 from afg.shared.paths import AMI_DIR
+from tests.markers import requires
 
 _corpus_present = AMI_DIR.exists() and any(
     p.is_file() and p.name != ".gitkeep" and not p.name.startswith(".") for p in AMI_DIR.rglob("*")
 )
 
-requires_corpus = pytest.mark.skipif(
-    not _corpus_present, reason="AMI corpus not downloaded at data/raw/ami/"
+requires_corpus = requires(
+    "requires_corpus",
+    available=_corpus_present,
+    reason="AMI corpus not downloaded at data/raw/ami/",
 )
 
 

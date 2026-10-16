@@ -21,22 +21,19 @@ dependencies = [
   "numpy>=2.1",
   "scipy>=1.14",
   "scikit-learn>=1.6",
-  "python-dotenv>=1.0",
   "httpx>=0.28",
   "bibtexparser>=1.4,<2",  # v2 changed the API entirely (Library/parse_string); pin to v1
   "tqdm>=4.67",
   "matplotlib>=3.9",
-  "seaborn>=0.13",
 ]
 
 # Extras are split so that `uv sync` (no extras) stays fast for day-to-day work on the
-# harness itself. `sentence-transformers` pulls in torch, and `ollama`/`rank-bm25` are only
-# needed once the corpus and an instrument backend are actually wired up; keeping them
-# optional means the default install never pays for weights or backends nobody asked for.
+# harness itself. `sentence-transformers` pulls in torch, and `ollama` is only needed once
+# the corpus and an instrument backend are actually wired up; keeping them optional means
+# the default install never pays for weights or backends nobody asked for.
 [project.optional-dependencies]
 instrument = ["openkos>=0.2.14"]      # the engine under evaluation (thesis §5.9)
 llm = ["ollama>=0.4"]                 # local generative models (§5.8)
-retrieval = ["rank-bm25>=0.2.2"]      # lexical channel of the C1 baseline
 embeddings = ["sentence-transformers>=3.3"]  # heavy; only needed for the alignment protocol
 
 [project.scripts]
@@ -45,7 +42,7 @@ afg = "afg.cli:app"
 [dependency-groups]
 dev = ["pytest>=8.3", "pytest-cov>=6.0", "ruff>=0.9", "mypy>=1.14"]
 deck = ["python-pptx>=1.0", "python-docx>=1.1"]  # generate PPTX/DOCX with the deck-uc skill
-notebooks = ["jupyterlab>=4.3", "ipykernel>=6.29", "ipywidgets>=8.1"]
+notebooks = ["jupyterlab>=4.3", "ipykernel>=6.29", "ipywidgets>=8.1", "seaborn>=0.13"]
 
 [build-system]
 requires = ["hatchling"]
@@ -64,6 +61,11 @@ select = ["E", "F", "I", "N", "UP", "B", "SIM", "RUF"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "--strict-markers"
+markers = [
+  "requires_corpus: needs the AMI corpus at data/raw/ami (afg corpus download) and, for some, the frozen transcripts",
+  "requires_meetings_xml: needs data/raw/ami/corpusResources/meetings.xml",
+  "requires_data: needs the adjudicated reference, the AMI corpus and the frozen transcripts",
+]
 
 [tool.mypy]
 python_version = "3.13"

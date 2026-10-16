@@ -22,11 +22,14 @@ from afg.extraction.openkos.workspace import (
     run_series_workspace,
 )
 from afg.shared.paths import AMI_DIR
+from tests.markers import requires
 from tests.openkos_fake import FakeRunner
 
 _MEETINGS_XML = AMI_DIR / "corpusResources" / "meetings.xml"
-requires_meetings_xml = pytest.mark.skipif(
-    not _MEETINGS_XML.exists(), reason="AMI meetings.xml not available locally"
+requires_meetings_xml = requires(
+    "requires_meetings_xml",
+    available=_MEETINGS_XML.exists(),
+    reason="AMI meetings.xml not available locally",
 )
 
 SETTINGS = OpenKosRunSettings(

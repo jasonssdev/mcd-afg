@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 from typing import Any
@@ -41,6 +42,20 @@ class FakeBackend:
         return GOOD
 
 
+class _FakeProbe:
+    def model_digests(self) -> dict[str, str]:
+        return {"qwen3:8b": "d-gen", "gpt-oss:20b": "d-judge", "bge-m3:latest": "d-emb"}
+
+    def ollama_version(self) -> str:
+        return "0.9.9"
+
+    def openkos_version(self) -> str | None:
+        return None
+
+    def git_dirty(self) -> bool:
+        return True
+
+
 @pytest.fixture
 def env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
     questions = tmp_path / "q.csv"
@@ -53,6 +68,7 @@ def env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
         afg_cli, "list_installed_models", lambda: ["qwen3:8b", "gpt-oss:20b", "bge-m3:latest"]
     )
     monkeypatch.setattr(afg_cli, "configured_embedding_model", lambda: "bge-m3")
+    monkeypatch.setattr(afg_cli, "make_provenance_probe", lambda: _FakeProbe())
     monkeypatch.setattr(
         "afg.evaluation.judge_calibration_set.calibration_series",
         lambda: frozenset({"ES2015"}),
@@ -81,6 +97,20 @@ def test_runs_c1_and_writes_records_and_manifest(env: dict[str, Any]) -> None:
     assert manifest["partition"] == "development" and manifest["development_only"] is True
     assert manifest["settings"]["base_seed"] == 42
     assert "6" in _out(result)
+
+
+def test_manifest_records_the_reproducibility_fields(env: dict[str, Any]) -> None:
+    result = _invoke(env, "--runs", "1", "--run-name", "repro")
+    assert result.exit_code == 0, result.output
+    manifest = json.loads((env["out"] / "repro" / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["generative_model_digest"] == "d-gen"
+    assert manifest["judge_model_digest"] == "d-judge"
+    assert manifest["embedding_model_digest"] == "d-emb"
+    assert manifest["ollama_version"] == "0.9.9"
+    assert manifest["openkos_version"] is None
+    assert manifest["git_dirty"] is True
+    assert manifest["c1_params"] == {"max_chars": 1200, "overlap_turns": 1, "k": 5}
+    assert manifest["questions_sha256"] == hashlib.sha256(env["questions"].read_bytes()).hexdigest()
 
 
 def test_limit_questions_and_default_runs_from_config(env: dict[str, Any]) -> None:
