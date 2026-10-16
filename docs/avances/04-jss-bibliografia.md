@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 04 — Bibliografía |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.4 |
+| **Versión** | 1.5 |
 | **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
@@ -17,6 +17,7 @@
 | 1.2 | 2026-10-01 | Se agrega una guía de lectura al inicio y, en cada sección temática, un párrafo que explica en lenguaje llano para qué sirve ese grupo de fuentes en el proyecto. Las entradas bibliográficas no cambian: ni una letra. | Retroalimentación de la revisión entre equipos de la semana 8: el problema y la metodología no se entendían, menos aún para una audiencia no técnica. |
 | 1.3 | 2026-10-15 | Se agrega la sección «Trabajos relacionados y su vínculo con el proyecto»: análisis de cuatro grupos de trabajos ya incluidos en la bibliografía (GraphRAG; detección de decisiones en AMI; auditoría de decisiones; modelos de lenguaje como jueces), con lo que el proyecto toma de cada uno y el vacío que aborda frente a él. No se agrega ni se modifica ninguna entrada bibliográfica. | La rúbrica de la presentación final de AFG2 pide al menos dos trabajos relacionados, con un análisis claro de cómo se relacionan con el proyecto y lo complementan. |
 | 1.4 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (LLM-as-a-judge). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
+| 1.5 | 2026-10-15 | Se actualiza la nota de ConsistencyGate al estado cerrado: el trabajo fue leído (2026-10-07) y no acota la afirmación de novedad (`propuesta.md` §9). Se corrigen las referencias de numeración a las secciones reales de este documento (1 a 7). Las entradas bibliográficas no cambian. | Auditoría de gobernanza del 2026-10-15: la nota seguía pidiendo una lectura ya hecha y citaba secciones 8.x que no existen en este documento. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -54,7 +55,7 @@ revisados.
 
 El curso exige que, si la fuente de datos es pública, figure en la bibliografía —no basta
 mencionarla en el texto ni en una nota al pie. El corpus AMI se cita dos veces con roles
-distintos: el artículo de referencia (ya en la sección 8.1) y, por separado, la **página de
+distintos: el artículo de referencia (ya en la sección 1) y, por separado, la **página de
 licencia vigente**, que es la autoridad real de los términos de uso (documento 02,
 §1).
 
@@ -212,8 +213,10 @@ on downstream graph analyses: A case study on affiliation graphs* (arXiv:2506.12
 Zhang, Y., & Li, S. (2026). *ConsistencyGate: Preventing memory contamination in LLM agents
 via self-consistency admission control* (arXiv:2607.22962) [Preprint, sin revisión por
 pares]. https://doi.org/10.48550/arXiv.2607.22962 — nombra el mismo modo de falla
-("contaminación de memoria") que este proyecto mide vía OE4; debe leerse antes de fijar la
-afirmación de novedad final de la tesis (documento 01, §4).
+("contaminación de memoria") que este proyecto mide vía OE4. Leído el 2026-10-07: no acota la
+afirmación de novedad, porque resuelve la admisión de hechos aislados en conversaciones de
+chat y no el enlace entre decisiones de reuniones distintas (`propuesta.md` §9; documento 01,
+§4). Se cita como trabajo relacionado.
 
 ## 4. Alucinación, atribución y evaluación
 
@@ -453,7 +456,7 @@ respuestas etiquetadas a mano, con seis requisitos fijados antes de ver resultad
 
 | Afirmación | Dónde se verifica |
 |---|---|
-| Las 49 entradas y su organización temática (8.1–8.7) | [`../../bibliography/refs.bib`](../../bibliography/refs.bib) |
+| Las 49 entradas y su organización temática (secciones 1 a 7) | [`../../bibliography/refs.bib`](../../bibliography/refs.bib) |
 | Verificación contra fuente primaria | [`../../bibliography/refs.bib`](../../bibliography/refs.bib), cabecera del archivo |
 | Preprints marcados: Edge et al. 2024, Cai & O'Connor 2025, Zhang & Li 2026, Bohnet et al. 2022 | [`../../bibliography/refs.bib`](../../bibliography/refs.bib), campo `keywords` |
 | Página de licencia AMI como fuente de datos pública | [`../../config/corpus.toml`](../../config/corpus.toml) |

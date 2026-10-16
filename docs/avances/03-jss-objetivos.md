@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 03 — Objetivos |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 2.4 |
+| **Versión** | 3.0 |
 | **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
@@ -18,6 +18,7 @@
 | 2.2 | 2026-10-01 | Reescritura completa de la redacción: cada objetivo se presenta desde la pregunta que responde, cada término técnico se explica al aparecer y se agrega un glosario breve. El objetivo general, los objetivos específicos, los criterios de cumplimiento, las hipótesis y las cifras no cambian. | Retroalimentación de la revisión entre equipos de la semana 8: el problema y la metodología no se entendían, menos aún para una audiencia no técnica. |
 | 2.3 | 2026-10-15 | Se agrega, en cada objetivo específico, un párrafo «Cómo se mide» que remite a la sección correspondiente del [documento 08](08-jss-metricas-y-criterio-de-exito.md), y una subsección sobre el criterio de éxito del experimento (D16). El objetivo general, los objetivos específicos, los criterios de cumplimiento, las hipótesis y las cifras no cambian. | Retroalimentación del profesor sobre las métricas: faltaba ver, objetivo por objetivo, qué se mide y con qué regla se lee el resultado. |
 | 2.4 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (ground truth, precision, recall, accuracy, LLM-as-a-judge). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
+| 3.0 | 2026-10-15 | Cambia un criterio: el criterio de éxito del experimento (D16) se enuncia con la regla de decisión enmendada por D17, que es el intervalo bootstrap del 95 % de la **diferencia pareada** C2 − C1 en E3 por encima de 0, y ya no la no superposición de los intervalos independientes (que queda como cifra de robustez). Además: OE2 se mide sobre las 11 series de evaluación (ADR 0005) y no sobre las 14; la escala grande del instrumento se nombra como ≈32B (`qwen3:32b`); se elimina un párrafo que describía la versión 2.2 en pasado. | Enmienda D17 ([ADR 0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md)), hecha el 2026-10-15 antes de cualquier corrida de evaluación, con simulación de potencia en el [notebook 10](../../notebooks/10-jss-potencia-criterio-d16.ipynb); el alcance de OE2 sigue el ADR 0005 y el modelo grande sale de `config/experiments.toml`. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -251,7 +252,7 @@ El proyecto se desarrolla a lo largo de tres cursos. El reparto es el siguiente:
 | Curso | Qué se entrega | Objetivos |
 |---|---|---|
 | **AFG1** | Problema, estado del arte, metodología, ética, ground truth listo para anotar (herramientas de OE1) y anotación iniciada en desarrollo | OE1 (herramientas) |
-| **AFG2** | OE1 cerrado (anotación + kappa); OE2 sobre las 14 series con una escala de modelo (3 corridas); OE3 con banco de preguntas ≥100 y las tres condiciones, versión mínima | OE1, OE2, OE3 (mínimo) |
+| **AFG2** | OE1 cerrado (anotación + kappa); OE2 sobre las 11 series de evaluación (ADR 0005) con una escala de modelo (3 corridas); OE3 con banco de preguntas ≥100 y las tres condiciones, versión mínima | OE1, OE2, OE3 (mínimo) |
 | **AFG3** | OE4, análisis de errores, intervalos bootstrap, conclusiones | OE4 |
 
 Extensiones si hay tiempo: segunda escala de modelo (H3), validación humana ampliada.
@@ -290,7 +291,7 @@ contradice, el resultado igual vale, y se dice.
 |---|---|---|
 | **H1** | C2 y C3 superarán a C1 en preguntas de evolución (E3), con diferencia pequeña o nula en hecho puntual (E1) | La ventaja de la representación es relacional |
 | **H2** | La brecha C3 − C2 será mayor en relaciones temporales que en identificación de decisiones | Extraer que algo se decidió es más fácil que extraer correctamente que una decisión reemplaza a otra |
-| **H3** | La dirección de las relaciones temporales será un modo de falla dominante, sin mejora proporcional al tamaño del modelo | Observación informal en el instrumento a dos escalas (≈8B y ≈30B): alrededor de un 25 % de direcciones invertidas, sin mejora clara con la escala. Es una observación previa, no una medición del proyecto; la segunda escala es una extensión. |
+| **H3** | La dirección de las relaciones temporales será un modo de falla dominante, sin mejora proporcional al tamaño del modelo | Observación informal en el instrumento a dos escalas (≈8B y ≈32B, `qwen3:32b`): alrededor de un 25 % de direcciones invertidas, sin mejora clara con la escala. Es una observación previa, no una medición del proyecto; la segunda escala es una extensión. |
 | **H4** | C1 mostrará mayor tasa de respuestas confiadas pero desactualizadas en preguntas de evolución | Consistente con lo reportado en la literatura de recuperación insuficiente |
 
 En palabras llanas: se espera que la base de decisiones ayude sobre todo cuando la pregunta
@@ -343,10 +344,6 @@ vale la pena anotar, y no son el ground truth de OE1.
 | La viabilidad de E3 se declara explícitamente provisional, con intervalo de confianza | Adjudicación de desarrollo (11 candidatos), no de evaluación — `notebooks/01-jss-viabilidad-e3.ipynb` |
 | La segunda escala de modelo pasa de compromiso a extensión | Costo de cómputo local y prioridad del mínimo viable por curso |
 
-La versión 2.2 cambia la forma de contarlo, no el contenido: el objetivo general, los
-objetivos específicos, los criterios de cumplimiento, las hipótesis y las cifras son los
-mismos de la versión 2.1.
-
 ---
 
 ## Trazabilidad
@@ -356,8 +353,11 @@ mismos de la versión 2.1.
 | Objetivo general y OE1–OE4 | [`../propuesta.md`](../propuesta.md) §2–§3 |
 | Hipótesis H1–H4 y plan ante resultado negativo | [`../propuesta.md`](../propuesta.md) §4 |
 | Cambio de estratificación de OE2 (D7) | [`../decisions/README.md`](../decisions/README.md) |
-| 343 decisiones, 92 candidatos | [`../../config/corpus.toml`](../../config/corpus.toml), sección `[oe1]` |
+| 343 decisiones | [`../../config/corpus.toml`](../../config/corpus.toml), sección `[oe1]` |
+| 92 pares candidatos | `uv run afg corpus inventory`; [notebook 00](../../notebooks/00-jss-corpus-y-auditoria.ipynb); `[paso_cero]` (`verify`) en `corpus.toml` |
 | Viabilidad de E3: 45,5 % (5/11), IC [21,3 % – 72,0 %], proyección ~37 [17–58] | [`../../notebooks/01-jss-viabilidad-e3.ipynb`](../../notebooks/01-jss-viabilidad-e3.ipynb) |
 | Plan por curso | README.md, sección Plan por curso; programa del curso (objetivos de AFG1, AFG2, AFG3) |
 | Botón turbo como ejemplo de respuesta desactualizada | [`02-jss-fuente-de-datos.md`](02-jss-fuente-de-datos.md) §5 |
+| Enmienda D17 del criterio de éxito (diferencia pareada) | [`../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md`](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md); [`../../notebooks/10-jss-potencia-criterio-d16.ipynb`](../../notebooks/10-jss-potencia-criterio-d16.ipynb) |
+| Escala grande del modelo generativo (≈32B) | [`../../config/experiments.toml`](../../config/experiments.toml), `shared_budget.generative_model_large` |
 | Cómo se mide cada objetivo y criterio de éxito D16 | [`08-jss-metricas-y-criterio-de-exito.md`](08-jss-metricas-y-criterio-de-exito.md) §4 y §6 |

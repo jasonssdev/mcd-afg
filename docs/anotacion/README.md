@@ -12,6 +12,7 @@ leer el código.
 | [`manual-anotacion-oe1.md`](manual-anotacion-oe1.md) | El manual operativo: qué archivo abres, qué columna llenas, qué escribes, con un ejemplo real resuelto de punta a punta | Con el CSV abierto al lado |
 | [`asignacion/`](asignacion/) | El reparto concreto: qué serie le toca a cada persona, en qué orden, cuándo se adjudica. `config/annotation.toml` es la fuente de verdad; `afg gold status` muestra el avance en vivo | Antes de abrir tu primera serie |
 | [`calibracion-juez.md`](calibracion-juez.md) | Cómo se arma el conjunto con el que se elige el modelo juez: ~20 preguntas sobre ES2015 y ~40 etiquetas, con los comandos exactos | Solo si te toca esa tarea (issue #82) |
+| [`bitacora/gm/`](bitacora/gm/README.md) | Bitácoras personales de `gm` sobre las reuniones de ES2015: apuntes de apoyo, no datos de referencia | Solo como contexto; no sustituyen a los CSV |
 | [`plantilla-adjudicacion.md`](plantilla-adjudicacion.md) | **Reemplazada.** Describía el `<serie>.adjudication.md`, que ya no existe; la adjudicación son hoy los dos `*.adjudicated.csv` ([`asignacion/tareas-jss.md`](asignacion/tareas-jss.md) §3) | Solo como referencia histórica |
 
 ## Quién hace qué

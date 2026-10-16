@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 02 — Fuente de datos |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.4 |
+| **Versión** | 1.5 |
 | **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
@@ -17,6 +17,7 @@
 | 1.2 | 2026-10-01 | Reescritura completa de la redacción: el corpus se presenta desde lo que contiene una serie de reuniones, cada término técnico se explica al aparecer y se agrega un glosario breve. Las cifras, las referencias, las decisiones y la numeración de secciones no cambian. | Retroalimentación de la revisión entre equipos de la semana 8: el problema y la metodología no se entendían, menos aún para una audiencia no técnica. |
 | 1.3 | 2026-10-15 | Se agrega la sección 7, «Calidad y relevancia de los datos»: resumen de lo que el análisis exploratorio ([documento 07](07-jss-analisis-exploratorio.md)) encontró sobre valores faltantes, duplicados y valores atípicos, y de la relevancia de los datos para el problema, con las cifras del documento 07 y su fuente. Se agregan filas de trazabilidad. No cambia ninguna cifra, decisión ni sección anterior. | La rúbrica del pre-informe de AFG2 (sección 3) pide describir el origen, el tipo, la calidad y la relevancia de los datos; este documento cubría origen y tipo, y la calidad y la relevancia estaban solo en el documento 07. |
 | 1.4 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (ground truth, baseline, overlap coefficient, filtro léxico (*blocking*)). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
+| 1.5 | 2026-10-15 | Se remite a `docs/README.md` como tabla única de las cifras del corpus, se aclara que los 92 pares candidatos salen de `afg corpus inventory` y no de `[oe1]`, y se precisa el alcance de la regla de la fila 1.1: se aplica a los documentos escritos; los guiones hablados de `docs/entregables/` son la excepción, porque los lee una persona en cámara (`CONTRIBUTING.md` §7.3). Se elimina un párrafo de la sección de cambios que describía la versión 1.2 en pasado. No cambia ninguna cifra ni decisión. | Auditoría de gobernanza del 2026-10-15: cifras duplicadas entre documentos y regla de redacción descrita sin su excepción. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -154,7 +155,9 @@ Todo parámetro ajustado en desarrollo se congela antes de tocar evaluación. De
 ### 4.4 Los cuatro N
 
 Hay cuatro cantidades que aparecen una y otra vez en el proyecto. Las cuatro están medidas
-sobre los archivos y no cambian.
+sobre los archivos y no cambian. La tabla completa y vigente de las cifras del corpus, con las
+estimaciones y los valores aún desconocidos, está en [`../README.md`](../README.md); esta es
+una copia parcial de sus cuatro primeras cantidades medidas.
 
 | Nivel | N | Estado |
 |---|---|---|
@@ -364,9 +367,6 @@ y no se extrapolan a otros corpus (documento 07, [§9](07-jss-analisis-explorato
 | El filtro léxico usa overlap coefficient, no Jaccard | Jaccard = 0,118 pierde el par del botón turbo; overlap coefficient = 0,400 lo captura — D5 |
 | La reversión del botón turbo, identificada a ojo en el piloto, resultó **falsa** al contrastar con la transcripción | Documentado en [`../anotacion/manual-anotacion-oe1.md`](../anotacion/manual-anotacion-oe1.md) §3 |
 
-La versión 1.2 cambia la forma de contarlo, no el contenido: las cifras, las decisiones y la
-numeración de secciones son las mismas de la versión 1.1.
-
 ---
 
 ## Trazabilidad
@@ -378,7 +378,7 @@ numeración de secciones son las mismas de la versión 1.1.
 | Marco muestral 33/649 vs 6/136; D1, D2 | [`../decisions/README.md`](../decisions/README.md) |
 | Selección de 14 series, criterio de balance por sitio | [`../decisions/0004-adr-oe1-series-selection.md`](../decisions/0004-adr-oe1-series-selection.md) |
 | Split desarrollo/evaluación, control de doble anotación | [`../decisions/0005-adr-development-evaluation-split.md`](../decisions/0005-adr-development-evaluation-split.md) |
-| Los cuatro N (56, 343, 3.071, 92) | [`../../config/corpus.toml`](../../config/corpus.toml), sección `[oe1]`; [`../README.md`](../README.md), sección "Los cuatro N" |
+| Los cuatro N (56, 343, 3.071, 92) | [`../../config/corpus.toml`](../../config/corpus.toml), sección `[oe1]` (56, 343, 3.071); [`../README.md`](../README.md), sección "Las cifras del corpus". Los 92 salen de `uv run afg corpus inventory`, del [notebook 00](../../notebooks/00-jss-corpus-y-auditoria.ipynb) y de `[paso_cero]` (`verify`) en `corpus.toml` |
 | 91/96/2 participantes; anidamiento lengua/sitio; TS sin `participants.xml` | [`../../notebooks/00-jss-corpus-y-auditoria.ipynb`](../../notebooks/00-jss-corpus-y-auditoria.ipynb) |
 | Autoría por rol (PM 47,0 % etc.) | [`../../notebooks/00-jss-corpus-y-auditoria.ipynb`](../../notebooks/00-jss-corpus-y-auditoria.ipynb) |
 | Anclaje a evidencia 317/343 (92,4 %) | [`../../notebooks/00-jss-corpus-y-auditoria.ipynb`](../../notebooks/00-jss-corpus-y-auditoria.ipynb) |

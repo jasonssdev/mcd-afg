@@ -130,7 +130,7 @@ uv sync --group dev --group notebooks
 
 ```bash
 uv run afg --help     # el CLI del proyecto responde
-uv run pytest -q      # los tests pasan (441 al momento de escribir esto; el número real crece)
+uv run pytest -q      # los tests pasan (la cantidad crece; el número vigente lo informa pytest)
 ```
 
 ### 3.3 Descarga el corpus
@@ -242,21 +242,21 @@ de forzar una resolución, sobre todo si el conflicto está en un CSV de anotaci
 | Carpeta o archivo | Qué contiene | Quién lo usa y cuándo |
 |---|---|---|
 | `README.md` | Esta guía | Todos, el primer día |
-| `CONTRIBUTING.md` | Flujo de trabajo, roles, convenciones (nombres, idioma, cifras, etiquetas humanas) | Todos, antes de la primera PR |
-| `docs/propuesta.md` | La propuesta de tesis completa. Se cita por sección (§1.4, §5.4). No se edita: sus revisiones pendientes se siguen en los issues abiertos del repositorio | Todos, para entender el diseño original |
-| `docs/avances/` | Los seis documentos vivos: problema, fuente de datos, objetivos, bibliografía, ética, metodología. Cada uno con versión e historial | Todos. Son la versión vigente del proyecto y de aquí salen las entregas |
+| `CONTRIBUTING.md` | Flujo de trabajo, roles, convenciones (nombres, idioma, cifras, etiquetas humanas) | Todos, antes del primer PR |
+| `docs/propuesta.md` | La propuesta de tesis completa: texto original de AFG1, con enmiendas registradas en git (2026-09-21, 2026-10-07). Se cita por sección (§1.4, §5.4); sus revisiones pendientes se siguen en los issues abiertos del repositorio | Todos, para entender el diseño original |
+| `docs/avances/` | Los nueve documentos vivos (01 a 09): problema, fuente de datos, objetivos, bibliografía, ética, metodología, análisis exploratorio, métricas y criterio de éxito, modelos y justificación. Cada uno con versión e historial | Todos. Son la versión vigente del proyecto y de aquí salen las entregas |
 | `docs/entregables/` | Lo que se entregó al curso, congelado tal como se envió: guiones de video, informe de la semana 4 | Quien prepara una entrega; se agrega, no se edita |
 | `docs/anotacion/` | **El trabajo humano**: quién anota qué, el manual paso a paso de los CSV, la definición del constructo | Anotadores y adjudicador |
 | `docs/protocols/` | El protocolo de alineamiento entre decisiones extraídas y de referencia (máquina) | Quien trabaje en OE2 |
-| `docs/decisions/` | El registro de decisiones: los ADR de arquitectura y la tabla D1–D11 de decisiones de método con su evidencia. Append-only | Quien quiera saber por qué algo se hizo así |
+| `docs/decisions/` | El registro de decisiones: los ADR de arquitectura y la tabla D1–D17 de decisiones de método con su evidencia. Append-only | Quien quiera saber por qué algo se hizo así |
 | `notebooks/` | El registro académico: qué se hizo, qué se midió y por qué se decidió. Versionados con sus salidas | Todos; se leen en GitHub sin ejecutar |
-| `bibliography/` | `refs.bib` (49 referencias verificadas), criterios de inclusión, tabla de cribado y notas por referencia | Quien cite algo |
+| `bibliography/` | `refs.bib` (49 referencias verificadas), criterios de inclusión, tabla de cribado y una plantilla de notas por referencia (las notas son opcionales y hoy no hay ninguna) | Quien cite algo |
 | `config/` | Parámetros versionados: series elegidas, partición desarrollo/evaluación, modelos, umbrales | Se lee; se cambia solo con un ADR |
 | `.agents/skills/` | Skills del proyecto en formato abierto SKILL.md (hoy, `deck-uc`: presentaciones y documentos con la identidad UC). Se versionan los textos y la lista de hashes; los archivos institucionales de `assets/` no (ver sección 9) | Quien produzca presentaciones o documentos con identidad UC |
 | `data/` | `raw/` (corpus, ignorado por git), `interim/`, `processed/` (los CSV de anotación) | Anotadores escriben en `processed/` |
 | `reports/` | Tablas y figuras generadas por el código | Se regeneran; no se editan a mano |
 | `src/afg/` | El código: ingesta del corpus, conjunto de referencia, bloqueo de candidatos, kappa, alineamiento, métricas | Quien programe. Toda cifra del proyecto sale de aquí |
-| `tests/` | Tests que fijan las cifras medidas como regresiones (441 al momento de escribir esto; corre `uv run pytest -q` para el número vigente) | Corren antes de cada PR |
+| `tests/` | Tests que fijan las cifras medidas como regresiones (corre `uv run pytest -q` para el número vigente) | Corren antes de cada PR |
 
 **Qué revisar en una pull request ajena.** Que los tests pasen; que ninguna cifra se calcule
 en un notebook o documento en vez de en `src/afg/`; que las etiquetas del conjunto de
@@ -272,7 +272,7 @@ La AFG se cursa en tres cursos de ocho semanas cada uno:
 | Curso | Qué se entrega | Objetivos |
 |---|---|---|
 | **AFG1** | Problema, estado del arte, metodología, ética, conjunto de referencia listo para anotar (herramientas de OE1) y anotación iniciada en desarrollo | OE1 (herramientas) |
-| **AFG2** | OE1 cerrado (anotación + kappa); OE2 sobre las 14 series con una escala de modelo (3 corridas); OE3 con banco de preguntas ≥100 y las tres condiciones, versión mínima | OE1, OE2, OE3 (mínimo) |
+| **AFG2** | OE1 cerrado (anotación + kappa); OE2 sobre las 11 series de evaluación (ADR 0005) con una escala de modelo (3 corridas); OE3 con banco de preguntas ≥100 y las tres condiciones, versión mínima | OE1, OE2, OE3 (mínimo) |
 | **AFG3** | OE4, análisis de errores, intervalos bootstrap, conclusiones | OE4 |
 
 **Extensiones si hay tiempo:** segunda escala de modelo (H3), validación humana ampliada.
@@ -305,7 +305,8 @@ uv run afg gold status                             # panel: una fila por anotado
 uv run afg gold adjudicate --series ES2015         # escribe los dos CSV de adjudicación (prellenados donde hay acuerdo)
 uv run afg gold questions-init                     # crea el banco vacío: 25 filas por estrato y 40 en E3 (115 en total)
 uv run afg gold questions-check                   # revisa el banco de preguntas fila por fila, sin correr nada (--complete exige el mínimo validado por estrato)
-uv run afg gold link                               # sin implementar: sale con código 2 y explica qué falta
+uv run afg gold validate-adjudication --series ES2015   # verifica que el adjudicador terminó los dos CSV
+uv run afg gold link                               # sin implementar: sale con código 2 y espera OpenKOS ~0.6.0
 
 uv run afg skills sync-assets deck-uc   # copia los assets UC desde la carpeta compartida y verifica su SHA-256
 uv run afg skills verify deck-uc        # comprueba los assets ya instalados
@@ -316,11 +317,21 @@ uv run afg biblio stats             # conteos por sección y preprint/revisado
 
 uv run afg report                   # regenera reports/tables/*.csv con lo que haya disponible
 
+uv run afg judge calibration-init       # hoja de preguntas de la calibración del juez, prellenada desde ES2015
+uv run afg judge calibration-validate   # revisa la selección de la hoja y cuenta las preguntas por estrato
+uv run afg judge calibration-answers    # genera dos respuestas por pregunta con el modelo generativo
+uv run afg judge calibration-run        # corre los modelos candidatos sobre el conjunto etiquetado
+uv run afg judge calibration-second-sheet   # hoja sin etiquetas para la segunda persona que etiqueta
+uv run afg judge calibration-agreement  # kappa entre las dos personas que etiquetan, por columna
+
 uv run afg c1 tune                  # mide el recall de evidencia de C1 sobre desarrollo y elige segmentación y K (ADR 0007)
 uv run afg c1 ask                   # responde una pregunta con C1 como lo haría `openkos query`, con fragmentos de transcripción
 
-uv run afg experiment a             # sin implementar: sale con código 2 (requiere el extractor y el conjunto de referencia)
+uv run afg experiment a             # sin implementar: sale con código 2 y espera OpenKOS ~0.6.0
 uv run afg experiment b             # Experimento B: preguntas x condiciones x corridas, con juicio y citación; hoy solo C1 corre (corrida de humo sobre ES2015)
+uv run afg experiment b-report      # análisis del Experimento B: tasas, intervalos bootstrap y comparación D16
+uv run afg experiment b-sample      # muestra para la verificación humana: una corrida por pregunta y condición
+uv run afg experiment b-human-check # acuerdo juez-humano (kappa de Cohen) por etiqueta, con el umbral prerregistrado
 ```
 
 ### Notebooks
@@ -341,6 +352,8 @@ uv run jupyter lab
 | 07 | `07-jss-runner-experimento-b.ipynb` | Motor de corrida del Experimento B y corrida de humo con C1 sobre ES2015 (serie de desarrollo) |
 | 08 | `08-jss-fechas-de-reunion.ipynb` | Fechas de evento de las reuniones que se entregan a OpenKOS y la regla que preserva el orden a→d |
 | 09 | `09-jss-regla-de-citacion.ipynb` | Análisis de la regla de citación correcta (§5.6, §6.2) sobre la corrida de humo con C1 |
+| 10 | `10-jss-potencia-criterio-d16.ipynb` | Potencia del criterio principal D16 por simulación con datos sintéticos: intervalos independientes sin solapar frente a diferencia pareada C2 − C1 (respalda la enmienda del ADR 0010) |
+| 11 | `11-jss-figuras-video-eda.ipynb` | Selección de las cinco figuras del video de avance #1 y su exportación como PNG a `docs/entregables/figuras/` |
 | — | *(pendiente)* `NN-jss-anotacion-f2-control.ipynb` | Anotación humana, Fase 2: series de control, kappa reportable |
 | — | *(pendiente)* `NN-jss-anotacion-f3-referencia.ipynb` | Anotación humana, Fase 3: conjunto de referencia final |
 | — | *(pendiente)* `NN-jss-experimento-a.ipynb` | OE2 — calidad de la extracción automática |
@@ -360,7 +373,6 @@ No se instalan por defecto, para que `uv sync` sea rápido:
 ```bash
 uv sync --extra instrument    # openkos, el motor bajo evaluación
 uv sync --extra llm           # ollama, modelos locales
-uv sync --extra retrieval     # rank-bm25, canal léxico de C1
 uv sync --extra embeddings    # sentence-transformers (pesado)
 ```
 
@@ -395,7 +407,9 @@ instalarlos en el equipo local:
    FILE=<ruta>` genera el PDF junto al archivo original.
 6. Si una herramienta busca skills en otra carpeta, ejecutar `make skill-link DEST=<carpeta>`.
    Crea un enlace simbólico relativo y agrega esa carpeta a `.git/info/exclude`, de modo que
-   ningún nombre de carpeta específico de una herramienta queda versionado.
+   la carpeta de destino no se versiona. La carpeta `.agents/skills/` sí está versionada
+   (sus textos y la lista de hashes); lo que queda fuera de git son los enlaces y los
+   `assets/` institucionales.
 
 ---
 

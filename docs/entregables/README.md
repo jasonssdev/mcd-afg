@@ -36,7 +36,7 @@ NN-{iniciales}-{nombre}.md
 
 Las iniciales de cada autor están en la tabla de
 [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md) §1. Conviene que el nombre diga qué es y
-para cuándo, por ejemplo `01-jss-guion-video-semana8.md`.
+para cuándo, por ejemplo `04-jss-guion-video-semana8.md`.
 
 Cada entregable debería abrir declarando: **a qué entrega corresponde, en qué fecha se envió,
 en qué versión está y de qué versión de los avances se construyó.** Eso último es lo que permite, meses después,
@@ -60,6 +60,12 @@ nuevo con el sufijo `-v2` (`04-jss-guion-video-semana8-v2.md`), que declara en s
 no fue enviado y de qué versión de los avances se construyó. Esa versión de estudio es la base
 de las próximas presentaciones; la entregada sigue siendo el registro de lo que se envió.
 
+## Carpetas de apoyo
+
+| Carpeta | Contenido |
+|---|---|
+| [`figuras/`](figuras/) | Cinco PNG del video de avance #1 de AFG2, exportados por el [notebook 11](../../notebooks/11-jss-figuras-video-eda.ipynb): `eda-estructura-de-los-datos.png`, `eda-decisiones-por-posicion.png`, `eda-decisiones-sin-evidencia-por-posicion.png`, `eda-filtro-segun-longitud-de-frase.png` y `eda-embudo-del-filtro-lexico.png` |
+
 ## Estado
 
 | Entregable | Archivo | Estado |
@@ -70,7 +76,7 @@ de las próximas presentaciones; la entregada sigue siendo el registro de lo que
 | Video de avance #3 (semana 7): propuesta metodológica + datos disponibles | [`03-jss-guion-video-semana7.md`](03-jss-guion-video-semana7.md) | Enviado el 2026-09-28; congelado |
 | Presentación final (semana 8) | [`04-jss-guion-video-semana8.md`](04-jss-guion-video-semana8.md) | Enviado el 2026-09-28; congelado |
 | Presentación final (semana 8), versión de estudio | [`04-jss-guion-video-semana8-v2.md`](04-jss-guion-video-semana8-v2.md) | Versión de estudio posterior a la entrega; no enviada |
-| Video de avance #1 de AFG2 (semana 2): análisis exploratorio | [`05-jss-guion-video-afg2-semana2.md`](05-jss-guion-video-afg2-semana2.md) | Borrador v1.0; envío pendiente |
+| Video de avance #1 de AFG2 (semana 2): análisis exploratorio | [`05-jss-guion-video-afg2-semana2.md`](05-jss-guion-video-afg2-semana2.md) | Borrador v1.3; envío pendiente |
 
 Todos los entregables de AFG1 se enviaron el 2026-09-28. La versión de estudio del guion de
 la semana 8 recoge la retroalimentación de la revisión entre equipos y es el punto de partida

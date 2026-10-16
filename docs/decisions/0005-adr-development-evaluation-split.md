@@ -1,8 +1,8 @@
-# 5. División desarrollo / evaluación, y series de control revisadas
+# 0005. División desarrollo / evaluación, y series de control revisadas
 
-Fecha: 2026-09-20
-Estado: Aceptada
-Reemplaza parte de: [0004](0004-adr-oe1-series-selection.md) — la selección de 14 series se
+## Estado
+
+Aceptada (2026-09-20). Reemplaza parte de: [0004](0004-adr-oe1-series-selection.md) — la selección de 14 series se
 mantiene sin cambios; solo se revisa la lista de series de control.
 
 ## Contexto
@@ -58,7 +58,7 @@ que el ADR 0004 identificó como la que estructuralmente importa.
 ### Series de control revisadas para doble anotación
 
 El ADR 0004 fijó ES2015, ES2008, IS1004, TS3005. Dos de ellas ahora quedan en desarrollo, y
-el acuerdo entre anotadoras debe medirse sobre los datos cuyos resultados se reportan.
+el acuerdo entre las dos personas que anotan debe medirse sobre los datos cuyos resultados se reportan.
 
 **Revisión: ES2008, ES2016, IS1003, TS3005** — 4 de las 11 series de evaluación (36,4 %),
 una por sitio más una segunda de ES. TS3005 y ES2016 también llevan la capa DDS, así que
@@ -77,7 +77,7 @@ precisamente lo que hace que revisar ahora, y no después, sea el momento correc
 - Las cuatro N deben reportarse por separado y nunca confundirse: 56 reuniones; 343
   frases de decisión abstractivas (`DECISIONS`); 3.071 pares entre reuniones; 92 pares
   candidatos en el punto de operación actual. El número de **relaciones reales** sigue sin
-  medirse y es la cifra que decide si el estrato de E3 es viable.
+  medirse y es la cifra que decide si el estrato de E3 es viable. La tabla vigente de estas cifras está en [`docs/README.md`](../README.md).
 - Evaluación se reduce a 11 series. Recalculado a partir de las mediciones por serie:
   **desarrollo tiene 77 de las 343 frases de decisión y 11 de los 92 pares candidatos;
   evaluación tiene 266 y 81.**
@@ -93,6 +93,6 @@ precisamente lo que hace que revisar ahora, y no después, sea el momento correc
 - **Usar las 18 series de reserva para desarrollo.** Más limpio en principio, pero exigiría
   anotarlas, duplicando aproximadamente el presupuesto humano sin ganancia — el ajuste de
   desarrollo para C1 y el bloqueador no necesita relaciones gold.
-- **Mantener las series de control del ADR 0004.** Mediría el acuerdo entre anotadoras
+- **Mantener las series de control del ADR 0004.** Mediría el acuerdo entre las dos personas que anotan
   parcialmente sobre datos de desarrollo, que no es lo que sostiene a los resultados
   reportados.

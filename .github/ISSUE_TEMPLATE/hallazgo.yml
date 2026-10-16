@@ -8,7 +8,7 @@ body:
     attributes:
       value: |
         Usa este formulario para reportar algo medido sobre el corpus o el código
-        que puede afectar una decisión ya tomada (D1–D10) o un ADR.
+        que puede afectar una decisión ya tomada (D1–D17) o un ADR.
 
   - type: textarea
     id: que-se-midio
@@ -37,7 +37,7 @@ body:
     attributes:
       label: Qué decisión afecta
       description: >-
-        Indica la decisión del backlog (D1–D10) o el ADR (`docs/decisions/`) que
+        Indica la decisión del registro (D1–D17) o el ADR (`docs/decisions/`) que
         este hallazgo pone en cuestión, y por qué.
     validations:
       required: true
@@ -48,7 +48,7 @@ body:
       label: "¿Reemplaza una cifra ya publicada?"
       description: >-
         Si esta cifra reemplaza una ya publicada, indica dónde aparece esa cifra
-        anterior (todos los archivos: backlog, notebooks, entregables, tesis).
+        anterior (todos los archivos: registro de decisiones, avances, notebooks, entregables, tesis).
         Si no reemplaza nada, dilo explícitamente.
     validations:
       required: true

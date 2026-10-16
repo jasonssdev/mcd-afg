@@ -7,6 +7,10 @@ persona. Para eso se arma un conjunto pequeño, con etiquetas puestas **por una 
 mide cuánto coincide cada candidato con ellas. Tu trabajo es escribir unas 20 preguntas (16 como mínimo) y
 después etiquetar unas 40 respuestas; todo lo demás lo hace el repositorio.
 
+**Idioma.** Las preguntas, las respuestas de referencia y las respuestas que se etiquetan van
+en inglés, igual que las transcripciones y el banco de preguntas del Experimento B; la
+calibración del juez no se extiende a preguntas en español.
+
 **Por qué solo ES2015.** Es una serie de desarrollo ya anotada y adjudicada, así que leerla no
 compromete ninguna anotación pendiente. IS1004 y TS3009 son de desarrollo, pero su anotación
 sigue abierta: leer su contenido para esto rompería la independencia de quienes las anotan.

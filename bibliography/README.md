@@ -47,10 +47,11 @@ cribado, no un hecho bibliográfico.
 2. **Agregar una fila a `screening.csv`** que registre la decisión de inclusión/exclusión,
    la sección de la tesis y el eje que respalda, si está revisada por pares, y si la
    cita/DOI se verificó de forma independiente.
-3. **Escribir una nota a partir de `notes/TEMPLATE.md`**, guardada como
+3. **Opcional: escribir una nota a partir de `notes/TEMPLATE.md`**, guardada como
    `notes/<clave-de-cita>.md`, que capture qué afirma el trabajo, qué mide y —lo más
    importante— qué **no** cierra, para que los borradores posteriores no tengan que
-   releer la fuente para recordar por qué se citó.
+   releer la fuente para recordar por qué se citó. Hoy `notes/` solo contiene la plantilla:
+   las notas no se prometen por referencia.
 
 ## Preprints
 

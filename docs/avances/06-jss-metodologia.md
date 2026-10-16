@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 06 — Metodología |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 3.8 |
+| **Versión** | 3.9 |
 | **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
@@ -28,6 +28,7 @@
 | 3.6 | 2026-10-15 | Se declara que el banco admite hasta 40 preguntas de E3 (§1, umbral del estrato E3). El mínimo prerregistrado de 25 por estrato no cambia; las filas de E3 sobre ese mínimo son opcionales y quedan vacías si el material de evolución no alcanza. | Aumentar la probabilidad de detectar una mejora real más pequeña en E3: la simulación de potencia da alrededor de 57 % con 25 preguntas y 76 % con 40 para una mejora de 15 puntos ([notebook 10](../../notebooks/10-jss-potencia-criterio-d16.ipynb)); el tope lo fija el material disponible ([notebook 01](../../notebooks/01-jss-viabilidad-e3.ipynb)). |
 | 3.7 | 2026-10-15 | Se agregan referencias cruzadas a los documentos [07](07-jss-analisis-exploratorio.md), [08](08-jss-metricas-y-criterio-de-exito.md) y [09](09-jss-modelos-y-justificacion.md), donde ahora vive el detalle del filtro léxico, de las métricas y del criterio D16, y de las condiciones, el juez y los parámetros: una nota «Documentos relacionados» al inicio y una línea de remisión al comienzo de las secciones 1, 2, 3–4 y 5–6. No se elimina contenido y no cambia ninguna cifra, umbral ni decisión. | Los documentos 07 a 09 de AFG2 desarrollan partes de esta metodología; sin enlaces, el lector no sabe dónde está el detalle. |
 | 3.8 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (ground truth, precision, recall, accuracy, LLM-as-a-judge, baseline, overlap coefficient, context window, cosine similarity, filtro léxico (*blocking*)). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
+| 3.9 | 2026-10-15 | Se declara que el banco de preguntas y la calibración del LLM-as-a-judge están en inglés, con su límite (§5–6); las cifras de ES2015 (4 extraídas frente a 29 decisiones, kappa 0,094) indican su denominador (29 decisiones con acuerdo evaluado; 27 decisiones finales; 34 filas en el archivo adjudicado); se indica la fuente de las tasas por sitio del filtro léxico (§2); se reescribe en presente un párrafo que describía versiones anteriores; se agregan filas de trazabilidad. No cambia ninguna cifra, umbral ni decisión. | Auditoría de gobernanza del 2026-10-15: el idioma del banco no estaba declarado y las cifras de ES2015 parecían contradecirse por usar denominadores distintos sin decirlo. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -216,7 +217,7 @@ ser cortas; (3) la cota se calibró con un solo par de control; (4) el presupues
 entró en la elección del punto de operación; (5) el ground truth favorece a los
 métodos léxicos (D6 evita el sesgo inverso, no este). Una comprobación medida: la proporción
 de candidatos por sitio de grabación en el punto de operación es parecida (ES 44 pares,
-3,2 %; IS 22, 3,1 %; TS 26, 2,6 %), pero eso **no** demuestra que la pérdida sea igual en
+3,2 %; IS 22, 3,1 %; TS 26, 2,6 %; pares por sitio del [ADR 0004](../decisions/0004-adr-oe1-series-selection.md) y tasas en el [notebook 00](../../notebooks/00-jss-corpus-y-auditoria.ipynb) §4.1, sin tabla versionada aparte), pero eso **no** demuestra que la pérdida sea igual en
 cada sitio. La mitigación es la **Tarea C**: 50 pares por serie que el filtro rechazó, muestreados al
 azar con semilla fija y anotados con las mismas reglas; toda relación real entre ellos es un
 falso negativo, y con eso se reporta el recall del filtro (qué proporción de las relaciones
@@ -379,7 +380,11 @@ La calibración tiene una limitación que se declara: el identificador de cada r
 ver cómo se había generado (con o sin la evidencia), de modo que quienes etiquetaron podían
 saberlo. El equipo decidió declararlo en lugar de volver a etiquetar; los casos en que las
 etiquetas contradicen ese identificador indican que se etiquetó por el contenido, pero el
-acuerdo podría estar algo inflado. Como protección adicional, el Experimento B mantiene la
+acuerdo podría estar algo inflado. Otra limitación es el idioma: la calibración se hizo con
+preguntas y respuestas en inglés sobre transcripciones en inglés, y el banco de preguntas del
+Experimento B también se escribe en inglés (las transcripciones del corpus y la recuperación
+léxica de C1 trabajan sobre texto en inglés). El acuerdo medido no se extiende a preguntas en
+español. Como protección adicional, el Experimento B mantiene la
 verificación humana sobre el 20 % de las respuestas (§1) y la decide **por etiqueta**, porque
 las dos etiquetas del LLM-as-a-judge no se usan igual. La **corrección de respuesta** es la métrica del
 criterio principal (D16): si su acuerdo con las personas cae bajo 0,70 (kappa), el juicio
@@ -417,7 +422,7 @@ evidencia obligatoria como parte de la definición de decisión (§1).
 
 **Riesgo de C2: la extracción de OpenKOS aún no alcanza para E2 y E3.** Una prueba sobre la
 serie de desarrollo ES2015 con OpenKOS 0.5.2 (modelo local qwen3:8b) extrajo 4 objetos
-Decision para toda la serie, frente a 29 decisiones en la anotación adjudicada del equipo.
+Decision para toda la serie, frente a 29 decisiones con acuerdo evaluado en la anotación adjudicada del equipo (27 son decisiones finales; el archivo adjudicado tiene 34 filas).
 Las decisiones extraídas agrupan temas completos y su cuerpo es un extracto de la
 transcripción; OpenKOS ordena las decisiones solo por fecha de calendario, y las cuatro
 reuniones de ES2015 comparten la misma fecha; y aplicar una revisión detectada exige una
@@ -522,11 +527,6 @@ parámetros de muestreo publicados; el punto de operación del filtro léxico ve
 principio general del proyecto (`CONTRIBUTING.md` §7.1): si un número no puede reproducirse
 desde `src/afg/` a través de un notebook, no entra en la tesis.
 
-La versión 1.3 cambia la forma de contarlo, no el contenido: las cifras, los umbrales, el
-diseño experimental y la numeración de secciones son los mismos de la versión 1.2. La
-versión 2.0 agrega decisiones (D15, D16), el detalle del filtro y de los intervalos, y un
-riesgo de C2; la numeración de secciones no cambia.
-
 ---
 
 ## Trazabilidad
@@ -545,7 +545,7 @@ riesgo de C2; la numeración de secciones no cambia.
 | Enmienda de D16 (diferencia pareada), decisión de la verificación humana del LLM-as-a-judge, kappa indefinido y muestra de una corrida por pregunta | [`../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md`](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md); [`../../notebooks/10-jss-potencia-criterio-d16.ipynb`](../../notebooks/10-jss-potencia-criterio-d16.ipynb); `src/afg/experiments/power.py` |
 | Ajuste de C1: 1.200 caracteres, 1 turno de solapamiento, K = 5; contexto de unos 7.400 caracteres | [`../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md`](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md) (enmienda 2026-10-15); [`../../notebooks/06-jss-ajuste-c1.ipynb`](../../notebooks/06-jss-ajuste-c1.ipynb) |
 | Fechas de reunión: hora real en 6 de 14 series, sintética en 8 | [`../decisions/0008-adr-fechas-de-reunion-para-openkos.md`](../decisions/0008-adr-fechas-de-reunion-para-openkos.md); [`../../notebooks/08-jss-fechas-de-reunion.ipynb`](../../notebooks/08-jss-fechas-de-reunion.ipynb) |
-| Riesgo de C2 (4 frente a 29 decisiones en ES2015) | `jasonssdev/openkos#1348`, `#1349`, `#1350`, `#1384`; [`../decisions/0005-adr-development-evaluation-split.md`](../decisions/0005-adr-development-evaluation-split.md); [`../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md`](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) |
+| Riesgo de C2 (4 extraídas frente a 29 decisiones con acuerdo evaluado en ES2015; 27 finales, 34 filas) | [`../../data/processed/decisions/ES2015.decisions.adjudicated.csv`](../../data/processed/decisions/ES2015.decisions.adjudicated.csv); `jasonssdev/openkos#1348`, `#1349`, `#1350`, `#1384`; [`../decisions/0005-adr-development-evaluation-split.md`](../decisions/0005-adr-development-evaluation-split.md); [`../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md`](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) |
 | Calibración: kappa 0,094 en ES2015, guía corregida y recalibración sobre TS3009 | [`../../notebooks/04-jss-anotacion-f1-calibracion.ipynb`](../../notebooks/04-jss-anotacion-f1-calibracion.ipynb); [`../anotacion/manual-anotacion-oe1.md`](../anotacion/manual-anotacion-oe1.md) §2 y §6; [`../anotacion/asignacion/README.md`](../anotacion/asignacion/README.md) (Fase 1) |
 | LLM-as-a-judge: `gpt-oss:20b`, kappa 0,95; acuerdo humano 1,00 y 0,87; limitación del identificador | [`../../notebooks/05-jss-seleccion-juez.ipynb`](../../notebooks/05-jss-seleccion-juez.ipynb); [`../../config/experiments.toml`](../../config/experiments.toml), sección `[judge]`; [`../anotacion/calibracion-juez.md`](../anotacion/calibracion-juez.md) |
 | Las cuatro fases y su aporte | [`03-jss-objetivos.md`](03-jss-objetivos.md), objetivos específicos OE1–OE4 |

@@ -481,8 +481,8 @@ Las columnas salen del modelo `src/afg/domain/question.py::Question`, una por ca
 | `id` | `q001`..`q115`, ya puesto por `questions-init`. **No tocar** |
 | `series_id` | La serie de la que sale la pregunta. **La llenas tú**, es tu elección por pregunta |
 | `stratum` | Uno de los cuatro valores de arriba, ya puesto por `questions-init`. **No tocar** |
-| `text` | La pregunta, en español. **La llenas tú** |
-| `reference_answer` | La respuesta derivada de la evidencia. **La llenas tú**, y queda **vacía en E4**: el modelo la declara `None` para ese estrato, porque ahí la referencia *es la ausencia de respuesta* |
+| `text` | La pregunta, **en inglés**: las transcripciones del corpus y la calibración del juez están en inglés, y la recuperación léxica de C1 se hace sobre texto en inglés. **La llenas tú** |
+| `reference_answer` | La respuesta derivada de la evidencia, también en inglés. **La llenas tú**, y queda **vacía en E4**: el modelo la declara `None` para ese estrato, porque ahí la referencia *es la ausencia de respuesta* |
 | `reference_evidence` | Los actos de diálogo que la respaldan. **La llenas tú**. Formato `reunion:da_id;da_id`, y `\|` entre reuniones cuando la evidencia abarca más de una. **Vacía en E4**. Los ids se obtienen con `uv run afg gold evidencia` (ver «Cómo llenar `reference_evidence`» más abajo) |
 | `author` | `gm`, ya puesto por `questions-init` |
 | `validated_by` | **Lo llena Germán.** Tú lo dejas vacío |

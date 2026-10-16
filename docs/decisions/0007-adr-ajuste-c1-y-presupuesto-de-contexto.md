@@ -2,7 +2,7 @@
 
 ## Estado
 
-Aceptada (2026-10-15)
+Aceptada (2026-10-15). Enmendada (2026-10-15): la decisión vigente es 1.200 caracteres, solapamiento 1 y K=5; ver la sección Enmienda. El título conserva la redacción original.
 
 ## Contexto
 

@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 05 — Aspectos éticos |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 2.2 |
-| **Fecha** | 2026-10-13 |
+| **Versión** | 2.3 |
+| **Fecha** | 2026-10-15 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -19,6 +19,7 @@
 | 2.0 | 2026-10-13 | La comparación del principio de justicia y equidad pasa a ser una métrica con nombre y fórmula, la amplificación por rol, con intervalo bootstrap del 95 %. | Retroalimentación del profesor sobre la metodología (AFG1/avance): recomendó definir desde ya con qué métrica se distinguirá el sesgo que viene de la fuente del que agrega el sistema. |
 | 2.1 | 2026-10-13 | La amplificación por rol queda implementada con pruebas en `afg.evaluation.metrics.role_amplification`. | La versión 2.0 la declaraba pendiente. |
 | 2.2 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (LLM-as-a-judge, accuracy). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
+| 2.3 | 2026-10-15 | Se alinea la fecha de la cabecera con la del historial y se renombra una fila de trazabilidad: la cifra 317/343 (92,4 %) es el anclaje de las decisiones a su evidencia, no una tasa de soporte de evidencia de las respuestas. No cambia ninguna cifra ni decisión. | Auditoría de gobernanza del 2026-10-15: la cabecera decía 2026-10-13 y el historial llegaba al 2026-10-15; el nombre de la fila confundía dos métricas. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -218,7 +219,7 @@ publican agregados por categoría, **nunca por individuo**.
 | Afirmación | Dónde se verifica |
 |---|---|
 | Los tres principios tratados en profundidad: transparencia, justicia y equidad, responsabilidad | [`../propuesta.md`](../propuesta.md) §6.2–§6.4 |
-| Tasa de soporte de evidencia 92,4 % (317/343) | [`../../notebooks/00-jss-corpus-y-auditoria.ipynb`](../../notebooks/00-jss-corpus-y-auditoria.ipynb) |
+| Anclaje de las decisiones a su evidencia, 92,4 % (317/343) | [`../../notebooks/00-jss-corpus-y-auditoria.ipynb`](../../notebooks/00-jss-corpus-y-auditoria.ipynb) |
 | Autoría por rol, PM 47,0 % (44 %–50 % por sitio) | [`../../notebooks/00-jss-corpus-y-auditoria.ipynb`](../../notebooks/00-jss-corpus-y-auditoria.ipynb) |
 | Anidamiento lengua/sitio; eje de lengua baja a limitación | [`../decisions/README.md`](../decisions/README.md), decisión D7 |
 | NIST AI RMF 1.0, funciones Measure y Manage | `bibliography/refs.bib` `tabassi2023airmf` |

@@ -4,11 +4,11 @@
 |---|---|
 | **Entrega** | Presentación final de AFG1 (semana 8) |
 | **Fecha de envío** | 2026-09-28 |
-| **Versión** | 1.2 |
+| **Versión** | 1.3 |
 | **Construido desde** | `docs/avances/01-jss-problema.md` v1.1 · `docs/avances/04-jss-bibliografia.md` v1.1 · `docs/avances/06-jss-metodologia.md` v1.2 · `docs/avances/05-jss-aspectos-eticos.md` v1.2 · `docs/avances/03-jss-objetivos.md` v2.1 |
 | **Duración objetivo** | 9:15 (máximo permitido: 10:00) |
 | **Formato** | Tres presentadores en cuatro bloques consecutivos, en este orden: Jason, Germán, Gustavo, Jason |
-| **Extensión hablada** | 1.342 palabras: 265 + 315 + 347 + 415. A 145 palabras por minuto son 9:15; a 140, 9:35 |
+| **Extensión hablada** | 1.315 palabras: 265 + 315 + 347 + 388. A 145 palabras por minuto son 9:04; a 140, 9:24 |
 
 ## Historial de versiones
 
@@ -17,6 +17,7 @@
 | 1.0 | 2026-09-22 | Versión inicial del guion. | Preparación de la presentación final. |
 | 1.1 | 2026-09-30 | Se retira del bloque de justicia y equidad la limitación sobre el eje de hablante nativo o no nativo. | Mejorar la fluidez del discurso. |
 | 1.2 | 2026-09-30 | Registro de la fecha de envío; la prosa no cambia. | Presentación final y video enviados el 2026-09-28. |
+| 1.3 | 2026-10-15 | Nota de registro: la fila 1.1 (2026-09-30) se registró después del envío del 2026-09-28; el texto enviado corresponde a la versión 1.0 y este archivo conserva el cambio de la 1.1 como versión de estudio, en contra de §7.9. No se revierte para no perder el registro. Se corrige además la extensión hablada de la cabecera: el bloque 4 tiene 388 palabras (no 415) desde la versión 1.1, que retiró un párrafo. La prosa no cambia. | Auditoría de gobernanza del 2026-10-15. |
 
 ## Qué pide el curso y dónde se cubre
 

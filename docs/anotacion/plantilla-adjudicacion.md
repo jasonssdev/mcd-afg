@@ -1,6 +1,6 @@
 # Plantilla del registro de adjudicación
 
-> **Reemplazada.** Esta plantilla describía el `<serie>.adjudication.md`, que ya no existe: la
+> **Histórico, reemplazada por los dos CSV de adjudicación.** Esta plantilla describía el `<serie>.adjudication.md`, que ya no existe: la
 > adjudicación se escribe ahora en dos CSV, `<serie>.decisions.adjudicated.csv` y
 > `<serie>.candidates.adjudicated.csv`, que `uv run afg gold adjudicate --series <ID>` genera
 > y `uv run afg gold validate-adjudication --series <ID>` verifica. El procedimiento vigente

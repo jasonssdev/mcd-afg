@@ -32,7 +32,7 @@ body:
         (guiones de video, presentaciones, informes enviados), construido a partir
         de los avances y congelado al momento de entregar.
         Lista los archivos que este issue crea o modifica, con la convención
-        `NN-jss-nombre.md`.
+        `NN-{autor}-nombre.md`.
     validations:
       required: true
 
@@ -47,7 +47,7 @@ body:
         decisión, un objetivo o una cifra sube el entero (1.x -> 2.0) y DEBE
         declarar la evidencia que lo motivó. El historial nunca se reescribe: se
         agrega una fila. Esto no tiene relación con `version` en `pyproject.toml`,
-        que versiona el paquete de codigo, no los entregables.
+        que versiona el paquete de código, no los entregables.
       options:
         - label: "Cambio menor (sube el decimal): redacción, formato, precisión sin alterar contenido"
         - label: "Cambio mayor (sube el entero): altera una decisión, un objetivo o una cifra"
