@@ -18,13 +18,16 @@ from afg.corpus.participants import (
 )
 from afg.domain.participant import NativeLanguage, NativeSpeakerStatus, Participant, SpeakerRole
 from afg.shared.paths import AMI_DIR
+from tests.markers import requires
 
 _CORPUS_AVAILABLE = (AMI_DIR / "corpusResources" / "participants.xml").exists() and (
     AMI_DIR / "corpusResources" / "meetings.xml"
 ).exists()
 
-requires_corpus = pytest.mark.skipif(
-    not _CORPUS_AVAILABLE, reason="AMI corpus not downloaded at data/raw/ami/"
+requires_corpus = requires(
+    "requires_corpus",
+    available=_CORPUS_AVAILABLE,
+    reason="AMI corpus not downloaded at data/raw/ami/",
 )
 
 
