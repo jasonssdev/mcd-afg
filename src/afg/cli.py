@@ -2524,6 +2524,20 @@ def _load_run_records(run_name: str) -> tuple[Path, list[dict[str, Any]]]:
     return run_dir, records
 
 
+def _width_cells(width: Any) -> tuple[str, str, str]:
+    """The three width columns of ``b-report``; ``-`` where a figure is unknown, never zero."""
+    if width is None:
+        return "-", "-", "-"
+    sources = "-" if width.source_citations is None else str(width.source_citations)
+    if width.answered == 0:
+        return "-", "-", sources
+    return (
+        f"{width.cited_acts_median:g} ({width.cited_acts_min}-{width.cited_acts_max})",
+        f"{width.mean_act_coverage:.2f}",
+        sources,
+    )
+
+
 @experiment_app.command("b-report")
 def experiment_b_report(
     run_name: Annotated[
@@ -2537,6 +2551,15 @@ def experiment_b_report(
             "se guarda aparte y no es reportable.",
         ),
     ] = False,
+    questions: Annotated[
+        Path | None,
+        typer.Option(
+            "--questions",
+            help="CSV de preguntas de la corrida, con la evidencia de referencia. Es obligatorio: "
+            "la tabla informa junto a la cita la anchura de las citas, la cobertura por acto y "
+            "las citas a fuentes completas (ADR 0009, enmienda).",
+        ),
+    ] = None,
 ) -> None:
     """Análisis del Experimento B: tasas, intervalos bootstrap y comparación D16 (OE3).
 
@@ -2551,8 +2574,20 @@ def experiment_b_report(
     from afg.evaluation.scoring import DevelopmentResultError, interval_settings_from_config
     from afg.experiments.analysis import CRITERION_NOTE, analyze_runs, report_to_dict
 
+    if questions is None:
+        console.print(
+            "[bold red]Falta --questions: la tabla de citación necesita el CSV de preguntas para "
+            "informar la anchura de las citas y la cobertura por acto (ADR 0009, "
+            "enmienda).[/bold red]"
+        )
+        raise typer.Exit(code=1)
     run_dir, records = _load_run_records(run_name)
     config = load_experiments_config()
+    try:
+        bank = {q.id: q for q in load_experiment_questions(questions)}
+    except (QuestionBankError, ValueError, FileNotFoundError, CalibrationSetError) as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+        raise typer.Exit(code=1) from exc
     try:
         report = analyze_runs(
             records,
@@ -2560,7 +2595,14 @@ def experiment_b_report(
             min_questions=int(config["question_bank"]["min_questions"]),
             min_runs=int(config["shared_budget"]["runs_per_config"]),
             allow_development=descriptive,
+            questions=bank,
         )
+    except KeyError as exc:
+        console.print(
+            f"[bold red]La pregunta {escape(str(exc))} de los registros no está en "
+            f"{_short(questions)}.[/bold red]"
+        )
+        raise typer.Exit(code=1) from exc
     except DevelopmentResultError as exc:
         console.print(f"[bold red]{escape(str(exc))}[/bold red]")
         console.print("Para explorar sin reportar, usar la opción --descriptive.")
@@ -2568,7 +2610,19 @@ def experiment_b_report(
 
     label = "reportable" if report.reportable else f"DESCRIPTIVO, partición {report.partition}"
     table = Table(title=f"Experimento B, {run_name} ({label})")
-    for column in ("Condición", "Estrato", "Preguntas", "Correcta", "Soportada", "Cita", "Fallas"):
+    columns = (
+        "Condición",
+        "Estrato",
+        "Preguntas",
+        "Correcta",
+        "Soportada",
+        "Cita",
+        "Actos citados, mediana (mín-máx)",
+        "Cobertura por acto",
+        "Citas a fuentes completas",
+        "Fallas",
+    )
+    for column in columns:
         table.add_column(column)
 
     def fmt(estimate: Any) -> str:
@@ -2584,6 +2638,7 @@ def experiment_b_report(
             fmt(cell.metrics.get("correct")),
             fmt(cell.metrics.get("evidence_supported")),
             fmt(cell.metrics.get("citation_correct")),
+            *_width_cells(cell.citation_width),
             f"juez {cell.judge_failures}, error {cell.errors}",
         )
     console.print(table)

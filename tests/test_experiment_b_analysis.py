@@ -6,6 +6,8 @@ from typing import Any
 
 import pytest
 
+from afg.domain.decision import EvidenceSpan
+from afg.domain.question import Question, QuestionStratum
 from afg.evaluation.scoring import DevelopmentResultError, IntervalSettings
 from afg.experiments.analysis import (
     ALL_STRATA,
@@ -289,3 +291,65 @@ def test_report_states_the_paired_criterion_and_keeps_non_overlap_as_robustness(
     primary = next(c for c in data["comparisons"] if c["primary"])
     assert primary["criterion"] == "supported"
     assert primary["nonoverlap_criterion"] == "supported"
+
+
+# --- citation width beside citation_correct (ADR 0009, amendment) --------------------------------
+
+
+def _cited_record(question: str, condition: str, ids: tuple[str, ...], **kw: Any) -> dict[str, Any]:
+    record = _record(question, condition, 0, **kw)
+    qid = record["question_id"]
+    record["answer"] = {
+        "question_id": qid,
+        "condition": condition,
+        "text": "x",
+        "cited_evidence": [{"meeting_id": "m1", "dialogue_act_ids": list(ids)}],
+        "abstained": False,
+    }
+    return record
+
+
+def _width_questions(*names: str) -> dict[str, Question]:
+    return {
+        f"ES2015.{n}": Question(
+            id=f"ES2015.{n}",
+            series_id="ES2015",
+            stratum=QuestionStratum.E3_EVOLUTION,
+            text="?",
+            reference_answer=None,
+            reference_evidence=(EvidenceSpan(meeting_id="m1", dialogue_act_ids=("a.1", "a.2")),),
+        )
+        for n in names
+    }
+
+
+def test_cells_carry_citation_width_when_questions_are_given() -> None:
+    records = [
+        _cited_record("E3q00", "C1", ("a.1", "b.1", "b.2")),
+        _cited_record("E3q01", "C1", ("a.1", "a.2")),
+        _cited_record("E3q00", "C2", ("a.1", *(f"c.{i}" for i in range(9)))),
+        _cited_record("E3q01", "C2", ("c.1",)),
+    ]
+    questions = _width_questions("E3q00", "E3q01")
+    report = analyze_runs(records, settings=SETTINGS, min_questions=1, questions=questions)
+    c1, c2 = _cell(report, "C1", "E3").citation_width, _cell(report, "C2", "ALL").citation_width
+    assert c1 is not None and c2 is not None
+    assert (c1.cited_acts_min, c1.cited_acts_median, c1.cited_acts_max) == (2, 2.5, 3)
+    assert c1.mean_act_coverage == pytest.approx((0.5 + 1.0) / 2)
+    assert (c2.cited_acts_min, c2.cited_acts_median, c2.cited_acts_max) == (1, 5.5, 10)
+    assert c2.mean_act_coverage == pytest.approx((0.5 + 0.0) / 2)
+
+
+def test_citation_width_is_unknown_without_the_question_bank() -> None:
+    report = analyze_runs([_record("E3q00", "C1", 0)], settings=SETTINGS, min_questions=1)
+    assert _cell(report, "C1", "E3").citation_width is None
+
+
+def test_citation_width_is_serialised_with_the_cell() -> None:
+    records = [_cited_record("E3q00", "C1", ("a.1",))]
+    report = analyze_runs(
+        records, settings=SETTINGS, min_questions=1, questions=_width_questions("E3q00")
+    )
+    cell = report_to_dict(report)["cells"][0]
+    assert cell["citation_width"]["cited_acts_median"] == 1
+    assert cell["citation_width"]["source_citations"] == 0
