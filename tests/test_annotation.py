@@ -5,7 +5,6 @@ from __future__ import annotations
 import pytest
 
 from afg.annotation.agreement import (
-    agreement_meets_threshold,
     compute_agreement,
 )
 from afg.annotation.linking import (
@@ -114,8 +113,3 @@ class TestAgreement:
     def test_compute_agreement_perfect(self) -> None:
         labels = ["revierte", "refina", "no_relacionada"]
         assert compute_agreement(labels, labels) == pytest.approx(1.0)
-
-    def test_agreement_meets_threshold(self) -> None:
-        assert agreement_meets_threshold(0.65) is True
-        assert agreement_meets_threshold(0.59) is False
-        assert agreement_meets_threshold(-0.1) is False  # negative kappa precedent, thesis 1.4

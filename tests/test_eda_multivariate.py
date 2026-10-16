@@ -126,3 +126,7 @@ class TestTemporal:
     def test_spearman_is_selectable(self) -> None:
         out = monotonic_trend(self._meetings(), "n_decisions", method="spearman")
         assert out.iloc[0]["method"] == "spearman"
+
+    def test_unknown_method_is_rejected_with_an_english_developer_error(self) -> None:
+        with pytest.raises(ValueError, match="unsupported method"):
+            monotonic_trend(self._meetings(), "n_decisions", method="pearson")
