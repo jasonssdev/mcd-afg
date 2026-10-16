@@ -178,7 +178,9 @@ app = typer.Typer(
     "`afg gold` (ver `afg gold --help`).",
     no_args_is_help=True,
 )
-corpus_app = typer.Typer(help="Descarga e inventario del corpus AMI (paso cero, sección 5.0).")
+corpus_app = typer.Typer(
+    help="Descarga, inventario y transcripciones del corpus AMI (paso cero, sección 5.0)."
+)
 biblio_app = typer.Typer(
     help="Cobertura y estadísticas de la bibliografía (bibliography/refs.bib)."
 )
@@ -219,22 +221,22 @@ def main(
 
 @skills_app.command("sync-assets")
 def skills_sync_assets(
-    skill: Annotated[str, typer.Argument(help="Skill name, e.g. deck-uc.")],
+    skill: Annotated[str, typer.Argument(help="Nombre de la skill, p. ej. deck-uc.")],
     source: Annotated[
         Path | None,
         typer.Option(
             "--source",
-            help="Synced shared folder. Defaults to AFG_SKILL_ASSETS_DIR. Files are read "
-            "from <source>/<skill>/ if that folder exists, else directly from <source>/.",
+            help="Carpeta compartida sincronizada; por defecto, AFG_SKILL_ASSETS_DIR. Los "
+            "archivos se leen de <source>/<skill>/ si esa carpeta existe; si no, de <source>/.",
         ),
     ] = None,
 ) -> None:
-    """Copy a skill's non-versioned assets after verifying their SHA-256."""
+    """Copia los archivos no versionados de una skill, tras verificar su SHA-256."""
     origin = source or get_settings().skill_assets_dir
     if origin is None:
         console.print(
-            "[red]No source folder.[/red] Set AFG_SKILL_ASSETS_DIR in .env to the locally "
-            "synced shared folder, or pass --source."
+            "[red]Falta la carpeta de origen.[/red] Define AFG_SKILL_ASSETS_DIR en .env con la "
+            "carpeta compartida sincronizada en tu equipo, o pasa --source."
         )
         raise typer.Exit(code=1)
     try:
@@ -243,34 +245,40 @@ def skills_sync_assets(
         console.print(f"[red]{error}[/red]", markup=True, highlight=False)
         raise typer.Exit(code=1) from error
     if copied:
-        console.print(f"Installed {len(copied)} asset(s) for '{skill}': {', '.join(copied)}")
+        console.print(f"Instalados {len(copied)} archivo(s) de '{skill}': {', '.join(copied)}")
     else:
-        console.print(f"Assets for '{skill}' were already up to date.")
+        console.print(f"Los archivos de '{skill}' ya estaban al día.")
 
 
 @skills_app.command("verify")
-def skills_verify(skill: Annotated[str, typer.Argument(help="Skill name, e.g. deck-uc.")]) -> None:
-    """Check the installed assets of a skill against its checksum list."""
+def skills_verify(
+    skill: Annotated[str, typer.Argument(help="Nombre de la skill, p. ej. deck-uc.")],
+) -> None:
+    """Verifica los archivos instalados de una skill contra su lista de sumas de control."""
     try:
         verify_installed(skill, SKILLS_DIR)
     except SkillAssetsError as error:
         console.print(f"[red]{error}[/red]", markup=True, highlight=False)
         raise typer.Exit(code=1) from error
-    console.print(f"Assets for '{skill}' are complete and match their checksums.")
+    console.print(
+        f"Los archivos de '{skill}' están completos y coinciden con sus sumas de control."
+    )
 
 
 @skills_app.command("link")
 def skills_link(
-    skill: Annotated[str, typer.Argument(help="Skill name, e.g. deck-uc.")],
-    dest_dir: Annotated[Path, typer.Argument(help="Directory a tool reads skills from.")],
+    skill: Annotated[str, typer.Argument(help="Nombre de la skill, p. ej. deck-uc.")],
+    dest_dir: Annotated[
+        Path, typer.Argument(help="Carpeta desde la que una herramienta lee skills.")
+    ],
 ) -> None:
-    """Symlink a skill into another directory, keeping that directory out of git."""
+    """Enlaza una skill en otra carpeta y mantiene esa carpeta fuera de git."""
     try:
         link = link_skill(skill, dest_dir, SKILLS_DIR, PROJECT_ROOT)
     except SkillAssetsError as error:
         console.print(f"[red]{error}[/red]", markup=True, highlight=False)
         raise typer.Exit(code=1) from error
-    console.print(f"Linked {link} -> {link.readlink()}")
+    console.print(f"Enlazado: {link} -> {link.readlink()}")
 
 
 # --- corpus -----------------------------------------------------------------------------
@@ -319,15 +327,15 @@ def _confirm_and_download_corpus(yes: bool) -> None:
 
 @corpus_app.command("download")
 def corpus_download(
-    yes: bool = typer.Option(False, "--yes", help="Skip the confirmation prompt."),
+    yes: bool = typer.Option(False, "--yes", help="Omite la confirmación de descarga."),
 ) -> None:
-    """Fetch and extract the AMI manual annotations (CC BY 4.0). Prints the licence first."""
+    """Descarga y extrae las anotaciones manuales de AMI (CC BY 4.0), tras mostrar la licencia."""
     _confirm_and_download_corpus(yes)
 
 
 @corpus_app.command("inventory")
 def corpus_inventory() -> None:
-    """Paso cero: verify series completeness and count decisions / candidate links."""
+    """Paso cero: verifica las series y cuenta decisiones y enlaces candidatos."""
     settings = get_settings()
     ami_root = settings.ami_root or AMI_DIR
     try:
@@ -338,19 +346,19 @@ def corpus_inventory() -> None:
 
     render_inventory_table(inventory, console)
     out_path = write_inventory_csv(inventory)
-    console.print(f"Wrote {out_path}")
+    console.print(f"Escrito: {out_path}")
 
 
 @corpus_app.command("participants")
 def corpus_participants() -> None:
-    """Native/non-native English + role breakdown, corpus-wide and per target series
-    (thesis section 5.1 / 6.3)."""
+    """Desglose de participantes por inglés nativo o no nativo y por rol, en todo el corpus y por
+    serie objetivo (tesis, secciones 5.1 y 6.3)."""
     settings = get_settings()
     ami_root = settings.ami_root or AMI_DIR
     if not ami_root.exists():
         console.print(
-            f"[bold red]AMI corpus not found at {ami_root}. "
-            "Run `uv run afg corpus download` first.[/bold red]"
+            f"[bold red]No se encontró el corpus AMI en {ami_root}. "
+            "Ejecuta primero `uv run afg corpus download`.[/bold red]"
         )
         raise typer.Exit(code=1)
 
@@ -358,24 +366,24 @@ def corpus_participants() -> None:
     series_participants = load_participants(ami_root)
     if not corpus_wide or not series_participants:
         console.print(
-            "[yellow]No participants could be loaded from the corpus resources file. "
-            "This is expected until the real file layout is confirmed against a "
-            "downloaded corpus (see src/afg/corpus/participants.py).[/yellow]"
+            "[yellow]No se pudo cargar ningún participante del archivo de recursos del corpus. "
+            "Es lo esperado mientras no se confirme el formato real del archivo con un corpus "
+            "descargado (ver src/afg/corpus/participants.py).[/yellow]"
         )
         raise typer.Exit(code=1)
 
     render_participants_table(corpus_wide, series_participants, console)
     out_path = write_participants_csv(series_participants)
-    console.print(f"Wrote {out_path}")
+    console.print(f"Escrito: {out_path}")
 
 
 _TRANSCRIPTS_SERIES_OPTION = typer.Option(
-    None, "--series", help="AMI series id to render (e.g. IS1004). Repeatable; omit for all."
+    None, "--series", help="Serie de AMI a renderizar, p. ej. IS1004. Repetible; sin ella, todas."
 )
 _TRANSCRIPTS_OUT_OPTION = typer.Option(
     None,
     "--out",
-    help="Output directory for rendered transcripts (default: data/interim/transcripts).",
+    help="Carpeta de salida de las transcripciones (por defecto, data/interim/transcripts).",
 )
 
 
@@ -384,36 +392,37 @@ def corpus_transcripts(
     series: list[str] | None = _TRANSCRIPTS_SERIES_OPTION,
     out: Path | None = _TRANSCRIPTS_OUT_OPTION,
     force: bool = typer.Option(
-        False, "--force/--no-force", help="Overwrite an existing non-empty output directory."
+        False, "--force/--no-force", help="Sobrescribe una carpeta de salida que ya tiene archivos."
     ),
 ) -> None:
-    """Freeze rendered transcripts (.md + .jsonl) to disk, plus a tracked manifest
-    (thesis sections 5.3/5.4). Refuses to overwrite a non-empty output directory unless
-    --force is given: transcripts are meant to be frozen before human annotation starts,
-    and silently re-rendering under the annotators would invalidate their offsets."""
+    """Congela las transcripciones (.md y .jsonl) y su manifiesto (tesis, secciones 5.3 y 5.4).
+
+    No sobrescribe una carpeta con archivos salvo con --force: las transcripciones se congelan
+    antes de anotar, y volver a renderizarlas bajo quienes anotan invalidaría sus posiciones.
+    """
     settings = get_settings()
     ami_root = settings.ami_root or AMI_DIR
     out_dir = out or TRANSCRIPTS_DIR
     if not ami_root.exists():
         console.print(
-            f"[bold red]AMI corpus not found at {ami_root}. "
-            "Run `uv run afg corpus download` first.[/bold red]"
+            f"[bold red]No se encontró el corpus AMI en {ami_root}. "
+            "Ejecuta primero `uv run afg corpus download`.[/bold red]"
         )
         raise typer.Exit(code=1)
 
     meeting_ids = discover_meeting_ids(ami_root, series)
     if not meeting_ids:
         console.print(
-            f"[bold red]No meetings discovered under {ami_root}/words/"
-            f"{' for series ' + ', '.join(series) if series else ''}.[/bold red]"
+            f"[bold red]No se encontraron reuniones en {ami_root}/words/"
+            f"{' para la serie ' + ', '.join(series) if series else ''}.[/bold red]"
         )
         raise typer.Exit(code=1)
 
     if out_dir.exists() and any(out_dir.iterdir()) and not force:
         console.print(
-            f"[bold red]{out_dir} already exists and is not empty. Transcripts are frozen "
-            "before human annotation starts; re-rendering under the annotators would "
-            "silently invalidate their char offsets. Pass --force to overwrite.[/bold red]"
+            f"[bold red]{out_dir} ya existe y no está vacía. Las transcripciones se congelan "
+            "antes de anotar; volver a renderizarlas bajo quienes anotan invalidaría sus "
+            "posiciones de carácter sin avisar. Usa --force para sobrescribir.[/bold red]"
         )
         raise typer.Exit(code=1)
 
@@ -424,21 +433,21 @@ def corpus_transcripts(
     is_canonical_out_dir = out_dir.resolve() == TRANSCRIPTS_DIR.resolve()
     manifest_dir = TABLES_DIR if is_canonical_out_dir else out_dir
 
-    console.print(f"Rendering {len(meeting_ids)} meeting(s)...")
+    console.print(f"Renderizando {len(meeting_ids)} reunión(es)...")
     result = render_meetings(ami_root, meeting_ids, out_dir, manifest_dir=manifest_dir)
 
     for meeting_id in result.meeting_ids:
-        console.print(f"Wrote {out_dir / f'{meeting_id}.md'}")
-        console.print(f"Wrote {out_dir / f'{meeting_id}.jsonl'}")
-    console.print(f"Wrote {result.manifest_path}")
+        console.print(f"Escrito: {out_dir / f'{meeting_id}.md'}")
+        console.print(f"Escrito: {out_dir / f'{meeting_id}.jsonl'}")
+    console.print(f"Escrito: {result.manifest_path}")
 
     console.print(
-        f"[bold]{len(result.meeting_ids)} meeting(s) rendered[/bold], "
-        f"{result.total_turns} turns, {result.total_characters} characters, "
-        f"renderer {result.renderer_revision}."
+        f"[bold]{len(result.meeting_ids)} reunión(es) renderizada(s)[/bold], "
+        f"{result.total_turns} turnos, {result.total_characters} caracteres, "
+        f"renderizador {result.renderer_revision}."
     )
-    console.print(f"Transcripts: {result.out_dir}")
-    console.print(f"Manifest:    {result.manifest_path}")
+    console.print(f"Transcripciones: {result.out_dir}")
+    console.print(f"Manifiesto:      {result.manifest_path}")
 
 
 # --- bibliography -------------------------------------------------------------------------
@@ -446,18 +455,18 @@ def corpus_transcripts(
 
 @biblio_app.command("audit")
 def biblio_audit() -> None:
-    """Coverage per thesis section, unreviewed preprints, missing/duplicate DOIs."""
+    """Cobertura por sección de la tesis, preprints sin revisar y DOI faltantes o repetidos."""
     audit = run_audit()
     render_biblio_table(audit, console)
     out_path = write_biblio_csv(audit)
-    console.print(f"Wrote {out_path}")
+    console.print(f"Escrito: {out_path}")
 
 
 @biblio_app.command("stats")
 def biblio_stats() -> None:
-    """Counts per thesis section and preprint/peer-reviewed split."""
+    """Conteo por sección de la tesis y división entre preprints y artículos revisados por pares."""
     entries = load_library()
-    console.print(f"Total entries: {len(entries)}")
+    console.print(f"Total de entradas: {len(entries)}")
     by_section: dict[str, int] = {}
     for entry in entries:
         for section in entry.sections:
@@ -465,8 +474,8 @@ def biblio_stats() -> None:
     for section in sorted(by_section):
         console.print(f"  {section}: {by_section[section]}")
     preprints = sum(1 for e in entries if e.is_preprint)
-    console.print(f"Preprints (not peer reviewed): {preprints}")
-    console.print(f"Peer-reviewed / standard: {len(entries) - preprints}")
+    console.print(f"Preprints (sin revisión por pares): {preprints}")
+    console.print(f"Revisadas por pares o estándar: {len(entries) - preprints}")
 
 
 # --- gold (OE1) ---------------------------------------------------------------------------
@@ -540,8 +549,8 @@ def gold_build(
     ami_root = settings.ami_root or AMI_DIR
     if not ami_root.exists():
         console.print(
-            f"[bold red]AMI corpus not found at {ami_root}. "
-            "Run `uv run afg corpus download` first.[/bold red]"
+            f"[bold red]No se encontró el corpus AMI en {ami_root}. "
+            "Ejecuta primero `uv run afg corpus download`.[/bold red]"
         )
         raise typer.Exit(code=1)
 
@@ -583,16 +592,20 @@ def gold_build(
     else:
         console.print("  (none raised)")
 
-    console.print(f"Wrote {out_path}")
+    console.print(f"Escrito: {out_path}")
 
 
 @gold_app.command("link", rich_help_panel=_PANEL_MAINTENANCE)
 def gold_link() -> None:
-    """(Mantenedor) Pendiente: candidatos de relación entre reuniones (tesis, secciones 3 y 5.1)."""
+    """(Mantenedor) Sin implementar: espera OpenKOS ~0.6.0 (sale con código 2).
+
+    Candidatos de relación entre reuniones (tesis, secciones 3 y 5.1). Hasta entonces,
+    `afg gold candidates` genera los candidatos de una serie.
+    """
     console.print(
-        "[yellow]Requires a built gold decision set (`afg gold build`) as input. "
-        "Once decisions exist, use afg.annotation.linking.chronological_candidate_pairs "
-        "to generate the candidate list for annotation.[/yellow]"
+        "[yellow]Sin implementar: espera OpenKOS ~0.6.0. Necesita el conjunto de decisiones "
+        "de referencia (`afg gold build`). Mientras tanto, `afg gold candidates` genera los "
+        "pares candidatos de una serie.[/yellow]"
     )
     raise typer.Exit(code=2)
 
@@ -669,7 +682,7 @@ def gold_agreement(
         if disagreements:
             console.print(f"  {axis} disagreements (adjudicate): {', '.join(disagreements)}")
 
-    console.print(f"Wrote {out_path}")
+    console.print(f"Escrito: {out_path}")
 
 
 @gold_app.command("evidence", hidden=True)
@@ -848,8 +861,8 @@ def _evidencia_por_decision(decision: str) -> None:
 def _decisions_for_series_or_exit(ami_root: Path, series: str) -> list[Decision]:
     if not ami_root.exists():
         console.print(
-            f"[bold red]AMI corpus not found at {ami_root}. "
-            "Run `uv run afg corpus download` first.[/bold red]"
+            f"[bold red]No se encontró el corpus AMI en {ami_root}. "
+            "Ejecuta primero `uv run afg corpus download`.[/bold red]"
         )
         raise typer.Exit(code=1)
 
@@ -911,7 +924,7 @@ def gold_candidates(
         f"selected ({pct:.1f}%) at threshold={threshold:.2f}, min_overlap={min_overlap}, "
         f"blocker_version={BLOCKER_VERSION}."
     )
-    console.print(f"Wrote {out_path}")
+    console.print(f"Escrito: {out_path}")
 
 
 @gold_app.command("recall-sample", rich_help_panel=_PANEL_MAINTENANCE)
@@ -969,7 +982,7 @@ def gold_recall_sample(
         f"threshold={threshold:.2f}, min_overlap={min_overlap}, "
         f"blocker_version={BLOCKER_VERSION}."
     )
-    console.print(f"Wrote {out_path}")
+    console.print(f"Escrito: {out_path}")
 
 
 # --- gold: per-annotator workspace (docs/anotacion/asignacion/) -----------------------------
@@ -2137,11 +2150,14 @@ def c1_tune() -> None:
 
 @experiment_app.command("a")
 def experiment_a() -> None:
-    """Experiment A: extraction quality vs. gold (OE2). Requires the corpus and gold set."""
+    """Experimento A: calidad de extracción frente a la referencia (OE2).
+
+    Sin implementar: espera OpenKOS ~0.6.0 (sale con código 2).
+    """
     console.print(
-        "[yellow]Not yet implemented: requires a working Extractor "
-        "(src/afg/extraction/openkos_adapter.py) and the OE1 gold set. "
-        "See thesis section 3, OE2.[/yellow]"
+        "[yellow]Sin implementar: espera OpenKOS ~0.6.0 y un extractor operativo "
+        "(src/afg/extraction/openkos_adapter.py), además del conjunto de referencia de OE1. "
+        "Ver tesis, sección 3, OE2.[/yellow]"
     )
     raise typer.Exit(code=2)
 
@@ -2514,12 +2530,16 @@ def experiment_b_human_check(
 
 @app.command("report", rich_help_panel=_PANEL_MAINTENANCE)
 def report() -> None:
-    """Regenera reports/tables/*.csv con los datos disponibles (mantenedor)."""
-    console.print("Regenerating bibliography audit...")
+    """Regenera solo reports/tables/bibliography_audit.csv (mantenedor).
+
+    Las tablas que dependen del corpus se regeneran aparte: `afg corpus inventory` y
+    `afg corpus participants`.
+    """
+    console.print("Regenerando la auditoría bibliográfica...")
     biblio_audit()
     console.print(
-        "Corpus inventory and experiment reports require the AMI corpus; "
-        "run `afg corpus inventory` separately once it is downloaded."
+        "El inventario del corpus y los informes de experimentos necesitan el corpus AMI; "
+        "ejecuta `afg corpus inventory` aparte cuando esté descargado."
     )
 
 
