@@ -264,6 +264,17 @@ class TestRobustness:
         assert q_values == pytest.approx([0.004, 0.020, 0.0533333333, 0.200])
         assert reject.tolist() == [True, True, False, False]
 
+    @pytest.mark.parametrize("bad", [[0.01, 1.2], [-0.1, 0.5], [0.01, float("nan")]])
+    def test_benjamini_hochberg_rejects_invalid_p_values(self, bad: list[float]) -> None:
+        with pytest.raises(ValueError, match="between 0 and 1"):
+            benjamini_hochberg(bad)
+
+    def test_cluster_bootstrap_requires_two_clusters(self) -> None:
+        df = pd.DataFrame({"series_id": ["a", "a", "a"], "value": [1.0, 2.0, 3.0]})
+
+        with pytest.raises(ValueError):
+            cluster_bootstrap(df, "series_id", lambda s: float(s["value"].mean()), n_boot=10)
+
     def test_cluster_bootstrap_is_reproducible(self) -> None:
         df = pd.DataFrame(
             {

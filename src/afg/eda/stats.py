@@ -423,6 +423,7 @@ def variance_inflation_factors(df: pd.DataFrame, columns: Sequence[str]) -> pd.D
         rows.append({"variable": name, "vif": vif, "r_squared": r2})
     return pd.DataFrame(rows, columns=["variable", "vif", "r_squared"])
 
+
 def benjamini_hochberg(
     p_values: Sequence[float],
     *,
@@ -469,10 +470,7 @@ def cluster_bootstrap(
         raise ValueError("n_boot must be positive")
 
     rng = np.random.default_rng(random_state)
-    grouped = {
-        key: group.copy()
-        for key, group in work.groupby(cluster_col, sort=False)
-    }
+    grouped = {key: group.copy() for key, group in work.groupby(cluster_col, sort=False)}
     estimates: list[float] = []
 
     for _ in range(n_boot):
