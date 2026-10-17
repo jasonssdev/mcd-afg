@@ -14,7 +14,7 @@ Conventions
 from __future__ import annotations
 
 import warnings
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from itertools import combinations
 
@@ -494,7 +494,7 @@ def cluster_bootstrap(
         "boot_mean": float(np.mean(distribution)),
         "ci_low": float(np.quantile(distribution, 0.025)),
         "ci_high": float(np.quantile(distribution, 0.975)),
-        "n_clusters": int(len(clusters)),
-        "n_boot_valid": int(len(distribution)),
+        "n_clusters": len(clusters),
+        "n_boot_valid": len(distribution),
         "distribution": distribution,
     }

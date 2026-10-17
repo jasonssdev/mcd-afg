@@ -11,8 +11,8 @@ import pytest
 
 from afg.eda.stats import (
     benjamini_hochberg,
-    cluster_bootstrap,
     chi2_independence,
+    cluster_bootstrap,
     contingency_table,
     correlation_table,
     describe_categorical,
