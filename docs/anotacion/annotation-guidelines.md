@@ -31,7 +31,7 @@ etiqueta del conjunto cerrado definido en `src/afg/domain/relation.py::RelationT
 |---|---|---|
 | `introduce` | introduce | Primera aparición de este objeto de decisión en la serie. |
 | `reafirma` | reafirma | Reitera una decisión previa sin cambiar su contenido. |
-| `refina` | refina | Acota o elabora el contenido de una decisión previa. |
+| `refina` | refina | Acota o elabora el contenido de una decisión previa. Incluye una decisión sobre otro objeto que la previa obliga a tomar (causa o requisito); ver el manual, conjunto cerrado de relaciones. |
 | `revierte` | revierte | Revierte explícitamente una decisión previa. |
 | `reemplaza` | reemplaza | Sustituye una decisión previa con contenido distinto. |
 | `no_relacionada` | no_relacionada | Evaluada como candidata; no existe relación temporal. |

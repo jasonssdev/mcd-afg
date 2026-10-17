@@ -396,11 +396,12 @@ claridad lo que ya corrió de lo que sigue bloqueado.
 6. **Las relaciones temporales no salen de forma automática.** OpenKOS deja sus hallazgos de
    revisiones en una tabla interna que no es un contrato estable; hay que mapearlos a los
    tipos de relación de la tesis, con dirección (issue #96).
-7. **Ámbito del Experimento A sin decidir.** Falta decidir si una decisión extraída puede
-   alinearse con cualquier decisión de la serie o solo con las de su reunión, y cómo contar
-   decisiones con evidencia de varios hablantes (9 de 27 decisiones finales en ES2015). Y los intervalos
-   actuales no consideran la agrupación por reunión (issue #99). Siguiente paso: decidirlo con
-   la primera extracción real y registrarlo en un ADR.
+7. **Ámbito del Experimento A decidido, τ pendiente.** El ámbito principal de la alineación es
+   la reunión de origen (la serie completa queda como sensibilidad), el rol principal es el
+   mayoritario (cada rol, como sensibilidad) y el intervalo principal es un bootstrap por reuniones
+   (Wilson y bootstrap por decisión, como referencia); con pocas reuniones ese intervalo es
+   frágil ([ADR 0011](../decisions/0011-adr-alineacion-rol-e-intervalos-del-experimento-a.md),
+   issue #99). El umbral τ sigue sin fijarse. Siguiente paso: decidir τ sobre series de desarrollo.
 8. **Anotación humana en curso.** Las recalibraciones, las series de control y el banco de
    preguntas siguen abiertos (issues #19, #27 a #33, #78 y #79); sin ellos no existen C3 ni
    el banco con que se mide. Siguiente paso: cerrar la anotación de referencia para poder

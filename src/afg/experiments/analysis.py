@@ -40,8 +40,10 @@ from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import asdict, dataclass
 from typing import Any
 
+from afg.domain.question import Question
 from afg.evaluation.metrics import BootstrapCI, bootstrap_ci
 from afg.evaluation.scoring import DevelopmentResultError, IntervalSettings
+from afg.experiments.summary import CitationWidthSummary, citation_width_summary
 
 __all__ = [
     "ALL_STRATA",
@@ -107,6 +109,9 @@ class CellSummary:
     citation_records_v1_excluded: int
     below_minimum: bool
     metrics: Mapping[str, RateEstimate | None]
+    citation_width: CitationWidthSummary | None = None
+    """Width, act-level coverage and full-source citations (ADR 0009, amendment); ``None`` when
+    no question bank was given, so the reference evidence is unknown."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -293,8 +298,13 @@ def analyze_runs(
     min_questions: int,
     min_runs: int = 3,
     allow_development: bool = False,
+    questions: Mapping[str, Question] | None = None,
 ) -> AnalysisReport:
     """Aggregate the records of a run and compare conditions (see the module docstring).
+
+    With ``questions`` (id to question) every cell also carries the width of its citations,
+    their act-level coverage of the reference evidence and its citations to full sources, which
+    ADR 0009 requires beside ``citation_correct``.
 
     Raises:
         DevelopmentResultError: the records are not all from the evaluation partition (ADR 0005)
@@ -354,6 +364,9 @@ def analyze_runs(
                     ),
                     below_minimum=below,
                     metrics=metrics,
+                    citation_width=(
+                        None if questions is None else citation_width_summary(subset, questions)
+                    ),
                 )
             )
 

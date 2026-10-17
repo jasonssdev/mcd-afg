@@ -348,7 +348,7 @@ distinto (`notebooks/README.md`):
 
 | Notebook | Fase | Estado |
 |---|---|---|
-| `04-jss-anotacion-f1-calibracion.ipynb` | Fase 1: calibración sobre ES2015 y recalibración sobre TS3009, kappas **diagnósticos** | abierto con ES2015; la sección de TS3009 se añade tras su adjudicación |
+| `04-jss-anotacion-f1-calibracion.ipynb` | Fase 1: calibración sobre ES2015 y recalibración sobre TS3009, kappas **diagnósticos** | cerrado: ES2015 y TS3009 adjudicadas; se abre la Fase 2 |
 | `NN-jss-anotacion-f2-control.ipynb` | Fase 2: cuatro series de control, kappa **reportable** | pendiente |
 | `NN-jss-anotacion-f3-referencia.ipynb` | Fase 3: reparto individual y conjunto de referencia final de las 14 series | pendiente |
 

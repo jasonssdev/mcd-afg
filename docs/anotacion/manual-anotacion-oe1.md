@@ -376,6 +376,21 @@ que la anterior dejaba abiertas. Si la posterior solo repite lo decidido y agreg
 `reafirma`. Una posterior menos específica que la anterior ("plástico y goma" frente a
 "plástico recubierto de goma") también es `reafirma`.
 
+**`refina` o `no_relacionada` cuando la posterior trata otro objeto.** A veces la posterior no
+decide sobre el mismo objeto, sino sobre otro que **existe o cambia por causa de** la anterior:
+la anterior obliga a decidir la posterior, y la posterior lo dice. Ese caso es `refina`, porque
+la posterior elabora lo que exige cumplir la anterior. Ejemplo de TS3009 (serie de
+desarrollo), adjudicado así en `TS3009.p001`: *"se usará una pantalla LCD informativa"*
+→ *"el chip tiene que ser más avanzado para ser compatible con la pantalla LCD"*. El chip es
+otro objeto, pero se decide **porque** se adoptó la LCD.
+
+La prueba: ¿la posterior se apoya en la anterior como **causa o requisito** ("para que",
+"porque", "compatible con")? Si sí, `refina`. Si la posterior solo **menciona** el objeto de la
+anterior como referencia, o trata un tema vecino del mismo producto, es `no_relacionada`.
+Ejemplo, también de TS3009 (`TS3009.p003`): *"diseño centrado en el usuario, con pocos
+botones"* → *"la LCD va abajo, debajo de los botones"*. Los botones solo sirven de punto de
+referencia para ubicar la pantalla, así que el par es `no_relacionada`.
+
 ### ⚠️ La convención de dirección — léela dos veces
 
 **`source` = la decisión POSTERIOR. `target` = la ANTERIOR sobre la que actúa.**

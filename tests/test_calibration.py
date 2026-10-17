@@ -14,6 +14,8 @@ import pytest
 
 from afg.annotation.calibration import (
     adjudicated_pairs,
+    annotator_status_distribution,
+    chance_agreement,
     compuesta_children,
     decision_agreement,
     disagreement_groups,
@@ -248,3 +250,45 @@ class TestAdjudicatedPairs:
 class TestSideTakenCounts:
     def test_tallies_who_the_verdict_agreed_with(self, paths: WorkspacePaths) -> None:
         assert side_taken_counts("ES2015", paths=paths) == {"gm": 1, "gv": 2}
+
+
+class TestAnnotatorStatusDistribution:
+    def test_counts_each_annotators_status_on_base_rows_only(self, paths: WorkspacePaths) -> None:
+        result = annotator_status_distribution("ES2015", paths=paths)
+        assert list(result) == ["gm", "gv"]
+        assert result["gm"] == {"compuesta": 1, "decision": 3, "no_decision": 1}
+        assert result["gv"] == {"decision": 3, "no_decision": 1, "sin_soporte": 1}
+
+
+class TestChanceAgreement:
+    def test_expected_agreement_comes_from_the_two_marginals(self, paths: WorkspacePaths) -> None:
+        # decision 3/5 * 3/5 + no_decision 1/5 * 1/5 = 0.36 + 0.04
+        assert chance_agreement("ES2015", paths=paths) == pytest.approx(0.4)
+
+    def test_is_one_when_both_use_a_single_label(self, tmp_path: Path) -> None:
+        workspace = WorkspacePaths(
+            decisions_dir=tmp_path / "decisions", relations_dir=tmp_path / "relations"
+        )
+        _write(
+            workspace.decisions_dir / "XX0001.decisions.adjudicated.csv",
+            _DECISION_COLUMNS,
+            [_d("XX0001a.d01", "decision", "decision", "decision")] * 2,
+        )
+        assert chance_agreement("XX0001", paths=workspace) == pytest.approx(1.0)
+
+    def test_equals_observed_agreement_when_one_annotator_never_varies(
+        self, tmp_path: Path
+    ) -> None:
+        workspace = WorkspacePaths(
+            decisions_dir=tmp_path / "decisions", relations_dir=tmp_path / "relations"
+        )
+        rows = [_d(f"XX0001a.d0{i}", "decision", "decision", "decision") for i in range(1, 4)]
+        rows.append(_d("XX0001a.d04", "decision", "no_decision", "decision", razon="x"))
+        _write(
+            workspace.decisions_dir / "XX0001.decisions.adjudicated.csv", _DECISION_COLUMNS, rows
+        )
+        result = decision_agreement("XX0001", paths=workspace)
+        assert chance_agreement("XX0001", paths=workspace) == pytest.approx(
+            result.percent_agreement
+        )
+        assert result.status_kappa == pytest.approx(0.0)

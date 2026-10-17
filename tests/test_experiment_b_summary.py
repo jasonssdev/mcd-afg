@@ -6,8 +6,11 @@ from typing import Any
 
 import pytest
 
+from afg.domain.decision import EvidenceSpan
+from afg.domain.question import Question, QuestionStratum
 from afg.experiments.summary import (
     citation_tally,
+    citation_width_summary,
     has_inline_used_marker,
     inline_marker_rows,
     record_row,
@@ -223,3 +226,138 @@ def test_wiring_summary_lists_the_distinct_settings_seen_in_the_records() -> Non
         "conditions": ["C1"],
         "runs": [0, 1],
     }
+
+
+# --- citation width, DA-level coverage and citations to full sources (ADR 0009, amendment) ------
+
+
+def _span(meeting: str, *ids: str) -> dict[str, Any]:
+    return {"meeting_id": meeting, "dialogue_act_ids": list(ids)}
+
+
+def _question(qid: str, stratum: QuestionStratum = QuestionStratum.E1_POINT_FACT) -> Question:
+    reference = (
+        ()
+        if stratum is QuestionStratum.E4_UNANSWERABLE
+        else (EvidenceSpan(meeting_id="m1", dialogue_act_ids=("a.1", "a.2")),)
+    )
+    return Question(
+        id=qid,
+        series_id="S",
+        stratum=stratum,
+        text="?",
+        reference_answer=None,
+        reference_evidence=reference,
+    )
+
+
+def _cited(
+    qid: str,
+    *spans: dict[str, Any],
+    abstained: bool = False,
+    unmapped: list[Any] | None = None,
+    error: str | None = None,
+    condition: str = "C2",
+) -> dict[str, Any]:
+    trace: dict[str, Any] = {"outcome": "answered"}
+    if unmapped is not None:
+        trace["unmapped_cited"] = unmapped
+    return {
+        "question_id": qid,
+        "condition": condition,
+        "run": 0,
+        "stratum": "E1_point_fact",
+        "trace": trace,
+        "answer": {
+            "question_id": qid,
+            "condition": condition,
+            "text": "t",
+            "cited_evidence": list(spans),
+            "abstained": abstained,
+        },
+        "error": error,
+    }
+
+
+BANK = {f"q{i}": _question(f"q{i}") for i in range(1, 5)}
+
+
+def test_citation_width_summary_reports_width_and_coverage() -> None:
+    records = [
+        _cited("q1", _span("m1", "a.1", "a.5", "a.6")),  # 3 acts, covers 1 of 2 reference acts
+        _cited("q2", _span("m1", "a.1", "a.2"), _span("m1", "a.2", "a.9")),  # 3 acts, covers 2 of 2
+        _cited("q3", _span("m1", *[f"b.{i}" for i in range(11)])),  # 11 acts, covers 0
+    ]
+    summary = citation_width_summary(records, BANK)
+    assert summary.answered == 3
+    assert (summary.cited_acts_min, summary.cited_acts_median, summary.cited_acts_max) == (3, 3, 11)
+    assert summary.mean_act_coverage == pytest.approx((0.5 + 1.0 + 0.0) / 3)
+
+
+def test_citation_width_summary_leaves_out_what_the_rule_does_not_apply_to() -> None:
+    bank = {**BANK, "q4": _question("q4", QuestionStratum.E4_UNANSWERABLE)}
+    records = [
+        _cited("q1", _span("m1", "a.1")),
+        _cited("q2", _span("m1", "a.1"), abstained=True),
+        _cited("q4", _span("m1", "a.1")),
+    ]
+    assert citation_width_summary(records, bank).answered == 1
+
+
+def test_citation_width_summary_without_answers_reads_as_unknown_not_zero() -> None:
+    summary = citation_width_summary([_cited("q1", abstained=True)], BANK)
+    assert summary.answered == 0
+    assert summary.cited_acts_min is None
+    assert summary.cited_acts_median is None
+    assert summary.cited_acts_max is None
+    assert summary.mean_act_coverage is None
+
+
+def test_citation_width_summary_counts_citations_to_full_sources_only() -> None:
+    sources = [
+        {"concept_id": "sources/ES2015a", "reason": "source_full_transcript"},
+        {"concept_id": "sources/ES2015b", "reason": "source_full_transcript"},
+        {"concept_id": "concepts/x", "reason": "no_located_excerpt"},
+    ]
+    records = [
+        _cited("q1", _span("m1", "a.1"), unmapped=sources),
+        _cited("q2", _span("m1", "a.1"), unmapped=[]),
+    ]
+    assert citation_width_summary(records, BANK).source_citations == 2
+
+
+def test_source_citations_of_c1_records_are_zero_without_a_list() -> None:
+    records = [_cited("q1", _span("m1", "a.1"), condition="C1")]  # C1 has no OpenKOS concepts
+    assert citation_width_summary(records, BANK).source_citations == 0
+
+
+def test_source_citations_are_unknown_when_a_c2_trace_lacks_the_list() -> None:
+    records = [
+        _cited("q1", _span("m1", "a.1"), unmapped=[]),
+        _cited("q2", _span("m1", "a.1")),  # no `unmapped_cited` key
+    ]
+    assert citation_width_summary(records, BANK).source_citations is None
+
+
+def test_source_citations_are_unknown_for_legacy_string_entries() -> None:
+    # Pre-fix runs (humo-c2-es2015) list the unmapped concepts as bare ids, with no reason.
+    records = [_cited("q1", _span("m1", "a.1"), unmapped=["concepts/design-of-a-remote-control"])]
+    assert citation_width_summary(records, BANK).source_citations is None
+
+
+def test_source_citations_ignore_abstentions_without_the_list() -> None:
+    records = [
+        _cited("q1", _span("m1", "a.1"), unmapped=[]),
+        _cited("q2", abstained=True),
+    ]
+    assert citation_width_summary(records, BANK).source_citations == 0
+
+
+def test_citation_width_summary_skips_records_with_errors() -> None:
+    records = [_cited("q1", _span("m1", "a.1")), {**_cited("q2"), "answer": None, "error": "boom"}]
+    assert citation_width_summary(records, BANK).answered == 1
+
+
+def test_citation_width_summary_reads_old_schema_records_from_the_answer() -> None:
+    record = {**_cited("q1", _span("m1", "a.1", "a.2")), "schema_version": 1}
+    assert citation_width_summary([record], BANK).mean_act_coverage == 1.0

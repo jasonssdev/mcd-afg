@@ -75,7 +75,12 @@ def env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
     )
     monkeypatch.setattr(afg_cli, "default_excerpt_for", lambda q: "passage")
     _strict_env(monkeypatch, tmp_path)
-    return {"questions": questions, "out": tmp_path / "out", "condition": condition}
+    return {
+        "questions": questions,
+        "out": tmp_path / "out",
+        "condition": condition,
+        "monkeypatch": monkeypatch,
+    }
 
 
 def _invoke(env: dict[str, Any], *args: str) -> Any:
@@ -128,12 +133,94 @@ def test_second_invocation_resumes(env: dict[str, Any]) -> None:
     assert len(lines) == 3
 
 
-@pytest.mark.parametrize("condition", ["c2", "c3", "c1,c2"])
+@pytest.mark.parametrize("condition", ["c3", "c1,c3"])
 def test_other_conditions_are_refused_clearly(env: dict[str, Any], condition: str) -> None:
     result = _invoke(env, "--conditions", condition)
     assert result.exit_code == 1
     assert "no está disponible" in _out(result)
     assert not env["out"].exists()
+
+
+@pytest.mark.parametrize("condition", ["c2", "c1,c2"])
+def test_c2_requires_the_extraction_run(env: dict[str, Any], condition: str) -> None:
+    result = _invoke(env, "--conditions", condition)
+    assert result.exit_code == 1
+    assert "--c2-extraction" in _out(result)
+    assert not env["out"].exists()
+
+
+def test_c2_extraction_without_c2_is_refused(env: dict[str, Any]) -> None:
+    result = _invoke(env, "--conditions", "c1", "--c2-extraction", "es-run")
+    assert result.exit_code == 1
+    assert "--c2-extraction" in _out(result) and "c2" in _out(result)
+    assert not env["out"].exists()
+
+
+def test_manifest_records_the_c2_extraction_run(env: dict[str, Any]) -> None:
+    class FakeC2(FakeC1):
+        condition_id = "C2"
+
+    env["monkeypatch"].setattr(afg_cli, "make_c2_condition", lambda run: FakeC2())
+    _invoke(
+        env, "--conditions", "c2", "--c2-extraction", "es-run", "--runs", "1", "--run-name", "m"
+    )
+    _invoke(env, "--runs", "1", "--run-name", "n")
+    manifest = json.loads((env["out"] / "m" / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["c2_extraction"] == "es-run"
+    other = json.loads((env["out"] / "n" / "manifest.json").read_text(encoding="utf-8"))
+    assert other["c2_extraction"] is None
+
+
+def test_c2_extraction_run_must_exist(env: dict[str, Any], tmp_path: Path) -> None:
+    env["monkeypatch"].setattr(afg_cli, "OPENKOS_WORKSPACES_DIR", tmp_path / "nowhere")
+    result = _invoke(env, "--conditions", "c2", "--c2-extraction", "nope")
+    assert result.exit_code == 1
+    assert "nope" in _out(result) and "afg experiment a" in _out(result)
+    assert not env["out"].exists()
+
+
+def test_runs_c2_with_its_extraction_run(env: dict[str, Any], tmp_path: Path) -> None:
+    class FakeC2(FakeC1):
+        condition_id = "C2"
+
+        def answer(self, question: Question) -> Answer:
+            return Answer(question_id=question.id, condition="C2", text="b", abstained=True)
+
+    built: list[str] = []
+
+    def fake_make(extraction_run: str) -> FakeC2:
+        built.append(extraction_run)
+        return FakeC2()
+
+    env["monkeypatch"].setattr(afg_cli, "make_c2_condition", fake_make)
+    result = _invoke(
+        env,
+        "--conditions",
+        "c1,c2",
+        "--c2-extraction",
+        "es-run",
+        "--runs",
+        "1",
+        "--run-name",
+        "two",
+    )
+    assert result.exit_code == 0, result.output
+    assert built == ["es-run"]
+    lines = (env["out"] / "two" / "respuestas.jsonl").read_text(encoding="utf-8").splitlines()
+    assert {json.loads(line)["condition"] for line in lines} == {"C1", "C2"}
+
+
+def test_make_experiment_b_condition_builds_c2(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from afg.conditions.c2_compiled_auto import CompiledAutoCondition
+
+    (tmp_path / "es-run").mkdir()
+    monkeypatch.setattr(afg_cli, "OPENKOS_WORKSPACES_DIR", tmp_path)
+    condition = afg_cli.make_experiment_b_condition("c2", c2_extraction="es-run")
+    assert isinstance(condition, CompiledAutoCondition)
+    assert condition.extraction_run == "es-run" and condition.limit == 5
+    assert condition.base_dir == tmp_path
 
 
 def test_unknown_condition_is_refused(env: dict[str, Any]) -> None:

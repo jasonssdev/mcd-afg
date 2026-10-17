@@ -1162,6 +1162,7 @@ dependencies = [
     { name = "pandas" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
+    { name = "pyyaml" },
     { name = "rich" },
     { name = "scikit-learn" },
     { name = "scipy" },
@@ -1206,10 +1207,11 @@ requires-dist = [
     { name = "matplotlib", specifier = ">=3.9" },
     { name = "numpy", specifier = ">=2.1" },
     { name = "ollama", marker = "extra == 'llm'", specifier = ">=0.4" },
-    { name = "openkos", marker = "extra == 'instrument'", specifier = ">=0.2.14" },
+    { name = "openkos", marker = "extra == 'instrument'", specifier = ">=0.5.5" },
     { name = "pandas", specifier = ">=2.2" },
     { name = "pydantic", specifier = ">=2.10" },
     { name = "pydantic-settings", specifier = ">=2.7" },
+    { name = "pyyaml", specifier = ">=6.0" },
     { name = "rich", specifier = ">=13.9" },
     { name = "scikit-learn", specifier = ">=1.6" },
     { name = "scipy", specifier = ">=1.14" },
@@ -1575,7 +1577,7 @@ wheels = [
 
 [[package]]
 name = "openkos"
-version = "0.2.14"
+version = "0.5.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "networkx" },
@@ -1585,9 +1587,9 @@ dependencies = [
     { name = "sqlite-vec" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/35/49/48cf9804a637338a3f728f532ec76cb454a5faf8f3a84cff62c696a34c9a/openkos-0.2.14.tar.gz", hash = "sha256:f81270f3a01d654f9111b74f3ab5fead95579e0f881086a8425946815c2b89db", size = 806706, upload-time = "2026-09-11T13:19:14.137Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ab/bb/069d022570dc557a635688be06f8c314cf614ce76cb3bc88f234631c0bf2/openkos-0.5.5.tar.gz", hash = "sha256:9903cbfe859bf6f2bb3874d9eeb629f9b6d2e585c230e13c425715d43108dfbc", size = 1303252, upload-time = "2026-10-14T15:44:09.036Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/37/9b/d0c089382f46a3a71459bcdea439fefe285772065b7308bd0cef107fb7d4/openkos-0.2.14-py3-none-any.whl", hash = "sha256:e5ccd90b9b0285996d362019f84ee551af9fdabad71bc636c3526a7635a7d953", size = 856643, upload-time = "2026-09-11T13:19:12.773Z" },
+    { url = "https://files.pythonhosted.org/packages/2a/21/8a770f04420d517910c148172b8564643e53f14fa91ccfec51da0bb1dc7f/openkos-0.5.5-py3-none-any.whl", hash = "sha256:a5d26f8ebe564bc35036fca1e050be9523309e42e4be7f56de5a272ca7030416", size = 1390512, upload-time = "2026-10-14T15:44:07.556Z" },
 ]
 
 [[package]]

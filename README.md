@@ -328,7 +328,7 @@ uv run afg c1 tune                  # mide el recall de evidencia de C1 sobre de
 uv run afg c1 ask                   # responde una pregunta con C1 como lo haría `openkos query`, con fragmentos de transcripción
 
 uv run afg experiment a             # sin implementar: sale con código 2 y espera OpenKOS ~0.6.0
-uv run afg experiment b             # Experimento B: preguntas x condiciones x corridas, con juicio y citación; hoy solo C1 corre (corrida de humo sobre ES2015)
+uv run afg experiment b             # Experimento B: preguntas x condiciones x corridas, con juicio y citación; hoy corren C1 y C2 (C2 con `--c2-extraction <corrida de experiment a>`); C3 sigue pendiente
 uv run afg experiment b-report      # análisis del Experimento B: tasas, intervalos bootstrap y comparación D16
 uv run afg experiment b-sample      # muestra para la verificación humana: una corrida por pregunta y condición
 uv run afg experiment b-human-check # acuerdo juez-humano (kappa de Cohen) por etiqueta, con el umbral prerregistrado

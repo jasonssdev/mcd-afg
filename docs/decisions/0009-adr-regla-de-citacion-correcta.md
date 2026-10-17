@@ -2,7 +2,7 @@
 
 ## Estado
 
-Aceptada (2026-10-15)
+Aceptada (2026-10-15). Enmendada (2026-10-16): se revisó el riesgo de granularidad con los primeros datos de C2; la regla se mantiene y se agrega un control de anchura. Ver la sección Enmienda.
 
 ## Contexto
 
@@ -88,3 +88,64 @@ referencia, serie de desarrollo):
 - Metodología: [`../avances/06-jss-metodologia.md`](../avances/06-jss-metodologia.md) v3.3.
 - Se apoya en el [ADR 0005](0005-adr-development-evaluation-split.md) (las cifras de desarrollo
   no son resultados).
+
+## Enmienda (2026-10-16)
+
+Esta sección resuelve el riesgo de granularidad que la sección Consecuencias dejó pendiente de
+revisar «con los primeros datos de C2». El texto anterior no se reescribe: queda como registro
+de lo que se decidió con la información de entonces.
+
+**Datos.** Corridas de humo `humo-c1-es2015` y `humo-c2-es2015-conceptos`, con las 21
+preguntas de calibración de ES2015. Es una serie de desarrollo y sus cifras no son resultados
+(ADR 0005). Las dos condiciones se recalcularon con la regla de este ADR:
+
+| | C1 | C2 |
+|---|---:|---:|
+| Respondidas | 13 | 11 |
+| `citation_correct` | 9 | 5 |
+| Precisión por unidad citada, media | 0,51 | 0,30 |
+| Precisión por acto de diálogo, media | 0,012 | 0,007 |
+| Cobertura de la evidencia de referencia, media | 0,59 | 0,41 |
+| Actos citados por respuesta, mediana | 68 | 100 |
+
+Hubo un supuesto que no se cumplió. Este ADR suponía que C2 y C3 citarían decisiones, con
+evidencia más acotada que los fragmentos de C1. En la práctica OpenKOS también cita conceptos,
+eventos y proyectos de su ontología, y esas citas abarcan entre 44 y 146 actos de diálogo. Los
+fragmentos de C1 abarcan entre 16 y 47. El riesgo de granularidad corre entonces en las dos
+direcciones.
+
+**Lectura.**
+- En las dos condiciones, las citas correctas son más anchas que las incorrectas. La anchura
+  influye en la medida de las dos.
+- La precisión por acto de diálogo es menor que el 5 % en todas las citas correctas de las dos
+  condiciones, así que un umbral sobre ella descartaría todas por igual.
+- La muestra no muestra que la regla favorezca a una condición por su tamaño: C2 cita más ancho
+  y acierta menos.
+
+**Decisiones.**
+
+1. **La regla principal no cambia.** `citation_correct` sigue siendo «al menos una cita toca la
+   evidencia de referencia». No se normaliza por tamaño ni se fija un umbral de precisión por
+   acto, porque los datos no sostienen ninguno de los dos.
+2. **Control de anchura obligatorio.** Al informar `citation_correct` por condición se informan
+   siempre, en la misma tabla, la **anchura de las citas** (actos de diálogo citados por
+   respuesta) y la **cobertura por acto** de la evidencia de referencia. Una condición que
+   acierte por citar más ancho queda así a la vista. Las funciones están en
+   `src/afg/evaluation/citation_width.py`. Incorporarlas a las tablas del Experimento B es
+   trabajo pendiente y tiene que estar hecho antes de la primera serie de evaluación.
+3. **Las citas a una fuente completa no cuentan como evidencia.** Una `sources/<reunión>` de
+   OpenKOS es la transcripción entera de una reunión: con la regla de este ADR casi siempre
+   «acertaría». No entran en `cited_evidence`. La traza las registra con el motivo
+   `source_full_transcript`, y se informa cuántas hubo por condición.
+4. **Las citas a conceptos que no son decisiones sí cuentan.** Se ubican en los actos de
+   diálogo a partir de sus fragmentos de transcripción, igual que las decisiones. Que OpenKOS
+   organice el conocimiento en una ontología de conceptos es parte de lo que se evalúa, y la
+   medición no debe castigarlo.
+5. **Queda abierto:** con más datos, identificar en C2 qué unidad produjo cada acierto, una
+   decisión angosta o un concepto ancho.
+
+**Trazabilidad de la enmienda.**
+- Evidencia: [notebook 13](../../notebooks/13-jss-anchura-de-citas.ipynb).
+- Código: `src/afg/evaluation/citation_width.py`, `src/afg/conditions/c2_compiled_auto.py` y
+  `src/afg/extraction/openkos/bundle_reader.py`.
+- Discusión: issue #97.
