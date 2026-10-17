@@ -4,7 +4,7 @@
 |---|---|
 | **Entrega** | Video de avance #1 de AFG2 (semana 2) — análisis exploratorio |
 | **Fecha de envío** | Pendiente |
-| **Versión** | 1.3 |
+| **Versión** | 1.4 |
 | **Construido desde** | `docs/avances/01-jss-problema.md` v1.2 · `docs/avances/02-jss-fuente-de-datos.md` v1.4 · `docs/avances/07-jss-analisis-exploratorio.md` v1.1 · `notebooks/03-jss-eda.ipynb` (análisis exploratorio completo; fuente de las cifras) · `docs/avances/08-jss-metricas-y-criterio-de-exito.md` v1.1 · `notebooks/11-jss-figuras-video-eda.ipynb` (figuras) |
 | **Duración objetivo** | 8:39 a 145 palabras por minuto (máximo del guion: 9:00; la rúbrica fija 8:00, ver más abajo) |
 | **Formato** | Tres presentadores en cuatro bloques consecutivos, en este orden: Jason, Germán, Gustavo, Jason. Con diapositivas de apoyo |
@@ -25,6 +25,7 @@
 | 1.1 | 2026-10-15 | Se amplía el tope a 9:00 (de 1.115 a 1.259 palabras). Se agregan cinco temas del análisis exploratorio: valores atípicos y política de limpieza, duplicados como reafirmaciones, límites de la muestra, estadísticas descriptivas básicas y ventana de contexto del modelo. Se condensan pasajes existentes sin quitar ninguno. | El equipo decidió cubrir todos los hallazgos del análisis exploratorio (`notebooks/03-jss-eda.ipynb`) y optó por una versión más larga que el máximo de la rúbrica. |
 | 1.2 | 2026-10-15 | Se reescribe la explicación de la figura 5: qué agrupa cada punto, por qué el coeficiente solo deja pasar tanto con frases cortas (basta una palabra en común), que desde cuatro palabras ambas líneas coinciden y que los 92 pares dan como mucho 92 relaciones. Se condensa la frase de descriptivos; sus cifras completas quedan en la lámina. Extensión sin cambios (1.259 palabras). | La explicación anterior de la figura 5 no dejaba claro qué mide el gráfico. |
 | 1.3 | 2026-10-15 | Se nombran y explican en voz las cuatro técnicas de valores atípicos (Z-score, regla de Tukey, LOF y MCD), se precisa que 12 de las 15 reuniones marcadas lo son solo por MCD y que TS3005d, marcada por las cuatro, es real; se agrega una lámina con las reglas de cada técnica. Se acortan explicaciones de conceptos básicos (análisis exploratorio, valor faltante, imputación, mediana). Extensión: 1.255 palabras. Se usan los nombres estándar de métricas y técnicas sin traducir (Z-score, overlap coefficient, context window, tokens, *blocking*). | El profesor evalúa solo el video: el trabajo técnico debe verse en él, sin simplificarlo de más. Convención del equipo: los nombres de métricas y técnicas no se traducen. |
+| 1.4 | 2026-10-17 | Se incorporan dos controles de robustez del EDA: ajuste Benjamini-Hochberg para comparaciones múltiples y bootstrap por serie para respetar la dependencia entre pares de una misma serie. | Comprobar que los hallazgos exploratorios destacados no dependan de ignorar comparaciones múltiples ni la estructura por serie. |
 
 ## Qué pide el curso y dónde se cubre
 
@@ -216,7 +217,7 @@ El reto es la **context window**: lo máximo que el modelo lee de una vez, unos 
 
 > **▶ Lámina de cierre con los cuatro pasos (ver abajo).**
 
-Primero, las 26 decisiones sin evidencia se revisarán a mano. Segundo, las preguntas sobre cambios se apoyarán en las reuniones b, c y d. Tercero, mantendremos el filtro, declararemos que puede perder relaciones entre frases cortas y mediremos cuántas pierde. Esa medida se llama **recall**: de todas las relaciones reales, qué parte deja pasar el filtro. Para medirla, se anotará una muestra de pares que el filtro rechazó. Cuarto, como son solo 14 series, informaremos qué tan grande es cada diferencia, y no solo si existe.
+Primero, las 26 decisiones sin evidencia se revisarán a mano. Segundo, las preguntas sobre cambios se apoyarán en las reuniones b, c y d. Tercero, mantendremos el filtro, declararemos que puede perder relaciones entre frases cortas y mediremos cuántas pierde. Esa medida se llama **recall**: de todas las relaciones reales, qué parte deja pasar el filtro. Para medirla, se anotará una muestra de pares que el filtro rechazó. Cuarto, comprobamos la robustez de los hallazgos. Aplicamos Benjamini-Hochberg a 17 pruebas: las mismas 9 que eran significativas siguieron siéndolo después del ajuste. Además, como los pares de una misma serie no son independientes, hicimos 5.000 réplicas de bootstrap remuestreando series completas. En el contraste revisado, el intervalo del 95 % fue de 0,0118 a 0,0393 y no incluyó cero. Estos controles refuerzan el EDA, aunque sigue siendo exploratorio.
 
 El éxito del experimento se juzgará con una regla fijada antes de ver los resultados.
 
@@ -224,7 +225,7 @@ Todo parte de lo que nos enseñó el botón turbo: los números por sí solos no
 
 ### Lámina
 
-Sin figura nueva. Antes del cierre, una lámina con la context window: "Context window: 12.288 tokens ≈ 9.452 palabras", "Cada reunión cabe (la mayor, 96,4 %)", "Ninguna serie cabe: 1,6 a 2,8 veces la ventana". Lámina de cierre con cuatro líneas, una por paso: "Revisar a mano las 26 decisiones sin evidencia", "Preguntas de evolución sobre las reuniones b, c y d", "Mantener el filtro, declarar su sesgo y medir su recall", "Informar el tamaño de cada diferencia". Opcional: volver a la lámina de título del bloque 1 ("¿Se eliminó el botón turbo?") durante la última frase.
+Sin figura nueva. Antes del cierre, una lámina con la context window: "Context window: 12.288 tokens ≈ 9.452 palabras", "Cada reunión cabe (la mayor, 96,4 %)", "Ninguna serie cabe: 1,6 a 2,8 veces la ventana". Lámina de cierre con cuatro líneas, una por paso: "Revisar a mano las 26 decisiones sin evidencia", "Preguntas de evolución sobre las reuniones b, c y d", "Mantener el filtro, declarar su sesgo y medir su recall", "Comprobar robustez: FDR y bootstrap por serie". Opcional: volver a la lámina de título del bloque 1 ("¿Se eliminó el botón turbo?") durante la última frase.
 
 Nota de entrega: pasar despacio por los cuatro pasos y mirar a cámara en la frase final.
 
@@ -250,4 +251,6 @@ Nota de entrega: pasar despacio por los cuatro pasos y mirar a cámara en la fra
 | 42,1 % frente a 2,0 % con frases de tres palabras | `docs/avances/07-jss-analisis-exploratorio.md` §7.6; notebook 11, figura 5 |
 | Filtro calibrado con un solo par de control; como mucho 92 relaciones | `docs/avances/07-jss-analisis-exploratorio.md` §7.4 |
 | Muestra de pares rechazados, generada y sin anotar (Tarea C) | `docs/avances/07-jss-analisis-exploratorio.md` §7.5 |
+| Robustez frente a comparaciones múltiples: 17 pruebas, 9 significativas antes y 9 después de Benjamini-Hochberg | `notebooks/03-jss-eda.ipynb`, sección de robustez |
+| Dependencia intra-serie: bootstrap por serie, 5.000 réplicas; diferencia ≈ 0,0254; IC 95 % ≈ [0,0118; 0,0393] | `notebooks/03-jss-eda.ipynb`, sección de robustez |
 | Criterio de éxito fijado antes de correr el experimento | `docs/avances/08-jss-metricas-y-criterio-de-exito.md` §2.1 |
