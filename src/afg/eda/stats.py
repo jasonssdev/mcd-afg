@@ -14,7 +14,7 @@ Conventions
 from __future__ import annotations
 
 import warnings
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from itertools import combinations
 
@@ -422,3 +422,77 @@ def variance_inflation_factors(df: pd.DataFrame, columns: Sequence[str]) -> pd.D
         vif = float("inf") if slack < 1e-10 else 1.0 / slack
         rows.append({"variable": name, "vif": vif, "r_squared": r2})
     return pd.DataFrame(rows, columns=["variable", "vif", "r_squared"])
+
+
+def benjamini_hochberg(
+    p_values: Sequence[float],
+    *,
+    alpha: float = 0.05,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Adjust p-values with Benjamini-Hochberg FDR control."""
+    p = np.asarray(p_values, dtype=float)
+    if p.ndim != 1:
+        raise ValueError("p_values must be one-dimensional")
+    if np.any(~np.isfinite(p)) or np.any((p < 0) | (p > 1)):
+        raise ValueError("p_values must be finite values between 0 and 1")
+    if not 0 < alpha < 1:
+        raise ValueError("alpha must be between 0 and 1")
+
+    order = np.argsort(p)
+    ranked = p[order]
+    m = len(ranked)
+
+    q_ranked = ranked * m / np.arange(1, m + 1)
+    q_ranked = np.minimum.accumulate(q_ranked[::-1])[::-1]
+    q_ranked = np.clip(q_ranked, 0.0, 1.0)
+
+    q_values = np.empty_like(q_ranked)
+    q_values[order] = q_ranked
+
+    return q_values, q_values <= alpha
+
+
+def cluster_bootstrap(
+    df: pd.DataFrame,
+    cluster_col: str,
+    statistic: Callable[[pd.DataFrame], float],
+    *,
+    n_boot: int = 5_000,
+    random_state: int = 0,
+) -> dict[str, object]:
+    """Bootstrap a statistic by resampling complete clusters."""
+    work = df.dropna(subset=[cluster_col]).copy()
+    clusters = work[cluster_col].drop_duplicates().to_numpy()
+
+    if len(clusters) < 2:
+        raise ValueError("at least two clusters are required")
+    if n_boot < 1:
+        raise ValueError("n_boot must be positive")
+
+    rng = np.random.default_rng(random_state)
+    grouped = {key: group.copy() for key, group in work.groupby(cluster_col, sort=False)}
+    estimates: list[float] = []
+
+    for _ in range(n_boot):
+        sampled = rng.choice(clusters, size=len(clusters), replace=True)
+        sample = pd.concat(
+            [grouped[key] for key in sampled],
+            ignore_index=True,
+        )
+        estimates.append(float(statistic(sample)))
+
+    distribution = np.asarray(estimates, dtype=float)
+    distribution = distribution[np.isfinite(distribution)]
+
+    if distribution.size == 0:
+        raise ValueError("bootstrap produced no finite estimates")
+
+    return {
+        "estimate": float(statistic(work)),
+        "boot_mean": float(np.mean(distribution)),
+        "ci_low": float(np.quantile(distribution, 0.025)),
+        "ci_high": float(np.quantile(distribution, 0.975)),
+        "n_clusters": len(clusters),
+        "n_boot_valid": len(distribution),
+        "distribution": distribution,
+    }

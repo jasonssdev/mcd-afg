@@ -10,7 +10,8 @@ Submodules:
   224, decision 343, pair 3,071) and the readers that feed them.
 - :mod:`afg.eda.dictionary` -- variable registry and the data dictionary built from it.
 - :mod:`afg.eda.quality` -- data dictionary, key and business-rule checks, missingness.
-- :mod:`afg.eda.stats` -- descriptive statistics, outliers, group comparison, correlation.
+- :mod:`afg.eda.stats` -- descriptive statistics, outliers, group comparison, correlation,
+  multiple-comparison adjustment and cluster bootstrap.
 - :mod:`afg.eda.multivariate` -- standardised PCA and silhouette-scanned clustering.
 - :mod:`afg.eda.temporal` -- per-position aggregates and monotonic-trend tests.
 
@@ -33,7 +34,9 @@ from afg.eda.quality import (
 from afg.eda.stats import (
     Chi2Result,
     KruskalResult,
+    benjamini_hochberg,
     chi2_independence,
+    cluster_bootstrap,
     contingency_table,
     correlation_table,
     describe_categorical,
@@ -81,12 +84,14 @@ __all__ = [
     "PcaResult",
     "VariableSpec",
     "add_pair_features",
+    "benjamini_hochberg",
     "build_decision_table",
     "build_meeting_table",
     "build_pair_table",
     "build_series_table",
     "build_speaker_table",
     "chi2_independence",
+    "cluster_bootstrap",
     "cluster_scan",
     "consistency_checks",
     "contingency_table",

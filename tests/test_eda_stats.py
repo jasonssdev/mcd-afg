@@ -10,7 +10,9 @@ import pandas as pd
 import pytest
 
 from afg.eda.stats import (
+    benjamini_hochberg,
     chi2_independence,
+    cluster_bootstrap,
     contingency_table,
     correlation_table,
     describe_categorical,
@@ -251,3 +253,56 @@ class TestRateByBin:
         df = pd.DataFrame({"len": [1.0, np.nan, 3.0], "hit": [True, True, False]})
         out = rate_by_bin(df, "len", "hit", [0, 2, 4])
         assert out["n"].sum() == 2
+
+
+class TestRobustness:
+    def test_benjamini_hochberg_adjusts_and_rejects(self) -> None:
+        p_values = [0.001, 0.010, 0.040, 0.200]
+
+        q_values, reject = benjamini_hochberg(p_values)
+
+        assert q_values == pytest.approx([0.004, 0.020, 0.0533333333, 0.200])
+        assert reject.tolist() == [True, True, False, False]
+
+    @pytest.mark.parametrize("bad", [[0.01, 1.2], [-0.1, 0.5], [0.01, float("nan")]])
+    def test_benjamini_hochberg_rejects_invalid_p_values(self, bad: list[float]) -> None:
+        with pytest.raises(ValueError, match="between 0 and 1"):
+            benjamini_hochberg(bad)
+
+    def test_cluster_bootstrap_requires_two_clusters(self) -> None:
+        df = pd.DataFrame({"series_id": ["a", "a", "a"], "value": [1.0, 2.0, 3.0]})
+
+        with pytest.raises(ValueError):
+            cluster_bootstrap(df, "series_id", lambda s: float(s["value"].mean()), n_boot=10)
+
+    def test_cluster_bootstrap_is_reproducible(self) -> None:
+        df = pd.DataFrame(
+            {
+                "series_id": ["a", "a", "b", "b", "c", "c"],
+                "value": [0.0, 0.0, 1.0, 1.0, 2.0, 2.0],
+            }
+        )
+
+        def statistic(sample: pd.DataFrame) -> float:
+            return float(sample["value"].mean())
+
+        first = cluster_bootstrap(
+            df,
+            "series_id",
+            statistic,
+            n_boot=200,
+            random_state=0,
+        )
+        second = cluster_bootstrap(
+            df,
+            "series_id",
+            statistic,
+            n_boot=200,
+            random_state=0,
+        )
+
+        assert first["estimate"] == pytest.approx(1.0)
+        assert first["n_clusters"] == 3
+        assert first["n_boot_valid"] == 200
+        assert first["ci_low"] <= first["estimate"] <= first["ci_high"]
+        assert np.array_equal(first["distribution"], second["distribution"])
