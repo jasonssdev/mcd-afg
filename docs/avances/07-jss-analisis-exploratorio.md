@@ -3,9 +3,9 @@
 | | |
 |---|---|
 | **Documento** | 07 — Análisis exploratorio de datos |
-| **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.2 |
-| **Fecha** | 2026-10-15 |
+| **Autor** | Jason Sepúlveda S. · Gustavo Martínez |
+| **Versión** | 1.3 |
+| **Fecha** | 2026-10-17 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -15,6 +15,7 @@
 | 1.0 | 2026-10-15 | Versión inicial. El análisis exploratorio de datos se redacta para un lector no técnico: organización de los datos, calidad, valores atípicos, estadísticas descriptivas, filtro léxico, dificultades e implicancias para los pasos siguientes. | El video de avance 1 y las secciones 3 (caracterización de los datos) y 4 (análisis exploratorio) del pre-informe necesitan un texto que explique cada figura y cada cifra. Fuente de todas las cifras: [notebook 03](../../notebooks/03-jss-eda.ipynb) y [notebook 11](../../notebooks/11-jss-figuras-video-eda.ipynb). |
 | 1.1 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (ground truth, overlap coefficient, context window, tokens, PCA, filtro léxico (*blocking*)). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
 | 1.2 | 2026-10-15 | Se agrega la sección «Trazabilidad», con los notebooks, funciones y pruebas en que se apoya cada afirmación del documento. No cambia ninguna cifra, decisión ni sección anterior. | Auditoría de gobernanza del 2026-10-15: los documentos 06 a 09 no tenían la sección de trazabilidad que sí tienen los documentos 01 a 05. |
+| 1.3 | 2026-10-17 | Se agrega la revisión de robustez del análisis exploratorio: corrección de Benjamini-Hochberg sobre las 18 pruebas (las 10 significativas se mantienen) y bootstrap por serie para P6 (el intervalo no contiene cero). Se precisa la limitación «Pocas series». No cambia ninguna cifra ni decisión anterior. | La limitación sobre valores p optimistas por falta de independencia quedó abierta en la versión 1.2; notebook 03, §6.4 y §10.2. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -412,7 +413,7 @@ de efecto** dice qué tan grande es la diferencia, no solo si es detectable.
 | **La context window del modelo.** El modelo de lenguaje lee a la vez un máximo de 12.288 tokens, trozos de palabra (unas 9.452 palabras). Según la estimación, las 56 reuniones caben, pero la mayor ocupa el 96,4 % y seis superan el 80 %. La estimación es optimista: en una prueba con una reunión que ocupa el 59,8 % de la ventana, el sistema leyó un extracto y no la reunión entera. Ninguna serie completa cabe: tienen entre 14.990 y 26.204 palabras, de 1,6 a 2,8 veces la ventana | Planificar la extracción por segmentos o con margen reservado y medir la ventana real | §10.1, §11.3 |
 | Las series difieren mucho (de 1 a 14 candidatos por serie) | Limitar cuántas preguntas salen de cada serie para que ninguna domine | §6.1, §11.3 |
 | **Sitio y lengua van juntos** (sección 6.3); sitio y posición bastan como estratos y el tamaño es una sola dimensión | Usar sitio y posición como variables de control y una sola medida de tamaño; la lengua no puede estudiarse como eje independiente | §6.2, §7, §8, §11.3 |
-| **Pocas series.** Con 14 series o 56 reuniones, muchos efectos de tamaño mediano no alcanzan significancia estadística, y los valores p de los hablantes y de los pares son optimistas porque esos registros no son independientes entre sí | Informar tamaños de efecto y no solo valores p | §6.3, §11.3 |
+| **Pocas series.** Con 14 series o 56 reuniones, muchos efectos de tamaño mediano no alcanzan significancia estadística, y los valores p de los hablantes y de los pares son optimistas porque esos registros no son independientes entre sí. Al revisarlo en la pregunta de la distancia entre reuniones, remuestreando series completas en vez de pares, el resultado se mantuvo | Informar tamaños de efecto y no solo valores p | §6.3, §6.4, §10.2, §11.3 |
 
 Con estos resultados se plantean cuatro **hipótesis emergentes** para contrastar con el
 experimento, no confirmadas por este análisis: (1) las decisiones tardías quedan sin evidencia
@@ -461,6 +462,7 @@ se apoyan en este análisis están en el [avance 06](06-jss-metodologia.md) y en
 | Estadísticas descriptivas, correlaciones y patrones principales (§6) | [`../../notebooks/03-jss-eda.ipynb`](../../notebooks/03-jss-eda.ipynb); `src/afg/eda/stats.py`; `tests/test_eda_stats.py` |
 | Estructura multivariada (PCA y agrupamiento) | [`../../notebooks/03-jss-eda.ipynb`](../../notebooks/03-jss-eda.ipynb); `src/afg/eda/multivariate.py`; `tests/test_eda_multivariate.py` |
 | Eje temporal por serie | [`../../notebooks/03-jss-eda.ipynb`](../../notebooks/03-jss-eda.ipynb); `src/afg/eda/temporal.py` |
+| Robustez: corrección por comparaciones múltiples y bootstrap por serie | [`../../notebooks/03-jss-eda.ipynb`](../../notebooks/03-jss-eda.ipynb), §6.4 y §10.2; `src/afg/eda/stats.py`; `tests/test_eda_stats.py` |
 | Tablas y figuras del análisis | `src/afg/eda/tables.py`, `src/afg/eda/figures.py`; `tests/test_eda_tables.py`, `tests/test_eda_figures.py` |
 | Las cinco figuras del video de avance #1 | [`../../notebooks/11-jss-figuras-video-eda.ipynb`](../../notebooks/11-jss-figuras-video-eda.ipynb); [`../entregables/figuras/`](../entregables/figuras/) |
 | Filtro léxico: regla, punto de operación y sensibilidad (§7) | `src/afg/annotation/blocking.py`; `tests/test_blocking.py`; [`../decisions/README.md`](../decisions/README.md), decisiones D5 y D9 |
