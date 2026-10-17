@@ -6,9 +6,9 @@
 | **Fecha de envío** | Pendiente |
 | **Versión** | 1.4 |
 | **Construido desde** | `docs/avances/01-jss-problema.md` v1.2 · `docs/avances/02-jss-fuente-de-datos.md` v1.4 · `docs/avances/07-jss-analisis-exploratorio.md` v1.1 · `notebooks/03-jss-eda.ipynb` (análisis exploratorio completo; fuente de las cifras) · `docs/avances/08-jss-metricas-y-criterio-de-exito.md` v1.1 · `notebooks/11-jss-figuras-video-eda.ipynb` (figuras) |
-| **Duración objetivo** | 8:39 a 145 palabras por minuto (máximo del guion: 9:00; la rúbrica fija 8:00, ver más abajo) |
+| **Duración objetivo** | 8:41 a 145 palabras por minuto (máximo del guion: 9:00; la rúbrica fija 8:00, ver más abajo) |
 | **Formato** | Tres presentadores en cuatro bloques consecutivos, en este orden: Jason, Germán, Gustavo, Jason. Con diapositivas de apoyo |
-| **Extensión hablada** | 1.255 palabras: 284 + 377 + 386 + 208. A 145 palabras por minuto son 8:39; a 140, 8:58 |
+| **Extensión hablada** | 1.259 palabras: 284 + 377 + 390 + 208. A 145 palabras por minuto son 8:41; a 140, 9:00 |
 
 > **Por qué existe este documento.** En el video final del primer curso, la retroalimentación
 > fue que no se entendió bien. Este guion prioriza la claridad por encima de la cantidad: un
@@ -25,7 +25,7 @@
 | 1.1 | 2026-10-15 | Se amplía el tope a 9:00 (de 1.115 a 1.259 palabras). Se agregan cinco temas del análisis exploratorio: valores atípicos y política de limpieza, duplicados como reafirmaciones, límites de la muestra, estadísticas descriptivas básicas y ventana de contexto del modelo. Se condensan pasajes existentes sin quitar ninguno. | El equipo decidió cubrir todos los hallazgos del análisis exploratorio (`notebooks/03-jss-eda.ipynb`) y optó por una versión más larga que el máximo de la rúbrica. |
 | 1.2 | 2026-10-15 | Se reescribe la explicación de la figura 5: qué agrupa cada punto, por qué el coeficiente solo deja pasar tanto con frases cortas (basta una palabra en común), que desde cuatro palabras ambas líneas coinciden y que los 92 pares dan como mucho 92 relaciones. Se condensa la frase de descriptivos; sus cifras completas quedan en la lámina. Extensión sin cambios (1.259 palabras). | La explicación anterior de la figura 5 no dejaba claro qué mide el gráfico. |
 | 1.3 | 2026-10-15 | Se nombran y explican en voz las cuatro técnicas de valores atípicos (Z-score, regla de Tukey, LOF y MCD), se precisa que 12 de las 15 reuniones marcadas lo son solo por MCD y que TS3005d, marcada por las cuatro, es real; se agrega una lámina con las reglas de cada técnica. Se acortan explicaciones de conceptos básicos (análisis exploratorio, valor faltante, imputación, mediana). Extensión: 1.255 palabras. Se usan los nombres estándar de métricas y técnicas sin traducir (Z-score, overlap coefficient, context window, tokens, *blocking*). | El profesor evalúa solo el video: el trabajo técnico debe verse en él, sin simplificarlo de más. Convención del equipo: los nombres de métricas y técnicas no se traducen. |
-| 1.4 | 2026-10-17 | Se incorporan dos controles de robustez del EDA: ajuste Benjamini-Hochberg para comparaciones múltiples y bootstrap por serie para respetar la dependencia entre pares de una misma serie. | Comprobar que los hallazgos exploratorios destacados no dependan de ignorar comparaciones múltiples ni la estructura por serie. |
+| 1.4 | 2026-10-17 | En el bloque 3, después del resultado del filtro, se agrega el hallazgo de que los candidatos bajan con la distancia entre reuniones (de 3,7 % a distancia 1 a 1,2 % a distancia 3; la distancia se explica en voz) y su robustez: Benjamini-Hochberg sobre 18 pruebas, que controla la *false discovery rate* y mantiene las 10 significativas, y un *cluster bootstrap* por serie, que confirma que la diferencia no es cero. El intervalo (0,012 a 0,039) y las 5.000 réplicas quedan solo en la lámina. Para mantener el tope se condensa el bloque 3: el ejemplo de «cambiar color» se reduce a una frase con la regla y se quita la frase de ejemplo de pares sin relación; no se quita ninguna cifra, técnica ni el resto de los ejemplos. Extensión: 1.259 palabras (8:41 a 145 palabras por minuto). | Los controles de robustez del análisis exploratorio (`notebooks/03-jss-eda.ipynb`, §6.4 y §10.2) respaldan un hallazgo que el guion presenta. |
 
 ## Qué pide el curso y dónde se cubre
 
@@ -40,7 +40,7 @@ hasta 9 minutos para cubrir todos los hallazgos del análisis exploratorio.
 | Organización de los datos | Bloque 1 (Jason): cinco niveles, 14 series, 343 decisiones, 3.071 pares; figura 1. Límites de la muestra: 14 de 33 series elegibles, un solo dominio, habla actuada |
 | Limpieza inicial | Bloque 2 (Germán): faltantes, por qué no se imputa ni se borra nada; figura 2. Valores atípicos (15 de 56 reuniones marcadas, ninguna fila eliminada) y duplicados conservados como reafirmaciones |
 | Visualizaciones o estadística descriptiva | Bloque 2 (figura 3, diagrama de caja con medianas); bloque 3 (descriptivos básicos de reuniones, decisiones y turnos; figuras 4 y 5, el filtro y su efecto según el largo de la frase) |
-| Hallazgos preliminares | Bloque 2 (26 decisiones sin evidencia; la primera reunión tiene menos decisiones); bloque 3 (de 3.071 a 92 pares) |
+| Hallazgos preliminares | Bloque 2 (26 decisiones sin evidencia; la primera reunión tiene menos decisiones); bloque 3 (de 3.071 a 92 pares; los candidatos bajan con la distancia entre reuniones y el resultado resiste los controles de robustez) |
 | Retos encontrados | Bloque 2 (decisiones sin evidencia); bloque 3 (el filtro y las frases cortas, calibrado con un solo caso de control); bloque 4 (context window del modelo y resumen) |
 | Influencia en los siguientes pasos | Cada bloque cierra con "qué cambia"; bloque 4 los reúne y nombra el criterio de éxito |
 | Conexión con el problema de investigación | Bloque 1 (el botón turbo y la pregunta del proyecto); todos los bloques vuelven a ella; bloque 4 cierra con el mismo caso |
@@ -51,10 +51,10 @@ hasta 9 minutos para cubrir todos los hallazgos del análisis exploratorio.
 |---|---|---|---|---|
 | Contexto, qué cubre el video y organización de los datos | Jason Sepúlveda | 284 | 0:00 – 1:58 | El botón turbo; qué es un análisis exploratorio; cinco niveles de datos: pocas series, muchos pares; la muestra no se generaliza |
 | Calidad, limpieza inicial y primer hallazgo | Germán Vega | 377 | 1:58 – 4:34 | 26 decisiones sin evidencia; no se inventa ni se borra nada; atípicos revisados con cuatro técnicas, marcados y no eliminados; duplicados como reafirmaciones; la primera reunión tiene menos decisiones |
-| El filtro léxico (*blocking*) y su límite | Gustavo Martínez | 386 | 4:34 – 7:13 | De 3.071 pares a 92 con una regla simple; cómo son las reuniones y las frases; funciona peor con frases cortas |
-| Retos, próximos pasos y cierre | Jason Sepúlveda | 208 | 7:13 – 8:39 | La context window obliga a leer por partes; qué cambia en cada paso; cómo se juzgará el éxito |
+| El filtro léxico (*blocking*) y su límite | Gustavo Martínez | 390 | 4:34 – 7:15 | De 3.071 pares a 92 con una regla simple; los candidatos bajan con la distancia entre reuniones y el hallazgo resiste Benjamini-Hochberg y el cluster bootstrap; cómo son las reuniones y las frases; funciona peor con frases cortas |
+| Retos, próximos pasos y cierre | Jason Sepúlveda | 208 | 7:15 – 8:41 | La context window obliga a leer por partes; qué cambia en cada paso; cómo se juzgará el éxito |
 
-Reparto por persona: Jason 492 palabras, Germán 377, Gustavo 386. Jason abre y cierra porque
+Reparto por persona: Jason 492 palabras, Germán 377, Gustavo 390. Jason abre y cierra porque
 presenta el contexto y reúne los pasos siguientes; el filtro léxico, que es lo más difícil de
 explicar, queda completo en un solo bloque a cargo de Gustavo.
 
@@ -66,13 +66,12 @@ explicar, queda completo en un solo bloque a cargo de Gustavo.
 - Cada término técnico se explica en la misma oración en que aparece. Si al ensayar una frase
   necesita que la audiencia ya sepa algo, se reescribe.
 - Cronometrar un ensayo completo antes de grabar. El margen sobre el tope de 9:00 es de unos
-  21 segundos a 145 palabras por minuto y de solo 2 segundos a 140. Hablar a un ritmo ágil y
+  19 segundos a 145 palabras por minuto y de menos de 1 segundo a 140. Hablar a un ritmo ágil y
   sin pausas largas entre bloques. La frase sobre Jaccard (bloque 3) se recortó por tiempo; sigue
   explicada en el avance 07. Los valores atípicos (bloque 2) sí se incluyen en esta versión.
 - Las líneas que empiezan con ▶ no se dicen: marcan el momento exacto en que cambia la lámina,
   con la figura que corresponde.
-- No recortar los ejemplos cotidianos (el botón turbo, las dos frases del ejemplo del filtro,
-  "cambiar color"): son lo que hace entendible cada bloque.
+- No recortar los ejemplos cotidianos (el botón turbo, las dos frases del ejemplo del filtro): son lo que hace entendible cada bloque.
 - Las cifras de este guion salen de `docs/avances/07-jss-analisis-exploratorio.md`, del
   notebook 03 y del notebook 11. Ninguna se calcula aquí.
 
@@ -163,37 +162,39 @@ Nota de entrega: cambiar de la figura 2 a la figura 3 al decir "Ahora, un primer
 
 ---
 
-## Bloque 3 — Gustavo Martínez (4:34 – 7:13)
+## Bloque 3 — Gustavo Martínez (4:34 – 7:15)
 
 ### Texto hablado
 
 Gracias, Germán. Soy **Gustavo Martínez**. Explico el filtro.
 
-Una persona tiene que revisar cada par y decidir si una decisión cambia, revierte o repite a la otra. Son 3.071 pares: unas 77 horas. Casi todos sin relación: "el control será amarillo" frente a "la reunión termina a las cinco".
+Una persona tiene que revisar cada par y decidir si una decisión cambia, revierte o repite a otra: 3.071 pares, unas 77 horas.
 
-Si dos decisiones hablan de lo mismo, probablemente comparten palabras. Así que, antes de que una persona mire un par, una regla automática descarta los que casi no comparten. Es un **filtro léxico**, o *blocking*, porque solo mira palabras: no da la respuesta, solo decide qué pares vale la pena revisar.
+Si dos decisiones hablan de lo mismo, probablemente comparten palabras; una regla automática descarta los pares que casi no comparten. Es un **filtro léxico**, o *blocking*. Solo mira palabras: no da la respuesta, solo decide qué pares vale la pena revisar.
 
 Primero se quitan las palabras vacías, como "de" o "el"; quedan las **palabras de contenido**. Luego se calcula el **overlap coefficient**: palabras compartidas, divididas por las de la frase más corta. ¿Qué parte de la corta está dentro de la larga?
 
 > **▶ Lámina del ejemplo: las dos frases con «botón» y «turbo» resaltadas y la cuenta «2 ÷ 3 = 0,67».**
 
-Un ejemplo. Frase larga: "el control tendrá rueda de desplazamiento, pantalla, botón turbo, botón de encendido y carcasa amarilla". Frase corta: "se elimina el botón turbo". La corta tiene tres palabras de contenido y comparte dos. Dos entre tres: 0,67, sobre el umbral de 0,30. Pasa.
+Frase larga: "el control tendrá rueda de desplazamiento, pantalla, botón turbo, botón de encendido y carcasa amarilla". Frase corta: "se elimina el botón turbo". La corta tiene tres palabras de contenido y comparte dos. Dos entre tres: 0,67, sobre el umbral de 0,30. Pasa.
 
-Pero con frases muy cortas el coeficiente se infla: "cambiar color" frente a "el color del logo es azul" da 0,50 con una sola palabra en común. Por eso exigimos además dos palabras compartidas.
+Con frases muy cortas el coeficiente se infla, así que exigimos dos palabras compartidas.
 
 > **▶ Figura 4 — se muestra al decir «Resultado».**
 >
 > ![Embudo del filtro: 3.071 pares (76,8 horas), 712 con el coeficiente solo (17,8 horas) y 92 con el coeficiente más 2 palabras en común (2,3 horas); el par de control del botón turbo se conserva](figuras/eda-embudo-del-filtro-lexico.png)
 
-Resultado: de 3.071 pares quedan 92, y las horas bajan de unas 77 a unas 2,3. El par del botón turbo se conserva.
+Resultado: de 3.071 pares quedan 92, y de unas 77 horas pasamos a 2,3. El par del botón turbo se conserva.
 
-Veamos los datos. Una reunión dura unos 32 minutos: unas 5.010 palabras, 462 turnos y 6,1 decisiones. Cada decisión tiene unas seis palabras de contenido; lo más común, tres. Y los turnos, una mediana de cuatro palabras.
+Los candidatos se concentran en reuniones cercanas. La distancia mide cuántas reuniones separan al par: 1, consecutivas; 3, la primera y la última. La tasa baja de 3,7 % a 1,2 %. **Benjamini-Hochberg** controla la **false discovery rate** en 18 pruebas: las 10 significativas se mantienen. Y un **cluster bootstrap**, que remuestrea series completas porque sus pares no son independientes, confirma que la diferencia no es cero.
+
+Una reunión dura unos 32 minutos: 5.010 palabras, 462 turnos y 6,1 decisiones. Cada decisión, unas seis palabras de contenido; lo más común, tres. Los turnos, mediana de cuatro palabras.
 
 > **▶ Figura 5 — se muestra al decir «Pero hay un límite».**
 >
 > ![Porcentaje de pares que pasan cada criterio según las palabras de contenido de la decisión más corta del par: con 2 y 3 palabras el coeficiente solo deja pasar 36,6 % y 42,1 %, y el filtro completo 0,3 % y 2,0 %](figuras/eda-filtro-segun-longitud-de-frase.png)
 
-Pero hay un límite. Cada punto agrupa pares según el largo de la frase más corta; la altura es cuántos pasan. La línea naranja es el coeficiente solo; la verde, el filtro completo. Con frases de tres palabras, el coeficiente solo deja pasar 42,1 %: basta una palabra en común. El filtro completo, 2,0 %. Desde cuatro palabras, las dos líneas coinciden. El costo: entre frases cortas casi no pasa nada, y las reversiones suelen ser cortas. Además, lo calibramos con un solo par de control. Así que habrá como mucho 92 relaciones, y quizá otras que el filtro dejó fuera.
+Pero hay un límite. Cada punto agrupa pares por el largo de la frase más corta; la altura, cuántos pasan. La naranja es el coeficiente solo; la verde, el filtro completo. Con frases de tres palabras, el coeficiente solo deja pasar 42,1 %, porque basta una palabra en común; el filtro completo, 2,0 %. Desde cuatro palabras, las dos líneas coinciden. El costo: entre frases cortas casi no pasa nada, y las reversiones suelen ser frases cortas. Y lo calibramos con un solo par de control: habrá como mucho 92 relaciones, y quizá otras fuera del filtro.
 
 Jason resume qué sigue.
 
@@ -201,13 +202,13 @@ Jason resume qué sigue.
 
 Figura 4: `figuras/eda-embudo-del-filtro-lexico.png`. En pantalla: "De 3.071 pares a 92", "≈ 77 horas → ≈ 2,3 horas", "El par del botón turbo se conserva". Antes del gráfico, una lámina con el ejemplo de las dos frases y la cuenta "2 ÷ 3 = 0,67" (frases del ejemplo ilustrativo de `docs/avances/07-jss-analisis-exploratorio.md` §7.3).
 
-Figura 5: `figuras/eda-filtro-segun-longitud-de-frase.png`. En pantalla: "Frases cortas: el filtro casi no deja pasar pares", "Calibrado con un solo par de control", "Como mucho 92 relaciones; puede haber otras fuera del filtro". Antes de la figura, una lámina breve con los descriptivos: "Reunión: ≈ 32 min · ≈ 5.010 palabras · 462 turnos · 6,1 decisiones", "Decisión: ≈ 6 palabras de contenido (lo más común: 3)", "Turnos: mediana de 4 palabras · 31,5 % de una sola".
+Figura 5: `figuras/eda-filtro-segun-longitud-de-frase.png`. En pantalla: "Frases cortas: el filtro casi no deja pasar pares", "Calibrado con un solo par de control", "Como mucho 92 relaciones; puede haber otras fuera del filtro". Después de la figura 4, una lámina con tres líneas: "Candidatos: 3,7 % a distancia 1 (reuniones consecutivas), 1,2 % a distancia 3 (primera y última)", "Benjamini-Hochberg: 18 pruebas, las 10 significativas se mantienen", "Cluster bootstrap por serie, 5.000 réplicas: diferencia de 1,2 a 3,9 puntos porcentuales (IC 95 % 0,012 a 0,039), no es cero". Antes de la figura, una lámina breve con los descriptivos: "Reunión: ≈ 32 min · ≈ 5.010 palabras · 462 turnos · 6,1 decisiones", "Decisión: ≈ 6 palabras de contenido (lo más común: 3)", "Turnos: mediana de 4 palabras · 31,5 % de una sola".
 
 Nota de entrega: es el bloque más denso. Hacer una pausa breve después de "0,67". En el ejemplo, mostrar en la lámina las palabras compartidas ("botón", "turbo") resaltadas. Las cifras 36,6 % y 0,3 % se quedan en la imagen; en la voz solo 42,1 % y 2,0 %.
 
 ---
 
-## Bloque 4 — Jason Sepúlveda (7:13 – 8:39)
+## Bloque 4 — Jason Sepúlveda (7:15 – 8:41)
 
 ### Texto hablado
 
@@ -217,7 +218,7 @@ El reto es la **context window**: lo máximo que el modelo lee de una vez, unos 
 
 > **▶ Lámina de cierre con los cuatro pasos (ver abajo).**
 
-Primero, las 26 decisiones sin evidencia se revisarán a mano. Segundo, las preguntas sobre cambios se apoyarán en las reuniones b, c y d. Tercero, mantendremos el filtro, declararemos que puede perder relaciones entre frases cortas y mediremos cuántas pierde. Esa medida se llama **recall**: de todas las relaciones reales, qué parte deja pasar el filtro. Para medirla, se anotará una muestra de pares que el filtro rechazó. Cuarto, comprobamos la robustez de los hallazgos. Aplicamos Benjamini-Hochberg a 17 pruebas: las mismas 9 que eran significativas siguieron siéndolo después del ajuste. Además, como los pares de una misma serie no son independientes, hicimos 5.000 réplicas de bootstrap remuestreando series completas. En el contraste revisado, el intervalo del 95 % fue de 0,0118 a 0,0393 y no incluyó cero. Estos controles refuerzan el EDA, aunque sigue siendo exploratorio.
+Primero, las 26 decisiones sin evidencia se revisarán a mano. Segundo, las preguntas sobre cambios se apoyarán en las reuniones b, c y d. Tercero, mantendremos el filtro, declararemos que puede perder relaciones entre frases cortas y mediremos cuántas pierde. Esa medida se llama **recall**: de todas las relaciones reales, qué parte deja pasar el filtro. Para medirla, se anotará una muestra de pares que el filtro rechazó. Cuarto, como son solo 14 series, informaremos qué tan grande es cada diferencia, y no solo si existe.
 
 El éxito del experimento se juzgará con una regla fijada antes de ver los resultados.
 
@@ -225,7 +226,7 @@ Todo parte de lo que nos enseñó el botón turbo: los números por sí solos no
 
 ### Lámina
 
-Sin figura nueva. Antes del cierre, una lámina con la context window: "Context window: 12.288 tokens ≈ 9.452 palabras", "Cada reunión cabe (la mayor, 96,4 %)", "Ninguna serie cabe: 1,6 a 2,8 veces la ventana". Lámina de cierre con cuatro líneas, una por paso: "Revisar a mano las 26 decisiones sin evidencia", "Preguntas de evolución sobre las reuniones b, c y d", "Mantener el filtro, declarar su sesgo y medir su recall", "Comprobar robustez: FDR y bootstrap por serie". Opcional: volver a la lámina de título del bloque 1 ("¿Se eliminó el botón turbo?") durante la última frase.
+Sin figura nueva. Antes del cierre, una lámina con la context window: "Context window: 12.288 tokens ≈ 9.452 palabras", "Cada reunión cabe (la mayor, 96,4 %)", "Ninguna serie cabe: 1,6 a 2,8 veces la ventana". Lámina de cierre con cuatro líneas, una por paso: "Revisar a mano las 26 decisiones sin evidencia", "Preguntas de evolución sobre las reuniones b, c y d", "Mantener el filtro, declarar su sesgo y medir su recall", "Informar el tamaño de cada diferencia". Opcional: volver a la lámina de título del bloque 1 ("¿Se eliminó el botón turbo?") durante la última frase.
 
 Nota de entrega: pasar despacio por los cuatro pasos y mirar a cámara en la frase final.
 
@@ -247,10 +248,10 @@ Nota de entrega: pasar despacio por los cuatro pasos y mirar a cámara en la fra
 | Context window de 12.288 tokens (≈ 9.452 palabras); las 56 reuniones caben, la mayor ocupa 96,4 % y 6 superan 80 %; ninguna serie completa cabe (1,6 a 2,8 veces) | `docs/avances/07-jss-analisis-exploratorio.md` §8; notebook 03, §10.1 y §11.3 |
 | 14 series elegidas por criterio entre 33 elegibles; un solo dominio; habla actuada | `docs/avances/07-jss-analisis-exploratorio.md` §1 y §9; notebook 03, §1.3 y §1.4 |
 | 77 horas a 1,5 minutos por par; 92 pares y 2,3 horas | `docs/avances/07-jss-analisis-exploratorio.md` §7.1 y §7.3; notebook 11, figura 4 |
-| Ejemplo ilustrativo: 2 ÷ 3 = 0,67 con el coeficiente; "cambiar color" = 0,50; umbral de 0,30 y 2 palabras | `docs/avances/07-jss-analisis-exploratorio.md` §7.3 (ejemplos ilustrativos, no datos del corpus) |
+| Ejemplo ilustrativo: 2 ÷ 3 = 0,67 con el coeficiente; umbral de 0,30 y 2 palabras mínimas | `docs/avances/07-jss-analisis-exploratorio.md` §7.3 (ejemplos ilustrativos, no datos del corpus) |
 | 42,1 % frente a 2,0 % con frases de tres palabras | `docs/avances/07-jss-analisis-exploratorio.md` §7.6; notebook 11, figura 5 |
 | Filtro calibrado con un solo par de control; como mucho 92 relaciones | `docs/avances/07-jss-analisis-exploratorio.md` §7.4 |
 | Muestra de pares rechazados, generada y sin anotar (Tarea C) | `docs/avances/07-jss-analisis-exploratorio.md` §7.5 |
-| Robustez frente a comparaciones múltiples: 17 pruebas, 9 significativas antes y 9 después de Benjamini-Hochberg | `notebooks/03-jss-eda.ipynb`, sección de robustez |
-| Dependencia intra-serie: bootstrap por serie, 5.000 réplicas; diferencia ≈ 0,0254; IC 95 % ≈ [0,0118; 0,0393] | `notebooks/03-jss-eda.ipynb`, sección de robustez |
+| Robustez frente a comparaciones múltiples: 18 pruebas, 10 significativas antes y 10 después de Benjamini-Hochberg | `notebooks/03-jss-eda.ipynb`, §6.4 |
+| Candidatos por distancia: 3,7 % a distancia 1 (62 de 1.671) y 1,2 % a distancia 3 (4 de 342); bootstrap por serie, 5.000 réplicas, diferencia 0,0254, IC 95 % [0,0118; 0,0393] | `notebooks/03-jss-eda.ipynb`, §10.2 |
 | Criterio de éxito fijado antes de correr el experimento | `docs/avances/08-jss-metricas-y-criterio-de-exito.md` §2.1 |
