@@ -1517,6 +1517,56 @@ def gold_validate_adjudication(
     raise typer.Exit(code=1)
 
 
+@gold_app.command("translation-template", rich_help_panel=_PANEL_MAINTENANCE)
+def gold_translation_template(
+    series: str = typer.Option(..., "--series", help="Serie adjudicada, p. ej. ES2015."),
+    force: bool = typer.Option(
+        False, "--force", help="Regenera aunque el archivo ya exista (borra la traducción)."
+    ),
+) -> None:
+    """(Mantenedor) Crea la plantilla de traducción al inglés de la referencia de una serie.
+
+    Escribe `<serie>.reference-en.csv` con una fila por decisión de la referencia adjudicada,
+    el español copiado y `object_en`/`content_en` vacíos. La traducción es automática y no es
+    una etiqueta: el español adjudicado sigue siendo la verdad. Ver
+    docs/anotacion/traduccion-referencia.md.
+    """
+    from afg.evaluation.translation import write_translation_template
+
+    try:
+        path = write_translation_template(series, decisions_dir=GOLD_DECISIONS_DIR, force=force)
+    except (FileExistsError, FileNotFoundError) as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    console.print(f"Escrito {_short(path)}")
+    console.print(
+        "Llena `object_en` y `content_en` de cada fila (sin tocar el español) y luego corre: "
+        f"uv run afg gold validate-translation --series {series}"
+    )
+
+
+@gold_app.command("validate-translation", rich_help_panel=_PANEL_MAINTENANCE)
+def gold_validate_translation(
+    series: str = typer.Option(..., "--series", help="Serie adjudicada, p. ej. ES2015."),
+) -> None:
+    """(Mantenedor) Verifica que la traducción de la referencia está completa y vigente.
+
+    Cada decisión de la referencia necesita exactamente una fila con `object_en` y
+    `content_en` llenos, el español igual al adjudicado actual (si no, está desactualizada)
+    y un `translation_method` permitido. Sale con código distinto de cero si algo falla.
+    """
+    from afg.evaluation.translation import validate_translation
+
+    issues = validate_translation(series, decisions_dir=GOLD_DECISIONS_DIR)
+    if not issues:
+        console.print(f"[green]Sin errores.[/green] La traducción de {series} está completa.")
+        return
+    console.print(f"[bold red]{len(issues)} problema(s) en la traducción de {series}:[/bold red]")
+    for issue in issues:
+        console.print(f"  - {issue}", markup=False, soft_wrap=True)
+    raise typer.Exit(code=1)
+
+
 @gold_app.command("questions-init", rich_help_panel=_PANEL_MAINTENANCE)
 def gold_questions_init(
     force: bool = typer.Option(

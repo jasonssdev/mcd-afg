@@ -56,6 +56,7 @@ from afg.shared.csvio import open_csv_reader
 from afg.shared.paths import AMI_DIR, GOLD_DECISIONS_DIR, TRANSCRIPTS_DIR
 
 __all__ = [
+    "Language",
     "NotAdjudicatedError",
     "ReferenceDecision",
     "ReferenceSet",
@@ -66,6 +67,7 @@ __all__ = [
 ]
 
 EvidenceMethod = Literal["sentence_id", "quote", "none"]
+Language = Literal["es", "en"]
 
 _REQUIRED_COLUMNS = ("decision_id", "meeting_id", "source_sentence_id", "final_status")
 _QUOTE_SEPARATOR = " | "
@@ -226,8 +228,15 @@ def load_reference(
     *,
     sentence_acts: Mapping[str, Sequence[str]],
     transcripts_dir: Path = TRANSCRIPTS_DIR,
+    language: Language = "es",
+    translation_path: Path | None = None,
 ) -> ReferenceSet:
     """Load an adjudicated decisions CSV as the reference set of its series.
+
+    ``language="es"`` (default) uses the human labels as adjudicated. ``language="en"``
+    substitutes ``decision_object``/``content`` with the automatic translation from
+    ``translation_path`` (default: ``<SERIES>.reference-en.csv`` next to ``path``); nothing
+    else changes. See :mod:`afg.evaluation.translation`.
 
     ``sentence_acts`` maps a decision sentence id (``source_sentence_id``) to the ids of its
     supporting dialogue acts (the ``summlink`` layer); see the module docstring for the
@@ -236,7 +245,11 @@ def load_reference(
     Raises:
         NotAdjudicatedError: the file lacks the adjudication columns, a row has no
             ``final_status``, or a ``decision`` row lacks ``final_object`` or ``final_content``.
+        TranslationError: ``language="en"`` and the translation is missing, incomplete or stale.
+        ValueError: ``language`` is neither ``"es"`` nor ``"en"``.
     """
+    if language not in ("es", "en"):
+        raise ValueError(f"language must be 'es' or 'en', got {language!r}.")
     rows = _inherit_from_compuesta_parent(
         [r for r in _read_adjudicated(path) if r.get("decision_id")]
     )
@@ -261,6 +274,13 @@ def load_reference(
             )
 
     series_id = path.name.split(".")[0]
+    translations: Mapping[str, tuple[str, str]] = {}
+    if language == "en":
+        from afg.evaluation.translation import load_translations
+
+        translations = load_translations(
+            path, translation_path or path.with_name(f"{series_id}.reference-en.csv")
+        )
     excluded: Counter[str] = Counter()
     decisions: list[ReferenceDecision] = []
     misses: list[str] = []
@@ -284,13 +304,16 @@ def load_reference(
             method = "none"
             misses.append(row["decision_id"])
         ordered = _transcript_order(acts, turns)
+        object_text, content_text = translations.get(
+            row["decision_id"], (row["final_object"], row["final_content"])
+        )
         decisions.append(
             ReferenceDecision(
                 decision_id=row["decision_id"],
                 series_id=series_id,
                 meeting_id=meeting_id,
-                decision_object=row["final_object"],
-                content=row["final_content"],
+                decision_object=object_text,
+                content=content_text,
                 evidence=EvidenceSpan(meeting_id=meeting_id, dialogue_act_ids=ordered)
                 if ordered
                 else None,
@@ -315,8 +338,12 @@ def load_series_reference(
     decisions_dir: Path = GOLD_DECISIONS_DIR,
     ami_root: Path = AMI_DIR,
     transcripts_dir: Path = TRANSCRIPTS_DIR,
+    language: Language = "es",
 ) -> ReferenceSet:
-    """Load ``<series_id>.decisions.adjudicated.csv`` with evidence from the AMI ``summlink``."""
+    """Load ``<series_id>.decisions.adjudicated.csv`` with evidence from the AMI ``summlink``.
+
+    ``language="en"`` reads the labels from ``<series_id>.reference-en.csv`` in ``decisions_dir``.
+    """
     path = decisions_dir / f"{series_id}.decisions.adjudicated.csv"
     if not path.is_file():
         raise FileNotFoundError(
@@ -327,7 +354,13 @@ def load_series_reference(
     sentence_acts: dict[str, list[str]] = {}
     for meeting_id in meeting_ids:
         sentence_acts.update(summlink_dialogue_act_ids(ami_root, meeting_id))
-    return load_reference(path, sentence_acts=sentence_acts, transcripts_dir=transcripts_dir)
+    return load_reference(
+        path,
+        sentence_acts=sentence_acts,
+        transcripts_dir=transcripts_dir,
+        language=language,
+        translation_path=decisions_dir / f"{series_id}.reference-en.csv",
+    )
 
 
 class DecisionNotFoundError(ValueError):
