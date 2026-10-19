@@ -14,6 +14,10 @@ OpenKOS ran three pre-registered, model-free-to-read evaluations of its concept 
   selection itself and how much is the extractor judging its own output: ``judge-study/
   judge_study.json``, the three arms (no judge, self judge, fixed judge) and the harness's
   verdict.
+- **#1560, the Ask model screen.** Which local model should answer, run the sufficiency
+  check and cite, over synthetic bundles only (no AMI material): ``ask-screen/round1.json``,
+  ``round2.json`` and ``confirmation.json``, the harness's comparison reports (no generated
+  text).
 - **#1558, the window-size screen.** Which ``_CHUNK_TARGET`` the extractor should cut a
   source into: ``window-screen/w8b.json`` and ``window-screen/decisions/w8b.json``.
 
@@ -49,6 +53,8 @@ from typing import Any, Final
 import pandas as pd
 
 __all__ = [
+    "ASK_ROLES",
+    "ASK_SETS",
     "BASELINE_MODEL",
     "BASELINE_WINDOW",
     "FIXED_JUDGE",
@@ -58,6 +64,11 @@ __all__ = [
     "WINDOW_ARMS",
     "ConceptScreens",
     "WindowForecast",
+    "ask_halving",
+    "ask_penalty_frame",
+    "ask_role_frame",
+    "ask_select",
+    "ask_vetoes",
     "drop_class_counts",
     "drop_rule_frame",
     "exploratory_forecast",
@@ -123,6 +134,7 @@ class ConceptScreens:
     window_stage0: dict[str, Any]
     window_decision: dict[str, Any]
     judge_study: dict[str, Any]
+    ask_rounds: dict[str, dict[str, Any]]
 
 
 def _read(path: Path) -> Any:
@@ -167,6 +179,10 @@ def load_concept_screens(
         window_stage0=_read(root / "window-screen" / "stage0.json"),
         window_decision=_read(root / "window-screen" / "decisions" / "w8b.json"),
         judge_study=_read(root / "judge-study" / "judge_study.json"),
+        ask_rounds={
+            name: _read(root / "ask-screen" / f"{name}.json")
+            for name in ("round1", "round2", "confirmation")
+        },
     )
     for row in screens.ablation_classes:
         if {"title", "description"} & set(row):
@@ -496,6 +512,127 @@ def judge_verdict(labels: Mapping[str, str]) -> tuple[str, bool]:
     else:
         verdict = "not_resolved"
     return verdict, counts["coupling"] + counts["judge"] > 0
+
+
+# ------------------------------------------------------------ #1560, the Ask model screen
+
+ASK_ROLES: Final = ("sufficiency", "answer", "citation")
+"""The three Ask roles of #1560; answer and citation share one call."""
+
+ASK_SETS: Final = ("es-es", "es-en", "es-built")
+"""Spanish questions over a Spanish bundle, its English mirror, and a compiled English one."""
+
+_ASK_FAILURE_KEY: Final = {
+    "sufficiency": "suff_failure",
+    "answer": "ans_failure",
+    "citation": "ans_failure",
+}
+_ASK_LATENCY_KEY: Final = {
+    "sufficiency": "suff_median_s",
+    "answer": "ans_median_s",
+    "citation": "ans_median_s",
+}
+_ASK_LATENCY_RATIO: Final = 2.0
+_ASK_LANGUAGE_MARGIN: Final = 0.05
+_ASK_COMPLIANCE_MARGIN: Final = 0.05
+_ASK_MISS_MARGIN: Final = 0.02
+
+
+def ask_vetoes(report: Mapping[str, Any], role: str, model: str) -> list[str]:
+    """Re-apply #1560's vetoes for one candidate and role from a comparison report.
+
+    V1 failures (<= baseline + 0.02 and <= 0.05), V2 median latency of the role's call
+    (<= 2.0 x baseline, when measured), S1 grounded refusals (<= baseline) and S2 adjacent
+    misses (<= baseline + 0.02) for sufficiency, V3 Spanish answers (>= baseline - 0.05) for
+    answer, V4 ``USED:`` compliance (>= baseline - 0.05) for citation, and X1 (the ``es-en``
+    per-set upper bound not below 0) for every role. M (memory) is a stage-0 gate and is not
+    in the reports.
+    """
+    g = report["guardrails"][model]
+    base = report["guardrails"][report["baseline"]]
+    vetoes = []
+    fail = _ASK_FAILURE_KEY[role]
+    if g[fail] > base[fail] + _V1_MARGIN + 1e-12 or g[fail] > _V1_ABSOLUTE:
+        vetoes.append("V1")
+    lat = _ASK_LATENCY_KEY[role]
+    if g[lat] is not None and base[lat] and g[lat] > _ASK_LATENCY_RATIO * base[lat]:
+        vetoes.append("V2")
+    if role == "sufficiency":
+        if g["grounded_refused"] > base["grounded_refused"] + 1e-12:
+            vetoes.append("S1")
+        if g["adjacent_missed"] > base["adjacent_missed"] + _ASK_MISS_MARGIN + 1e-12:
+            vetoes.append("S2")
+    if role == "answer" and g["spanish_answers"] < base["spanish_answers"] - _ASK_LANGUAGE_MARGIN:
+        vetoes.append("V3")
+    if role == "citation" and g["compliance"] < base["compliance"] - _ASK_COMPLIANCE_MARGIN:
+        vetoes.append("V4")
+    es_en = report["roles"][role]["candidates"][model]["per_set"].get("es-en")
+    if es_en is not None and es_en["hi"] < 0:
+        vetoes.append("X1")
+    return vetoes
+
+
+def ask_role_frame(report: Mapping[str, Any], role: str) -> pd.DataFrame:
+    """One row per candidate of a role: the pooled paired delta, per-set deltas and vetoes.
+
+    ``vetoes`` are re-applied here (:func:`ask_vetoes`); ``harness_vetoes`` are the ids the
+    harness wrote, for comparison.
+    """
+    block = report["roles"][role]
+    rows = []
+    for model, c in block["candidates"].items():
+        d = c["delta"]
+        row: dict[str, Any] = {
+            "model": model,
+            "baseline_mean": block["baseline_mean"],
+            "n": d["n"],
+            "delta": d["mean"],
+            "delta_low": d["lo"],
+            "delta_high": d["hi"],
+        }
+        for name in ASK_SETS:
+            row[name] = c["per_set"][name]["mean"]
+        row["vetoes"] = tuple(ask_vetoes(report, role, model))
+        row["harness_vetoes"] = tuple(v.split()[0] for v in c["vetoes"])
+        rows.append(row)
+    return pd.DataFrame(rows)
+
+
+def ask_halving(frame: pd.DataFrame) -> set[str]:
+    """#1560's round-1 cut: drop vetoed candidates and those whose upper bound is below 0,
+    then keep the top ceil(k/2) by point delta (k = candidates that entered), never fewer than
+    2 when 2 are eligible."""
+    eligible = frame[(frame.vetoes.map(len) == 0) & ~(frame.delta_high < 0)]
+    keep = max(math.ceil(len(frame) / 2), min(2, len(eligible)))
+    ranked = eligible.sort_values(["delta", "model"], ascending=[False, True])
+    return set(ranked.model.head(keep))
+
+
+def ask_select(frame: pd.DataFrame) -> str | None:
+    """#1560's selection: the largest point delta whose lower bound is above 0 with no veto;
+    a tie goes to the first model name. ``None`` when nothing qualifies."""
+    eligible = frame[(frame.vetoes.map(len) == 0) & (frame.delta_low > 0)]
+    if eligible.empty:
+        return None
+    return str(eligible.sort_values(["delta", "model"], ascending=[False, True]).model.iloc[0])
+
+
+def ask_penalty_frame(report: Mapping[str, Any]) -> pd.DataFrame:
+    """Each model's cross-lingual penalty (``es-en`` minus ``es-es``, paired) per role."""
+    rows = []
+    for model, roles in report["penalty"].items():
+        for role, p in roles.items():
+            rows.append(
+                {
+                    "model": model,
+                    "role": role,
+                    "n": p["n"],
+                    "penalty": p["mean"],
+                    "low": p["lo"],
+                    "high": p["hi"],
+                }
+            )
+    return pd.DataFrame(rows)
 
 
 # --------------------------------------------------------- #1558, the window-size screen
