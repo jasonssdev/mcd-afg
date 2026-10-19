@@ -289,3 +289,49 @@ def test_real_es2015_reference_loads_with_every_evidence_mapped() -> None:
         "descartar": 1,
         "sin_soporte": 1,
     }
+
+
+def test_split_child_with_blank_fields_inherits_them_from_its_compuesta_parent(
+    tmp_path: Path, transcripts: Path
+) -> None:
+    # TS3009 stores the -1, -2 children of a compuesta row with a blank meeting_id,
+    # source_sentence_id and evidence_text; ES2015 repeats the parent's values. Both must load
+    # the same way: the child is a decision of its parent's meeting, with its parent's evidence.
+    rows = [
+        _row("ES2015a.d03", "compuesta", sentence="s.3", evidence_text="E: the case is rubber"),
+        _row(
+            "ES2015a.d03-1",
+            "decision",
+            meeting_id="",
+            source_sentence_id="",
+            evidence_text="",
+        ),
+    ]
+    acts = {f"{MEETING}.x.s.3": ["da.4"]}
+
+    reference = _load(tmp_path, transcripts, rows, acts)
+
+    (child,) = reference.decisions
+    assert child.decision_id == "ES2015a.d03-1"
+    assert child.meeting_id == MEETING
+    assert child.evidence is not None
+    assert child.evidence.dialogue_act_ids == ("da.4",)
+    assert child.evidence_method == "sentence_id"
+    assert child.role == "ID"
+    assert reference.evidence_misses == ()
+
+
+def test_split_child_keeps_its_own_fields_when_it_has_them(
+    tmp_path: Path, transcripts: Path
+) -> None:
+    rows = [
+        _row("ES2015a.d03", "compuesta", sentence="s.3"),
+        _row("ES2015a.d03-1", "decision", sentence="s.1"),
+    ]
+    acts = {f"{MEETING}.x.s.3": ["da.4"], f"{MEETING}.x.s.1": ["da.1"]}
+
+    reference = _load(tmp_path, transcripts, rows, acts)
+
+    (child,) = reference.decisions
+    assert child.evidence is not None
+    assert child.evidence.dialogue_act_ids == ("da.1",)
