@@ -1,0 +1,6 @@
+ES2015 ceiling: n=27 median=0.689 min=0.437 max=0.838 >=0.60 22 of 27; >=0.70 13 of 27; >=0.80 3 of 27
+TS3009 ceiling: n=21 median=0.724 min=0.511 max=0.853 >=0.60 20 of 21; >=0.70 12 of 21; >=0.80 3 of 21
+null qwen3:8b: ES2015 output vs TS3009 gold: recall@0.50 0.954 @0.60 0.315 (TP [8, 7, 8, 8, 10] of 26) F1@0.60 0.185 @0.70 recall 0.023
+null qwen3:14b: ES2015 output vs TS3009 gold: recall@0.50 0.908 @0.60 0.331 (TP [8, 9, 7, 9, 10] of 26) F1@0.60 0.229 @0.70 recall 0.069
+null qwen3.6:35b-a3b: ES2015 output vs TS3009 gold: recall@0.50 0.915 @0.60 0.354 (TP [9, 10, 10, 10, 7] of 26) F1@0.60 0.242 @0.70 recall 0.046
+null qwen3.6:27b: ES2015 output vs TS3009 gold: recall@0.50 0.800 @0.60 0.354 (TP [9, 11, 8, 10, 8] of 26) F1@0.60 0.297 @0.70 recall 0.115

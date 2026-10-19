@@ -1,0 +1,4275 @@
+{
+  "arm": "pass",
+  "model": "qwen3:8b",
+  "runs": 5,
+  "partial": false,
+  "max_generation_tokens": 8192,
+  "context_window": 12288,
+  "max_pass_decisions": 25,
+  "generated_at": "20261018T120515Z",
+  "stamp": {
+    "stamp_version": 1,
+    "harness": {
+      "commit": "28ed7bedbd395f87d6d9cc1706578f7fdb0d2482",
+      "dirty": false
+    },
+    "model": {
+      "name": "qwen3:8b",
+      "digest": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41"
+    },
+    "prompts": [
+      {
+        "id": "extraction/decision_pass",
+        "sha256_16": "6d3962b0dd75650c"
+      }
+    ]
+  },
+  "records": [
+    {
+      "arm": "pass",
+      "run": 1,
+      "meeting": "TS3009a",
+      "series": "TS3009",
+      "shaped": true,
+      "windows": 6,
+      "calls": 6,
+      "failure": null,
+      "wall_s": 50.7,
+      "items": [
+        {
+          "title": "We will draw a hedgehog",
+          "evidence": [
+            "PM: Well what is it, huh? ID: It's a hedgehog."
+          ],
+          "matched_ids": [],
+          "subject": "animal to draw",
+          "value": "We will draw a hedgehog"
+        },
+        {
+          "title": "Our profit aim is, worldwide, fifty million Euros",
+          "evidence": [
+            "PM: Our profit aim is, worldwide, fifty million Euros."
+          ],
+          "matched_ids": [],
+          "subject": "profit aim",
+          "value": "Our profit aim is, worldwide, fifty million Euros"
+        },
+        {
+          "title": "It's important to make it acceptable for the whole world, for different cultures",
+          "evidence": [
+            "ME: Yeah yeah so a lot of people have to be able to use it."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design",
+          "value": "It's important to make it acceptable for the whole world, for different cultures"
+        },
+        {
+          "title": "The buttons have to have international recognisable buttons and numbers",
+          "evidence": [
+            "ID: and numbers and uh that every culture in uh, yeah, people in every country can recognise."
+          ],
+          "matched_ids": [],
+          "subject": "remote control buttons",
+          "value": "The buttons have to have international recognisable buttons and numbers"
+        },
+        {
+          "title": "We should not add too many buttons",
+          "evidence": [
+            "UI: I also think we should not add too many buttons. Modern day uh remotes have too much buttons I think."
+          ],
+          "matched_ids": [],
+          "subject": "remote control complexity",
+          "value": "We should not add too many buttons"
+        },
+        {
+          "title": "We could make one button to switch between D_V_D_ player and T_V_ and make the other buttons",
+          "evidence": [
+            "ME: Maybe we could make one button to switch between D_V_D_ player and T_V_ and make the other buttons uh multi-functional or something."
+          ],
+          "matched_ids": [],
+          "subject": "remote control functionality",
+          "value": "We could make one button to switch between D_V_D_ player and T_V_ and make the other buttons multi-functional"
+        },
+        {
+          "title": "The remote control should have a long box shape with some round forms to fit the hand",
+          "evidence": [
+            "You have to use one hand."
+          ],
+          "matched_ids": [],
+          "subject": "remote control shape",
+          "value": "The remote control should have a long box shape with some round forms to fit the hand"
+        },
+        {
+          "title": "the case should be plastic of course, hard plastic",
+          "evidence": [
+            "ID: No n n UI: . PM: Well I have had remotes that um they had uh the function of the buttons was about uh uh a layer over the buttons and when I've had use it much it was gone. So it has to be made in the buttons I think. It has to uh not be loose."
+          ],
+          "matched_ids": [],
+          "subject": "case material",
+          "value": "the case should be plastic of course, hard plastic"
+        },
+        {
+          "title": "the buttons should be rubbery",
+          "evidence": [
+            "ID: No n n UI: . PM: Well I have had remotes that um they had uh the function of the buttons was about uh uh a layer over the buttons and when I've had use it much it was gone. So it has to be made in the buttons I think. It has to uh not be loose."
+          ],
+          "matched_ids": [],
+          "subject": "buttons material",
+          "value": "the buttons should be rubbery"
+        },
+        {
+          "title": "we make an a universal remote so it ha has to work with uh all kinds of brands and things",
+          "evidence": [
+            "ID: It it's a we we make an a universal remote so it ha has to work with uh all kinds of brands and things."
+          ],
+          "matched_ids": [],
+          "subject": "remote functionality",
+          "value": "we make an a universal remote so it ha has to work with uh all kinds of brands and things"
+        },
+        {
+          "title": "it's a common stan standard way infrared beams an infrared beam",
+          "evidence": [
+            "PM: It's not that in China it's different? ME: Yep. PM: Yeah. PM: But y you can have uh of course different between D_V_D_s and televisions and between ME: And you can use ID: It it's a we we make an a universal remote so it ha has to work with uh all kinds of brands and things."
+          ],
+          "matched_ids": [],
+          "subject": "remote transmission method",
+          "value": "it's a common stan standard way infrared beams an infrared beam"
+        },
+        {
+          "title": "We should dispatch those kind of fronts around the world",
+          "evidence": [
+            "PM: And we should uh dispatch those kind of fronts fronts a a around the world so uh"
+          ],
+          "matched_ids": [],
+          "subject": "remote control front design",
+          "value": "We should dispatch those kind of fronts around the world"
+        },
+        {
+          "title": "The standard front will be just grey or something a simple colour not very flashy",
+          "evidence": [
+            "ID: Well but th but the standard front will be uh just grey or something uh b a simple colour not not very flashy."
+          ],
+          "matched_ids": [],
+          "subject": "remote control front color",
+          "value": "The standard front will be just grey or something a simple colour not very flashy"
+        },
+        {
+          "title": "You can change them when you buy the",
+          "evidence": [
+            "PM: Well j just y you get a n a normal front with it, but you can change them uh when you buy the"
+          ],
+          "matched_ids": [],
+          "subject": "remote control front customization",
+          "value": "You can change them when you buy the"
+        },
+        {
+          "title": "Our user interface you can maybe I don't know what your specific instructions will be, but probably",
+          "evidence": [
+            "PM: Well our user interface you can uh maybe uh I don't know what your specific instructions will be, but uh probably about uh the precision of the buttons and and those kind of things and what buttons will have to be on the"
+          ],
+          "matched_ids": [],
+          "subject": "remote control interface design",
+          "value": "Our user interface you can maybe I don't know what your specific instructions will be, but probably about the precision of the buttons and those kind of things and what buttons will have to be on the remote"
+        },
+        {
+          "title": "The next meeting is in thirty minutes",
+          "evidence": [
+            "PM: In thirty minutes, but uh I think it will be you will be warned uh through your laptop uh to get over here."
+          ],
+          "matched_ids": [],
+          "subject": "next meeting time",
+          "value": "The next meeting is in thirty minutes"
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 1,
+      "meeting": "TS3009b",
+      "series": "TS3009",
+      "shaped": true,
+      "windows": 11,
+      "calls": 11,
+      "failure": null,
+      "wall_s": 84.68,
+      "items": [
+        {
+          "title": "We have to decide in this meeting what our function will be",
+          "evidence": [
+            "Well um then we can make some decisions about our remote control functions. We have to deb we have to decide it in this meeting what our function will be."
+          ],
+          "matched_ids": [],
+          "subject": "remote control functions",
+          "value": "We have to decide in this meeting what our function will be"
+        },
+        {
+          "title": "The design has to fit the hand, be original, but also be familiar",
+          "evidence": [
+            "The design has to fit the hand, be original, but also be familiar."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design",
+          "value": "The design has to fit the hand, be original, but also be familiar"
+        },
+        {
+          "title": "The materials should be hard plastic with rubber from",
+          "evidence": [
+            "The materials uh well should be hard plastic with rubber from, and uh well the labelling of the buttons should be indestructible."
+          ],
+          "matched_ids": [],
+          "subject": "remote control materials",
+          "value": "The materials should be hard plastic with rubber from"
+        },
+        {
+          "title": "We will not use teletext",
+          "evidence": [
+            "We will not use teletext."
+          ],
+          "matched_ids": [],
+          "subject": "teletext usage",
+          "value": "We will not use teletext"
+        },
+        {
+          "title": "The remote control should have big or flashy buttons for common tasks and a big zapping button in",
+          "evidence": [
+            "ME: Furthermore, it's uh seventy five per cent of the users uh zaps a lot. Thus it might be uh might be smart to make a a big uh zapping button or something in the middle, so you can reach it with your thumb. Yeah, yeah right."
+          ],
+          "matched_ids": [],
+          "subject": "remote control functionality",
+          "value": "The remote control should have big or flashy buttons for common tasks and a big zapping button in the middle for easy access with the thumb."
+        },
+        {
+          "title": "A feature to help users find their remote control easily, such as a beep function, is considered",
+          "evidence": [
+            "ME: A lot of losers um users lose their controls in their in their living room. So it might be sensible to make some kind of a button on your television, that's your um your control beeps or something, that you can find this very easily."
+          ],
+          "matched_ids": [],
+          "subject": "product features",
+          "value": "A feature to help users find their remote control easily, such as a beep function, is considered sensible."
+        },
+        {
+          "title": "We're gonna target a younger audience",
+          "evidence": [
+            "ME: Right, this is the most important part. Um, we're Like the requirements said, we're gonna specify of we're gonna target a younger audience."
+          ],
+          "matched_ids": [],
+          "subject": "target audience",
+          "value": "We're gonna target a younger audience"
+        },
+        {
+          "title": "It might be important for the sale",
+          "evidence": [
+            "ME: it it might be important for the sale."
+          ],
+          "matched_ids": [],
+          "subject": "speech recognition",
+          "value": "It might be important for the sale"
+        },
+        {
+          "title": "We should put more time in the design of pick up and use",
+          "evidence": [
+            "ME: I think you should put more time in the in the design of uh pick up and use, than a manual."
+          ],
+          "matched_ids": [],
+          "subject": "design",
+          "value": "We should put more time in the design of pick up and use"
+        },
+        {
+          "title": "There should always be a menu, but it can be very short",
+          "evidence": [
+            "PM: Well there sh should always be a menu, but it c can be very short."
+          ],
+          "matched_ids": [],
+          "subject": "menu",
+          "value": "There should always be a menu, but it can be very short"
+        },
+        {
+          "title": "It should be consistent with consistent with older remotes",
+          "evidence": [
+            "ME: And it should be consistent with consistent with older remotes."
+          ],
+          "matched_ids": [],
+          "subject": "consistency",
+          "value": "It should be consistent with consistent with older remotes"
+        },
+        {
+          "title": "the most important buttons should be near the thumb",
+          "evidence": [
+            "ME: Right. Make them big, make them easy to uh to press."
+          ],
+          "matched_ids": [],
+          "subject": "button placement",
+          "value": "the most important buttons should be near the thumb"
+        },
+        {
+          "title": "Mike can give the third presentation",
+          "evidence": [
+            "PM: Then uh Mike can uh give the third presentation."
+          ],
+          "matched_ids": [],
+          "subject": "presentation",
+          "value": "Mike can give the third presentation"
+        },
+        {
+          "title": "The team agreed that the remote should have the maximum number of buttons needed, with some buttons",
+          "evidence": [
+            "I think this is about the maximum number of buttons uh we'll need."
+          ],
+          "matched_ids": [],
+          "subject": "remote design",
+          "value": "The team agreed that the remote should have the maximum number of buttons needed, with some buttons potentially being removed such as eject."
+        },
+        {
+          "title": "The remote must have a symbol or design element that ensures recognition of the company, which can",
+          "evidence": [
+            "We must have that."
+          ],
+          "matched_ids": [],
+          "subject": "company recognition",
+          "value": "The remote must have a symbol or design element that ensures recognition of the company, which can be placed on the front or back of the remote."
+        },
+        {
+          "title": "we should integrate an LCD screen that displays status information",
+          "evidence": [
+            "we should keep that simple too. It will"
+          ],
+          "matched_ids": [],
+          "subject": "LCD screen integration",
+          "value": "we should integrate an LCD screen that displays status information"
+        },
+        {
+          "title": "the LCD screen should display program information and channel changes",
+          "evidence": [
+            "it it could be such a little uh th that you can click in and out and you and you have it."
+          ],
+          "matched_ids": [],
+          "subject": "LCD screen functionality",
+          "value": "the LCD screen should display program information and channel changes"
+        },
+        {
+          "title": "we will implement an LCD screen with scrolling text and program recognition",
+          "evidence": [
+            "we're g No but we're we'll have to look into that."
+          ],
+          "matched_ids": [],
+          "subject": "LCD screen implementation",
+          "value": "we will implement an LCD screen with scrolling text and program recognition"
+        },
+        {
+          "title": "We will place the L_C_D_ screen at the top",
+          "evidence": [
+            "I think we have uh a few functions, and we can put uh the L_C_D_ above it, and still have lots of room at the bottom, where you can put your hand."
+          ],
+          "matched_ids": [],
+          "subject": "L_C_D_ screen position",
+          "value": "We will place the L_C_D_ screen at the top"
+        },
+        {
+          "title": "The power button should be left at the top",
+          "evidence": [
+            "UI: Power bu button should be left at the top."
+          ],
+          "matched_ids": [],
+          "subject": "Power button location",
+          "value": "The power button should be left at the top"
+        },
+        {
+          "title": "The power button should be red",
+          "evidence": [
+            "ME: And should and should be red."
+          ],
+          "matched_ids": [],
+          "subject": "Power button color",
+          "value": "The power button should be red"
+        },
+        {
+          "title": "The L_C_D_ screen is going to go at the top",
+          "evidence": [
+            "UI: Or at Yeah alright then."
+          ],
+          "matched_ids": [],
+          "subject": "Location of L_C_D_ screen",
+          "value": "The L_C_D_ screen is going to go at the top"
+        },
+        {
+          "title": "The remote control will have a simple design with a few buttons",
+          "evidence": [
+            "ID: I think these are the the most important functions."
+          ],
+          "matched_ids": [],
+          "subject": "Design of the remote control",
+          "value": "The remote control will have a simple design with a few buttons"
+        },
+        {
+          "title": "The remote control will have buttons for making the screen wider or narrower and for switching to",
+          "evidence": [
+            "PM: And uh the two important ones we're l f forgetting. Uh there's um screen. You can make it wider and less wide. And the button that you can go to A_V_ for your video."
+          ],
+          "matched_ids": [],
+          "subject": "Additional functions of the remote control",
+          "value": "The remote control will have buttons for making the screen wider or narrower and for switching to A_V_"
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 1,
+      "meeting": "TS3009c",
+      "series": "TS3009",
+      "shaped": true,
+      "windows": 11,
+      "calls": 11,
+      "failure": null,
+      "wall_s": 101.69,
+      "items": [
+        {
+          "title": "The team decided that the remote control must look great and be very colorful to appeal to people's",
+          "evidence": [
+            "ME: So we we have to think uh in this direction. So i set your mind to it. Findings? Fashion update? Fruit and vegetables are cool. I am told."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design",
+          "value": "The team decided that the remote control must look great and be very colorful to appeal to people's preferences"
+        },
+        {
+          "title": "The group we are targeting is very pleased with fruit and vegetables",
+          "evidence": [
+            "The group we are targeting is uh very pleased with fruit and vegetables."
+          ],
+          "matched_ids": [],
+          "subject": "target audience",
+          "value": "The group we are targeting is very pleased with fruit and vegetables."
+        },
+        {
+          "title": "We should change the material from hard plastic to something that feels strong",
+          "evidence": [
+            "We should change that."
+          ],
+          "matched_ids": [],
+          "subject": "material choice",
+          "value": "We should change the material from hard plastic to something that feels strong."
+        },
+        {
+          "title": "We're gonna have real cool shapes and lots of colours",
+          "evidence": [
+            "We're gonna turn that around. We're gonna have real uh cool shapes and lots of colours."
+          ],
+          "matched_ids": [],
+          "subject": "design for younger public",
+          "value": "We're gonna have real cool shapes and lots of colours."
+        },
+        {
+          "title": "Young people under forty five years old like soft materials with primary colours",
+          "evidence": [
+            "young uh and dynamic uh people, which is of course our uh group, the people we aim at. Um under forty five years old. Uh they like soft materials uh with primary colours."
+          ],
+          "matched_ids": [],
+          "subject": "target audience preferences",
+          "value": "Young people under forty five years old like soft materials with primary colours."
+        },
+        {
+          "title": "The buttons should be rubber, and electrical cables should be copper",
+          "evidence": [
+            "buttons of course rubber, I think everyone agrees. And electrical cables, copper is all pretty basic stuff."
+          ],
+          "matched_ids": [
+            "TS3009c.d01"
+          ],
+          "subject": "components design",
+          "value": "The buttons should be rubber, and electrical cables should be copper."
+        },
+        {
+          "title": "The remote control case will have a double curved shape to give it a more modern look",
+          "evidence": [
+            "I also suggest uh as a shape uh a double curved case. Uh the disadvantage of that that you can use no titanium. That that's the information I received. If you use the curved case, uh a curved case, double curved then you"
+          ],
+          "matched_ids": [],
+          "subject": "remote control case",
+          "value": "The remote control case will have a double curved shape to give it a more modern look"
+        },
+        {
+          "title": "The remote control will have simple push buttons instead of complex or expensive alternatives",
+          "evidence": [
+            "for the buttons, simple push buttons. No uh otherwi uh no um difficult scroll things or some uh things like that, because it makes more complex and expensive."
+          ],
+          "matched_ids": [],
+          "subject": "remote control buttons",
+          "value": "The remote control will have simple push buttons instead of complex or expensive alternatives"
+        },
+        {
+          "title": "We must decide where, this meeting",
+          "evidence": [
+            "Um there are new developments in speech recognition um systems, um and they are already being uh used on uh coffee machines."
+          ],
+          "matched_ids": [],
+          "subject": "L_C_D_ screen implementation",
+          "value": "We must decide where, this meeting."
+        },
+        {
+          "title": "We can also do let that kind of functions um be shown in the L_C_D_ screen, uh instead of uh extra",
+          "evidence": [
+            "we can also do let that kind of functions um be shown in the L_C_D_ screen, uh instead of uh extra buttons."
+          ],
+          "matched_ids": [],
+          "subject": "Menu functionality on L_C_D_ screen",
+          "value": "We can also do let that kind of functions um be shown in the L_C_D_ screen, uh instead of uh extra buttons."
+        },
+        {
+          "title": "A voice recognition can be uh implemented",
+          "evidence": [
+            "A voice recognition can be uh implemented."
+          ],
+          "matched_ids": [],
+          "subject": "Voice recognition implementation",
+          "value": "A voice recognition can be uh implemented."
+        },
+        {
+          "title": "The buttons can be made of a soft material",
+          "evidence": [
+            "The buttons can be made of an uh a soft material."
+          ],
+          "matched_ids": [],
+          "subject": "Button material",
+          "value": "The buttons can be made of a soft material."
+        },
+        {
+          "title": "The buttons um should be positioned uh positioned the same way as they are on a, well, conventional",
+          "evidence": [
+            "The buttons um should be positioned uh positioned the same way as they are on a, well, conventional remote."
+          ],
+          "matched_ids": [],
+          "subject": "Button design",
+          "value": "The buttons um should be positioned uh positioned the same way as they are on a, well, conventional remote."
+        },
+        {
+          "title": "I suggest a banana shape",
+          "evidence": [
+            "I suggest a banana shape."
+          ],
+          "matched_ids": [],
+          "subject": "Button shape",
+          "value": "I suggest a banana shape."
+        },
+        {
+          "title": "We should add an extra Menu button and this will be the Okay button",
+          "evidence": [
+            "UI: No no, we we we should uh add uh a extra Menu button and this the Okay button."
+          ],
+          "matched_ids": [],
+          "subject": "Menu button functionality",
+          "value": "We should add an extra Menu button and this will be the Okay button"
+        },
+        {
+          "title": "The speaker and the microphone are the same uh little hole thingy",
+          "evidence": [
+            "UI: Well the speaker and the microphone, I think, are the same uh little hole thingy."
+          ],
+          "matched_ids": [],
+          "subject": "Speaker and microphone placement",
+          "value": "The speaker and the microphone are the same uh little hole thingy"
+        },
+        {
+          "title": "The L_C_D_ screen does look better uh at the lower end, or at the bottom",
+          "evidence": [
+            "UI: And oh I think as you can see so, the L_C_D_ screen does look better uh at the lower end, or at the bottom."
+          ],
+          "matched_ids": [
+            "TS3009c.d04"
+          ],
+          "subject": "L_C_D_ screen placement",
+          "value": "The L_C_D_ screen does look better uh at the lower end, or at the bottom"
+        },
+        {
+          "title": "We will use titanium for the non-removable elements of the remote and plastic for the front",
+          "evidence": [
+            "UI: I think we Why don't we um use uh titanium or or a hard, yeah, some kind of metal for the uh the the whole remote except the front. That"
+          ],
+          "matched_ids": [],
+          "subject": "material for the remote",
+          "value": "We will use titanium for the non-removable elements of the remote and plastic for the front"
+        },
+        {
+          "title": "The remote will have a bridge design that falls over the hand",
+          "evidence": [
+            "PM: It still has t"
+          ],
+          "matched_ids": [],
+          "subject": "design of the remote",
+          "value": "The remote will have a bridge design that falls over the hand"
+        },
+        {
+          "title": "We will put all the decisions in one document with the answers after the subjects",
+          "evidence": [
+            "ID: So we have to uh put it in one uh document."
+          ],
+          "matched_ids": [],
+          "subject": "document for decisions",
+          "value": "We will put all the decisions in one document with the answers after the subjects"
+        },
+        {
+          "title": "The front can have funky, trendy colors that don't match the titanium back",
+          "evidence": [
+            "Our customers will use those uh funky uh trendy colours, and they don't use uh wood."
+          ],
+          "matched_ids": [],
+          "subject": "front color options",
+          "value": "The front can have funky, trendy colors that don't match the titanium back"
+        },
+        {
+          "title": "The internal components of the remote are standard and include a normal silicon chip and normal",
+          "evidence": [
+            "The chip is normal silicon. Uh the buttons are normal, etcetera. Okay?"
+          ],
+          "matched_ids": [],
+          "subject": "internal components",
+          "value": "The internal components of the remote are standard and include a normal silicon chip and normal buttons"
+        },
+        {
+          "title": "The conceptual specification of the user interface will be included in the shared folder and the",
+          "evidence": [
+            "You can put that in uh into the shared folder, and then I'll put it in our end report."
+          ],
+          "matched_ids": [],
+          "subject": "user interface conceptual specification",
+          "value": "The conceptual specification of the user interface will be included in the shared folder and the end report"
+        },
+        {
+          "title": "We can implement fronts from movies that are very hot",
+          "evidence": [
+            "We can also uh implement um we can also implement fronts from um movies that are very hot."
+          ],
+          "matched_ids": [],
+          "subject": "front designs",
+          "value": "We can implement fronts from movies that are very hot"
+        },
+        {
+          "title": "We can launch different lines at once",
+          "evidence": [
+            "Launch different lines at once."
+          ],
+          "matched_ids": [
+            "TS3009c.d10"
+          ],
+          "subject": "launch strategy",
+          "value": "We can launch different lines at once"
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 1,
+      "meeting": "TS3009d",
+      "series": "TS3009",
+      "shaped": true,
+      "windows": 10,
+      "calls": 10,
+      "failure": null,
+      "wall_s": 71.09,
+      "items": [
+        {
+          "title": "We have the logo on front and on the back",
+          "evidence": [
+            "We have then the logo on front and on the back. Maybe that's too much but you have to say uh say that if you think that way."
+          ],
+          "matched_ids": [],
+          "subject": "Logo placement",
+          "value": "We have the logo on front and on the back"
+        },
+        {
+          "title": "The company slogan, we thought in a kind of arc shape uh above the logo",
+          "evidence": [
+            "And the company slogan, we thought in a kind of arc shape uh above the logo."
+          ],
+          "matched_ids": [],
+          "subject": "Company slogan placement",
+          "value": "The company slogan, we thought in a kind of arc shape uh above the logo"
+        },
+        {
+          "title": "The voice recorder is at the bottom",
+          "evidence": [
+            "Oh and uh before I forget. Yeah the the voice, of course, the voice recorder is uh at the bottom."
+          ],
+          "matched_ids": [],
+          "subject": "Voice recorder placement",
+          "value": "The voice recorder is at the bottom"
+        },
+        {
+          "title": "The size doesn't really matter",
+          "evidence": [
+            "The size? Yeah well the size doesn't really matter w I mean Side?"
+          ],
+          "matched_ids": [],
+          "subject": "Discussion on device size",
+          "value": "The size doesn't really matter"
+        },
+        {
+          "title": "We'll discuss it now",
+          "evidence": [
+            "We'll discuss it now. Uh I think uh this is a pretty good uh good idea."
+          ],
+          "matched_ids": [],
+          "subject": "Side view discussion",
+          "value": "We'll discuss it now"
+        },
+        {
+          "title": "We'll do it like this",
+          "evidence": [
+            "PM: Yes. So uh I c I c Well, we'll we we'll do it like this. Alright, if you think that that's the way it should"
+          ],
+          "matched_ids": [],
+          "subject": "Design orientation",
+          "value": "We'll do it like this"
+        },
+        {
+          "title": "The device is very good-looking and not only for youth uh young people",
+          "evidence": [
+            "I think it's very good-looking and not only for youth uh young people."
+          ],
+          "matched_ids": [],
+          "subject": "device appearance",
+          "value": "The device is very good-looking and not only for youth uh young people."
+        },
+        {
+          "title": "The device is easier to find than a normal black one or something, because of the colour",
+          "evidence": [
+            "Well it's easier to find than a a normal black one or something, because of the colour."
+          ],
+          "matched_ids": [],
+          "subject": "device colour",
+          "value": "The device is easier to find than a normal black one or something, because of the colour."
+        },
+        {
+          "title": "The functions are easy to learn because there are so few functions",
+          "evidence": [
+            "We have so few functions, so Yeah."
+          ],
+          "matched_ids": [],
+          "subject": "device functions",
+          "value": "The functions are easy to learn because there are so few functions."
+        },
+        {
+          "title": "The device is a bit sensitive, so four",
+          "evidence": [
+            "Uh well well a bit, so four."
+          ],
+          "matched_ids": [],
+          "subject": "device sensitivity",
+          "value": "The device is a bit sensitive, so four."
+        },
+        {
+          "title": "The device is easy to use because there are not many buttons",
+          "evidence": [
+            "Yes we have not many buttons."
+          ],
+          "matched_ids": [],
+          "subject": "device usability",
+          "value": "The device is easy to use because there are not many buttons."
+        },
+        {
+          "title": "The trends about fruit and vegetables are implemented in our covers, in our fronts",
+          "evidence": [
+            "Are the trends about fruit and vegetables implemented? Well in our covers, in our fronts. So yes, one."
+          ],
+          "matched_ids": [],
+          "subject": "device trends",
+          "value": "The trends about fruit and vegetables are implemented in our covers, in our fronts."
+        },
+        {
+          "title": "The device is fancy-feeling because of the titanium back",
+          "evidence": [
+            "And I think fancy-feeling too, because of the titanium back."
+          ],
+          "matched_ids": [],
+          "subject": "device fancy-feeling",
+          "value": "The device is fancy-feeling because of the titanium back."
+        },
+        {
+          "title": "We have to use the advanced chip if we have the L_C_D_ screen",
+          "evidence": [
+            "ID: Well you have to use the advanced chip, if you have the L_C_D_ screen."
+          ],
+          "matched_ids": [],
+          "subject": "chip type",
+          "value": "We have to use the advanced chip if we have the L_C_D_ screen"
+        },
+        {
+          "title": "We need to have the L_C_D_ screen",
+          "evidence": [
+            "ME: Yeah, we need to have the the L_C_D_ screen."
+          ],
+          "matched_ids": [],
+          "subject": "L_C_D_ screen",
+          "value": "We need to have the L_C_D_ screen"
+        },
+        {
+          "title": "The sample speaker costs four and it has to be kicked out",
+          "evidence": [
+            "ME: Out. That's easy. Kick it out. Yeah."
+          ],
+          "matched_ids": [],
+          "subject": "speaker",
+          "value": "The sample speaker costs four and it has to be kicked out"
+        },
+        {
+          "title": "The project has to go to twelve and a half",
+          "evidence": [
+            "ME: It has to go to twelve, right? Twelve and a half."
+          ],
+          "matched_ids": [],
+          "subject": "budget",
+          "value": "The project has to go to twelve and a half"
+        },
+        {
+          "title": "The remote will use titanium-coloured plastic for the back",
+          "evidence": [
+            "ID: So titanium-coloured plastic for the back."
+          ],
+          "matched_ids": [],
+          "subject": "material for the remote",
+          "value": "The remote will use titanium-coloured plastic for the back."
+        },
+        {
+          "title": "The lowest price they can make a remote for that's trendy these days is fourteen point one",
+          "evidence": [
+            "PM: I'll put in the report we that we think that fourteen point one is the l m lowest price you can make a remote for that's trendy d these days."
+          ],
+          "matched_ids": [],
+          "subject": "lowest price for the remote",
+          "value": "The lowest price they can make a remote for that's trendy these days is fourteen point one."
+        },
+        {
+          "title": "They will not dump the L_C_D_ screen",
+          "evidence": [
+            "ME: I don't think you should dump the L_C_D_ screen."
+          ],
+          "matched_ids": [],
+          "subject": "screen type",
+          "value": "They will not dump the L_C_D_ screen."
+        },
+        {
+          "title": "The remote will have one curve",
+          "evidence": [
+            "PM: One curve, simple."
+          ],
+          "matched_ids": [],
+          "subject": "curved design",
+          "value": "The remote will have one curve."
+        },
+        {
+          "title": "The team decided to ditch titanium and use plastic instead",
+          "evidence": [
+            "ID: So we have to use the ditch the titanium, I'm afraid."
+          ],
+          "matched_ids": [
+            "TS3009d.d03"
+          ],
+          "subject": "material choice",
+          "value": "The team decided to ditch titanium and use plastic instead"
+        },
+        {
+          "title": "The team decided to add a special colour to the case as they have money left",
+          "evidence": [
+            "PM: And we still have money left. What do we want, guys?"
+          ],
+          "matched_ids": [],
+          "subject": "design modification",
+          "value": "The team decided to add a special colour to the case as they have money left"
+        },
+        {
+          "title": "The team decided to make the product cheaper than twelve and a half",
+          "evidence": [
+            "ID: We get more salary, if we make if cheaper than twelve uh twelve and a half."
+          ],
+          "matched_ids": [],
+          "subject": "cost target",
+          "value": "The team decided to make the product cheaper than twelve and a half"
+        },
+        {
+          "title": "The team decided to evaluate their project based on creativity and costs",
+          "evidence": [
+            "PM: Well, guys? Guys? We have to dump our titanium, and we'll hate the managers for that, but now we're going to evaluate our project, of uh project, project."
+          ],
+          "matched_ids": [],
+          "subject": "project evaluation",
+          "value": "The team decided to evaluate their project based on creativity and costs"
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 2,
+      "meeting": "TS3009a",
+      "series": "TS3009",
+      "shaped": true,
+      "windows": 6,
+      "calls": 6,
+      "failure": null,
+      "wall_s": 43.86,
+      "items": [
+        {
+          "title": "We will save the current document and start a new blank document with a new colour and a new pen",
+          "evidence": [
+            "and then save it and start an blank document."
+          ],
+          "matched_ids": [],
+          "subject": "drawing format",
+          "value": "We will save the current document and start a new blank document with a new colour and a new pen width."
+        },
+        {
+          "title": "Our profit aim is, worldwide, fifty million Euros",
+          "evidence": [
+            "PM: Our profit aim is, worldwide, fifty million Euros."
+          ],
+          "matched_ids": [],
+          "subject": "profit aim",
+          "value": "Our profit aim is, worldwide, fifty million Euros"
+        },
+        {
+          "title": "It's important to make it acceptable for the whole world, for different cultures",
+          "evidence": [
+            "ME: Yeah yeah so a lot of people have to be able to use it."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design",
+          "value": "It's important to make it acceptable for the whole world, for different cultures"
+        },
+        {
+          "title": "The buttons have to have international recognisable buttons and numbers",
+          "evidence": [
+            "ID: and numbers and uh that every culture in uh, yeah, people in every country can recognise."
+          ],
+          "matched_ids": [],
+          "subject": "button design",
+          "value": "The buttons have to have international recognisable buttons and numbers"
+        },
+        {
+          "title": "We should not add too many buttons",
+          "evidence": [
+            "UI: I also think we should not add too many buttons. Modern day uh remotes have too much buttons I think."
+          ],
+          "matched_ids": [],
+          "subject": "remote control functionality",
+          "value": "We should not add too many buttons"
+        },
+        {
+          "title": "The remote control should have a long box shape with some round forms to fit the hand",
+          "evidence": [
+            "You have to use one hand."
+          ],
+          "matched_ids": [],
+          "subject": "remote control shape",
+          "value": "The remote control should have a long box shape with some round forms to fit the hand"
+        },
+        {
+          "title": "the case should be plastic of course, hard plastic",
+          "evidence": [
+            "ID: No n n UI: . PM: Well I have had remotes that um they had uh the function of the buttons was about uh uh a layer over the buttons and when I've had use it much it was gone. So it has to be made in the buttons I think. It has to uh not be loose."
+          ],
+          "matched_ids": [],
+          "subject": "material for the case",
+          "value": "the case should be plastic of course, hard plastic"
+        },
+        {
+          "title": "the buttons should be rubbery",
+          "evidence": [
+            "ID: No n n UI: . PM: Well I have had remotes that um they had uh the function of the buttons was about uh uh a layer over the buttons and when I've had use it much it was gone. So it has to be made in the buttons I think. It has to uh not be loose."
+          ],
+          "matched_ids": [],
+          "subject": "buttons material",
+          "value": "the buttons should be rubbery"
+        },
+        {
+          "title": "it shouldn't be too heavy",
+          "evidence": [
+            "ID: No n n UI: . PM: Well I have had remotes that um they had uh the function of the buttons was about uh uh a layer over the buttons and when I've had use it much it was gone. So it has to be made in the buttons I think. It has to uh not be loose."
+          ],
+          "matched_ids": [],
+          "subject": "weight of the remote",
+          "value": "it shouldn't be too heavy"
+        },
+        {
+          "title": "the function of the buttons has to be made in the buttons",
+          "evidence": [
+            "ID: No n n UI: . PM: Well I have had remotes that um they had uh the function of the buttons was about uh uh a layer over the buttons and when I've had use it much it was gone. So it has to be made in the buttons I think. It has to uh not be loose."
+          ],
+          "matched_ids": [],
+          "subject": "function of the buttons",
+          "value": "the function of the buttons has to be made in the buttons"
+        },
+        {
+          "title": "there are several electrical cables in it to uh to connect things uh to each other",
+          "evidence": [
+            "ID: Mm. Alright. And of course there are several electrical cables in it to uh to connect things uh to each other."
+          ],
+          "matched_ids": [],
+          "subject": "number of electrical cables",
+          "value": "there are several electrical cables in it to uh to connect things uh to each other"
+        },
+        {
+          "title": "it's a common standard way infrared beams an infrared beam",
+          "evidence": [
+            "PM: It's not that in China it's different? ME: Yep. PM: Yeah. PM: But y you can have uh of course different between D_V_D_s and televisions and between ME: And you can use ID: It it's a we we make an a universal remote so it ha has to work with uh all kinds of brands and things."
+          ],
+          "matched_ids": [],
+          "subject": "method of transmitting from the remote to the television",
+          "value": "it's a common standard way infrared beams an infrared beam"
+        },
+        {
+          "title": "We should dispatch those kind of fronts around the world",
+          "evidence": [
+            "PM: And we should uh dispatch those kind of fronts fronts a a around the world so uh"
+          ],
+          "matched_ids": [],
+          "subject": "remote control front design",
+          "value": "We should dispatch those kind of fronts around the world"
+        },
+        {
+          "title": "The standard front will be just grey or something a simple colour not not very flashy",
+          "evidence": [
+            "ID: Well but th but the standard front will be uh just grey or something uh b a simple colour not not very flashy."
+          ],
+          "matched_ids": [],
+          "subject": "remote control front colors",
+          "value": "The standard front will be just grey or something a simple colour not not very flashy"
+        },
+        {
+          "title": "You can change them when you buy the",
+          "evidence": [
+            "PM: Well j just y you get a n a normal front with it, but you can change them uh when you buy the"
+          ],
+          "matched_ids": [],
+          "subject": "remote control front customization",
+          "value": "You can change them when you buy the"
+        },
+        {
+          "title": "Our user interface you can uh maybe uh I don't know what your specific instructions will be, but uh",
+          "evidence": [
+            "PM: Well our user interface you can uh maybe uh I don't know what your specific instructions will be, but uh probably about uh the precision of the buttons and and those kind of things and what buttons will have to be on the"
+          ],
+          "matched_ids": [],
+          "subject": "remote control interface design",
+          "value": "Our user interface you can uh maybe uh I don't know what your specific instructions will be, but uh probably about uh the precision of the buttons and and those kind of things and what buttons will have to be on the remote"
+        },
+        {
+          "title": "The look and feel uh of the the remote's also my task",
+          "evidence": [
+            "ID: Mm yeah also the the look and feel uh of the the remote's also my task, yeah."
+          ],
+          "matched_ids": [],
+          "subject": "remote control look and feel",
+          "value": "The look and feel uh of the the remote's also my task"
+        },
+        {
+          "title": "Next meeting is in thirty minutes",
+          "evidence": [
+            "PM: In thirty minutes, but uh I think it will be you will be warned uh through your laptop uh to get over here."
+          ],
+          "matched_ids": [],
+          "subject": "next meeting time",
+          "value": "Next meeting is in thirty minutes"
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 2,
+      "meeting": "TS3009b",
+      "series": "TS3009",
+      "shaped": true,
+      "windows": 11,
+      "calls": 11,
+      "failure": null,
+      "wall_s": 50.69,
+      "items": [
+        {
+          "title": "We have to decide in this meeting what our function will be",
+          "evidence": [
+            "Well um then we can make some decisions about our remote control functions. We have to deb we have to decide it in this meeting what our function will be."
+          ],
+          "matched_ids": [],
+          "subject": "remote control functions",
+          "value": "We have to decide in this meeting what our function will be"
+        },
+        {
+          "title": "The design has to fit the hand, be original, but also be familiar",
+          "evidence": [
+            "The design has to fit the hand, be original, but also be familiar."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design",
+          "value": "The design has to fit the hand, be original, but also be familiar"
+        },
+        {
+          "title": "The materials should be hard plastic with rubber from",
+          "evidence": [
+            "The materials uh well should be hard plastic with rubber from, and uh well the labelling of the buttons should be indestructible."
+          ],
+          "matched_ids": [],
+          "subject": "remote control materials",
+          "value": "The materials should be hard plastic with rubber from"
+        },
+        {
+          "title": "We will not use teletext",
+          "evidence": [
+            "We will not use teletext."
+          ],
+          "matched_ids": [],
+          "subject": "teletext usage",
+          "value": "We will not use teletext"
+        },
+        {
+          "title": "The slogan 'we put the fashion in electronics' will be used on the remote control or something",
+          "evidence": [
+            "PM: So maybe that's a slogan we can put uh somewhere on our remote control or something."
+          ],
+          "matched_ids": [],
+          "subject": "slogan",
+          "value": "The slogan 'we put the fashion in electronics' will be used on the remote control or something."
+        },
+        {
+          "title": "we're gonna target a younger audience",
+          "evidence": [
+            "ME: Right, this is the most important part. Um, we're Like the requirements said, we're gonna specify of we're gonna target a younger audience."
+          ],
+          "matched_ids": [],
+          "subject": "target audience",
+          "value": "we're gonna target a younger audience"
+        },
+        {
+          "title": "we'll consider it",
+          "evidence": [
+            "ID: We'll think abo we'll think"
+          ],
+          "matched_ids": [],
+          "subject": "cost consideration for LCD screen",
+          "value": "we'll consider it"
+        },
+        {
+          "title": "it might be important for the sale",
+          "evidence": [
+            "ME: it it might be important for the sale."
+          ],
+          "matched_ids": [],
+          "subject": "speech recognition",
+          "value": "it might be important for the sale"
+        },
+        {
+          "title": "the most important buttons should be near the thumb",
+          "evidence": [
+            "ME: Right. Make them big, make them easy to uh to press."
+          ],
+          "matched_ids": [],
+          "subject": "button placement",
+          "value": "the most important buttons should be near the thumb"
+        },
+        {
+          "title": "Mike can give the third presentation",
+          "evidence": [
+            "PM: Then uh Mike can uh give the third presentation."
+          ],
+          "matched_ids": [],
+          "subject": "presentation",
+          "value": "Mike can give the third presentation"
+        },
+        {
+          "title": "We should go with the concept of less is more, with the less buttons the better the design",
+          "evidence": [
+            "UI: We should go with that concept I think."
+          ],
+          "matched_ids": [],
+          "subject": "remote design",
+          "value": "We should go with the concept of less is more, with the less buttons the better the design"
+        },
+        {
+          "title": "we have to include features such as L_C_D_ screens and voice recognition",
+          "evidence": [
+            "we have to uh have some features."
+          ],
+          "matched_ids": [],
+          "subject": "features to include",
+          "value": "we have to include features such as L_C_D_ screens and voice recognition"
+        },
+        {
+          "title": "the L_C_D_ screen should be at the top",
+          "evidence": [
+            "it should be at the top."
+          ],
+          "matched_ids": [],
+          "subject": "LCD screen placement",
+          "value": "the L_C_D_ screen should be at the top"
+        },
+        {
+          "title": "the L_C_D_ screen should display information such as the programme being watched",
+          "evidence": [
+            "it could be such a little uh th that you can click in and out and you and you have it."
+          ],
+          "matched_ids": [],
+          "subject": "LCD screen functionality",
+          "value": "the L_C_D_ screen should display information such as the programme being watched"
+        },
+        {
+          "title": "the L_C_D_ screen should be integrated into the remote control",
+          "evidence": [
+            "it should be uh integrated."
+          ],
+          "matched_ids": [],
+          "subject": "LCD screen integration",
+          "value": "the L_C_D_ screen should be integrated into the remote control"
+        },
+        {
+          "title": "we need to know how much the L_C_D_ screen will cost",
+          "evidence": [
+            "we we still need to know how much that will cost."
+          ],
+          "matched_ids": [],
+          "subject": "LCD screen cost",
+          "value": "we need to know how much the L_C_D_ screen will cost"
+        },
+        {
+          "title": "We will place the L_C_D_ screen at the top",
+          "evidence": [
+            "I think we have uh a few functions, and we can put uh the L_C_D_ above it, and still have lots of room at the bottom, where you can put your hand."
+          ],
+          "matched_ids": [],
+          "subject": "L_C_D_ screen position",
+          "value": "We will place the L_C_D_ screen at the top"
+        },
+        {
+          "title": "The power button should be left at the top",
+          "evidence": [
+            "UI: Power bu button should be left at the top."
+          ],
+          "matched_ids": [],
+          "subject": "Power button location",
+          "value": "The power button should be left at the top"
+        },
+        {
+          "title": "The power button should be red",
+          "evidence": [
+            "ME: And should and should be red."
+          ],
+          "matched_ids": [],
+          "subject": "Power button color",
+          "value": "The power button should be red"
+        },
+        {
+          "title": "We'll have the L_C_D_ screen going to the top",
+          "evidence": [
+            "UI: Or at Yeah alright then."
+          ],
+          "matched_ids": [],
+          "subject": "Location of the L_C_D_",
+          "value": "We'll have the L_C_D_ screen going to the top"
+        },
+        {
+          "title": "We're going to decide about the functions, and the design comes into the next round",
+          "evidence": [
+            "PM: Well the L_C_D_. Um you are Industrial, you are User Interface. So I think it's going to go to Mike. But you will have to make consensus with."
+          ],
+          "matched_ids": [],
+          "subject": "Functions of the remote control",
+          "value": "We're going to decide about the functions, and the design comes into the next round"
+        },
+        {
+          "title": "The remote control will not have a button for entering two numbers",
+          "evidence": [
+            "PM: Alright so no button for that."
+          ],
+          "matched_ids": [
+            "TS3009b.d06"
+          ],
+          "subject": "Design of the remote control",
+          "value": "The remote control will not have a button for entering two numbers"
+        },
+        {
+          "title": "Teletext is gone. So all those buttons that are to do with teletext Oh screen placing",
+          "evidence": [
+            "PM: Teletext is gone. So all those buttons that ar are to do with teletext Oh screen placing."
+          ],
+          "matched_ids": [],
+          "subject": "Teletext functionality",
+          "value": "Teletext is gone. So all those buttons that are to do with teletext Oh screen placing"
+        },
+        {
+          "title": "We can make a little row of like four buttons down here",
+          "evidence": [
+            "UI: We we can make make uh a little row of like four buttons down here."
+          ],
+          "matched_ids": [],
+          "subject": "Placement of buttons",
+          "value": "We can make a little row of like four buttons down here"
+        },
+        {
+          "title": "They can be small or round like buttons",
+          "evidence": [
+            "UI: Oh, they can be small or round like buttons."
+          ],
+          "matched_ids": [],
+          "subject": "Design of buttons",
+          "value": "They can be small or round like buttons"
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 2,
+      "meeting": "TS3009c",
+      "series": "TS3009",
+      "shaped": true,
+      "windows": 11,
+      "calls": 11,
+      "failure": null,
+      "wall_s": 72.39,
+      "items": [
+        {
+          "title": "The remote control must be very good-looking and have a great feeling",
+          "evidence": [
+            "ME: I will speak about uh latest trends trends, latest fashion updates, and uh things we must not do. Uh the trends. It's very important that uh the control is fancy looking and good uh feeling."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design",
+          "value": "The remote control must be very good-looking and have a great feeling"
+        },
+        {
+          "title": "The group we are targeting is very pleased with fruit and vegetables",
+          "evidence": [
+            "The group we are targeting is uh very pleased with fruit and vegetables."
+          ],
+          "matched_ids": [],
+          "subject": "target audience",
+          "value": "The group we are targeting is very pleased with fruit and vegetables"
+        },
+        {
+          "title": "The material should be very strong and look flashy",
+          "evidence": [
+            "material, that's your part, should be very strong. I was thinking of something like uh well uh iron plate over it, maybe in a colour or something, that looks so f really flashy but it it is also strong."
+          ],
+          "matched_ids": [],
+          "subject": "material choice",
+          "value": "The material should be very strong and look flashy"
+        },
+        {
+          "title": "The design should have cool shapes and lots of colours",
+          "evidence": [
+            "we're gonna have real uh cool shapes and lots of colours. Right? Okay."
+          ],
+          "matched_ids": [],
+          "subject": "design for younger public",
+          "value": "The design should have cool shapes and lots of colours"
+        },
+        {
+          "title": "The case should be something stronger than hard plastic",
+          "evidence": [
+            "We should move to uh something"
+          ],
+          "matched_ids": [],
+          "subject": "case material",
+          "value": "The case should be something stronger than hard plastic"
+        },
+        {
+          "title": "The buttons should be rubber and the cables should be copper",
+          "evidence": [
+            "buttons of course rubber, I think everyone agrees. And electrical cables, copper is all pretty basic stuff."
+          ],
+          "matched_ids": [
+            "TS3009c.d01"
+          ],
+          "subject": "buttons and cables",
+          "value": "The buttons should be rubber and the cables should be copper"
+        },
+        {
+          "title": "The chips should be made of silicon and the LED should be a simple bulb",
+          "evidence": [
+            "The chips made of silicon, I guess. I think that's the best uh way to do it. And infra infrared l LED is uh just a simple bulb."
+          ],
+          "matched_ids": [],
+          "subject": "chips and LED",
+          "value": "The chips should be made of silicon and the LED should be a simple bulb"
+        },
+        {
+          "title": "The design should avoid traditional materials like wood and straightforward shapes",
+          "evidence": [
+            "they also like straightforward shapes and luxurious style. But of course that's not our uh things this. So this is things we must not do."
+          ],
+          "matched_ids": [],
+          "subject": "design for older people",
+          "value": "The design should avoid traditional materials like wood and straightforward shapes"
+        },
+        {
+          "title": "The design should avoid hard and strong-looking materials in favour of soft materials",
+          "evidence": [
+            "Soft materials is of course uh agai again a bit a contradiction with uh our uh material choice of what you said, that uh it should be hard an and and and and strong looking. But they like soft materials, uh so we might uh we have to consider that."
+          ],
+          "matched_ids": [],
+          "subject": "design for younger people",
+          "value": "The design should avoid hard and strong-looking materials in favour of soft materials"
+        },
+        {
+          "title": "The remote control case will have a double curved shape to give it a more modern look",
+          "evidence": [
+            "I also suggest uh as a shape uh a double curved case. Uh the disadvantage of that that you can use no titanium. That that's the information I received. If you use the curved case, uh a curved case, double curved then you"
+          ],
+          "matched_ids": [],
+          "subject": "remote control case",
+          "value": "The remote control case will have a double curved shape to give it a more modern look."
+        },
+        {
+          "title": "The remote control will have simple push buttons instead of complex or expensive alternatives",
+          "evidence": [
+            "for the buttons, simple push buttons. No uh otherwi uh no um difficult scroll things or some uh things like that, because it makes more complex and expensive."
+          ],
+          "matched_ids": [],
+          "subject": "remote control buttons",
+          "value": "The remote control will have simple push buttons instead of complex or expensive alternatives."
+        },
+        {
+          "title": "The device will use a basic battery as the energy source",
+          "evidence": [
+            "I uh suggest uh the basic battery. I uh got some other um uh uh energy sources of course."
+          ],
+          "matched_ids": [],
+          "subject": "energy source",
+          "value": "The device will use a basic battery as the energy source."
+        },
+        {
+          "title": "We must decide where, this meeting",
+          "evidence": [
+            "Um there are new developments in speech recognition um systems, um and they are already being uh used on uh coffee machines."
+          ],
+          "matched_ids": [],
+          "subject": "LCD screen implementation",
+          "value": "We must decide where, this meeting."
+        },
+        {
+          "title": "You have a menu button, and then you can go up and down",
+          "evidence": [
+            "ME: Alright. So you have a menu button, and then you can go up and down."
+          ],
+          "matched_ids": [],
+          "subject": "Menu navigation on LCD screen",
+          "value": "You have a menu button, and then you can go up and down."
+        },
+        {
+          "title": "We should add an extra Menu button and this the Okay button",
+          "evidence": [
+            "UI: No no, we we we should uh add uh a extra Menu button and this the Okay button."
+          ],
+          "matched_ids": [],
+          "subject": "Menu button functionality",
+          "value": "We should add an extra Menu button and this the Okay button"
+        },
+        {
+          "title": "The speaker and the microphone are the same uh little hole thingy",
+          "evidence": [
+            "UI: Well the speaker and the microphone, I think, are the same uh little hole thingy."
+          ],
+          "matched_ids": [],
+          "subject": "Speaker and microphone placement",
+          "value": "The speaker and the microphone are the same uh little hole thingy"
+        },
+        {
+          "title": "We need a we need a a recording recording button for the speech uh part",
+          "evidence": [
+            "ME: But we need a we need a a recording recording button for the speech uh part."
+          ],
+          "matched_ids": [],
+          "subject": "Recording button for speech part",
+          "value": "We need a we need a a recording recording button for the speech uh part"
+        },
+        {
+          "title": "We will use titanium for the non-removable elements of the remote and plastic for the front",
+          "evidence": [
+            "UI: I think we Why don't we um use uh titanium or or a hard, yeah, some kind of metal for the uh the the whole remote except the front. That"
+          ],
+          "matched_ids": [],
+          "subject": "material for the remote",
+          "value": "We will use titanium for the non-removable elements of the remote and plastic for the front"
+        },
+        {
+          "title": "The remote will have a bridge design that falls over the hand",
+          "evidence": [
+            "PM: It still has t"
+          ],
+          "matched_ids": [],
+          "subject": "design of the remote",
+          "value": "The remote will have a bridge design that falls over the hand"
+        },
+        {
+          "title": "All decisions will be documented in a Word document with answers following the subjects",
+          "evidence": [
+            "ID: Copy paste uh this story into a into a Word document, and then uh put the answers after the subjects. Yeah."
+          ],
+          "matched_ids": [],
+          "subject": "document for decisions",
+          "value": "All decisions will be documented in a Word document with answers following the subjects"
+        },
+        {
+          "title": "We will use titanium for the back and hard plastic for the front",
+          "evidence": [
+            "Titanium back, plastic front. Okay."
+          ],
+          "matched_ids": [
+            "TS3009c.d07"
+          ],
+          "subject": "material for the remote control",
+          "value": "We will use titanium for the back and hard plastic for the front"
+        },
+        {
+          "title": "The front can have any color, and it is acceptable for the colors to not match the titanium back",
+          "evidence": [
+            "Titanium is very basic colour, and it doesn't really matter if we have a purple front on it or a orange front."
+          ],
+          "matched_ids": [],
+          "subject": "front color options",
+          "value": "The front can have any color, and it is acceptable for the colors to not match the titanium back"
+        },
+        {
+          "title": "The electrical cable is made of copper",
+          "evidence": [
+            "The electrical cable uh does"
+          ],
+          "matched_ids": [],
+          "subject": "electrical cable material",
+          "value": "The electrical cable is made of copper"
+        },
+        {
+          "title": "The internal components of the remote control are standard and include a normal silicon chip and",
+          "evidence": [
+            "The chip is normal silicon. Uh the buttons are normal, etcetera."
+          ],
+          "matched_ids": [],
+          "subject": "internal components",
+          "value": "The internal components of the remote control are standard and include a normal silicon chip and normal buttons"
+        },
+        {
+          "title": "The conceptual specification of the user interface will be included in the shared folder and the",
+          "evidence": [
+            "You can put that in uh into the shared folder, and then I'll put it in our end report."
+          ],
+          "matched_ids": [],
+          "subject": "user interface conceptual specification",
+          "value": "The conceptual specification of the user interface will be included in the shared folder and the end report"
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 2,
+      "meeting": "TS3009d",
+      "series": "TS3009",
+      "shaped": true,
+      "windows": 10,
+      "calls": 10,
+      "failure": null,
+      "wall_s": 37.13,
+      "items": [
+        {
+          "title": "We have the Okay button here in the middle of the operators, of the channel and uh volume um",
+          "evidence": [
+            "And then we've here the Menu button and the"
+          ],
+          "matched_ids": [],
+          "subject": "button placement",
+          "value": "We have the Okay button here in the middle of the operators, of the channel and uh volume um changers"
+        },
+        {
+          "title": "We'll do it like this",
+          "evidence": [
+            "PM: Yes. So uh I c I c Well, we'll we we'll do it like this. Alright, if you think that that's the way it should"
+          ],
+          "matched_ids": [],
+          "subject": "Design orientation",
+          "value": "We'll do it like this"
+        },
+        {
+          "title": "The device is pointed towards the youth of course, if you look at the design and the colours and",
+          "evidence": [
+            "I think uh it's uh it's it's um pointed towards the youth of course, uh if you look at the design and and the colours and everything."
+          ],
+          "matched_ids": [],
+          "subject": "target audience",
+          "value": "The device is pointed towards the youth of course, if you look at the design and the colours and everything."
+        },
+        {
+          "title": "The device is considered good-looking and not only for youth uh young people",
+          "evidence": [
+            "I think we both uh have uh consider considered uh the youth and also a bit older people. So I think it's very good-looking and not only for youth uh young people."
+          ],
+          "matched_ids": [],
+          "subject": "device design",
+          "value": "The device is considered good-looking and not only for youth uh young people."
+        },
+        {
+          "title": "The functions are easy to learn because there are so few functions",
+          "evidence": [
+            "We have so few functions, so Yeah."
+          ],
+          "matched_ids": [],
+          "subject": "device functionality",
+          "value": "The functions are easy to learn because there are so few functions."
+        },
+        {
+          "title": "The device is a bit sensitive, so four",
+          "evidence": [
+            "Uh well well a bit, so four."
+          ],
+          "matched_ids": [],
+          "subject": "device sensitivity",
+          "value": "The device is a bit sensitive, so four."
+        },
+        {
+          "title": "The device is easy to use because there are not many buttons",
+          "evidence": [
+            "Yes we have not many buttons."
+          ],
+          "matched_ids": [],
+          "subject": "device ease of use",
+          "value": "The device is easy to use because there are not many buttons."
+        },
+        {
+          "title": "The trends about fruit and vegetables are implemented in our covers and fronts, so one",
+          "evidence": [
+            "Are the trends about fruit and vegetables implemented? Well in our covers, in our fronts. So yes, one."
+          ],
+          "matched_ids": [],
+          "subject": "device trends",
+          "value": "The trends about fruit and vegetables are implemented in our covers and fronts, so one."
+        },
+        {
+          "title": "We have to use the advanced chip if we have the L_C_D_ screen",
+          "evidence": [
+            "ID: Well you have to use the advanced chip, if you have the L_C_D_ screen."
+          ],
+          "matched_ids": [],
+          "subject": "chip type",
+          "value": "We have to use the advanced chip if we have the L_C_D_ screen"
+        },
+        {
+          "title": "We need to have the L_C_D_ screen",
+          "evidence": [
+            "ME: Yeah, we need to have the the L_C_D_ screen."
+          ],
+          "matched_ids": [],
+          "subject": "L_C_D_ screen",
+          "value": "We need to have the L_C_D_ screen"
+        },
+        {
+          "title": "The sample speaker costs four",
+          "evidence": [
+            "PM: The sample speaker, the s sensor."
+          ],
+          "matched_ids": [],
+          "subject": "speaker",
+          "value": "The sample speaker costs four"
+        },
+        {
+          "title": "We must change the chip back",
+          "evidence": [
+            "UI: You must change the chip back, Nils."
+          ],
+          "matched_ids": [],
+          "subject": "battery",
+          "value": "We must change the chip back"
+        },
+        {
+          "title": "We will use titanium-coloured plastic for the back",
+          "evidence": [
+            "ID: So titanium-coloured plastic for the back."
+          ],
+          "matched_ids": [],
+          "subject": "material for the back",
+          "value": "We will use titanium-coloured plastic for the back"
+        },
+        {
+          "title": "The lowest price for a trendy remote is fourteen point one",
+          "evidence": [
+            "PM: I'll put in the report we that we think that fourteen point one is the l m lowest price you can make a remote for that's trendy d these days."
+          ],
+          "matched_ids": [],
+          "subject": "lowest price for a trendy remote",
+          "value": "The lowest price for a trendy remote is fourteen point one"
+        },
+        {
+          "title": "Titanium stays there",
+          "evidence": [
+            "UI: No no no no. W Titanium stays there."
+          ],
+          "matched_ids": [],
+          "subject": "material for the remote",
+          "value": "Titanium stays there"
+        },
+        {
+          "title": "We have to ditch the titanium",
+          "evidence": [
+            "ID: So we have to use the ditch the titanium, I'm afraid."
+          ],
+          "matched_ids": [
+            "TS3009d.d03"
+          ],
+          "subject": "material choice",
+          "value": "We have to ditch the titanium"
+        },
+        {
+          "title": "We have to make it cheaper",
+          "evidence": [
+            "ME: So we have to make it cheaper."
+          ],
+          "matched_ids": [],
+          "subject": "cost constraint",
+          "value": "We have to make it cheaper"
+        },
+        {
+          "title": "We can add the special colour",
+          "evidence": [
+            "PM: And we still have money left. What do we want, guys?"
+          ],
+          "matched_ids": [],
+          "subject": "design feature",
+          "value": "We can add the special colour"
+        },
+        {
+          "title": "We have to evaluate our project",
+          "evidence": [
+            "PM: Well, guys? Guys? We have to dump our titanium, and we'll hate the managers for that, but now we're going to evaluate our project, of uh project, project."
+          ],
+          "matched_ids": [],
+          "subject": "project evaluation",
+          "value": "We have to evaluate our project"
+        },
+        {
+          "title": "Teamwork was terrible",
+          "evidence": [
+            "UI: Terrible."
+          ],
+          "matched_ids": [],
+          "subject": "teamwork assessment",
+          "value": "Teamwork was terrible"
+        },
+        {
+          "title": "Leadership was very democratic",
+          "evidence": [
+            "ME: Well it's It was very democratic."
+          ],
+          "matched_ids": [],
+          "subject": "leadership assessment",
+          "value": "Leadership was very democratic"
+        },
+        {
+          "title": "The SMARTboard was a complete disaster",
+          "evidence": [
+            "ID: It was a complete disaster."
+          ],
+          "matched_ids": [],
+          "subject": "SMARTboard evaluation",
+          "value": "The SMARTboard was a complete disaster"
+        },
+        {
+          "title": "The digital pen is not practical for personal notes but is useful for drawings",
+          "evidence": [
+            "It's, no, it it's useless."
+          ],
+          "matched_ids": [],
+          "subject": "digital pen",
+          "value": "The digital pen is not practical for personal notes but is useful for drawings."
+        },
+        {
+          "title": "The SMARTboard is used for drawing and not for desktop functions",
+          "evidence": [
+            "That one isn't accurate. It just doesn't work. You can"
+          ],
+          "matched_ids": [],
+          "subject": "SMARTboard",
+          "value": "The SMARTboard is used for drawing and not for desktop functions."
+        },
+        {
+          "title": "A beamer is preferred over a SMARTboard as it is much cheaper",
+          "evidence": [
+            "Yeah, but give me a beamer. That's uh that's much uh much cheaper."
+          ],
+          "matched_ids": [],
+          "subject": "beamer",
+          "value": "A beamer is preferred over a SMARTboard as it is much cheaper."
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 3,
+      "meeting": "TS3009a",
+      "series": "TS3009",
+      "shaped": true,
+      "windows": 6,
+      "calls": 6,
+      "failure": null,
+      "wall_s": 31.43,
+      "items": [
+        {
+          "title": "We will draw a hedgehog",
+          "evidence": [
+            "PM: Well what is it, huh? ID: It's a hedgehog."
+          ],
+          "matched_ids": [],
+          "subject": "animal to draw",
+          "value": "We will draw a hedgehog"
+        },
+        {
+          "title": "we want to sell it at twenty five Euros internationally um so um but we dunno what exactly th i it",
+          "evidence": [
+            "we want to sell it at twenty five Euros internationally um so um but we dunno what exactly th i it is in dollars"
+          ],
+          "matched_ids": [],
+          "subject": "price in dollars",
+          "value": "we want to sell it at twenty five Euros internationally um so um but we dunno what exactly th i it is in dollars"
+        },
+        {
+          "title": "The remote control should have a long box shape with some round forms to fit the hand",
+          "evidence": [
+            "You have to use one hand."
+          ],
+          "matched_ids": [],
+          "subject": "remote control shape",
+          "value": "The remote control should have a long box shape with some round forms to fit the hand"
+        },
+        {
+          "title": "The buttons should not be too small, not too big, and not too close together",
+          "evidence": [
+            "ID: The buttons should uh also be not too small, not too big, of course, and uh n uh uh not too close uh together."
+          ],
+          "matched_ids": [],
+          "subject": "button design",
+          "value": "The buttons should not be too small, not too big, and not too close together"
+        },
+        {
+          "title": "It shouldn't be too heavy",
+          "evidence": [
+            "ME: Yeah it shouldn't be too heavy."
+          ],
+          "matched_ids": [],
+          "subject": "weight of the remote",
+          "value": "It shouldn't be too heavy"
+        },
+        {
+          "title": "We should dispatch those kind of fronts around the world",
+          "evidence": [
+            "PM: And we should uh dispatch those kind of fronts fronts a a around the world so uh"
+          ],
+          "matched_ids": [],
+          "subject": "remote control front design",
+          "value": "We should dispatch those kind of fronts around the world"
+        },
+        {
+          "title": "The standard front will be just grey or something a simple colour not very flashy",
+          "evidence": [
+            "ID: Well but th but the standard front will be uh just grey or something uh b a simple colour not not very flashy."
+          ],
+          "matched_ids": [],
+          "subject": "remote control front color",
+          "value": "The standard front will be just grey or something a simple colour not very flashy"
+        },
+        {
+          "title": "We have to make it grey or s or black",
+          "evidence": [
+            "ME: But people of often don't like bright colours or something. We have to make it grey or s or black."
+          ],
+          "matched_ids": [],
+          "subject": "remote control front marketing",
+          "value": "We have to make it grey or s or black"
+        },
+        {
+          "title": "Our user interface you can maybe uh I don't know what your specific instructions will be, but",
+          "evidence": [
+            "PM: Well our user interface you can uh maybe uh I don't know what your specific instructions will be, but uh probably about uh the precision of the buttons and and those kind of things and what buttons will have to be on the"
+          ],
+          "matched_ids": [],
+          "subject": "remote control interface design",
+          "value": "Our user interface you can maybe uh I don't know what your specific instructions will be, but probably about the precision of the buttons and those kind of things and what buttons will have to be on the remote"
+        },
+        {
+          "title": "The look and feel of the remote's also my task",
+          "evidence": [
+            "ID: Mm yeah also the the look and feel uh of the the remote's also my task, yeah."
+          ],
+          "matched_ids": [],
+          "subject": "remote control look and feel",
+          "value": "The look and feel of the remote's also my task"
+        },
+        {
+          "title": "The next meeting is in thirty minutes",
+          "evidence": [
+            "PM: In thirty minutes, but uh I think it will be you will be warned uh through your laptop uh to get over here."
+          ],
+          "matched_ids": [],
+          "subject": "next meeting time",
+          "value": "The next meeting is in thirty minutes"
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 3,
+      "meeting": "TS3009b",
+      "series": "TS3009",
+      "shaped": true,
+      "windows": 11,
+      "calls": 11,
+      "failure": null,
+      "wall_s": 59.26,
+      "items": [
+        {
+          "title": "We have to decide in this meeting what our function will be",
+          "evidence": [
+            "Well um then we can make some decisions about our remote control functions. We have to deb we have to decide it in this meeting what our function will be."
+          ],
+          "matched_ids": [],
+          "subject": "remote control functions",
+          "value": "We have to decide in this meeting what our function will be"
+        },
+        {
+          "title": "The design has to fit the hand, be original, but also be familiar",
+          "evidence": [
+            "The design has to fit the hand, be original, but also be familiar."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design",
+          "value": "The design has to fit the hand, be original, but also be familiar"
+        },
+        {
+          "title": "The materials should be hard plastic with rubber from",
+          "evidence": [
+            "The materials uh well should be hard plastic with rubber from, and uh well the labelling of the buttons should be indestructible."
+          ],
+          "matched_ids": [],
+          "subject": "remote control materials",
+          "value": "The materials should be hard plastic with rubber from"
+        },
+        {
+          "title": "We will not use teletext",
+          "evidence": [
+            "We will not use teletext."
+          ],
+          "matched_ids": [],
+          "subject": "teletext usage",
+          "value": "We will not use teletext"
+        },
+        {
+          "title": "Our corporate image should stay recognizable in our products",
+          "evidence": [
+            "PM: Well and uh our corporate image should stay rec recognisable in our products."
+          ],
+          "matched_ids": [],
+          "subject": "company image",
+          "value": "Our corporate image should stay recognizable in our products."
+        },
+        {
+          "title": "The remote control should have a big zapping button or something in the middle for easy access with",
+          "evidence": [
+            "ME: Furthermore, it's uh seventy five per cent of the users uh zaps a lot. Thus it might be uh might be smart to make a a big uh zapping button or something in the middle, so you can reach it with your thumb."
+          ],
+          "matched_ids": [],
+          "subject": "design features",
+          "value": "The remote control should have a big zapping button or something in the middle for easy access with the thumb."
+        },
+        {
+          "title": "We're gonna target a younger audience",
+          "evidence": [
+            "ME: Right, this is the most important part. Um, we're Like the requirements said, we're gonna specify of we're gonna target a younger audience."
+          ],
+          "matched_ids": [],
+          "subject": "target audience",
+          "value": "We're gonna target a younger audience"
+        },
+        {
+          "title": "It might be important for the sale",
+          "evidence": [
+            "ME: it it might be important for the sale."
+          ],
+          "matched_ids": [],
+          "subject": "speech recognition",
+          "value": "It might be important for the sale"
+        },
+        {
+          "title": "We should put more time in the design of pick up and use",
+          "evidence": [
+            "ME: I think you should put more time in the in the design of uh pick up and use, than a manual."
+          ],
+          "matched_ids": [],
+          "subject": "design",
+          "value": "We should put more time in the design of pick up and use"
+        },
+        {
+          "title": "There should always be a menu, but it can be very short",
+          "evidence": [
+            "PM: Well there sh should always be a menu, but it c can be very short."
+          ],
+          "matched_ids": [],
+          "subject": "menu",
+          "value": "There should always be a menu, but it can be very short"
+        },
+        {
+          "title": "It should be consistent with older remotes",
+          "evidence": [
+            "ME: And it should be consistent with consistent with older remotes."
+          ],
+          "matched_ids": [],
+          "subject": "consistency",
+          "value": "It should be consistent with older remotes"
+        },
+        {
+          "title": "the most important buttons should be near the thumb",
+          "evidence": [
+            "ME: Right. Make them big, make them easy to uh to press."
+          ],
+          "matched_ids": [],
+          "subject": "button placement",
+          "value": "the most important buttons should be near the thumb"
+        },
+        {
+          "title": "Mike can give the third presentation",
+          "evidence": [
+            "PM: Then uh Mike can uh give the third presentation."
+          ],
+          "matched_ids": [],
+          "subject": "presentation",
+          "value": "Mike can give the third presentation"
+        },
+        {
+          "title": "We should go with the concept of less is more, with the less buttons the better the design",
+          "evidence": [
+            "UI: We should go with that concept I think."
+          ],
+          "matched_ids": [],
+          "subject": "remote design",
+          "value": "We should go with the concept of less is more, with the less buttons the better the design"
+        },
+        {
+          "title": "We think this is about the maximum number of buttons we'll need",
+          "evidence": [
+            "UI: I think this is about the maximum number of buttons uh we'll need."
+          ],
+          "matched_ids": [],
+          "subject": "remote buttons",
+          "value": "We think this is about the maximum number of buttons we'll need"
+        },
+        {
+          "title": "we should integrate an LCD screen that displays status information",
+          "evidence": [
+            "we should keep that simple too. It will"
+          ],
+          "matched_ids": [],
+          "subject": "LCD screen integration",
+          "value": "we should integrate an LCD screen that displays status information"
+        },
+        {
+          "title": "the LCD screen should be at the top of the remote control",
+          "evidence": [
+            "I think it should be at the top."
+          ],
+          "matched_ids": [],
+          "subject": "LCD screen placement",
+          "value": "the LCD screen should be at the top of the remote control"
+        },
+        {
+          "title": "we need to know how much the LCD screen will cost",
+          "evidence": [
+            "we we still need to know how much that will cost."
+          ],
+          "matched_ids": [],
+          "subject": "LCD screen cost",
+          "value": "we need to know how much the LCD screen will cost"
+        },
+        {
+          "title": "We will place the L_C_D_ screen at the top",
+          "evidence": [
+            "I think we have uh a few functions, and we can put uh the L_C_D_ above it, and still have lots of room at the bottom, where you can put your hand."
+          ],
+          "matched_ids": [],
+          "subject": "L_C_D_ screen position",
+          "value": "We will place the L_C_D_ screen at the top"
+        },
+        {
+          "title": "The power button should be at the bottom",
+          "evidence": [
+            "PM: I think it should be at the button, bottom."
+          ],
+          "matched_ids": [],
+          "subject": "Power button position",
+          "value": "The power button should be at the bottom"
+        },
+        {
+          "title": "The power button should be left at the top and should be red",
+          "evidence": [
+            "PM: The power button can uh be uh uh UI: Power bu button should be left at the top. ME: And should and should be red."
+          ],
+          "matched_ids": [],
+          "subject": "Power button",
+          "value": "The power button should be left at the top and should be red"
+        },
+        {
+          "title": "The channel up and down buttons should be far apart from each other",
+          "evidence": [
+            "PM: Up and down far apart from each other?"
+          ],
+          "matched_ids": [],
+          "subject": "Channel buttons",
+          "value": "The channel up and down buttons should be far apart from each other"
+        },
+        {
+          "title": "The volume control should not be placed close to the channel buttons",
+          "evidence": [
+            "ID: I think you can have the two buttons of up and down close together, but you don't have uh have to have volume control and and zapping button close together."
+          ],
+          "matched_ids": [],
+          "subject": "Volume control",
+          "value": "The volume control should not be placed close to the channel buttons"
+        },
+        {
+          "title": "Teletext is gone",
+          "evidence": [
+            "PM: Teletext is gone. So all those buttons that ar are to do with teletext Oh screen placing."
+          ],
+          "matched_ids": [],
+          "subject": "Teletext functionality",
+          "value": "Teletext is gone"
+        },
+        {
+          "title": "We can make a little row of like four buttons down here",
+          "evidence": [
+            "UI: We we can make make uh a little row of like four buttons down here."
+          ],
+          "matched_ids": [],
+          "subject": "Placement of buttons",
+          "value": "We can make a little row of like four buttons down here"
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 3,
+      "meeting": "TS3009c",
+      "series": "TS3009",
+      "shaped": true,
+      "windows": 11,
+      "calls": 11,
+      "failure": null,
+      "wall_s": 68.22,
+      "items": [
+        {
+          "title": "The team decided that the remote control must look great and be very colourful to appeal to",
+          "evidence": [
+            "ME: So we we have to think uh in this direction. So i set your mind to it. Findings? Fashion update? Fruit and vegetables are cool. I am told."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design",
+          "value": "The team decided that the remote control must look great and be very colourful to appeal to people's preferences"
+        },
+        {
+          "title": "The group we are targeting is very pleased with fruit and vegetables",
+          "evidence": [
+            "The group we are targeting is uh very pleased with fruit and vegetables."
+          ],
+          "matched_ids": [],
+          "subject": "target audience",
+          "value": "The group we are targeting is very pleased with fruit and vegetables"
+        },
+        {
+          "title": "The material should be very strong and look flashy",
+          "evidence": [
+            "material, that's your part, should be very strong. I was thinking of something like uh well uh iron plate over it, maybe in a colour or something, that looks so f really flashy but it it is also strong."
+          ],
+          "matched_ids": [],
+          "subject": "material choice",
+          "value": "The material should be very strong and look flashy"
+        },
+        {
+          "title": "The design should have cool shapes and lots of colours",
+          "evidence": [
+            "we're gonna have real uh cool shapes and lots of colours. Right? Okay."
+          ],
+          "matched_ids": [],
+          "subject": "design for younger public",
+          "value": "The design should have cool shapes and lots of colours"
+        },
+        {
+          "title": "The case should be something stronger than hard plastic",
+          "evidence": [
+            "We should move to uh something"
+          ],
+          "matched_ids": [],
+          "subject": "case material",
+          "value": "The case should be something stronger than hard plastic"
+        },
+        {
+          "title": "The buttons should be rubber and the electrical cables should be copper",
+          "evidence": [
+            "The buttons of course rubber, I think everyone agrees. And electrical cables, copper is all pretty basic stuff."
+          ],
+          "matched_ids": [
+            "TS3009c.d01"
+          ],
+          "subject": "buttons and cables",
+          "value": "The buttons should be rubber and the electrical cables should be copper"
+        },
+        {
+          "title": "The chips should be made of silicon and the infra infrared LED is just a simple bulb",
+          "evidence": [
+            "The chips made of silicon, I guess. I think that's the best uh way to do it. And infra infrared l LED is uh just a simple bulb."
+          ],
+          "matched_ids": [],
+          "subject": "chips and LED",
+          "value": "The chips should be made of silicon and the infra infrared LED is just a simple bulb"
+        },
+        {
+          "title": "The design should avoid traditional materials like wood and straightforward shapes",
+          "evidence": [
+            "They also like straightforward shapes and luxurious style. But of course that's not our uh things this. So this is things we must not do."
+          ],
+          "matched_ids": [],
+          "subject": "design constraints",
+          "value": "The design should avoid traditional materials like wood and straightforward shapes"
+        },
+        {
+          "title": "The price should be considered along with the material and design choices",
+          "evidence": [
+            "we still have to look at our price of course. Because uh if we want an L_C_D_ uh window etcetera uh"
+          ],
+          "matched_ids": [],
+          "subject": "price consideration",
+          "value": "The price should be considered along with the material and design choices"
+        },
+        {
+          "title": "The case should have a double curved shape to give it a more modern look",
+          "evidence": [
+            "I also suggest uh as a shape uh a double curved case. Uh the disadvantage of that that you can use no titanium. That that's the information I received. If you use the curved case, uh a curved case, double curved then you"
+          ],
+          "matched_ids": [],
+          "subject": "remote control case",
+          "value": "The case should have a double curved shape to give it a more modern look"
+        },
+        {
+          "title": "we must decide where, this meeting",
+          "evidence": [
+            "um there are new developments in speech recognition um systems, um and they are already being uh used on uh coffee machines."
+          ],
+          "matched_ids": [],
+          "subject": "LCD screen position",
+          "value": "we must decide where, this meeting"
+        },
+        {
+          "title": "an L_C_D_ s screen will be implemented",
+          "evidence": [
+            "um an L_C_D_ s screen will be implemented. Um we must decide where, this meeting."
+          ],
+          "matched_ids": [],
+          "subject": "LCD screen implementation",
+          "value": "an L_C_D_ s screen will be implemented"
+        },
+        {
+          "title": "you have a menu button, and then you can go up and down",
+          "evidence": [
+            "ME: Alright. So you have a menu button, and then you can go up and down."
+          ],
+          "matched_ids": [],
+          "subject": "Menu navigation on LCD screen",
+          "value": "you have a menu button, and then you can go up and down"
+        },
+        {
+          "title": "the buttons can be made of an uh a soft material",
+          "evidence": [
+            "UI: The buttons can be made of an uh a soft material."
+          ],
+          "matched_ids": [],
+          "subject": "Button design",
+          "value": "the buttons can be made of an uh a soft material"
+        },
+        {
+          "title": "I suggest a banana shape",
+          "evidence": [
+            "ID: I suggest a banana shape."
+          ],
+          "matched_ids": [],
+          "subject": "Button shape",
+          "value": "I suggest a banana shape"
+        },
+        {
+          "title": "We should add an extra Menu button and this the Okay button",
+          "evidence": [
+            "UI: No no, we we we should uh add uh a extra Menu button and this the Okay button."
+          ],
+          "matched_ids": [],
+          "subject": "Menu button functionality",
+          "value": "We should add an extra Menu button and this the Okay button"
+        },
+        {
+          "title": "The speaker and the microphone are the same uh little hole thingy",
+          "evidence": [
+            "UI: Well the speaker and the microphone, I think, are the same uh little hole thingy."
+          ],
+          "matched_ids": [],
+          "subject": "Speaker and microphone placement",
+          "value": "The speaker and the microphone are the same uh little hole thingy"
+        },
+        {
+          "title": "The L_C_D_ screen does look better uh at the lower end, or at the bottom",
+          "evidence": [
+            "UI: And oh I think as you can see so, the L_C_D_ screen does look better uh at the lower end, or at the bottom."
+          ],
+          "matched_ids": [
+            "TS3009c.d04"
+          ],
+          "subject": "L_C_D_ screen placement",
+          "value": "The L_C_D_ screen does look better uh at the lower end, or at the bottom"
+        },
+        {
+          "title": "We need a recording button for the speech part",
+          "evidence": [
+            "ME: But we need a we need a a recording recording button for the speech uh part."
+          ],
+          "matched_ids": [],
+          "subject": "Recording button",
+          "value": "We need a recording button for the speech part"
+        },
+        {
+          "title": "We will use titanium for the non-removable elements of the remote and plastic for the front",
+          "evidence": [
+            "UI: I think we Why don't we um use uh titanium or or a hard, yeah, some kind of metal for the uh the the whole remote except the front. That"
+          ],
+          "matched_ids": [],
+          "subject": "material for the remote",
+          "value": "We will use titanium for the non-removable elements of the remote and plastic for the front"
+        },
+        {
+          "title": "The remote will have a bridge design that falls over the hand",
+          "evidence": [
+            "PM: It still has t"
+          ],
+          "matched_ids": [],
+          "subject": "design of the remote",
+          "value": "The remote will have a bridge design that falls over the hand"
+        },
+        {
+          "title": "We will create a document where we put the answers after the subjects",
+          "evidence": [
+            "ID: Copy paste uh this story into a into a Word document, and then uh put the answers after the subjects. Yeah."
+          ],
+          "matched_ids": [],
+          "subject": "document for decisions",
+          "value": "We will create a document where we put the answers after the subjects"
+        },
+        {
+          "title": "We will use hard plastic for the front",
+          "evidence": [
+            "PM: Titanium back, plastic front. Okay."
+          ],
+          "matched_ids": [
+            "TS3009c.d07"
+          ],
+          "subject": "material for the front",
+          "value": "We will use hard plastic for the front"
+        },
+        {
+          "title": "We will use titanium for the back",
+          "evidence": [
+            "PM: Titanium back, plastic front. Okay."
+          ],
+          "matched_ids": [
+            "TS3009c.d07"
+          ],
+          "subject": "material for the back",
+          "value": "We will use titanium for the back"
+        },
+        {
+          "title": "We can launch different lines of the product at once with different fronts",
+          "evidence": [
+            "PM: Launch different lines at once."
+          ],
+          "matched_ids": [
+            "TS3009c.d10"
+          ],
+          "subject": "launch strategy",
+          "value": "We can launch different lines of the product at once with different fronts"
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 3,
+      "meeting": "TS3009d",
+      "series": "TS3009",
+      "shaped": true,
+      "windows": 10,
+      "calls": 10,
+      "failure": null,
+      "wall_s": 27.73,
+      "items": [
+        {
+          "title": "We'll do it like this",
+          "evidence": [
+            "PM: Yes. So uh I c I c Well, we'll we we'll do it like this. Alright, if you think that that's the way it should"
+          ],
+          "matched_ids": [],
+          "subject": "Design of the device",
+          "value": "We'll do it like this"
+        },
+        {
+          "title": "The target audience is the youth, but it is also considered for older people",
+          "evidence": [
+            "I think uh it's uh it's it's um pointed towards the youth of course, uh if you look at the design and and the colours and everything. That was our target audience of course."
+          ],
+          "matched_ids": [],
+          "subject": "target audience",
+          "value": "The target audience is the youth, but it is also considered for older people"
+        },
+        {
+          "title": "The device is considered good-looking for both youth and older people",
+          "evidence": [
+            "I think we both uh have uh consider considered uh the youth and also a bit older people. So I think it's very good-looking and not only for youth uh young people."
+          ],
+          "matched_ids": [],
+          "subject": "device appearance",
+          "value": "The device is considered good-looking for both youth and older people"
+        },
+        {
+          "title": "The functions are easy to learn because there are so few functions",
+          "evidence": [
+            "We have so few functions, so Yeah."
+          ],
+          "matched_ids": [],
+          "subject": "device functionality",
+          "value": "The functions are easy to learn because there are so few functions"
+        },
+        {
+          "title": "The device is a bit sensitive",
+          "evidence": [
+            "Uh well well a bit, so four."
+          ],
+          "matched_ids": [],
+          "subject": "device sensitivity",
+          "value": "The device is a bit sensitive"
+        },
+        {
+          "title": "There are enough technology features included",
+          "evidence": [
+            "Yeah well also we have two."
+          ],
+          "matched_ids": [],
+          "subject": "technology included",
+          "value": "There are enough technology features included"
+        },
+        {
+          "title": "The device is easy to use because it has not many buttons",
+          "evidence": [
+            "Yes we have not many buttons."
+          ],
+          "matched_ids": [],
+          "subject": "device ease of use",
+          "value": "The device is easy to use because it has not many buttons"
+        },
+        {
+          "title": "The material is considered attractive",
+          "evidence": [
+            "Yeah. One or two. Yeah."
+          ],
+          "matched_ids": [],
+          "subject": "material attractiveness",
+          "value": "The material is considered attractive"
+        },
+        {
+          "title": "The device is considered fancy-looking and fancy-feeling due to the titanium back",
+          "evidence": [
+            "And I think fancy-feeling too, because of the titanium back. Yeah."
+          ],
+          "matched_ids": [],
+          "subject": "device design",
+          "value": "The device is considered fancy-looking and fancy-feeling due to the titanium back"
+        },
+        {
+          "title": "We have to use the advanced chip if we have the L_C_D_ screen",
+          "evidence": [
+            "ID: Well you have to use the advanced chip, if you have the L_C_D_ screen."
+          ],
+          "matched_ids": [],
+          "subject": "chip type",
+          "value": "We have to use the advanced chip if we have the L_C_D_ screen"
+        },
+        {
+          "title": "We need to have the L_C_D_ screen",
+          "evidence": [
+            "ME: Yeah, we need to have the the L_C_D_ screen."
+          ],
+          "matched_ids": [],
+          "subject": "L_C_D_ screen",
+          "value": "We need to have the L_C_D_ screen"
+        },
+        {
+          "title": "The sample speaker costs four and it has to be kicked out",
+          "evidence": [
+            "ME: Out. That's easy. Kick it out. Yeah."
+          ],
+          "matched_ids": [],
+          "subject": "speaker",
+          "value": "The sample speaker costs four and it has to be kicked out"
+        },
+        {
+          "title": "The project has to go to twelve and a half",
+          "evidence": [
+            "ME: It has to go to twelve, right? Twelve and a half."
+          ],
+          "matched_ids": [],
+          "subject": "cost target",
+          "value": "The project has to go to twelve and a half"
+        },
+        {
+          "title": "We will use titanium-coloured plastic for the back",
+          "evidence": [
+            "ID: So titanium-coloured plastic for the back."
+          ],
+          "matched_ids": [],
+          "subject": "material for the back",
+          "value": "We will use titanium-coloured plastic for the back"
+        },
+        {
+          "title": "The lowest price we can make a remote for that's trendy these days is fourteen point one",
+          "evidence": [
+            "PM: I'll put in the report we that we think that fourteen point one is the l m lowest price you can make a remote for that's trendy d these days."
+          ],
+          "matched_ids": [],
+          "subject": "lowest price for a trendy remote",
+          "value": "The lowest price we can make a remote for that's trendy these days is fourteen point one"
+        },
+        {
+          "title": "We will use plastic for the screen",
+          "evidence": [
+            "UI: We can dump the special colour. We l we use plastic. And plastic is already in colour I think."
+          ],
+          "matched_ids": [],
+          "subject": "material for the screen",
+          "value": "We will use plastic for the screen"
+        },
+        {
+          "title": "The team decided to ditch titanium and use plastic instead",
+          "evidence": [
+            "ID: So we have to use the ditch the titanium, I'm afraid."
+          ],
+          "matched_ids": [
+            "TS3009d.d03"
+          ],
+          "subject": "material choice",
+          "value": "The team decided to ditch titanium and use plastic instead"
+        },
+        {
+          "title": "The team decided to add a special colour to the case as they have money left",
+          "evidence": [
+            "PM: And we still have money left. What do we want, guys?"
+          ],
+          "matched_ids": [],
+          "subject": "design modification",
+          "value": "The team decided to add a special colour to the case as they have money left"
+        },
+        {
+          "title": "The team decided to make the product cheaper than twelve and a half",
+          "evidence": [
+            "ID: We get more salary, if we make if cheaper than twelve uh twelve and a half."
+          ],
+          "matched_ids": [],
+          "subject": "budget constraint",
+          "value": "The team decided to make the product cheaper than twelve and a half"
+        },
+        {
+          "title": "The team decided to evaluate their project based on creativity and costs",
+          "evidence": [
+            "PM: Well, guys? Guys? We have to dump our titanium, and we'll hate the managers for that, but now we're going to evaluate our project, of uh project, project."
+          ],
+          "matched_ids": [],
+          "subject": "project evaluation",
+          "value": "The team decided to evaluate their project based on creativity and costs"
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 4,
+      "meeting": "TS3009a",
+      "series": "TS3009",
+      "shaped": true,
+      "windows": 6,
+      "calls": 6,
+      "failure": null,
+      "wall_s": 28.01,
+      "items": [
+        {
+          "title": "We will save the current document and start a new blank document",
+          "evidence": [
+            "and then save it and start an blank document."
+          ],
+          "matched_ids": [],
+          "subject": "document format",
+          "value": "We will save the current document and start a new blank document."
+        },
+        {
+          "title": "The animal drawn is a rabbit",
+          "evidence": [
+            "It's a rabbit. Well"
+          ],
+          "matched_ids": [],
+          "subject": "animal identification",
+          "value": "The animal drawn is a rabbit."
+        },
+        {
+          "title": "we want to sell it at twenty five Euros internationally um so um but we dunno what exactly th i it",
+          "evidence": [
+            "we want to sell it at twenty five Euros internationally um so um but we dunno what exactly th i it is in dollars"
+          ],
+          "matched_ids": [],
+          "subject": "price in dollars",
+          "value": "we want to sell it at twenty five Euros internationally um so um but we dunno what exactly th i it is in dollars"
+        },
+        {
+          "title": "The remote control should have a long box shape with some round forms to fit the hand",
+          "evidence": [
+            "You have to use one hand."
+          ],
+          "matched_ids": [],
+          "subject": "remote control shape",
+          "value": "The remote control should have a long box shape with some round forms to fit the hand"
+        },
+        {
+          "title": "The remote control should be original and trendy",
+          "evidence": [
+            "One of our aims is that it has to be original and trendy so"
+          ],
+          "matched_ids": [],
+          "subject": "remote control design",
+          "value": "The remote control should be original and trendy"
+        },
+        {
+          "title": "the case should be plastic of course, hard plastic",
+          "evidence": [
+            "ID: No n n UI: . PM: Well I have had remotes that um they had uh the function of the buttons was about uh uh a layer over the buttons and when I've had use it much it was gone. So it has to be made in the buttons I think. It has to uh not be loose."
+          ],
+          "matched_ids": [],
+          "subject": "case material",
+          "value": "the case should be plastic of course, hard plastic"
+        },
+        {
+          "title": "the buttons should be rubbery",
+          "evidence": [
+            "ID: No n n UI: . PM: Well I have had remotes that um they had uh the function of the buttons was about uh uh a layer over the buttons and when I've had use it much it was gone. So it has to be made in the buttons I think. It has to uh not be loose."
+          ],
+          "matched_ids": [],
+          "subject": "buttons material",
+          "value": "the buttons should be rubbery"
+        },
+        {
+          "title": "we make an a universal remote so it has to work with uh all kinds of brands and things",
+          "evidence": [
+            "ID: It it's a we we make an a universal remote so it ha has to work with uh all kinds of brands and things."
+          ],
+          "matched_ids": [],
+          "subject": "remote functionality",
+          "value": "we make an a universal remote so it has to work with uh all kinds of brands and things"
+        },
+        {
+          "title": "it's a common standard way infrared beams an infrared beam",
+          "evidence": [
+            "PM: It's not that in China it's different? ME: Yep. PM: Yeah. PM: But y you can have uh of course different between D_V_D_s and televisions and between ME: And you can use ID: It it's a we we make an a universal remote so it ha has to work with uh all kinds of brands and things."
+          ],
+          "matched_ids": [],
+          "subject": "remote transmission method",
+          "value": "it's a common standard way infrared beams an infrared beam"
+        },
+        {
+          "title": "We should dispatch those kind of fronts around the world",
+          "evidence": [
+            "PM: And we should uh dispatch those kind of fronts fronts a a around the world so uh"
+          ],
+          "matched_ids": [],
+          "subject": "remote control front design",
+          "value": "We should dispatch those kind of fronts around the world"
+        },
+        {
+          "title": "The standard front will be just grey or something a simple colour not very flashy",
+          "evidence": [
+            "ID: Well but th but the standard front will be uh just grey or something uh b a simple colour not not very flashy."
+          ],
+          "matched_ids": [],
+          "subject": "remote control front color",
+          "value": "The standard front will be just grey or something a simple colour not very flashy"
+        },
+        {
+          "title": "You can change them when you buy the",
+          "evidence": [
+            "PM: Well j just y you get a n a normal front with it, but you can change them uh when you buy the"
+          ],
+          "matched_ids": [],
+          "subject": "remote control front customization",
+          "value": "You can change them when you buy the"
+        },
+        {
+          "title": "The look and feel of the remote's also my task",
+          "evidence": [
+            "ID: Mm yeah also the the look and feel uh of the the remote's also my task, yeah."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design task",
+          "value": "The look and feel of the remote's also my task"
+        },
+        {
+          "title": "The next meeting is in thirty minutes",
+          "evidence": [
+            "PM: In thirty minutes, but uh I think it will be you will be warned uh through your laptop uh to get over here."
+          ],
+          "matched_ids": [],
+          "subject": "meeting schedule",
+          "value": "The next meeting is in thirty minutes"
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 4,
+      "meeting": "TS3009b",
+      "series": "TS3009",
+      "shaped": true,
+      "windows": 11,
+      "calls": 12,
+      "failure": null,
+      "wall_s": 287.52,
+      "items": [
+        {
+          "title": "We have to decide in this meeting what our function will be",
+          "evidence": [
+            "Well um then we can make some decisions about our remote control functions. We have to deb we have to decide it in this meeting what our function will be."
+          ],
+          "matched_ids": [],
+          "subject": "remote control functions",
+          "value": "We have to decide in this meeting what our function will be"
+        },
+        {
+          "title": "The design has to fit the hand, be original, but also be familiar",
+          "evidence": [
+            "The design has to fit the hand, be original, but also be familiar."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design",
+          "value": "The design has to fit the hand, be original, but also be familiar"
+        },
+        {
+          "title": "The materials should be hard plastic with rubber from",
+          "evidence": [
+            "The materials uh well should be hard plastic with rubber from, and uh well the labelling of the buttons should be indestructible."
+          ],
+          "matched_ids": [],
+          "subject": "remote control materials",
+          "value": "The materials should be hard plastic with rubber from"
+        },
+        {
+          "title": "We will not use teletext",
+          "evidence": [
+            "We will not use teletext."
+          ],
+          "matched_ids": [],
+          "subject": "teletext usage",
+          "value": "We will not use teletext"
+        },
+        {
+          "title": "The third requirement we want to reach people under the thirty years",
+          "evidence": [
+            "especially for the third requirement we want to reach people under the thirty years."
+          ],
+          "matched_ids": [],
+          "subject": "project requirements",
+          "value": "The third requirement we want to reach people under the thirty years"
+        },
+        {
+          "title": "We're gonna target a younger audience",
+          "evidence": [
+            "ME: Right, this is the most important part. Um, we're Like the requirements said, we're gonna specify of we're gonna target a younger audience."
+          ],
+          "matched_ids": [],
+          "subject": "target audience",
+          "value": "We're gonna target a younger audience"
+        },
+        {
+          "title": "It might be important for the sale",
+          "evidence": [
+            "ME: it it might be important for the sale."
+          ],
+          "matched_ids": [],
+          "subject": "speech recognition",
+          "value": "It might be important for the sale"
+        },
+        {
+          "title": "There should always be a menu, but it can be very short",
+          "evidence": [
+            "PM: Well there sh should always be a menu, but it c can be very short."
+          ],
+          "matched_ids": [],
+          "subject": "menu",
+          "value": "There should always be a menu, but it can be very short"
+        },
+        {
+          "title": "the most important buttons should be near the thumb",
+          "evidence": [
+            "ME: Right. Make them big, make them easy to uh to press."
+          ],
+          "matched_ids": [],
+          "subject": "button placement",
+          "value": "the most important buttons should be near the thumb"
+        },
+        {
+          "title": "Mike can give the third presentation",
+          "evidence": [
+            "PM: Then uh Mike can uh give the third presentation."
+          ],
+          "matched_ids": [],
+          "subject": "presentation",
+          "value": "Mike can give the third presentation"
+        },
+        {
+          "title": "We should go with the concept of less is more, with the less buttons the better the design",
+          "evidence": [
+            "UI: We should go with that concept I think."
+          ],
+          "matched_ids": [],
+          "subject": "remote design",
+          "value": "We should go with the concept of less is more, with the less buttons the better the design"
+        },
+        {
+          "title": "we have to include features such as L_C_D_ screens and voice recognition",
+          "evidence": [
+            "we have to uh have some features."
+          ],
+          "matched_ids": [],
+          "subject": "features to include",
+          "value": "we have to include features such as L_C_D_ screens and voice recognition"
+        },
+        {
+          "title": "the L_C_D_ screen should be at the top of the remote",
+          "evidence": [
+            "it should be at the top."
+          ],
+          "matched_ids": [],
+          "subject": "LCD screen placement",
+          "value": "the L_C_D_ screen should be at the top of the remote"
+        },
+        {
+          "title": "the L_C_D_ screen should display information such as the current programme being watched",
+          "evidence": [
+            "it could be such a little uh th that you can click in and out and you and you have it."
+          ],
+          "matched_ids": [],
+          "subject": "LCD screen functionality",
+          "value": "the L_C_D_ screen should display information such as the current programme being watched"
+        },
+        {
+          "title": "we need to know how much the L_C_D_ screen will cost",
+          "evidence": [
+            "we we still need to know how much that will cost."
+          ],
+          "matched_ids": [],
+          "subject": "cost consideration",
+          "value": "we need to know how much the L_C_D_ screen will cost"
+        },
+        {
+          "title": "We will place the L_C_D_ at the top",
+          "evidence": [
+            "I think we have uh a few functions, and we can put uh the L_C_D_ above it, and still have lots of room at the bottom, where you can put your hand."
+          ],
+          "matched_ids": [],
+          "subject": "L_C_D_ placement",
+          "value": "We will place the L_C_D_ at the top"
+        },
+        {
+          "title": "The power button should be left at the top and should be red",
+          "evidence": [
+            "PM: The power button can uh be uh uh UI: Power bu button should be left at the top. ME: And should and should be red."
+          ],
+          "matched_ids": [],
+          "subject": "power button",
+          "value": "The power button should be left at the top and should be red"
+        },
+        {
+          "title": "The channel up and down buttons should be far apart from each other",
+          "evidence": [
+            "PM: Up and down far apart from each other?"
+          ],
+          "matched_ids": [],
+          "subject": "channel buttons",
+          "value": "The channel up and down buttons should be far apart from each other"
+        },
+        {
+          "title": "The volume control should not be placed close to the channel buttons",
+          "evidence": [
+            "ID: I think you can have the two buttons of up and down close together, but you don't have uh have to have volume control and and zapping button close together."
+          ],
+          "matched_ids": [],
+          "subject": "volume control",
+          "value": "The volume control should not be placed close to the channel buttons"
+        },
+        {
+          "title": "We'll have uh those uh buttons about uh",
+          "evidence": [
+            "PM: We'll have uh those uh buttons about uh"
+          ],
+          "matched_ids": [],
+          "subject": "Location of the L_C_D_ screen",
+          "value": "We'll have uh those uh buttons about uh"
+        },
+        {
+          "title": "We're going to decide about the functions, and the design comes into the next round",
+          "evidence": [
+            "PM: Well the L_C_D_. Um you are Industrial, you are User Interface. So I think it's going to go to Mike. But you will have to make consensus with. Well"
+          ],
+          "matched_ids": [],
+          "subject": "Functions of the remote control",
+          "value": "We're going to decide about the functions, and the design comes into the next round"
+        },
+        {
+          "title": "Teletext is gone. So all those buttons that ar are to do with teletext Oh screen placing",
+          "evidence": [
+            "PM: Teletext is gone. So all those buttons that ar are to do with teletext Oh screen placing."
+          ],
+          "matched_ids": [],
+          "subject": "Teletext functionality",
+          "value": "Teletext is gone. So all those buttons that ar are to do with teletext Oh screen placing"
+        },
+        {
+          "title": "We can make make uh a little row of like four buttons down here",
+          "evidence": [
+            "UI: We we can make make uh a little row of like four buttons down here."
+          ],
+          "matched_ids": [],
+          "subject": "Placement of buttons",
+          "value": "We can make make uh a little row of like four buttons down here"
+        },
+        {
+          "title": "They can be small or round like buttons",
+          "evidence": [
+            "UI: Oh, they can be small or round like buttons."
+          ],
+          "matched_ids": [],
+          "subject": "Design of buttons",
+          "value": "They can be small or round like buttons"
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 4,
+      "meeting": "TS3009c",
+      "series": "TS3009",
+      "shaped": true,
+      "windows": 11,
+      "calls": 11,
+      "failure": null,
+      "wall_s": 70.87,
+      "items": [
+        {
+          "title": "The team decided that the remote control must look great and be very colourful to appeal to people",
+          "evidence": [
+            "ME: So we we have to think uh in this direction. So i set your mind to it. Findings? Fashion update? Fruit and vegetables are cool. I am told."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design",
+          "value": "The team decided that the remote control must look great and be very colourful to appeal to people"
+        },
+        {
+          "title": "The group we are targeting is very pleased with fruit and vegetables",
+          "evidence": [
+            "The group we are targeting is uh very pleased with fruit and vegetables."
+          ],
+          "matched_ids": [],
+          "subject": "target audience",
+          "value": "The group we are targeting is very pleased with fruit and vegetables"
+        },
+        {
+          "title": "We should change the material from hard plastic to something that feels strong",
+          "evidence": [
+            "We should change that."
+          ],
+          "matched_ids": [],
+          "subject": "material choice",
+          "value": "We should change the material from hard plastic to something that feels strong"
+        },
+        {
+          "title": "We're gonna have real cool shapes and lots of colours",
+          "evidence": [
+            "We're gonna have real uh cool shapes and lots of colours."
+          ],
+          "matched_ids": [],
+          "subject": "design style",
+          "value": "We're gonna have real cool shapes and lots of colours"
+        },
+        {
+          "title": "The case should have a double curved shape to give it a more modern look",
+          "evidence": [
+            "I also suggest uh as a shape uh a double curved case. Uh the disadvantage of that that you can use no titanium. That that's the information I received. If you use the curved case, uh a curved case, double curved then you"
+          ],
+          "matched_ids": [],
+          "subject": "remote control case",
+          "value": "The case should have a double curved shape to give it a more modern look"
+        },
+        {
+          "title": "The remote control should have simple push buttons instead of complex or expensive alternatives",
+          "evidence": [
+            "for the buttons, simple push buttons. No uh otherwi uh no um difficult scroll things or some uh things like that, because it makes more complex and expensive."
+          ],
+          "matched_ids": [],
+          "subject": "remote control buttons",
+          "value": "The remote control should have simple push buttons instead of complex or expensive alternatives"
+        },
+        {
+          "title": "The buttons will be made of a soft material, such as rubber",
+          "evidence": [
+            "UI: The buttons can be made of an uh a soft material."
+          ],
+          "matched_ids": [],
+          "subject": "Button material",
+          "value": "The buttons will be made of a soft material, such as rubber"
+        },
+        {
+          "title": "Voice recognition can be implemented as an additional feature",
+          "evidence": [
+            "A voice recognition can be uh implemented."
+          ],
+          "matched_ids": [],
+          "subject": "Voice recognition implementation",
+          "value": "Voice recognition can be implemented as an additional feature"
+        },
+        {
+          "title": "The buttons are suggested to have a banana shape due to fruity fashion",
+          "evidence": [
+            "ID: I suggest a banana shape."
+          ],
+          "matched_ids": [],
+          "subject": "Button shape",
+          "value": "The buttons are suggested to have a banana shape due to fruity fashion"
+        },
+        {
+          "title": "We should add an extra Menu button and this the Okay button",
+          "evidence": [
+            "UI: No no, we we we should uh add uh a extra Menu button and this the Okay button."
+          ],
+          "matched_ids": [],
+          "subject": "Menu button functionality",
+          "value": "We should add an extra Menu button and this the Okay button"
+        },
+        {
+          "title": "We should implement a recording button for the speech part and the microphone can be placed in a",
+          "evidence": [
+            "UI: Yeah, if we decide to uh to implement that, maybe we should."
+          ],
+          "matched_ids": [],
+          "subject": "Recording button and microphone placement",
+          "value": "We should implement a recording button for the speech part and the microphone can be placed in a small hole"
+        },
+        {
+          "title": "The speaker and the microphone are the same little hole thingy",
+          "evidence": [
+            "UI: Well the speaker and the microphone, I think, are the same uh little hole thingy."
+          ],
+          "matched_ids": [],
+          "subject": "Speaker and microphone integration",
+          "value": "The speaker and the microphone are the same little hole thingy"
+        },
+        {
+          "title": "The L_C_D_ screen does look better at the lower end, or at the bottom",
+          "evidence": [
+            "PM: I'd I agree."
+          ],
+          "matched_ids": [],
+          "subject": "L_C_D_ screen placement",
+          "value": "The L_C_D_ screen does look better at the lower end, or at the bottom"
+        },
+        {
+          "title": "We will use titanium for the non-removable elements of the remote and plastic for the front",
+          "evidence": [
+            "UI: I think we Why don't we um use uh titanium or or a hard, yeah, some kind of metal for the uh the the whole remote except the front. That"
+          ],
+          "matched_ids": [],
+          "subject": "material for the remote",
+          "value": "We will use titanium for the non-removable elements of the remote and plastic for the front"
+        },
+        {
+          "title": "The remote will have a titanium body with a plastic front that can be switched",
+          "evidence": [
+            "ID: Yeah but the non-removable elements of the of the remote, so not the front, could be titanium, to give that uh strong look. And then the front is made of plastic. And you can put that on and off, and switch it."
+          ],
+          "matched_ids": [
+            "TS3009c.d07"
+          ],
+          "subject": "design of the remote",
+          "value": "The remote will have a titanium body with a plastic front that can be switched"
+        },
+        {
+          "title": "All decisions will be compiled into a Word document with answers following the subjects",
+          "evidence": [
+            "ID: Copy paste uh this story into a into a Word document, and then uh put the answers after the subjects. Yeah."
+          ],
+          "matched_ids": [],
+          "subject": "document for decisions",
+          "value": "All decisions will be compiled into a Word document with answers following the subjects"
+        },
+        {
+          "title": "We will use titanium for the back and hard plastic for the front",
+          "evidence": [
+            "Titanium back, plastic front. Okay."
+          ],
+          "matched_ids": [
+            "TS3009c.d07"
+          ],
+          "subject": "material for the remote control",
+          "value": "We will use titanium for the back and hard plastic for the front"
+        },
+        {
+          "title": "The electrical cable is made of copper material",
+          "evidence": [
+            "The electrical cable uh does"
+          ],
+          "matched_ids": [],
+          "subject": "material for the electrical cable",
+          "value": "The electrical cable is made of copper material"
+        },
+        {
+          "title": "The internal components of the remote control are standard and include a normal silicon chip and",
+          "evidence": [
+            "The chip is normal silicon. Uh the buttons are normal, etcetera. Okay?"
+          ],
+          "matched_ids": [],
+          "subject": "internal components of the remote control",
+          "value": "The internal components of the remote control are standard and include a normal silicon chip and normal buttons"
+        },
+        {
+          "title": "The conceptual specification of the user interface will be included in the shared folder and the",
+          "evidence": [
+            "You can put that in uh into the shared folder, and then I'll put it in our end report."
+          ],
+          "matched_ids": [],
+          "subject": "design of the remote control",
+          "value": "The conceptual specification of the user interface will be included in the shared folder and the end report"
+        },
+        {
+          "title": "We can launch different lines at once",
+          "evidence": [
+            "Launch different lines at once."
+          ],
+          "matched_ids": [
+            "TS3009c.d10"
+          ],
+          "subject": "launch strategy for different packages",
+          "value": "We can launch different lines at once"
+        },
+        {
+          "title": "The most ugly front will be used for the product",
+          "evidence": [
+            "PM: The most ugly."
+          ],
+          "matched_ids": [],
+          "subject": "product design",
+          "value": "The most ugly front will be used for the product."
+        },
+        {
+          "title": "The logo should be on the top right corner of the backside",
+          "evidence": [
+            "UI: Right corner, yes."
+          ],
+          "matched_ids": [],
+          "subject": "logo placement",
+          "value": "The logo should be on the top right corner of the backside"
+        },
+        {
+          "title": "The slogan should be on the backside next to the logo",
+          "evidence": [
+            "PM: Well, management would like it."
+          ],
+          "matched_ids": [],
+          "subject": "slogan placement",
+          "value": "The slogan should be on the backside next to the logo"
+        },
+        {
+          "title": "The slogan should be very small and readable",
+          "evidence": [
+            "ID: Not too big. No, very small. Not on the entire back, but uh just very small. But readable enough of course."
+          ],
+          "matched_ids": [],
+          "subject": "slogan size",
+          "value": "The slogan should be very small and readable"
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 4,
+      "meeting": "TS3009d",
+      "series": "TS3009",
+      "shaped": true,
+      "windows": 10,
+      "calls": 10,
+      "failure": null,
+      "wall_s": 51.82,
+      "items": [
+        {
+          "title": "The logo will be big in the middle of the back",
+          "evidence": [
+            "We thought about Yeah, uh the back is of course totally titanium. And we thought about the logo big in the middle."
+          ],
+          "matched_ids": [],
+          "subject": "Logo placement",
+          "value": "The logo will be big in the middle of the back"
+        },
+        {
+          "title": "The company slogan will be in an arc shape above the logo",
+          "evidence": [
+            "And the company slogan, we thought in a kind of arc shape uh above the logo."
+          ],
+          "matched_ids": [],
+          "subject": "Company slogan placement",
+          "value": "The company slogan will be in an arc shape above the logo"
+        },
+        {
+          "title": "The voice recorder will be at the bottom of the device",
+          "evidence": [
+            "Oh and uh before I forget. Yeah the the voice, of course, the voice recorder is uh at the bottom."
+          ],
+          "matched_ids": [],
+          "subject": "Voice recorder placement",
+          "value": "The voice recorder will be at the bottom of the device"
+        },
+        {
+          "title": "The LCD screen will be in the front of the device",
+          "evidence": [
+            "And of course this low part, this is the L_C_D_ screen."
+          ],
+          "matched_ids": [
+            "TS3009d.d01"
+          ],
+          "subject": "LCD screen placement",
+          "value": "The LCD screen will be in the front of the device"
+        },
+        {
+          "title": "The size of the device is a topic for discussion",
+          "evidence": [
+            "That's the question. Uh well Yeah. H What do you suggest I mean we do?"
+          ],
+          "matched_ids": [],
+          "subject": "Device size discussion",
+          "value": "The size of the device is a topic for discussion"
+        },
+        {
+          "title": "We'll do it like this",
+          "evidence": [
+            "PM: Yes. So uh I c I c Well, we'll we we'll do it like this. Alright, if you think that that's the way it should"
+          ],
+          "matched_ids": [],
+          "subject": "Design orientation",
+          "value": "We'll do it like this"
+        },
+        {
+          "title": "We have to look if our uh if our device uh is working correctly",
+          "evidence": [
+            "ME: And we have to look if our uh if our device uh is working correctly."
+          ],
+          "matched_ids": [],
+          "subject": "Evaluation process",
+          "value": "We have to look if our uh if our device uh is working correctly"
+        },
+        {
+          "title": "The device is considered to be good-looking and suitable for both youth and older people",
+          "evidence": [
+            "I think we both uh have uh consider considered uh the youth and also a bit older people. So I think it's very good-looking and not only for youth uh young people."
+          ],
+          "matched_ids": [],
+          "subject": "device appearance",
+          "value": "The device is considered to be good-looking and suitable for both youth and older people"
+        },
+        {
+          "title": "The device is considered to have enough technology",
+          "evidence": [
+            "Are there enough technology? Yeah well also we have two."
+          ],
+          "matched_ids": [],
+          "subject": "device features",
+          "value": "The device is considered to have enough technology"
+        },
+        {
+          "title": "The device is considered to be easy to use",
+          "evidence": [
+            "Is the device easy to use? Yes we have not many buttons."
+          ],
+          "matched_ids": [],
+          "subject": "device usability",
+          "value": "The device is considered to be easy to use"
+        },
+        {
+          "title": "The device is considered to have a fancy-looking and fancy-feeling design",
+          "evidence": [
+            "And I think fancy-feeling too, because of the titanium back. Yeah."
+          ],
+          "matched_ids": [],
+          "subject": "device design",
+          "value": "The device is considered to have a fancy-looking and fancy-feeling design"
+        },
+        {
+          "title": "The device is considered to be easier to find than a normal black one due to its colour",
+          "evidence": [
+            "Well it's easier to find than a a normal black one or something, because of the colour."
+          ],
+          "matched_ids": [],
+          "subject": "device colour",
+          "value": "The device is considered to be easier to find than a normal black one due to its colour"
+        },
+        {
+          "title": "The device is considered to have a few functions",
+          "evidence": [
+            "We have so few functions, so Yeah."
+          ],
+          "matched_ids": [],
+          "subject": "device functions",
+          "value": "The device is considered to have a few functions"
+        },
+        {
+          "title": "The power, channel and volume buttons are considered to be easy accessible",
+          "evidence": [
+            "The power, channel and volume buttons are easy accessible?"
+          ],
+          "matched_ids": [],
+          "subject": "device accessibility",
+          "value": "The power, channel and volume buttons are considered to be easy accessible"
+        },
+        {
+          "title": "The device is considered to be easy to change channels",
+          "evidence": [
+            "Is it easy to t change channels? Yeah well I think so."
+          ],
+          "matched_ids": [],
+          "subject": "device channel changing",
+          "value": "The device is considered to be easy to change channels"
+        },
+        {
+          "title": "We have to use the advanced chip if we have the L_C_D_ screen",
+          "evidence": [
+            "ID: Well you have to use the advanced chip, if you have the L_C_D_ screen."
+          ],
+          "matched_ids": [],
+          "subject": "chip type",
+          "value": "We have to use the advanced chip if we have the L_C_D_ screen."
+        },
+        {
+          "title": "We need to have the L_C_D_ screen",
+          "evidence": [
+            "ME: Yeah, we need to have the the L_C_D_ screen."
+          ],
+          "matched_ids": [],
+          "subject": "L_C_D_ screen",
+          "value": "We need to have the L_C_D_ screen."
+        },
+        {
+          "title": "The sample speaker costs four and it has to be kicked out",
+          "evidence": [
+            "ME: Out. That's easy. Kick it out. Yeah."
+          ],
+          "matched_ids": [],
+          "subject": "speaker",
+          "value": "The sample speaker costs four and it has to be kicked out."
+        },
+        {
+          "title": "The total cost has to go to twelve and a half",
+          "evidence": [
+            "ME: It has to go to twelve, right? Twelve and a half."
+          ],
+          "matched_ids": [],
+          "subject": "budget",
+          "value": "The total cost has to go to twelve and a half."
+        },
+        {
+          "title": "We must change the chip back to a regular chip",
+          "evidence": [
+            "UI: You must change the chip back, Nils."
+          ],
+          "matched_ids": [],
+          "subject": "battery type",
+          "value": "We must change the chip back to a regular chip."
+        },
+        {
+          "title": "The remote will use titanium-coloured plastic for the back",
+          "evidence": [
+            "ID: So titanium-coloured plastic for the back."
+          ],
+          "matched_ids": [],
+          "subject": "material for the remote",
+          "value": "The remote will use titanium-coloured plastic for the back."
+        },
+        {
+          "title": "The lowest price for the remote that is trendy these days is fourteen point one",
+          "evidence": [
+            "PM: I'll put in the report we that we think that fourteen point one is the l m lowest price you can make a remote for that's trendy d these days."
+          ],
+          "matched_ids": [],
+          "subject": "lowest price for the remote",
+          "value": "The lowest price for the remote that is trendy these days is fourteen point one."
+        },
+        {
+          "title": "The L_C_D_ screen will not be dumped",
+          "evidence": [
+            "ME: I don't think you should dump the L_C_D_ screen."
+          ],
+          "matched_ids": [],
+          "subject": "screen type",
+          "value": "The L_C_D_ screen will not be dumped."
+        },
+        {
+          "title": "The team decided to ditch titanium and use plastic instead",
+          "evidence": [
+            "ID: So we have to use the ditch the titanium, I'm afraid."
+          ],
+          "matched_ids": [
+            "TS3009d.d03"
+          ],
+          "subject": "material choice",
+          "value": "The team decided to ditch titanium and use plastic instead"
+        },
+        {
+          "title": "The team decided to add a special colour to the product as they had money left",
+          "evidence": [
+            "PM: And we still have money left. What do we want, guys?"
+          ],
+          "matched_ids": [],
+          "subject": "design features",
+          "value": "The team decided to add a special colour to the product as they had money left"
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 5,
+      "meeting": "TS3009a",
+      "series": "TS3009",
+      "shaped": true,
+      "windows": 6,
+      "calls": 6,
+      "failure": null,
+      "wall_s": 26.95,
+      "items": [
+        {
+          "title": "We will save the current document and start a new blank document with a new colour and a new pen",
+          "evidence": [
+            "and then save it and start an blank document."
+          ],
+          "matched_ids": [],
+          "subject": "drawing format",
+          "value": "We will save the current document and start a new blank document with a new colour and a new pen width."
+        },
+        {
+          "title": "Our profit aim is, worldwide, fifty million Euros",
+          "evidence": [
+            "PM: Our profit aim is, worldwide, fifty million Euros."
+          ],
+          "matched_ids": [],
+          "subject": "profit aim",
+          "value": "Our profit aim is, worldwide, fifty million Euros"
+        },
+        {
+          "title": "It's important to make it acceptable for the whole world, for different cultures",
+          "evidence": [
+            "ME: Yeah yeah so a lot of people have to be able to use it."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design",
+          "value": "It's important to make it acceptable for the whole world, for different cultures"
+        },
+        {
+          "title": "The buttons have to have international recognisable buttons and numbers",
+          "evidence": [
+            "ID: and numbers and uh that every culture in uh, yeah, people in every country can recognise."
+          ],
+          "matched_ids": [],
+          "subject": "button design",
+          "value": "The buttons have to have international recognisable buttons and numbers"
+        },
+        {
+          "title": "We should not add too many buttons",
+          "evidence": [
+            "UI: I also think we should not add too many buttons. Modern day uh remotes have too much buttons I think."
+          ],
+          "matched_ids": [],
+          "subject": "remote control functionality",
+          "value": "We should not add too many buttons"
+        },
+        {
+          "title": "The remote control should have a long box shape with some round forms to fit the hand",
+          "evidence": [
+            "You have to use one hand."
+          ],
+          "matched_ids": [],
+          "subject": "remote control shape",
+          "value": "The remote control should have a long box shape with some round forms to fit the hand"
+        },
+        {
+          "title": "the case should be plastic of course, hard plastic",
+          "evidence": [
+            "ID: No n n"
+          ],
+          "matched_ids": [],
+          "subject": "material for the case",
+          "value": "the case should be plastic of course, hard plastic"
+        },
+        {
+          "title": "We should dispatch those kind of fronts around the world",
+          "evidence": [
+            "PM: And we should uh dispatch those kind of fronts fronts a a around the world so uh"
+          ],
+          "matched_ids": [],
+          "subject": "remote control front design",
+          "value": "We should dispatch those kind of fronts around the world"
+        },
+        {
+          "title": "The standard front will be just grey or something a simple colour not very flashy",
+          "evidence": [
+            "ID: Well but th but the standard front will be uh just grey or something uh b a simple colour not not very flashy."
+          ],
+          "matched_ids": [],
+          "subject": "remote control front color",
+          "value": "The standard front will be just grey or something a simple colour not very flashy"
+        },
+        {
+          "title": "We have to make it grey or s or black",
+          "evidence": [
+            "ME: But people of often don't like bright colours or something. We have to make it grey or s or black."
+          ],
+          "matched_ids": [],
+          "subject": "remote control front marketing",
+          "value": "We have to make it grey or s or black"
+        },
+        {
+          "title": "Our user interface you can maybe I don't know what your specific instructions will be, but probably",
+          "evidence": [
+            "PM: Well our user interface you can uh maybe uh I don't know what your specific instructions will be, but uh probably about uh the precision of the buttons and and those kind of things and what buttons will have to be on the"
+          ],
+          "matched_ids": [],
+          "subject": "remote control interface design",
+          "value": "Our user interface you can maybe I don't know what your specific instructions will be, but probably about the precision of the buttons and those kind of things and what buttons will have to be on the remote"
+        },
+        {
+          "title": "The next meeting is in thirty minutes",
+          "evidence": [
+            "PM: In thirty minutes, but uh I think it will be you will be warned uh through your laptop uh to get over here."
+          ],
+          "matched_ids": [],
+          "subject": "meeting schedule",
+          "value": "The next meeting is in thirty minutes"
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 5,
+      "meeting": "TS3009b",
+      "series": "TS3009",
+      "shaped": true,
+      "windows": 11,
+      "calls": 11,
+      "failure": null,
+      "wall_s": 59.38,
+      "items": [
+        {
+          "title": "We have to decide in this meeting what our function will be",
+          "evidence": [
+            "Well um then we can make some decisions about our remote control functions. We have to deb we have to decide it in this meeting what our function will be."
+          ],
+          "matched_ids": [],
+          "subject": "remote control functions",
+          "value": "We have to decide in this meeting what our function will be"
+        },
+        {
+          "title": "The design has to fit the hand, be original, but also be familiar",
+          "evidence": [
+            "The design has to fit the hand, be original, but also be familiar."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design",
+          "value": "The design has to fit the hand, be original, but also be familiar"
+        },
+        {
+          "title": "The materials should be hard plastic with rubber from",
+          "evidence": [
+            "The materials uh well should be hard plastic with rubber from, and uh well the labelling of the buttons should be indestructible."
+          ],
+          "matched_ids": [],
+          "subject": "remote control materials",
+          "value": "The materials should be hard plastic with rubber from"
+        },
+        {
+          "title": "We will not use teletext",
+          "evidence": [
+            "We will not use teletext."
+          ],
+          "matched_ids": [],
+          "subject": "teletext usage",
+          "value": "We will not use teletext"
+        },
+        {
+          "title": "The design of the remote control must be familiar and recognizable, incorporating the company's",
+          "evidence": [
+            "PM: Well and uh our corporate image should stay rec recognisable in our products. So uh we have to uh use uh maybe a slogan, maybe a colour, and um Yeah well uh on our remote controls the design has to be uh, well as we already said a actually, uh familiar. Uh not only just uh the shape but also our company."
+          ],
+          "matched_ids": [],
+          "subject": "product design",
+          "value": "The design of the remote control must be familiar and recognizable, incorporating the company's image and a modern, fashionable look."
+        },
+        {
+          "title": "The remote control should have large, prominent buttons for common tasks, a big zapping button in",
+          "evidence": [
+            "ME: Furthermore, it's uh seventy five per cent of the users uh zaps a lot. Thus it might be uh might be smart to make a a big uh zapping button or something in the middle, so you can reach it with your thumb. Yeah, yeah right."
+          ],
+          "matched_ids": [],
+          "subject": "functional requirements",
+          "value": "The remote control should have large, prominent buttons for common tasks, a big zapping button in the middle for easy thumb access, and a feature to help users locate the remote easily."
+        },
+        {
+          "title": "We're gonna target a younger audience",
+          "evidence": [
+            "ME: Right, this is the most important part. Um, we're Like the requirements said, we're gonna specify of we're gonna target a younger audience."
+          ],
+          "matched_ids": [],
+          "subject": "target audience",
+          "value": "We're gonna target a younger audience"
+        },
+        {
+          "title": "It might be important for the sale",
+          "evidence": [
+            "ME: it it might be important for the sale."
+          ],
+          "matched_ids": [],
+          "subject": "speech recognition",
+          "value": "It might be important for the sale"
+        },
+        {
+          "title": "We should put more time in the design of pick up and use",
+          "evidence": [
+            "ME: I think you should put more time in the in the design of uh pick up and use, than a manual."
+          ],
+          "matched_ids": [],
+          "subject": "design",
+          "value": "We should put more time in the design of pick up and use"
+        },
+        {
+          "title": "There should always be a menu, but it can be very short",
+          "evidence": [
+            "PM: Well there sh should always be a menu, but it c can be very short."
+          ],
+          "matched_ids": [],
+          "subject": "menu",
+          "value": "There should always be a menu, but it can be very short"
+        },
+        {
+          "title": "It should be consistent with consistent with older remotes",
+          "evidence": [
+            "ME: And it should be consistent with consistent with older remotes."
+          ],
+          "matched_ids": [],
+          "subject": "consistency",
+          "value": "It should be consistent with consistent with older remotes"
+        },
+        {
+          "title": "the most important buttons should be near the thumb",
+          "evidence": [
+            "ME: Right. Make them big, make them easy to uh to press."
+          ],
+          "matched_ids": [],
+          "subject": "button placement",
+          "value": "the most important buttons should be near the thumb"
+        },
+        {
+          "title": "Mike can give the third presentation",
+          "evidence": [
+            "PM: Then uh Mike can uh give the third presentation."
+          ],
+          "matched_ids": [],
+          "subject": "presentation",
+          "value": "Mike can give the third presentation"
+        },
+        {
+          "title": "We should go with the concept of less is more, with the less buttons the better the design",
+          "evidence": [
+            "UI: We should go with that concept I think."
+          ],
+          "matched_ids": [],
+          "subject": "remote design",
+          "value": "We should go with the concept of less is more, with the less buttons the better the design"
+        },
+        {
+          "title": "we should integrate an LCD screen that displays status information",
+          "evidence": [
+            "we should keep that simple too. It will"
+          ],
+          "matched_ids": [],
+          "subject": "LCD screen integration",
+          "value": "we should integrate an LCD screen that displays status information"
+        },
+        {
+          "title": "the LCD screen should be at the top of the remote control",
+          "evidence": [
+            "I think it should be at the top."
+          ],
+          "matched_ids": [],
+          "subject": "LCD screen placement",
+          "value": "the LCD screen should be at the top of the remote control"
+        },
+        {
+          "title": "we need to know how much the LCD screen will cost",
+          "evidence": [
+            "we we still need to know how much that will cost."
+          ],
+          "matched_ids": [],
+          "subject": "LCD screen cost",
+          "value": "we need to know how much the LCD screen will cost"
+        },
+        {
+          "title": "We will place the L_C_D_ screen at the top",
+          "evidence": [
+            "I think we have uh a few functions, and we can put uh the L_C_D_ above it, and still have lots of room at the bottom, where you can put your hand."
+          ],
+          "matched_ids": [],
+          "subject": "L_C_D_ screen position",
+          "value": "We will place the L_C_D_ screen at the top"
+        },
+        {
+          "title": "The power button should be left at the top and should be red",
+          "evidence": [
+            "PM: The power button can uh be uh uh UI: Power bu button should be left at the top. ME: And should and should be red."
+          ],
+          "matched_ids": [],
+          "subject": "power button",
+          "value": "The power button should be left at the top and should be red"
+        },
+        {
+          "title": "The channel up and down buttons should be far apart from each other",
+          "evidence": [
+            "PM: Up and down far apart from each other?"
+          ],
+          "matched_ids": [],
+          "subject": "channel buttons",
+          "value": "The channel up and down buttons should be far apart from each other"
+        },
+        {
+          "title": "The volume control should not be placed close to the channel buttons",
+          "evidence": [
+            "ID: I think you can have the two buttons of up and down close together, but you don't have uh have to have volume control and and zapping button close together."
+          ],
+          "matched_ids": [],
+          "subject": "volume control",
+          "value": "The volume control should not be placed close to the channel buttons"
+        },
+        {
+          "title": "The design comes into the next round",
+          "evidence": [
+            "PM: Well what if we're going to now decide about the functions, and the design comes into the next round?"
+          ],
+          "matched_ids": [],
+          "subject": "Design of the remote control",
+          "value": "The design comes into the next round"
+        },
+        {
+          "title": "We can make a little row of like four buttons down here",
+          "evidence": [
+            "UI: We we can make make uh a little row of like four buttons down here."
+          ],
+          "matched_ids": [],
+          "subject": "Placement of buttons for screen width and A_V_",
+          "value": "We can make a little row of like four buttons down here"
+        },
+        {
+          "title": "They can be small or round like buttons",
+          "evidence": [
+            "UI: Oh, they can be small or round like buttons."
+          ],
+          "matched_ids": [],
+          "subject": "Design of the buttons for screen width and A_V_",
+          "value": "They can be small or round like buttons"
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 5,
+      "meeting": "TS3009c",
+      "series": "TS3009",
+      "shaped": true,
+      "windows": 11,
+      "calls": 11,
+      "failure": null,
+      "wall_s": 68.8,
+      "items": [
+        {
+          "title": "The remote control must be very good-looking and have a great feeling",
+          "evidence": [
+            "ME: I will speak about uh latest trends trends, latest fashion updates, and uh things we must not do. Uh the trends. It's very important that uh the control is fancy looking and good uh feeling."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design",
+          "value": "The remote control must be very good-looking and have a great feeling"
+        },
+        {
+          "title": "The group we are targeting is very pleased with fruit and vegetables",
+          "evidence": [
+            "The group we are targeting is uh very pleased with fruit and vegetables."
+          ],
+          "matched_ids": [],
+          "subject": "target audience",
+          "value": "The group we are targeting is very pleased with fruit and vegetables."
+        },
+        {
+          "title": "The material should be very strong and look flashy",
+          "evidence": [
+            "material, that's your part, should be very strong. I was thinking of something like uh well uh iron plate over it, maybe in a colour or something, that looks so f really flashy but it it is also strong."
+          ],
+          "matched_ids": [],
+          "subject": "material choice",
+          "value": "The material should be very strong and look flashy."
+        },
+        {
+          "title": "The design should have cool shapes and lots of colours",
+          "evidence": [
+            "we're gonna have real uh cool shapes and lots of colours."
+          ],
+          "matched_ids": [],
+          "subject": "design for younger public",
+          "value": "The design should have cool shapes and lots of colours."
+        },
+        {
+          "title": "The case should be changed from hard plastic to something stronger",
+          "evidence": [
+            "We should move to uh something"
+          ],
+          "matched_ids": [],
+          "subject": "case material",
+          "value": "The case should be changed from hard plastic to something stronger."
+        },
+        {
+          "title": "The buttons should be rubber and the electrical cables should be copper",
+          "evidence": [
+            "buttons of course rubber, I think everyone agrees. And electrical cables, copper is all pretty basic stuff."
+          ],
+          "matched_ids": [
+            "TS3009c.d01"
+          ],
+          "subject": "buttons and cables",
+          "value": "The buttons should be rubber and the electrical cables should be copper."
+        },
+        {
+          "title": "The chips should be made of silicon",
+          "evidence": [
+            "The chips made of silicon, I guess. I think that's the best uh way to do it."
+          ],
+          "matched_ids": [],
+          "subject": "chip material",
+          "value": "The chips should be made of silicon."
+        },
+        {
+          "title": "The infra infrared LED is just a simple bulb",
+          "evidence": [
+            "infra infrared l LED is uh just a simple bulb."
+          ],
+          "matched_ids": [],
+          "subject": "LED type",
+          "value": "The infra infrared LED is just a simple bulb."
+        },
+        {
+          "title": "Young people under forty five years old like soft materials with primary colours and curved round",
+          "evidence": [
+            "young uh and dynamic uh people, which is of course our uh group, the people we aim at. Um under forty five years old. Uh they like soft materials uh with primary colours."
+          ],
+          "matched_ids": [],
+          "subject": "target audience preferences",
+          "value": "Young people under forty five years old like soft materials with primary colours and curved round shapes."
+        },
+        {
+          "title": "The design should include curved round shapes and avoid formal designs",
+          "evidence": [
+            "they like curved round shapes. So not uh too formal like like uh the older people want."
+          ],
+          "matched_ids": [],
+          "subject": "design for younger audience",
+          "value": "The design should include curved round shapes and avoid formal designs."
+        },
+        {
+          "title": "The remote control case will have a double curved shape to give it a more modern look",
+          "evidence": [
+            "I also suggest uh as a shape uh a double curved case. Uh the disadvantage of that that you can use no titanium. That that's the information I received. If you use the curved case, uh a curved case, double curved then you"
+          ],
+          "matched_ids": [],
+          "subject": "remote control case",
+          "value": "The remote control case will have a double curved shape to give it a more modern look."
+        },
+        {
+          "title": "The remote control will have simple push buttons instead of complex features",
+          "evidence": [
+            "for the buttons, simple push buttons. No uh otherwi uh no um difficult scroll things or some uh things like that, because it makes more complex and expensive."
+          ],
+          "matched_ids": [],
+          "subject": "remote control buttons",
+          "value": "The remote control will have simple push buttons instead of complex features."
+        },
+        {
+          "title": "we must decide where, this meeting",
+          "evidence": [
+            "um there are new developments in speech recognition um systems, um and they are already being uh used on uh coffee machines."
+          ],
+          "matched_ids": [],
+          "subject": "LCD screen position",
+          "value": "we must decide where, this meeting"
+        },
+        {
+          "title": "an L_C_D_ s screen will be implemented",
+          "evidence": [
+            "um an L_C_D_ s screen will be implemented. Um we must decide where, this meeting."
+          ],
+          "matched_ids": [],
+          "subject": "LCD screen implementation",
+          "value": "an L_C_D_ s screen will be implemented"
+        },
+        {
+          "title": "you have a menu button, and then you can go up and down",
+          "evidence": [
+            "ME: Alright. So you have a menu button, and then you can go up and down."
+          ],
+          "matched_ids": [],
+          "subject": "Menu interface for LCD screen",
+          "value": "you have a menu button, and then you can go up and down"
+        },
+        {
+          "title": "the buttons can be made of an uh a soft material",
+          "evidence": [
+            "UI: The buttons can be made of an uh a soft material."
+          ],
+          "matched_ids": [],
+          "subject": "Button design",
+          "value": "the buttons can be made of an uh a soft material"
+        },
+        {
+          "title": "I suggest a banana shape",
+          "evidence": [
+            "ID: I suggest a banana shape."
+          ],
+          "matched_ids": [],
+          "subject": "Button shape",
+          "value": "I suggest a banana shape"
+        },
+        {
+          "title": "We should add an extra Menu button and this the Okay button",
+          "evidence": [
+            "UI: No no, we we we should uh add uh a extra Menu button and this the Okay button."
+          ],
+          "matched_ids": [],
+          "subject": "Menu button functionality",
+          "value": "We should add an extra Menu button and this the Okay button"
+        },
+        {
+          "title": "The speaker and the microphone are the same uh little hole thingy",
+          "evidence": [
+            "UI: Well the speaker and the microphone, I think, are the same uh little hole thingy."
+          ],
+          "matched_ids": [],
+          "subject": "Speaker and microphone placement",
+          "value": "The speaker and the microphone are the same uh little hole thingy"
+        },
+        {
+          "title": "We need a we need a a recording recording button for the speech uh part",
+          "evidence": [
+            "ME: But we need a we need a a recording recording button for the speech uh part."
+          ],
+          "matched_ids": [],
+          "subject": "Recording button for speech part",
+          "value": "We need a we need a a recording recording button for the speech uh part"
+        },
+        {
+          "title": "We will use titanium for the non-removable elements of the remote and plastic for the front",
+          "evidence": [
+            "UI: I think we Why don't we um use uh titanium or or a hard, yeah, some kind of metal for the uh the the whole remote except the front. That"
+          ],
+          "matched_ids": [],
+          "subject": "material for the remote",
+          "value": "We will use titanium for the non-removable elements of the remote and plastic for the front"
+        },
+        {
+          "title": "The remote will have a bridge design that falls over the hand",
+          "evidence": [
+            "PM: It still has t"
+          ],
+          "matched_ids": [],
+          "subject": "design of the remote",
+          "value": "The remote will have a bridge design that falls over the hand"
+        },
+        {
+          "title": "All decisions will be put into a single document with answers following the subjects",
+          "evidence": [
+            "ID: So we have to uh put it in one uh document."
+          ],
+          "matched_ids": [],
+          "subject": "document for decisions",
+          "value": "All decisions will be put into a single document with answers following the subjects"
+        },
+        {
+          "title": "We will use titanium for the back and hard plastic for the front",
+          "evidence": [
+            "Titanium back, plastic front. Okay."
+          ],
+          "matched_ids": [
+            "TS3009c.d07"
+          ],
+          "subject": "material for the remote control",
+          "value": "We will use titanium for the back and hard plastic for the front"
+        },
+        {
+          "title": "The electrical cable is made of copper material",
+          "evidence": [
+            "The electrical cable uh does"
+          ],
+          "matched_ids": [],
+          "subject": "material for the electrical cable",
+          "value": "The electrical cable is made of copper material"
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 5,
+      "meeting": "TS3009d",
+      "series": "TS3009",
+      "shaped": true,
+      "windows": 10,
+      "calls": 10,
+      "failure": null,
+      "wall_s": 48.71,
+      "items": [
+        {
+          "title": "We have the logo on front and on the back",
+          "evidence": [
+            "We have then the logo on front and on the back. Maybe that's too much but you have to say uh say that if you think that way."
+          ],
+          "matched_ids": [],
+          "subject": "Logo placement",
+          "value": "We have the logo on front and on the back"
+        },
+        {
+          "title": "The company slogan is in a kind of arc shape above the logo",
+          "evidence": [
+            "And the company slogan, we thought in a kind of arc shape uh above the logo. That's basically what we were thinking about, and"
+          ],
+          "matched_ids": [],
+          "subject": "Company slogan placement",
+          "value": "The company slogan is in a kind of arc shape above the logo"
+        },
+        {
+          "title": "The voice recorder is at the bottom",
+          "evidence": [
+            "Oh and uh before I forget. Yeah the the voice, of course, the voice recorder is uh at the bottom."
+          ],
+          "matched_ids": [],
+          "subject": "Voice recorder placement",
+          "value": "The voice recorder is at the bottom"
+        },
+        {
+          "title": "The LCD screen is in your palm like this",
+          "evidence": [
+            "ME: Yeah, I agree with the L_C_D_ screen. You have it in your palm like this, and you can watch uh watch the screen."
+          ],
+          "matched_ids": [],
+          "subject": "LCD screen placement",
+          "value": "The LCD screen is in your palm like this"
+        },
+        {
+          "title": "The size doesn't really matter",
+          "evidence": [
+            "The size? Yeah well the size doesn't really matter w I mean Side? Uh oh the side? W we we he drew the s the side, but you d you weren't paying attention as usual. Well any case, we'll discuss it now. Uh I think uh this is a pretty good uh good idea."
+          ],
+          "matched_ids": [],
+          "subject": "Device size and shape",
+          "value": "The size doesn't really matter"
+        },
+        {
+          "title": "We'll do it like this",
+          "evidence": [
+            "PM: Yes. So uh I c I c Well, we'll we we'll do it like this. Alright, if you think that that's the way it should"
+          ],
+          "matched_ids": [],
+          "subject": "Design orientation",
+          "value": "We'll do it like this"
+        },
+        {
+          "title": "The device is considered good-looking and suitable for both youth and older people",
+          "evidence": [
+            "I think we both uh have uh consider considered uh the youth and also a bit older people. So I think it's very good-looking and not only for youth uh young people."
+          ],
+          "matched_ids": [],
+          "subject": "device appearance",
+          "value": "The device is considered good-looking and suitable for both youth and older people"
+        },
+        {
+          "title": "The device is easy to change channels",
+          "evidence": [
+            "I think it's uh as easy as uh can be made."
+          ],
+          "matched_ids": [],
+          "subject": "ease of changing channels",
+          "value": "The device is easy to change channels"
+        },
+        {
+          "title": "The power, channel and volume buttons are easy accessible",
+          "evidence": [
+            "The power, channel and volume buttons are easy accessible?"
+          ],
+          "matched_ids": [],
+          "subject": "accessibility of buttons",
+          "value": "The power, channel and volume buttons are easy accessible"
+        },
+        {
+          "title": "The device is easier to find than a normal black one due to its colour",
+          "evidence": [
+            "It's easier to find than a a normal black one or something, because of the colour."
+          ],
+          "matched_ids": [],
+          "subject": "device visibility",
+          "value": "The device is easier to find than a normal black one due to its colour"
+        },
+        {
+          "title": "The functions are easy to learn because there are so few functions",
+          "evidence": [
+            "We have so few functions, so Yeah."
+          ],
+          "matched_ids": [],
+          "subject": "ease of learning functions",
+          "value": "The functions are easy to learn because there are so few functions"
+        },
+        {
+          "title": "The device is a bit sensitive",
+          "evidence": [
+            "Well, I should I think two, because the voice recorder is n not self learning."
+          ],
+          "matched_ids": [],
+          "subject": "device sensitivity",
+          "value": "The device is a bit sensitive"
+        },
+        {
+          "title": "The device has enough technology",
+          "evidence": [
+            "Yeah well also we have two."
+          ],
+          "matched_ids": [],
+          "subject": "device features",
+          "value": "The device has enough technology"
+        },
+        {
+          "title": "The device is easy to use because it has not many buttons",
+          "evidence": [
+            "Is the device easy to use? Yes we have not many buttons."
+          ],
+          "matched_ids": [],
+          "subject": "device usability",
+          "value": "The device is easy to use because it has not many buttons"
+        },
+        {
+          "title": "The trends about fruit and vegetables are implemented in the covers and fronts",
+          "evidence": [
+            "Are the trends about fruit and vegetables implemented? Well in our covers, in our fronts. So yes, one."
+          ],
+          "matched_ids": [],
+          "subject": "trends implementation",
+          "value": "The trends about fruit and vegetables are implemented in the covers and fronts"
+        },
+        {
+          "title": "The material is attractive",
+          "evidence": [
+            "Is the material attractive?"
+          ],
+          "matched_ids": [],
+          "subject": "material attractiveness",
+          "value": "The material is attractive"
+        },
+        {
+          "title": "The device is fancy-feeling due to the titanium back",
+          "evidence": [
+            "And I think fancy-feeling too, because of the titanium back."
+          ],
+          "matched_ids": [],
+          "subject": "device fancy-feeling",
+          "value": "The device is fancy-feeling due to the titanium back"
+        },
+        {
+          "title": "We have to use the advanced chip if we have the L_C_D_ screen",
+          "evidence": [
+            "ID: Well you have to use the advanced chip, if you have the L_C_D_ screen."
+          ],
+          "matched_ids": [],
+          "subject": "chip type",
+          "value": "We have to use the advanced chip if we have the L_C_D_ screen."
+        },
+        {
+          "title": "We need to have the L_C_D_ screen",
+          "evidence": [
+            "ME: Yeah, we need to have the the L_C_D_ screen."
+          ],
+          "matched_ids": [],
+          "subject": "L_C_D_ screen",
+          "value": "We need to have the L_C_D_ screen."
+        },
+        {
+          "title": "The sample speaker costs four and it has to be kicked out",
+          "evidence": [
+            "ME: Out. That's easy. Kick it out. Yeah."
+          ],
+          "matched_ids": [],
+          "subject": "speaker",
+          "value": "The sample speaker costs four and it has to be kicked out."
+        },
+        {
+          "title": "There will be no remote control case with a battery",
+          "evidence": [
+            "ME: Uh no, no no no."
+          ],
+          "matched_ids": [],
+          "subject": "battery",
+          "value": "There will be no remote control case with a battery."
+        },
+        {
+          "title": "We will use titanium-coloured plastic for the back",
+          "evidence": [
+            "ID: So titanium-coloured plastic for the back."
+          ],
+          "matched_ids": [],
+          "subject": "material for the back",
+          "value": "We will use titanium-coloured plastic for the back"
+        },
+        {
+          "title": "The lowest price they can make a remote for that's trendy these days is fourteen point one",
+          "evidence": [
+            "PM: I'll put in the report we that we think that fourteen point one is the l m lowest price you can make a remote for that's trendy d these days."
+          ],
+          "matched_ids": [],
+          "subject": "lowest price for a trendy remote",
+          "value": "The lowest price they can make a remote for that's trendy these days is fourteen point one"
+        },
+        {
+          "title": "Titanium stays there",
+          "evidence": [
+            "UI: No no no no. W Titanium stays there."
+          ],
+          "matched_ids": [],
+          "subject": "material for the remote",
+          "value": "Titanium stays there"
+        },
+        {
+          "title": "The team decided to ditch titanium and use plastic instead",
+          "evidence": [
+            "ID: So we have to use the ditch the titanium, I'm afraid."
+          ],
+          "matched_ids": [
+            "TS3009d.d03"
+          ],
+          "subject": "material choice",
+          "value": "The team decided to ditch titanium and use plastic instead"
+        }
+      ]
+    }
+  ]
+}
