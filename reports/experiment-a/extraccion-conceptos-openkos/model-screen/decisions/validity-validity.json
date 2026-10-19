@@ -1,0 +1,19 @@
+{
+  "round": "validity",
+  "separation": {
+    "pass": true,
+    "text": "baseline lift +0.0306 [+0.0107, +0.0580]: needs lower bound > 0 and point >= 0.03"
+  },
+  "deletion": {
+    "pass": true,
+    "text": "own-window mean delta -0.0357 (n=38), other sentences -0.0136 (n=264): needs own <= -0.03 and own < other"
+  },
+  "calibration": {
+    "positives": 268,
+    "negatives": 4260,
+    "threshold": 0.912476468606609,
+    "precision": 0.9629629629629629,
+    "recall": 0.09701492537313433
+  },
+  "primary": "embedding coverage lift"
+}
