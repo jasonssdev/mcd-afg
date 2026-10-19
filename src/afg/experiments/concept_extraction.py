@@ -10,6 +10,10 @@ OpenKOS ran three pre-registered, model-free-to-read evaluations of its concept 
   costs window lift: ``drop-ablation/drop_ablation.json``, plus the per-object audit classes
   in ``drop_ablation_classes.json`` (copied without the model-written titles and
   descriptions).
+- **#1571, the selector-judge study.** How much of the selector judge's loss (L10) is the
+  selection itself and how much is the extractor judging its own output: ``judge-study/
+  judge_study.json``, the three arms (no judge, self judge, fixed judge) and the harness's
+  verdict.
 - **#1558, the window-size screen.** Which ``_CHUNK_TARGET`` the extractor should cut a
   source into: ``window-screen/w8b.json`` and ``window-screen/decisions/w8b.json``.
 
@@ -47,6 +51,8 @@ import pandas as pd
 __all__ = [
     "BASELINE_MODEL",
     "BASELINE_WINDOW",
+    "FIXED_JUDGE",
+    "JUDGE_ARMS",
     "SCREEN_MODELS",
     "STAGES",
     "WINDOW_ARMS",
@@ -56,6 +62,9 @@ __all__ = [
     "drop_rule_frame",
     "exploratory_forecast",
     "g1_frame",
+    "judge_labels",
+    "judge_study_frame",
+    "judge_verdict",
     "l7_attribution",
     "load_concept_screens",
     "per_meeting_deltas",
@@ -113,6 +122,7 @@ class ConceptScreens:
     window: dict[str, Any]
     window_stage0: dict[str, Any]
     window_decision: dict[str, Any]
+    judge_study: dict[str, Any]
 
 
 def _read(path: Path) -> Any:
@@ -156,6 +166,7 @@ def load_concept_screens(
         window=_read(root / "window-screen" / "w8b.json"),
         window_stage0=_read(root / "window-screen" / "stage0.json"),
         window_decision=_read(root / "window-screen" / "decisions" / "w8b.json"),
+        judge_study=_read(root / "judge-study" / "judge_study.json"),
     )
     for row in screens.ablation_classes:
         if {"title", "description"} & set(row):
@@ -408,6 +419,83 @@ def drop_class_counts(rows: Iterable[Mapping[str, Any]]) -> pd.DataFrame:
         [{"rule": k[0], "class": k[1], "type": k[2], "objects": n} for k, n in counts.items()]
     )
     return frame.sort_values(["rule", "class", "objects"], ascending=[True, False, False])
+
+
+# ---------------------------------------------------------- #1571, the selector judge
+
+JUDGE_ARMS: Final = ("none", "self", "fixed")
+"""#1571's arms: no judge, the extractor judging itself, and the fixed ``gemma4:26b-a4b``."""
+
+FIXED_JUDGE: Final = "gemma4:26b-a4b"
+"""The fixed judge of #1571; as an extractor it has the same model in both judge arms."""
+
+
+def judge_study_frame(study: Mapping[str, Any], block: str = "primary") -> pd.DataFrame:
+    """One row per extractor of #1571: lift and kept objects per arm, losses and coupling.
+
+    A loss is the arm's window lift minus the no-judge lift (negative costs lift). The
+    coupling is fixed minus self: positive means the fixed judge keeps more lift. Judge-arm
+    values are means over the three seed indices.
+    """
+    rows = []
+    for model, m in study[block].items():
+        arms = m["arms"]
+        row: dict[str, Any] = {"model": model, "meeting_runs": m["meeting_runs"]}
+        for arm in JUDGE_ARMS:
+            row[f"{arm}_lift"] = arms[arm]["lift"]
+            row[f"{arm}_kept"] = arms[arm]["kept"]
+        for arm in ("self", "fixed"):
+            loss = arms[arm]["loss"]
+            row[f"{arm}_loss"] = loss["point"]
+            row[f"{arm}_loss_low"] = loss["low"]
+            row[f"{arm}_loss_high"] = loss["high"]
+            row[f"{arm}_judged_out"] = arms[arm]["judged_out"]
+            row[f"{arm}_seed_lifts"] = tuple(
+                arms[arm]["seed_lifts"][str(s)] for s in arms[arm]["seeds"]
+            )
+            row[f"{arm}_failed"] = arms[arm]["judge_failed"]
+        coupling = m["deltas"]["coupling"]
+        row["coupling"] = coupling["point"]
+        row["coupling_low"] = coupling["low"]
+        row["coupling_high"] = coupling["high"]
+        rows.append(row)
+    order = {m: i for i, m in enumerate(SCREEN_MODELS)}
+    frame = pd.DataFrame(rows)
+    return frame.sort_values("model", key=lambda s: s.map(order)).reset_index(drop=True)
+
+
+def judge_labels(frame: pd.DataFrame, *, fixed_judge: str = FIXED_JUDGE) -> dict[str, str]:
+    """#1571's per-extractor rule, for every extractor other than the fixed judge's model.
+
+    ``coupling`` when the coupling interval's lower bound is above 0; else ``judge`` when
+    the fixed-judge loss interval's upper bound is below 0; else ``unresolved``.
+    """
+    labels = {}
+    for r in frame[frame.model != fixed_judge].itertuples():
+        if r.coupling_low > 0:
+            labels[r.model] = "coupling"
+        elif r.fixed_loss_high < 0:
+            labels[r.model] = "judge"
+        else:
+            labels[r.model] = "unresolved"
+    return labels
+
+
+def judge_verdict(labels: Mapping[str, str]) -> tuple[str, bool]:
+    """#1571's overall verdict and whether a follow-up fix issue is due.
+
+    ``coupling`` when 2 or more extractors are coupling-attributable; ``judge`` when 2 or
+    more are judge-attributable and none is coupling-attributable; ``not_resolved``
+    otherwise. A follow-up is due when any extractor is attributable either way.
+    """
+    counts = Counter(labels.values())
+    if counts["coupling"] >= 2:
+        verdict = "coupling"
+    elif counts["judge"] >= 2 and counts["coupling"] == 0:
+        verdict = "judge"
+    else:
+        verdict = "not_resolved"
+    return verdict, counts["coupling"] + counts["judge"] > 0
 
 
 # --------------------------------------------------------- #1558, the window-size screen
