@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 09 — Modelos y su justificación |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.3 |
-| **Fecha** | 2026-10-15 |
+| **Versión** | 2.0 |
+| **Fecha** | 2026-10-19 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -16,6 +16,7 @@
 | 1.1 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (ground truth, baseline, accuracy, precision, LLM-as-a-judge, context window, cosine similarity). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
 | 1.2 | 2026-10-15 | Se agrega la sección «Trazabilidad»; se corrige la referencia del recuento de unas 900 respuestas (notebook 07, el motor de corrida) y se indican los denominadores de las cifras de ES2015 (29 decisiones con acuerdo evaluado; 27 decisiones finales). El pendiente de confirmación con el tutor indica responsable y fecha. No cambia ninguna cifra ni decisión. | Auditoría de gobernanza del 2026-10-15: el recuento citaba el notebook 05 (selección del juez) en lugar del 07; las cifras de ES2015 usaban denominadores distintos sin decirlo; el pendiente no tenía responsable. |
 | 1.3 | 2026-10-15 | Se retira la mención al extra `retrieval` (`rank-bm25`): el canal léxico BM25 está implementado en el paquete y la dependencia se eliminó de `pyproject.toml`. No cambia ninguna cifra ni decisión. | Corrección de código del 2026-10-15 (rama `fix/auditoria-codigo`): la dependencia declarada no se importaba en ninguna parte. |
+| 2.0 | 2026-10-19 | La dificultad 7 deja de decir que τ sigue sin fijarse y remite al ADR 0012 (τ principal 0,70; 0,75 y 0,80 como sensibilidad). | El ADR 0012 fijó τ con el notebook 17: el juez marca la misma decisión en ≤ 0,32 de los pares bajo 0,70 y en ≥ 0,76 desde 0,70. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -401,7 +402,7 @@ claridad lo que ya corrió de lo que sigue bloqueado.
    mayoritario (cada rol, como sensibilidad) y el intervalo principal es un bootstrap por reuniones
    (Wilson y bootstrap por decisión, como referencia); con pocas reuniones ese intervalo es
    frágil ([ADR 0011](../decisions/0011-adr-alineacion-rol-e-intervalos-del-experimento-a.md),
-   issue #99). El umbral τ sigue sin fijarse. Siguiente paso: decidir τ sobre series de desarrollo.
+   issue #99). El umbral τ principal es 0,70, con 0,75 y 0,80 como sensibilidad, fijado sobre series de desarrollo con la referencia en inglés ([ADR 0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md), issue #142).
 8. **Anotación humana en curso.** Las recalibraciones, las series de control y el banco de
    preguntas siguen abiertos (issues #19, #27 a #33, #78 y #79); sin ellos no existen C3 ni
    el banco con que se mide. Siguiente paso: cerrar la anotación de referencia para poder
