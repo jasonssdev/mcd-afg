@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | Protocolo de alineación |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.1 |
-| **Fecha** | 2026-10-15 |
+| **Versión** | 2.0 |
+| **Fecha** | 2026-10-19 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -14,6 +14,7 @@
 |---|---|---|---|
 | 1.0 | 2026-09-20 | Versión inicial del protocolo (punto cero del proyecto). | Fijar el procedimiento de alineación antes de ver resultados de OE2. |
 | 1.1 | 2026-10-15 | Se agrega la cabecera de versión y se usa la terminología estándar en la prosa («ground truth» y «τ»); los identificadores de código y de configuración (`tau`, `tau_grid`) no cambian. No cambia el procedimiento. | Auditoría de gobernanza del 2026-10-15: este protocolo no llevaba versión y mezclaba términos con los avances. |
+| 2.0 | 2026-10-19 | El texto de referencia que se compara con las extracciones es la traducción automática al inglés de `final_object` y `final_content` (`data/processed/decisions/<SERIE>.reference-en.csv`, issue #141). Las etiquetas humanas siguen en español y son el ground truth: la traducción no cambia ningún estado ni etiqueta. El procedimiento (pasos 1 a 4) no cambia, y tampoco se fija τ, que corresponde al issue #142. | La extracción sale en el idioma original de las transcripciones (inglés) y la referencia está en español; comparar entre idiomas pone un techo artificial a la similitud: en el [notebook 15](../../notebooks/15-jss-screen-de-modelos-openkos.ipynb) (§6.4) la mediana es 0,689 en ES2015 y 0,724 en TS3009, y solo 3 de 27 y 3 de 21 decisiones llegan a 0,80. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -29,10 +30,22 @@ extraída "es" una decisión del ground truth requiere un procedimiento de corre
 *antes* de examinar los resultados — de lo contrario la elección de alineación misma se
 convierte en un lugar donde ajustar (consciente o inconscientemente) las cifras reportadas.
 
+## Idioma del texto de referencia
+
+El texto de referencia que se compara con las extracciones es la **traducción automática al
+inglés** de `final_object` y `final_content`, guardada en `<SERIE>.reference-en.csv`
+(`load_reference(..., language="en")`). La extracción sale en el idioma original de las
+transcripciones, el inglés, y comparar un texto en inglés con una referencia en español pone un
+techo artificial a la similitud de embeddings. Las etiquetas humanas siguen siendo las de
+`final_*` en español y son el ground truth: la traducción nunca decide un estado ni una relación.
+La validación (`afg gold validate-translation`) garantiza que cada decisión de referencia tiene
+traducción y que no está desactualizada respecto del español adjudicado. Método y reglas:
+[`../anotacion/traduccion-referencia.md`](../anotacion/traduccion-referencia.md).
+
 ## Procedimiento
 
 1. **Candidatos.** Calcular la similitud coseno de embeddings sobre el par
-   `(decision_object, content)` para cada par (predicha, referencia) de decisiones.
+   `(decision_object, content)` para cada par (predicha, referencia) de decisiones, con el texto de la referencia en inglés.
    Cualquier par con similitud igual o superior a un umbral τ (`tau` en el código) es un candidato de
    coincidencia.
 2. **Restricción uno a uno.** Resolver los candidatos como una asignación uno a uno de peso

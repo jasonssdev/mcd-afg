@@ -252,6 +252,12 @@ algo es una decisión, ni qué relación existe entre dos decisiones. Las
 sugerencias de una máquina van en una columna aparte (`machine_flags`), nunca
 en `status`.
 
+Una traducción de la referencia no es una etiqueta: nunca decide un estado ni
+una relación. La traducción al inglés de `final_object` y `final_content`
+(`<SERIE>.reference-en.csv`) es automática, se genera con el método documentado
+en [`docs/anotacion/traduccion-referencia.md`](docs/anotacion/traduccion-referencia.md)
+y el español adjudicado sigue siendo el ground truth.
+
 ### 7.7 Desarrollo vs evaluación
 
 Ver

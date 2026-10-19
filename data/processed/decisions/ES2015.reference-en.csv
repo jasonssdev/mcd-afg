@@ -1,0 +1,28 @@
+decision_id,final_object,final_content,object_en,content_en,translation_method,notes
+ES2015a.d01,nuevo tipo de producto,control remoto para la television,new product type,a remote control for the television,automatica,
+ES2015a.d02,precio de venta,fijar el precio de venta en 25 euros,selling price,set the selling price at 25 euros,automatica,
+ES2015a.d04,mercado objetivo,dirigir el control remoto al mercado internacional,target market,aim the remote control at the international market,automatica,
+ES2015a.d05,costo de producción,"mantener el costo de producción en un máximo absoluto de 12,50 euros",production cost,keep the production cost at an absolute maximum of 12.50 euros,automatica,
+ES2015b.d01,alcance funcional,hacer un control remoto de función única específico para televisión,functional scope,make a single-function remote control specific to television,automatica,
+ES2015b.d02,funcionalidad de teletexto,managament Team siente que esta obsoleto,teletext functionality,the Management Team feels it is obsolete,automatica,Source typo 'managament' read as 'Management' (the Management Team).
+ES2015b.d03,identidad visual,incorporar el logo y el color de la empresa,visual identity,incorporate the company logo and color,automatica,
+ES2015b.d04-1,LCD,dice como conlusion que no LCD,LCD,concludes that there will be no LCD,automatica,Source typo 'conlusion' read as 'conclusion'.
+ES2015b.d04-3,Voice Recognition,dice como conlusion que no reconocimiento por voz,Voice Recognition,concludes that there will be no voice recognition,automatica,Source typo 'conlusion' read as 'conclusion'.
+ES2015b.d05,alarma de localizacion,el sistema de alarma deberia ser implementado,location alarm,the alarm system should be implemented,automatica,
+ES2015b.d06,botones que brillen en la oscuridad,que se incorpore luz a los botones,buttons that glow in the dark,light should be incorporated into the buttons,automatica,
+ES2015b.d08,carcasas intercambiables,Agregar carcasas intercambiables como si fueran un ipod,interchangeable cases,"add interchangeable cases, as if they were an iPod",automatica,
+ES2015c.d01,interfaz de comandos,usar una interfaz de comandos simple para el control remoto,command interface,use a simple command interface for the remote control,automatica,
+ES2015c.d02,iluminacion temporal,el equipo habla de mantener la iluminacion temporal,temporary lighting,the team talks about keeping the temporary lighting,automatica,'iluminacion temporal' rendered literally as 'temporary lighting'.
+ES2015c.d03,carcasas intercambiables,incorporar carcasas intercambiables al control remoto,interchangeable cases,incorporate interchangeable cases into the remote control,automatica,
+ES2015c.d04,energia cinetica,dice claramente que nosotros heos decidido por Kinetic Energy,kinetic energy,states clearly that we have decided on Kinetic Energy,automatica,Source 'heos decidido' read as 'hemos decidido'; 'Kinetic Energy' kept as written.
+ES2015c.d05,botones que se pulsan,al ir sin LCD se quedan con la decision de ir con botones que se pulsan,push buttons,"since there is no LCD, they stick with the decision to use push buttons",automatica,
+ES2015c.d06,chip,usar un chip regular,chip,use a regular chip,automatica,
+ES2015c.d07,material de la carcasa,usar plástico recubierto de goma,case material,use rubber-coated plastic,automatica,
+ES2015c.d08,funciones del control,"usar solo las funciones básicas de encendido, canales y volumen",remote control functions,"use only the basic functions of power, channels and volume",automatica,
+ES2015d.d01,distribución de los números,usar una distribución circular para los números,layout of the numbers,use a circular layout for the numbers,automatica,
+ES2015d.d02-1,carcasa intercambiable,tener carcasas intercambiables,interchangeable case,have interchangeable cases,automatica,
+ES2015d.d02-2,diseno con nombre de frutas y verduras,"los esquemas de color se nombran y colorean según frutas y verduras (p. ej., banana negro y amarillo)",design named after fruits and vegetables,"the color schemes are named and colored after fruits and vegetables (e.g., banana black and yellow)",automatica,
+ES2015d.d03,botones y carcasas,Tener 2 colores uno para los botones y otro para las carcasas,buttons and cases,"have 2 colors, one for the buttons and another for the cases",automatica,
+ES2015d.d04,chip,usar un chip regular,chip,use a regular chip,automatica,
+ES2015d.d05,la forma del control,el control tendra una forma de doble curvatura,shape of the remote,the remote will have a double-curvature shape,automatica,
+ES2015d.d06,material del control,control de plastico y goma,material of the remote,plastic and rubber remote,automatica,
