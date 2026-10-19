@@ -1,6 +1,6 @@
 # Extracción de conceptos en OpenKOS: procedencia
 
-Copia de los archivos de puntaje **agregados** de tres evaluaciones prerregistradas que
+Copia de los archivos de puntaje **agregados** de cuatro evaluaciones prerregistradas que
 OpenKOS hizo sobre su extracción de conceptos. Los lee el
 [notebook 18](../../../notebooks/18-jss-extraccion-de-conceptos-openkos.ipynb) con
 `src/afg/experiments/concept_extraction.py`. No hay corridas crudas, respuestas de modelos,
@@ -8,13 +8,13 @@ transcripciones ni texto de la referencia.
 
 | Campo | Valor |
 |---|---|
-| Origen | `~/Dev/Projects/openkos-eval-runs/concept-screen/` y `~/Dev/Projects/openkos-eval-runs/window-screen/` (fuera de ambos repositorios) |
-| Copiado | 2026-10-19 |
-| Prerregistros | `evals/concept_model_screen/PREREGISTRATION.md` (#1567, para #1557), `evals/concept_model_screen/DROP_ABLATION_PREREGISTRATION.md` (#1574, para #1572), `evals/concept_window_screen/PREREGISTRATION.md` (#1573, para #1558), todos fusionados en OpenKOS antes de la primera corrida puntuada |
-| Informes | `evals/concept_model_screen/RESULTS.md`, `DROP_ABLATION_RESULTS.md` y `evals/concept_window_screen/RESULTS.md` en OpenKOS |
-| Commit del arnés | `ebbde16f` (#1557), `90563cab` (puntaje de #1572), `7f0a7689` (#1558) |
-| Reuniones puntuadas | ES2015a, ES2015d, IS1004b, IS1004d, TS3009c: **solo desarrollo** ([ADR 0005](../../../docs/decisions/0005-adr-development-evaluation-split.md)). El cargador rechaza cualquier otra |
-| Fechas de las corridas | 2026-10-18 y 2026-10-19 |
+| Origen | `~/Dev/Projects/openkos-eval-runs/concept-screen/`, `window-screen/` y `judge-study/` (fuera de ambos repositorios) |
+| Copiado | 2026-10-19 (#1571, el mismo día, después) |
+| Prerregistros | `evals/concept_model_screen/PREREGISTRATION.md` (#1567, para #1557), `evals/concept_model_screen/DROP_ABLATION_PREREGISTRATION.md` (#1574, para #1572), `evals/concept_window_screen/PREREGISTRATION.md` (#1573, para #1558), `evals/concept_model_screen/JUDGE_STUDY_PREREGISTRATION.md` (#1578, para #1571), todos fusionados en OpenKOS antes de la primera corrida puntuada |
+| Informes | `evals/concept_model_screen/RESULTS.md`, `DROP_ABLATION_RESULTS.md`, `JUDGE_STUDY_RESULTS.md` (#1580) y `evals/concept_window_screen/RESULTS.md` en OpenKOS |
+| Commit del arnés | `ebbde16f` (#1557), `90563cab` (puntaje de #1572), `7f0a7689` (#1558), `c8f3daf9` (#1571) |
+| Reuniones puntuadas | ES2015a, ES2015d, IS1004b, IS1004d, TS3009c: **solo desarrollo** ([ADR 0005](../../../docs/decisions/0005-adr-development-evaluation-split.md)). El cargador rechaza cualquier otra. El estudio del juez (#1571) reutiliza esas mismas corridas de #1557 y su archivo solo trae agregados por extractor, sin identificadores de reunión |
+| Fechas de las corridas | 2026-10-18 y 2026-10-19 (el juez de #1571, 2026-10-19, 11:46 a 12:09) |
 
 ## Contenido
 
@@ -32,6 +32,7 @@ transcripciones ni texto de la referencia.
 | `window-screen/w8b.json` | `window-screen/scores/w8b.json` | `fa89b521…` | sin modificar |
 | `window-screen/stage0.json` | `window-screen/stage0.json` | `b91cfad9…` | sin modificar |
 | `window-screen/decisions/w8b.json` | `window-screen/decisions/w8b.json` | `37894d50…` | sin modificar |
+| `judge-study/judge_study.json` | `judge-study/scores/judge_study.json` | `a3457d0e…` | sin modificar (puntajes por brazo y extractor, y el veredicto del arnés) |
 
 ## Política de datos
 
