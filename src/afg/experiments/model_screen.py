@@ -30,7 +30,6 @@ when loaded, before anything is scored.
 
 from __future__ import annotations
 
-import csv
 import json
 import re
 import statistics
@@ -45,7 +44,14 @@ import pandas as pd
 
 from afg.domain.decision import Decision, DecisionStatus, EvidenceSpan
 from afg.evaluation.reference import ReferenceDecision
-from afg.evaluation.scoring import SimilarityFn, pair_text, score_series
+from afg.evaluation.scoring import (
+    IntervalSettings,
+    SimilarityFn,
+    pair_text,
+    pool_scores,
+    score_series,
+)
+from afg.shared.csvio import read_rows
 
 __all__ = [
     "CurvePoint",
@@ -53,6 +59,7 @@ __all__ = [
     "RuleCheck",
     "advances",
     "ceiling_pairs",
+    "ceiling_summary",
     "curve_frame",
     "curve_summary",
     "guardrails_frame",
@@ -60,11 +67,14 @@ __all__ = [
     "language_of",
     "load_openkos_scores",
     "load_pass_runs",
+    "mean_min_max",
     "openkos_agreement",
     "paired_similarity",
     "relabel_series",
+    "reproduction_frame",
     "score_curve",
     "selection_rule",
+    "verdict_frame",
 ]
 
 Language = Literal["en", "es", "unknown"]
@@ -100,31 +110,60 @@ class PassRun:
         return len(self.decisions) / len(self.meetings) if self.meetings else 0.0
 
 
+def _require_development(
+    series: str, partition_of: Callable[[str], str] | None, where: str
+) -> None:
+    """Refuse a series that is not a development series (ADR 0005); ``where`` prefixes it."""
+    if partition_of is None:
+        from afg.experiments.runner import configured_partition_of
+
+        partition_of = configured_partition_of()
+    if partition_of(series) != "development":
+        raise ValueError(f"{where}: series {series} is not a development series (ADR 0005).")
+
+
 def load_pass_runs(
     paths: Iterable[Path], *, partition_of: Callable[[str], str] | None = None
 ) -> list[PassRun]:
     """Read ``runs-pass-*.json`` files into one :class:`PassRun` per (model, series, run).
 
     Raises:
-        ValueError: a file is not of the ``pass`` arm, or a record is of a series whose
-            partition is not ``development``.
+        ValueError: a file is not of the ``pass`` arm; a record is of a series whose
+            partition is not ``development``; a record lacks ``items`` or an item lacks
+            ``subject`` or ``value``; or a ``(model, series, run, meeting)`` key appears
+            more than once (within a file or across the files), which would merge runs.
     """
     if partition_of is None:
         from afg.experiments.runner import configured_partition_of
 
         partition_of = configured_partition_of()
     grouped: dict[tuple[str, str, int], list[dict[str, Any]]] = defaultdict(list)
+    seen: set[tuple[str, str, int, str]] = set()
     for path in paths:
+        name = Path(path).name
         stored = json.loads(Path(path).read_text(encoding="utf-8"))
         if stored.get("arm") != "pass":
-            raise ValueError(f"{Path(path).name}: only the pass arm stores subject and value.")
+            raise ValueError(f"{name}: only the pass arm stores subject and value.")
         model = str(stored["model"])
         for record in stored["records"]:
             series = str(record["series"])
-            if partition_of(series) != "development":
+            _require_development(series, partition_of, name)
+            meeting = str(record["meeting"])
+            key = (model, series, int(record["run"]), meeting)
+            if key in seen:
                 raise ValueError(
-                    f"{Path(path).name}: series {series} is not a development series (ADR 0005)."
+                    f"{name}: {model} run {key[2]} of {meeting} is repeated; "
+                    "refusing to merge two records of the same meeting-run."
                 )
+            seen.add(key)
+            if "items" not in record:
+                raise ValueError(f"{name}: the record of {meeting} (run {key[2]}) has no items.")
+            for item in record["items"]:
+                missing = [f for f in ("subject", "value") if f not in item]
+                if missing:
+                    raise ValueError(
+                        f"{name}: an item of {meeting} (run {key[2]}) lacks {', '.join(missing)}."
+                    )
             grouped[(model, series, int(record["run"]))].append(record)
 
     runs = []
@@ -164,12 +203,19 @@ def load_pass_runs(
     return runs
 
 
-def relabel_series(run: PassRun, series: str) -> PassRun:
+def relabel_series(
+    run: PassRun, series: str, *, partition_of: Callable[[str], str] | None = None
+) -> PassRun:
     """The same run attributed to ``series``, keeping each meeting's letter (a->a, b->b ...).
 
     This is the cross-series null control: one team's output scored against another
     team's reference. The texts are untouched; only the meeting labels move.
+
+    Raises:
+        ValueError: the run's series or ``series`` is not a development series (ADR 0005).
     """
+    _require_development(run.series, partition_of, "relabel_series")
+    _require_development(series, partition_of, "relabel_series")
 
     def move(meeting: str) -> str:
         return f"{series}{meeting[len(run.series) :]}"
@@ -373,16 +419,15 @@ def ceiling_pairs(path: Path) -> list[tuple[str, str]]:
     them. Embedding the two sides measures how similar a faithful English rendering of a
     decision can be to its Spanish reference text.
     """
-    with Path(path).open(encoding="utf-8-sig", newline="") as handle:
-        return [
-            (
-                row["sentence_text"].strip(),
-                pair_text(row["final_object"].strip(), row["final_content"].strip()),
-            )
-            for row in csv.DictReader(handle)
-            if (row.get("final_status") or "").strip() == "decision"
-            and (row.get("sentence_text") or "").strip()
-        ]
+    return [
+        (
+            row["sentence_text"].strip(),
+            pair_text(row["final_object"].strip(), row["final_content"].strip()),
+        )
+        for row in read_rows(Path(path))
+        if row.get("final_status", "").strip() == "decision"
+        and row.get("sentence_text", "").strip()
+    ]
 
 
 # --- guardrails and the selection rule -------------------------------------------------------
@@ -439,6 +484,11 @@ class RuleCheck:
     volume_ok: bool
 
     @property
+    def volume_cap(self) -> float:
+        """Condition 4's ceiling: the baseline's decisions per meeting times 1.10."""
+        return VOLUME_FACTOR * self.volume_baseline
+
+    @property
     def passed(self) -> bool:
         return self.margin_ok and self.recall_ok and self.failures_ok and self.volume_ok
 
@@ -451,6 +501,7 @@ def selection_rule(
     baseline: str,
     series: Sequence[str] = ("ES2015", "TS3009"),
     tau: float = SELECTION_TAU,
+    partition_of: Callable[[str], str] | None = None,
 ) -> list[RuleCheck]:
     """Apply the pre-registered rule to ``candidate`` against ``baseline``, per series.
 
@@ -459,7 +510,13 @@ def selection_rule(
     2. no recall loss: mean recall at ``tau`` of the candidate >= the baseline's;
     3. failures: failed meeting-runs <= ``max(2, baseline's)``;
     4. volume: mean decisions per meeting <= 1.10 x the baseline's.
+
+    Raises:
+        ValueError: a series checked is not a development series (ADR 0005), or there are
+            no scores for the candidate or the baseline on one.
     """
+    for s in series:
+        _require_development(s, partition_of, "selection_rule")
     at_tau = [p for p in points if abs(p.tau - tau) < 1e-9]
     run_list = list(runs)
 
@@ -514,6 +571,87 @@ def selection_rule(
 def advances(checks: Sequence[RuleCheck]) -> bool:
     """A candidate advances only when every condition holds on every series checked."""
     return bool(checks) and all(c.passed for c in checks)
+
+
+def verdict_frame(checks_by_candidate: Mapping[str, Sequence[RuleCheck]]) -> pd.DataFrame:
+    """Per candidate: whether it advances and its mean dF1 over the series, best first."""
+    rows = [
+        {
+            "candidate": candidate,
+            "advances": advances(checks),
+            "d_f1_mean": statistics.fmean(c.d_f1 for c in checks),
+        }
+        for candidate, checks in checks_by_candidate.items()
+    ]
+    return (
+        pd.DataFrame(rows, columns=["candidate", "advances", "d_f1_mean"])
+        .sort_values("d_f1_mean", ascending=False)
+        .reset_index(drop=True)
+    )
+
+
+def mean_min_max(values: Sequence[float]) -> tuple[float, float, float]:
+    """``(mean, min, max)`` of ``values``; refuses an empty list."""
+    if not values:
+        raise ValueError("mean_min_max is undefined for an empty list.")
+    return statistics.fmean(values), min(values), max(values)
+
+
+def ceiling_summary(
+    similarities: Mapping[str, Sequence[float]], *, thresholds: Sequence[float]
+) -> pd.DataFrame:
+    """Per series: n, median, min, max of the similarities and the count at or above each
+    threshold (columns ``count_ge_<threshold>``, two decimals)."""
+    rows = {}
+    for series, values in similarities.items():
+        row: dict[str, Any] = {
+            "n": len(values),
+            "median": statistics.median(values),
+            "min": min(values),
+            "max": max(values),
+        }
+        for t in thresholds:
+            row[f"count_ge_{t:.2f}"] = sum(1 for v in values if v >= t)
+        rows[series] = row
+    return pd.DataFrame.from_dict(rows, orient="index")
+
+
+def reproduction_frame(
+    reference: Sequence[ReferenceDecision],
+    runs: Sequence[Sequence[Decision]],
+    similarity: SimilarityFn,
+    *,
+    taus: Sequence[float],
+    openkos_pooled: Mapping[float, Mapping[str, Any]],
+    settings: IntervalSettings,
+    series: str = "ES2015",
+    partition_of: Callable[[str], str] | None = None,
+) -> pd.DataFrame:
+    """The thesis scorer's pooled result over ``runs`` at each ``tau`` next to OpenKOS's copy.
+
+    ``openkos_pooled`` maps ``round(tau, 2)`` to the copy's pooled ``{"tp", "recall", ...}``.
+    One row per ``tau``: TP per run, pooled TP, the copy's pooled TP, extracted and
+    reference counts, recall (thesis and copy) and pooled F1.
+    """
+    rows = []
+    for tau in taus:
+        scores = [score_series(series, reference, ds, similarity, tau=tau) for ds in runs]
+        pooled = pool_scores(scores, settings=settings, partition_of=partition_of)
+        theirs = openkos_pooled[round(tau, 2)]
+        rows.append(
+            {
+                "tau": tau,
+                "tp_per_run": [s.tp for s in scores],
+                "tp_pooled": pooled.tp,
+                "tp_pooled_openkos": theirs["tp"],
+                "n_extracted": pooled.tp + pooled.fp,
+                "n_reference": pooled.tp + pooled.fn,
+                "recall": pooled.recall,
+                "recall_openkos": theirs["recall"],
+                "f1": pooled.f1,
+            }
+        )
+    return pd.DataFrame(rows)
 
 
 # --- the OpenKOS side -----------------------------------------------------------------------

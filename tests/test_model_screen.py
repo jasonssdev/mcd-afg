@@ -137,6 +137,53 @@ def test_load_pass_runs_refuses_another_arm(tmp_path: Path) -> None:
         load_pass_runs([path], partition_of=_partition)
 
 
+def test_load_pass_runs_refuses_a_repeated_key_across_files(tmp_path: Path) -> None:
+    one = _write_runs(tmp_path / "one.json", "m", [_record(0, "ES2015a", [_item("a", "b")])])
+    two = _write_runs(tmp_path / "two.json", "m", [_record(0, "ES2015a", [_item("c", "d")])])
+    with pytest.raises(ValueError, match=r"two\.json.*ES2015a"):
+        load_pass_runs([one, two], partition_of=_partition)
+
+
+def test_load_pass_runs_refuses_a_repeated_key_within_a_file(tmp_path: Path) -> None:
+    path = _write_runs(
+        tmp_path / "dup.json",
+        "m",
+        [_record(0, "ES2015a", [_item("a", "b")]), _record(0, "ES2015a", [_item("c", "d")])],
+    )
+    with pytest.raises(ValueError, match=r"dup\.json.*repeated"):
+        load_pass_runs([path], partition_of=_partition)
+
+
+def test_load_pass_runs_names_the_file_when_a_record_has_no_items(tmp_path: Path) -> None:
+    record = _record(0, "ES2015a", [])
+    del record["items"]
+    path = _write_runs(tmp_path / "noitems.json", "m", [record])
+    with pytest.raises(ValueError, match=r"noitems\.json.*items"):
+        load_pass_runs([path], partition_of=_partition)
+
+
+def test_load_pass_runs_names_the_file_when_an_item_has_no_subject(tmp_path: Path) -> None:
+    item = _item("a", "b")
+    del item["subject"]
+    path = _write_runs(tmp_path / "nosubject.json", "m", [_record(0, "ES2015a", [item])])
+    with pytest.raises(ValueError, match=r"nosubject\.json.*subject"):
+        load_pass_runs([path], partition_of=_partition)
+
+
+def test_relabel_series_refuses_an_evaluation_series(tmp_path: Path) -> None:
+    path = _write_runs(tmp_path / "r.json", "m", [_record(0, "ES2015a", [_item("a", "b")])])
+    (run,) = load_pass_runs([path], partition_of=_partition)
+    with pytest.raises(ValueError, match="ES2016"):
+        relabel_series(run, "ES2016", partition_of=_partition)
+
+
+def test_selection_rule_refuses_an_evaluation_series() -> None:
+    with pytest.raises(ValueError, match="ES2016"):
+        selection_rule(
+            [], [], candidate="c", baseline="b", series=("ES2016",), partition_of=_partition
+        )
+
+
 def test_relabel_series_keeps_the_meeting_letter(tmp_path: Path) -> None:
     path = _write_runs(
         tmp_path / "r.json",
@@ -388,6 +435,116 @@ def test_ceiling_pairs_reads_decision_rows_with_a_sentence(tmp_path: Path) -> No
         )
 
     assert ceiling_pairs(path) == [("They chose rubber.", "carcasa: de goma")]
+
+
+def test_ceiling_pairs_uses_the_shared_reader_and_refuses_a_non_utf8_file(tmp_path: Path) -> None:
+    from afg.shared.csvio import CsvFormatError
+
+    path = tmp_path / "latin1.csv"
+    path.write_bytes("final_status,sentence_text\ndecision,canci\xf3n\n".encode("latin-1"))
+    with pytest.raises(CsvFormatError, match=r"latin1\.csv"):
+        ceiling_pairs(path)
+
+
+def test_rule_check_volume_cap_is_the_preregistered_factor_of_the_baseline() -> None:
+    from afg.experiments.model_screen import RuleCheck
+
+    check = RuleCheck(
+        "c", "b", "ES2015", 0.6, 0.5, 0.3, 0.2, 0.0, 0.05, True, 0.6, 0.5, True, 0, 0, True, 11.0,
+        10.0, True,
+    )  # fmt: skip
+    assert check.volume_cap == pytest.approx(11.0)
+
+
+def test_verdict_frame_orders_candidates_by_mean_df1(tmp_path: Path) -> None:
+    from afg.experiments.model_screen import verdict_frame
+
+    points = (
+        _points("base", "ES2015", [0.30, 0.32], [0.5, 0.5])
+        + _points("cand", "ES2015", [0.50, 0.54], [0.6, 0.6])
+        + _points("weak", "ES2015", [0.31, 0.33], [0.4, 0.4])
+        + _points("base", "TS3009", [0.30, 0.40], [0.6, 0.6])
+        + _points("cand", "TS3009", [0.60, 0.62], [0.7, 0.7])
+        + _points("weak", "TS3009", [0.31, 0.41], [0.5, 0.5])
+    )
+    runs = [
+        r
+        for m in ("base", "cand", "weak")
+        for s in ("ES2015", "TS3009")
+        for r in _guard_runs(tmp_path, m, s, 10, 0, 2)
+    ]
+    checks = {
+        m: selection_rule(points, runs, candidate=m, baseline="base", partition_of=_partition)
+        for m in ("cand", "weak")
+    }
+
+    frame = verdict_frame(checks)
+
+    assert list(frame["candidate"]) == ["cand", "weak"]
+    assert list(frame["advances"]) == [True, False]
+    assert frame.loc[0, "d_f1_mean"] == pytest.approx((0.21 + 0.26) / 2)
+
+
+def test_ceiling_summary_counts_and_quantiles_per_series() -> None:
+    from afg.experiments.model_screen import ceiling_summary
+
+    table = ceiling_summary({"A": [0.5, 0.7, 0.9], "B": [0.62]}, thresholds=(0.60, 0.80))
+
+    a = table.loc["A"]
+    assert (a["n"], a["median"], a["min"], a["max"]) == (3, 0.7, 0.5, 0.9)
+    assert (a["count_ge_0.60"], a["count_ge_0.80"]) == (2, 1)
+    assert table.loc["B", "count_ge_0.60"] == 1
+
+
+def test_mean_min_max() -> None:
+    from afg.experiments.model_screen import mean_min_max
+
+    assert mean_min_max([0.2, 0.4, 0.3]) == pytest.approx((0.3, 0.2, 0.4))
+    with pytest.raises(ValueError, match="empty"):
+        mean_min_max([])
+
+
+def test_reproduction_frame_pools_runs_next_to_the_openkos_copy() -> None:
+    from afg.evaluation.scoring import IntervalSettings
+    from afg.experiments.model_screen import reproduction_frame
+
+    reference = [_ref(1, "ES2015a", "price: 25"), _ref(2, "ES2015a", "case: rubber")]
+    runs = [
+        [_decision("ES2015a", "price", "25")],
+        [_decision("ES2015a", "price", "25"), _decision("ES2015a", "case", "rubber")],
+    ]
+    theirs = {0.6: {"tp": 3, "recall": 0.75}}
+
+    frame = reproduction_frame(
+        reference,
+        runs,
+        _exact,
+        taus=(0.6,),
+        openkos_pooled=theirs,
+        settings=IntervalSettings(n_resamples=50, confidence_level=0.95, seed=1),
+        partition_of=_partition,
+    )
+
+    row = frame.iloc[0]
+    assert row["tp_per_run"] == [1, 2]
+    assert (row["tp_pooled"], row["tp_pooled_openkos"]) == (3, 3)
+    assert (row["n_extracted"], row["n_reference"]) == (3, 4)
+    assert row["recall"] == pytest.approx(0.75)
+    assert row["recall_openkos"] == pytest.approx(0.75)
+
+
+def _decision(meeting: str, obj: str, content: str) -> Any:
+    from afg.domain.decision import Decision, DecisionStatus
+
+    return Decision(
+        id=f"{meeting}/{obj}",
+        series_id=meeting[:-1],
+        meeting_id=meeting,
+        decision_object=obj,
+        content=content,
+        status=DecisionStatus.ACCEPTED,
+        evidence=EvidenceSpan(meeting_id=meeting, dialogue_act_ids=(f"{meeting}#0",)),
+    )
 
 
 def test_curve_frame_has_one_row_per_point() -> None:
