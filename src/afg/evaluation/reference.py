@@ -16,6 +16,8 @@ reference decision if and only if ``final_status == "decision"``.
 - ``compuesta`` is an instruction, not a verdict: the parent row is excluded and its
   ``-1``, ``-2``, ... child rows (each with its own status) are the decisions. A child
   marked ``decision`` is one reference decision; a child marked ``descartar`` is excluded.
+  A child whose ``meeting_id``, ``source_sentence_id`` or ``evidence_text`` is blank takes
+  its parent's value (TS3009 leaves them blank, ES2015 repeats them).
 - ``sin_soporte`` and ``descartar`` are excluded.
 
 ## Evidence
@@ -194,6 +196,31 @@ def _read_adjudicated(path: Path) -> list[dict[str, str]]:
         return [{k: (v or "").strip() for k, v in row.items() if k} for row in reader]
 
 
+_INHERITED_FROM_PARENT = ("meeting_id", "source_sentence_id", "evidence_text")
+
+
+def _inherit_from_compuesta_parent(rows: list[dict[str, str]]) -> list[dict[str, str]]:
+    """Fill a split child's blank meeting, sentence and evidence from its ``compuesta`` parent.
+
+    The ``-1``, ``-2``, ... children of a ``compuesta`` row come from the parent's sentence.
+    Some adjudicated files repeat the parent's ``meeting_id``, ``source_sentence_id`` and
+    ``evidence_text`` on each child (ES2015) and others leave them blank (TS3009); a blank
+    child field takes the parent's value, a filled one is kept.
+    """
+    parents = {r["decision_id"]: r for r in rows if r.get("final_status") == "compuesta"}
+    filled: list[dict[str, str]] = []
+    for row in rows:
+        head, dash, suffix = row["decision_id"].rpartition("-")
+        parent = parents.get(head) if dash and suffix.isdigit() else None
+        if parent is not None:
+            row = {
+                **row,
+                **{k: parent.get(k, "") for k in _INHERITED_FROM_PARENT if not row.get(k)},
+            }
+        filled.append(row)
+    return filled
+
+
 def load_reference(
     path: Path,
     *,
@@ -210,7 +237,9 @@ def load_reference(
         NotAdjudicatedError: the file lacks the adjudication columns, a row has no
             ``final_status``, or a ``decision`` row lacks ``final_object`` or ``final_content``.
     """
-    rows = [r for r in _read_adjudicated(path) if r.get("decision_id")]
+    rows = _inherit_from_compuesta_parent(
+        [r for r in _read_adjudicated(path) if r.get("decision_id")]
+    )
     legal = {status.value for status in AnnotationStatus}
     for row in rows:
         status = row["final_status"]

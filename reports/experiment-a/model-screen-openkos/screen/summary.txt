@@ -1,0 +1,9 @@
+qwen3:8b ES2015 exit=0 wall=838s Sun Oct 18 06:42:54 EST 2026
+qwen3:8b TS3009 exit=0 wall=1341s Sun Oct 18 07:05:15 EST 2026
+qwen3:14b ES2015 exit=0 wall=1080s Sun Oct 18 07:23:15 EST 2026
+qwen3:14b TS3009 exit=0 wall=1112s Sun Oct 18 07:41:47 EST 2026
+qwen3.6:35b-a3b ES2015 exit=0 wall=449s Sun Oct 18 07:49:16 EST 2026
+qwen3.6:35b-a3b TS3009 exit=0 wall=936s Sun Oct 18 08:04:52 EST 2026
+qwen3.6:27b ES2015 exit=0 wall=2904s Sun Oct 18 08:53:16 EST 2026
+qwen3.6:27b TS3009 exit=0 wall=4413s Sun Oct 18 10:06:49 EST 2026
+DONE

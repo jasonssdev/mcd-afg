@@ -1,0 +1,2662 @@
+{
+  "arm": "pass",
+  "model": "qwen3:14b",
+  "runs": 5,
+  "partial": false,
+  "max_generation_tokens": 8192,
+  "context_window": 12288,
+  "max_pass_decisions": 25,
+  "generated_at": "20261018T122315Z",
+  "stamp": {
+    "stamp_version": 1,
+    "harness": {
+      "commit": "28ed7bedbd395f87d6d9cc1706578f7fdb0d2482",
+      "dirty": false
+    },
+    "model": {
+      "name": "qwen3:14b",
+      "digest": "bdbd181c33f2ed1b31c972991882db3cf4d192569092138a7d29e973cd9debe8"
+    },
+    "prompts": [
+      {
+        "id": "extraction/decision_pass",
+        "sha256_16": "6d3962b0dd75650c"
+      }
+    ]
+  },
+  "records": [
+    {
+      "arm": "pass",
+      "run": 1,
+      "meeting": "ES2015a",
+      "series": "ES2015",
+      "shaped": true,
+      "windows": 4,
+      "calls": 4,
+      "failure": null,
+      "wall_s": 30.33,
+      "items": [
+        {
+          "title": "The remote control should be created with a cost of no more than twelve Euro and fifty cents",
+          "evidence": [
+            "we want it to cost, uh, absolute maximum of twelve Euro and fifty cents."
+          ],
+          "matched_ids": [
+            "ES2015a.d05"
+          ],
+          "subject": "remote control price",
+          "value": "The remote control should be created with a cost of no more than twelve Euro and fifty cents."
+        },
+        {
+          "title": "The selling price of the remote control will be twenty five Euros",
+          "evidence": [
+            "wanna make this um selling price of twenty five Euros."
+          ],
+          "matched_ids": [
+            "ES2015a.d02"
+          ],
+          "subject": "selling price",
+          "value": "The selling price of the remote control will be twenty five Euros."
+        },
+        {
+          "title": "The remote control will be designed for an international market",
+          "evidence": [
+            "make it for an international market."
+          ],
+          "matched_ids": [
+            "ES2015a.d04"
+          ],
+          "subject": "target market",
+          "value": "The remote control will be designed for an international market."
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 1,
+      "meeting": "ES2015b",
+      "series": "ES2015",
+      "shaped": true,
+      "windows": 11,
+      "calls": 11,
+      "failure": null,
+      "wall_s": 88.08,
+      "items": [
+        {
+          "title": "A single function remote control is preferable because it is easier to use, more compatible with a",
+          "evidence": [
+            "UI: Um, I think that a single function remote control would be preferable, because it's easier to use. It'd be more compatible with a range of television sets, making it more internationally sellable."
+          ],
+          "matched_ids": [],
+          "subject": "remote control function",
+          "value": "A single function remote control is preferable because it is easier to use, more compatible with a range of television sets, and more internationally sellable."
+        },
+        {
+          "title": "The remote control should include voice recognition if targeting young adults, as over ninety",
+          "evidence": [
+            "Um, so the youngest age group, fifteen to twenty five. Ninety one point two percent said that they would pay extra money to have voice recogni voice recognition included on their remote control. Um, and you can see that number decreases a bit with ol s Interestingly enough, twenty five to thirty five is the lowest amount."
+          ],
+          "matched_ids": [],
+          "subject": "remote control features",
+          "value": "The remote control should include voice recognition if targeting young adults, as over ninety percent of that age group would pay for it."
+        },
+        {
+          "title": "The remote control should be very user-friendly to ensure people can use it quickly and easily",
+          "evidence": [
+            "So it should be very user-friendly, you know. People know what to do very quickly."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design",
+          "value": "The remote control should be very user-friendly to ensure people can use it quickly and easily."
+        },
+        {
+          "title": "The remote control will be designed for television functions only and will not include DVD or VCR",
+          "evidence": [
+            "we've decided not to include them and make it a specific, just a specific television um function."
+          ],
+          "matched_ids": [
+            "ES2015b.d01"
+          ],
+          "subject": "remote control functionality",
+          "value": "The remote control will be designed for television functions only and will not include DVD or VCR controls."
+        },
+        {
+          "title": "The remote control will not include teletext functionality as it is considered outdated",
+          "evidence": [
+            "the management feels that teletext is outdated, because more people are using the internet now. And so uh we won't concern ourselves with um navigating the teletext option."
+          ],
+          "matched_ids": [],
+          "subject": "teletext functionality",
+          "value": "The remote control will not include teletext functionality as it is considered outdated."
+        },
+        {
+          "title": "All remote controls must include the company's logo and incorporate the company's colour in some way",
+          "evidence": [
+            "we need to, we probably would have to have that colour and, and logo decided upon."
+          ],
+          "matched_ids": [],
+          "subject": "branding on remote control",
+          "value": "All remote controls must include the company's logo and incorporate the company's colour in some way."
+        },
+        {
+          "title": "The remote control will not have teletext, L_C_D_, or voice recognition functions",
+          "evidence": [
+            "ME: Okay. So no L_C_D_, no teletext, and no voice recognition."
+          ],
+          "matched_ids": [
+            "ES2015b.d04",
+            "ES2015b.d04-1",
+            "ES2015b.d04-2",
+            "ES2015b.d04-3"
+          ],
+          "subject": "remote control functions",
+          "value": "The remote control will not have teletext, L_C_D_, or voice recognition functions."
+        },
+        {
+          "title": "The buttons will light up for ten seconds when touched, similar to how a cellphone lights up when a",
+          "evidence": [
+            "if instead of a constant light up on the, on the remote control, if it lights up for ten seconds when it's touched again."
+          ],
+          "matched_ids": [],
+          "subject": "button lighting",
+          "value": "The buttons will light up for ten seconds when touched, similar to how a cellphone lights up when a button is pressed."
+        },
+        {
+          "title": "The buttons will be designed with tactile features, such as raised numbers and arrows, to improve",
+          "evidence": [
+            "The glow-in-the-dark or light up won't make any difference anyway. So like you say tactile might be better, because it'd be more available to everybody."
+          ],
+          "matched_ids": [],
+          "subject": "button design",
+          "value": "The buttons will be designed with tactile features, such as raised numbers and arrows, to improve accessibility."
+        },
+        {
+          "title": "The buttons could be made out of glow-in-the-dark material, as it is easily accessible and not",
+          "evidence": [
+            "it's quite easily accessible."
+          ],
+          "matched_ids": [],
+          "subject": "button material",
+          "value": "The buttons could be made out of glow-in-the-dark material, as it is easily accessible and not significantly more expensive."
+        },
+        {
+          "title": "The decision was made to use lighting up instantly instead of glow-in-the-dark material for the",
+          "evidence": [
+            "Alright. So we've decided on lighting up things."
+          ],
+          "matched_ids": [
+            "ES2015b.d06"
+          ],
+          "subject": "remote control button lighting",
+          "value": "The decision was made to use lighting up instantly instead of glow-in-the-dark material for the remote control buttons."
+        },
+        {
+          "title": "The participants decided to incorporate interchangeable face plates for the remote control, similar",
+          "evidence": [
+            "I think that we should incorporate that."
+          ],
+          "matched_ids": [
+            "ES2015b.d08"
+          ],
+          "subject": "face plates for remote control",
+          "value": "The participants decided to incorporate interchangeable face plates for the remote control, similar to those found on an iPod or mobile phone."
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 1,
+      "meeting": "ES2015c",
+      "series": "ES2015",
+      "shaped": true,
+      "windows": 9,
+      "calls": 9,
+      "failure": null,
+      "wall_s": 103.32,
+      "items": [
+        {
+          "title": "Rubber casing would be the best choice, as it provides anti-R_S_I_ benefits, flexibility in",
+          "evidence": [
+            "Rubber casing I thing would probably the best, if we're going for the anti-R_S_I_ and like more choice with um aesthetics. Like it could be pretty much any colour we want."
+          ],
+          "matched_ids": [],
+          "subject": "material for the remote control casing",
+          "value": "Rubber casing would be the best choice, as it provides anti-R_S_I_ benefits, flexibility in aesthetics, and can be any color desired."
+        },
+        {
+          "title": "The regular chip with integrated pushbutton and scroll button would be the most practical choice,",
+          "evidence": [
+            "And probably the regular chip as opposed to the simple, then we could possibly have the scroll and the push, but no L_C_D_, 'cause we probably can't afford that one."
+          ],
+          "matched_ids": [],
+          "subject": "type of buttons for the remote control",
+          "value": "The regular chip with integrated pushbutton and scroll button would be the most practical choice, as it does not require an advanced chip or L_C_D_ display."
+        },
+        {
+          "title": "The kinetic energy source would be the preferred choice, as it is advanced, novel, and",
+          "evidence": [
+            "My personal preferences? I think we could go for the kinetic energy source. I don't, I think that's quite um an advanced kind of technology. It's not been seen before, so it could be quite a, a novelty factor, attractive as well. And also energy saving 'cause you're producing the energy, you don't need an external sort of battery supply or solar panels. You just give it a shake. Sounds brilliant to me."
+          ],
+          "matched_ids": [],
+          "subject": "energy source for the remote control",
+          "value": "The kinetic energy source would be the preferred choice, as it is advanced, novel, and energy-saving, eliminating the need for external batteries or solar panels."
+        },
+        {
+          "title": "The actual remote would be hard plastic and the casings rubber",
+          "evidence": [
+            "ME: Okay. PM: Yeah. ME: So the actual remote would be hard plastic and the casings rubber. Okay. And the buttons obviously are rubber."
+          ],
+          "matched_ids": [
+            "ES2015c.d07"
+          ],
+          "subject": "remote exterior material",
+          "value": "The actual remote would be hard plastic and the casings rubber."
+        },
+        {
+          "title": "The team agreed that a backup energy source, such as solar power, could be incorporated",
+          "evidence": [
+            "UI: Maybe we could you were saying about um solar power ma maybe not working indoors, but a lot of calculators, yeah, have solar power. So maybe that could be incorporated as"
+          ],
+          "matched_ids": [],
+          "subject": "backup energy source",
+          "value": "The team agreed that a backup energy source, such as solar power, could be incorporated."
+        },
+        {
+          "title": "The command interface would be the most useful for a remote control as it would be less",
+          "evidence": [
+            "UI: Um, the co uh we've decided that the command interface would be the most useful for a remote control. As it would be less complicated, and the controls would be more user-friendly."
+          ],
+          "matched_ids": [],
+          "subject": "type of user interface for the remote control",
+          "value": "The command interface would be the most useful for a remote control as it would be less complicated, and the controls would be more user-friendly."
+        },
+        {
+          "title": "The remote control will be designed to be simple and user-friendly, avoiding cluttered buttons and",
+          "evidence": [
+            "UI: We, we also have to keep in mind when we're designing our, um, more user-friendly remote control, that a lot of interfaces consist of a clutter of buttons, that, um, that their functions, colours and forms aren't always helpful."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design",
+          "value": "The remote control will be designed to be simple and user-friendly, avoiding cluttered buttons and ensuring that the functions, colours, and forms are helpful and easy to understand."
+        },
+        {
+          "title": "The buttons on the remote control will be kept to one same colour to maintain a simplistic look and",
+          "evidence": [
+            "ME: I think if we go with the um design plate thing, we'll have to. Just because of colour clashing, and if we wanted to, so and, and we might, I mean, depending on what comes out of the design, we might have to stick to just black buttons."
+          ],
+          "matched_ids": [],
+          "subject": "button colour",
+          "value": "The buttons on the remote control will be kept to one same colour to maintain a simplistic look and avoid colour clashing."
+        },
+        {
+          "title": "The buttons on the remote control will light up from the back when touched, which requires the",
+          "evidence": [
+            "PM: If they were white they would glow, probably. If they were made out of rubber."
+          ],
+          "matched_ids": [],
+          "subject": "button lighting effect",
+          "value": "The buttons on the remote control will light up from the back when touched, which requires the buttons to be made of a translucent material such as rubber."
+        },
+        {
+          "title": "The buttons on the remote control will be made of rubber, as it is a more translucent material and",
+          "evidence": [
+            "PM: Yeah, and well rubber is a more translucent product too, so we have that taken care of."
+          ],
+          "matched_ids": [
+            "ES2015c.d02"
+          ],
+          "subject": "button material",
+          "value": "The buttons on the remote control will be made of rubber, as it is a more translucent material and allows for the lighting effect to be visible."
+        },
+        {
+          "title": "The product will use kinetic energy as its primary energy source without a backup",
+          "evidence": [
+            "ID: I think maybe we could just go for the kinetic energy, and PM: if there is backup. ID: be bold and innovative, and hope this works, and well hope that it works. I think yeah. I think no. I, I think we should just like take uh advantage of like using this to its full potential. Go for it."
+          ],
+          "matched_ids": [],
+          "subject": "Energy source",
+          "value": "The product will use kinetic energy as its primary energy source without a backup."
+        },
+        {
+          "title": "The product will use a simple chip without an LCD, which means it will have push buttons instead of",
+          "evidence": [
+            "ID: Uh, so that's the simple."
+          ],
+          "matched_ids": [],
+          "subject": "Chip type",
+          "value": "The product will use a simple chip without an LCD, which means it will have push buttons instead of scroll buttons."
+        },
+        {
+          "title": "The remote control case will be made of plastic coated in rubber and will have interchangeable",
+          "evidence": [
+            "PM: Yeah. Well, I guess plastic and coated in rubber. Plastic with rubber ID: Rubber. Yeah. Plastic rubber coat. UI: Yeah plastic coat. PM: coating and interchangeable ID: Interchangeable, yeah. Still going for that. Yeah."
+          ],
+          "matched_ids": [
+            "ES2015c.d07"
+          ],
+          "subject": "remote control case",
+          "value": "The remote control case will be made of plastic coated in rubber and will have interchangeable plates."
+        },
+        {
+          "title": "We will have a simple audio button instead of more complex audio settings",
+          "evidence": [
+            "UI: It w it would seem silly if we'd having anything else, just have an audio button though."
+          ],
+          "matched_ids": [],
+          "subject": "audio button",
+          "value": "We will have a simple audio button instead of more complex audio settings."
+        },
+        {
+          "title": "We will stick to the fruit and veggie theme for the remote control design",
+          "evidence": [
+            "PM: 'Kay we'll stick to the fruit and veggie theme then. Alright."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design theme",
+          "value": "We will stick to the fruit and veggie theme for the remote control design."
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 1,
+      "meeting": "ES2015d",
+      "series": "ES2015",
+      "shaped": true,
+      "windows": 9,
+      "calls": 9,
+      "failure": null,
+      "wall_s": 108.47,
+      "items": [
+        {
+          "title": "The remote control should be fine as long as there is not a big pause between the two buttons being",
+          "evidence": [
+            "ME: it should be fine. As long as there's not a big pause between the t hitting the two buttons."
+          ],
+          "matched_ids": [],
+          "subject": "remote control input delay",
+          "value": "The remote control should be fine as long as there is not a big pause between the two buttons being hit."
+        },
+        {
+          "title": "The remote control has volume and channel buttons on the top so that they can be accessed without",
+          "evidence": [
+            "ME: Was there so on the top there is volume and ID: And channel, which is so you could just go like that without thinking about it, like UI: A channel."
+          ],
+          "matched_ids": [],
+          "subject": "remote control button layout",
+          "value": "The remote control has volume and channel buttons on the top so that they can be accessed without taking the hand off the remote."
+        },
+        {
+          "title": "The remote control has a circular design for the numbers to make it more ergonomic and help with",
+          "evidence": [
+            "ID: So it's just like. We deci UI: Yeah, so it's all accessible. Without m taking your hand off the remote. PM: Yeah. PM: Yeah. ID: Yeah um we went for like a a circular design for the numbers because we thought that's kind of a more natural movement than just going like that with your thumb. Uh e ergonomics are all considered. Yeah."
+          ],
+          "matched_ids": [
+            "ES2015d.d01"
+          ],
+          "subject": "remote control design",
+          "value": "The remote control has a circular design for the numbers to make it more ergonomic and help with repetitive stress injury."
+        },
+        {
+          "title": "The remote control is made of a spongy material similar to Play Doh to provide a stress ball feel",
+          "evidence": [
+            "ID: Um and we're thinking to carry-on with the fruit and vegetable theme, the colour um combination just could just be named after different fruit, like banana could be black and yellow, watermelon red and green, or vanilla might be the most popular if it just uh blends in more settled cream instead of the others are all a bit garish."
+          ],
+          "matched_ids": [
+            "ES2015d.d02",
+            "ES2015d.d02-1",
+            "ES2015d.d02-2"
+          ],
+          "subject": "remote control material",
+          "value": "The remote control is made of a spongy material similar to Play Doh to provide a stress ball feel and reduce repetitive stress injury."
+        },
+        {
+          "title": "The remote control will have interchangeable casings with colours named after fruits and",
+          "evidence": [
+            "ID: Um and we're thinking to carry-on with the fruit and vegetable theme, the colour um combination just could just be named after different fruit, like banana could be black and yellow, watermelon red and green, or vanilla might be the most popular if it just uh blends in more settled cream instead of the others are all a bit garish."
+          ],
+          "matched_ids": [
+            "ES2015d.d02",
+            "ES2015d.d02-1",
+            "ES2015d.d02-2"
+          ],
+          "subject": "remote control casing colours",
+          "value": "The remote control will have interchangeable casings with colours named after fruits and vegetables, such as banana (black and yellow), watermelon (red and green), and vanilla (cream)."
+        },
+        {
+          "title": "The remote control is designed to be used with one hand, with the thumb used for input",
+          "evidence": [
+            "ID: Okay. Um yeah we thought of the components it was definitely um a focus of ergonomics and just a single ha handheld device, I mean you don't need to use both hands, one hand to hold this and type in with the other, you can just use your thumb."
+          ],
+          "matched_ids": [],
+          "subject": "remote control usage",
+          "value": "The remote control is designed to be used with one hand, with the thumb used for input."
+        },
+        {
+          "title": "The level of technological innovation is set to three",
+          "evidence": [
+            "PM: Yeah we want it simple."
+          ],
+          "matched_ids": [],
+          "subject": "technological innovation level",
+          "value": "The level of technological innovation is set to three."
+        },
+        {
+          "title": "The ease of use is rated as one",
+          "evidence": [
+            "UI: Yeah very. I think one for that. Yeah. No."
+          ],
+          "matched_ids": [],
+          "subject": "ease of use",
+          "value": "The ease of use is rated as one."
+        },
+        {
+          "title": "The appearance of the remote control is rated as two",
+          "evidence": [
+            "PM: Sure."
+          ],
+          "matched_ids": [],
+          "subject": "remote control appearance",
+          "value": "The appearance of the remote control is rated as two."
+        },
+        {
+          "title": "The marketing strategy will emphasize the product's simplicity and long-term cost savings to",
+          "evidence": [
+            "ME: But you don't have to buy batteries. So in the long term this can actually save you money. So we'll market it that way too."
+          ],
+          "matched_ids": [],
+          "subject": "marketing strategy for the product's price",
+          "value": "The marketing strategy will emphasize the product's simplicity and long-term cost savings to justify the price of twenty five Euros."
+        },
+        {
+          "title": "The remote control will have an alarm system that includes both a light and a noise when activated",
+          "evidence": [
+            "PM: You press the button it makes a noise right?"
+          ],
+          "matched_ids": [],
+          "subject": "alarm system implementation",
+          "value": "The remote control will have an alarm system that includes both a light and a noise when activated."
+        },
+        {
+          "title": "The remote control's design matches the operating behavior of the average user, with easily",
+          "evidence": [
+            "ID: Because yeah, because the most accessible buttons are the volume and the and the channel-changing. And it's just you won't have to think about it. You don't have to look down to find them. They're clearly there, easy to use. Simple."
+          ],
+          "matched_ids": [],
+          "subject": "remote control's ease of use for average users",
+          "value": "The remote control's design matches the operating behavior of the average user, with easily accessible buttons for volume and channel changing."
+        },
+        {
+          "title": "We will go with a case that is easier to find compared to every other remote ever made",
+          "evidence": [
+            "ME: We can give it a one, because compared to every other remote ever m ever made, this one will be easier to find. Okay. Um"
+          ],
+          "matched_ids": [],
+          "subject": "remote control case",
+          "value": "We will go with a case that is easier to find compared to every other remote ever made."
+        },
+        {
+          "title": "The remote control will not always have the company's colour and logo due to design constraints",
+          "evidence": [
+            "UI: N We we can't really do that because for example on the banana theme we can't have it as being yellow. It won't stand out. So n it's not always gonna be the same colour."
+          ],
+          "matched_ids": [],
+          "subject": "remote control colour and logo",
+          "value": "The remote control will not always have the company's colour and logo due to design constraints."
+        },
+        {
+          "title": "The decision was made to have four plates",
+          "evidence": [
+            "ME: Four?"
+          ],
+          "matched_ids": [],
+          "subject": "number of plates",
+          "value": "The decision was made to have four plates."
+        },
+        {
+          "title": "It was decided that the product stays true to the motto of putting fashion into electronics",
+          "evidence": [
+            "PM: I would say so."
+          ],
+          "matched_ids": [],
+          "subject": "fashion in electronics",
+          "value": "It was decided that the product stays true to the motto of putting fashion into electronics."
+        },
+        {
+          "title": "It was decided that the plates are interchangeable",
+          "evidence": [
+            "PM: That's fashionable in itself to have interchangeable plates."
+          ],
+          "matched_ids": [],
+          "subject": "interchangeable plates",
+          "value": "It was decided that the plates are interchangeable."
+        },
+        {
+          "title": "The group agreed on an average rating of between one and two for fashion",
+          "evidence": [
+            "ID: Between one and two."
+          ],
+          "matched_ids": [],
+          "subject": "rating for fashion",
+          "value": "The group agreed on an average rating of between one and two for fashion."
+        },
+        {
+          "title": "The costs are within budget",
+          "evidence": [
+            "PM: Yes our costs are within budget."
+          ],
+          "matched_ids": [],
+          "subject": "costs",
+          "value": "The costs are within budget."
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 2,
+      "meeting": "ES2015a",
+      "series": "ES2015",
+      "shaped": true,
+      "windows": 4,
+      "calls": 4,
+      "failure": null,
+      "wall_s": 18.42,
+      "items": [
+        {
+          "title": "The selling price of the remote control will be twenty five Euros",
+          "evidence": [
+            "wanna make this um selling price of twenty five Euros."
+          ],
+          "matched_ids": [
+            "ES2015a.d02"
+          ],
+          "subject": "selling price of remote control",
+          "value": "The selling price of the remote control will be twenty five Euros."
+        },
+        {
+          "title": "The target profit margin is one hundred percent, with the remote control costing a maximum of",
+          "evidence": [
+            "Okay, so we'll have a hundred percent profit then? Twelve fifty."
+          ],
+          "matched_ids": [],
+          "subject": "target profit margin",
+          "value": "The target profit margin is one hundred percent, with the remote control costing a maximum of twelve Euro and fifty cents."
+        },
+        {
+          "title": "The design team must consider different kinds of V_C_R_s depending on the country for the",
+          "evidence": [
+            "one thing we'd have to think about internationally is in the design of, um, like different kinds of, uh, V_C_R_s. Things like that, depending on which country you are."
+          ],
+          "matched_ids": [],
+          "subject": "international market design considerations",
+          "value": "The design team must consider different kinds of V_C_R_s depending on the country for the international market."
+        },
+        {
+          "title": "The remote control will have a simplified layout with only essential buttons, such as number",
+          "evidence": [
+            "There's some remote controls where there's kind of a hidden panel, so all those buttons that you don't really use unless you're programming or something. That's useful. So you just have like the number buttons, power button, T_V_ video button."
+          ],
+          "matched_ids": [],
+          "subject": "remote control button layout",
+          "value": "The remote control will have a simplified layout with only essential buttons, such as number buttons, power button, and T_V_ video button, with additional buttons hidden in a panel."
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 2,
+      "meeting": "ES2015b",
+      "series": "ES2015",
+      "shaped": true,
+      "windows": 11,
+      "calls": 11,
+      "failure": null,
+      "wall_s": 51.09,
+      "items": [
+        {
+          "title": "A single function remote control is preferable because it is easier to use, more compatible with a",
+          "evidence": [
+            "UI: Um, I think that a single function remote control would be preferable, because it's easier to use. It'd be more compatible with a range of television sets, making it more internationally sellable."
+          ],
+          "matched_ids": [],
+          "subject": "remote control function",
+          "value": "A single function remote control is preferable because it is easier to use, more compatible with a range of television sets, and more internationally sellable."
+        },
+        {
+          "title": "The remote control will be designed specifically for television functions and will not include",
+          "evidence": [
+            "we've decided not to include them and make it a specific, just a specific television um function. Which is good as, as we've sort of decided that we would like to go with that anyway."
+          ],
+          "matched_ids": [],
+          "subject": "remote control functionality",
+          "value": "The remote control will be designed specifically for television functions and will not include controls for DVD, VCR, or teletext."
+        },
+        {
+          "title": "All remote controls must incorporate the company's logo and colour in some way to create brand",
+          "evidence": [
+            "we need to, we probably would have to have that colour and, and logo decided upon. Um, I'm assuming that we already have one, but for the purposes of this meeting I, I wasn't offered a, like a type of logo or colour, so if that could be um somewhere on the design so that we can be recognisable."
+          ],
+          "matched_ids": [],
+          "subject": "branding on remote control",
+          "value": "All remote controls must incorporate the company's logo and colour in some way to create brand recognition."
+        },
+        {
+          "title": "The remote control will not have teletext, L_C_D_, or voice recognition functions",
+          "evidence": [
+            "ME: Okay. So no L_C_D_, no teletext, and no voice recognition."
+          ],
+          "matched_ids": [
+            "ES2015b.d04",
+            "ES2015b.d04-1",
+            "ES2015b.d04-2",
+            "ES2015b.d04-3"
+          ],
+          "subject": "remote control functions",
+          "value": "The remote control will not have teletext, L_C_D_, or voice recognition functions."
+        },
+        {
+          "title": "The remote control should have minimal buttons and prioritize findability",
+          "evidence": [
+            "ME: Um, well I guess, just from my findings it looks like we wanna minimise buttons. ID: 'Kay. ME: Um. ID: Minimal ME: And the What was the word they used? F findability is important."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design",
+          "value": "The remote control should have minimal buttons and prioritize findability."
+        },
+        {
+          "title": "The alarm device should be small, adhesive, and not obtrusive, allowing it to be stuck on the back",
+          "evidence": [
+            "ID: Maybe Yeah, yeah. Maybe something adhesive that you could like stick onto the back of any set that would be um yeah not very obtrusive. Obviously something small that's Yeah, that's a good point."
+          ],
+          "matched_ids": [],
+          "subject": "alarm device placement",
+          "value": "The alarm device should be small, adhesive, and not obtrusive, allowing it to be stuck on the back of any TV set."
+        },
+        {
+          "title": "The alarm device will likely need a battery, and further research is required to explore",
+          "evidence": [
+            "UI: Would it need a battery then? PM: Maybe, um ID: Pr probably. Unless it could be Okay. Um, unless some way, it could have some universal connection to like the socket, the same socket that the T_V_'s supplied from. I mean the power for the T_V_. So, mm, more research into that one. Yeah."
+          ],
+          "matched_ids": [],
+          "subject": "alarm device power",
+          "value": "The alarm device will likely need a battery, and further research is required to explore alternative power sources."
+        },
+        {
+          "title": "The glow-in-the-dark, fluorescent, or similar system for the buttons is approved",
+          "evidence": [
+            "PM: um, the glow-in-the-dark, fluorescent, whatever, system, um is a go ahead. Is everyone interested in that? ID: Y ME: On the buttons?"
+          ],
+          "matched_ids": [
+            "ES2015b.d06"
+          ],
+          "subject": "glow-in-the-dark buttons",
+          "value": "The glow-in-the-dark, fluorescent, or similar system for the buttons is approved."
+        },
+        {
+          "title": "The buttons will light up for ten seconds when touched, similar to how a cellphone lights up when a",
+          "evidence": [
+            "if instead of a constant light up on the, on the remote control, if it lights up for ten seconds when it's touched again."
+          ],
+          "matched_ids": [],
+          "subject": "button lighting",
+          "value": "The buttons will light up for ten seconds when touched, similar to how a cellphone lights up when a button is pressed."
+        },
+        {
+          "title": "The buttons will be designed with tactile features, such as raised numbers and arrows, to improve",
+          "evidence": [
+            "so like big b um buttons, for people you are visually impaired. The glow-in-the-dark or light up won't make any difference anyway. So like you say tactile might be better, because it'd be more available to everybody."
+          ],
+          "matched_ids": [],
+          "subject": "button design",
+          "value": "The buttons will be designed with tactile features, such as raised numbers and arrows, to improve accessibility."
+        },
+        {
+          "title": "The buttons may be made out of glow-in-the-dark material, as it is easily accessible and not",
+          "evidence": [
+            "I don't think that glow-in-the-dark material, um, like the actual soft plastic, um, costs that much more than other colours."
+          ],
+          "matched_ids": [],
+          "subject": "button material",
+          "value": "The buttons may be made out of glow-in-the-dark material, as it is easily accessible and not significantly more expensive."
+        },
+        {
+          "title": "The remote control will have interchangeable face plates, similar to those on an iPod or mobile",
+          "evidence": [
+            "PM: Yeah. I think that we should incorporate that."
+          ],
+          "matched_ids": [
+            "ES2015b.d08"
+          ],
+          "subject": "remote control face plates",
+          "value": "The remote control will have interchangeable face plates, similar to those on an iPod or mobile phone, which could include themes such as TV shows or characters like Bart Simpson."
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 2,
+      "meeting": "ES2015c",
+      "series": "ES2015",
+      "shaped": true,
+      "windows": 9,
+      "calls": 9,
+      "failure": null,
+      "wall_s": 67.39,
+      "items": [
+        {
+          "title": "The remote control should have a shape that is comfortable to hold and not symmetrical to avoid",
+          "evidence": [
+            "We don't want something that's huge and you can't pick up. Or too small. Or too slidy. I know I've had a remote control before which you couldn't tell which was the front and the back, 'cause it had so many buttons on, and the shape was so symmetrical that I'd be pressing like a volume button instead of the on button."
+          ],
+          "matched_ids": [],
+          "subject": "remote control shape",
+          "value": "The remote control should have a shape that is comfortable to hold and not symmetrical to avoid confusion between front and back."
+        },
+        {
+          "title": "The remote control should use a combination of pushbutton and scroll button for functionality and",
+          "evidence": [
+            "And probably the regular chip as opposed to the simple, then we could possibly have the scroll and the push, but no L_C_D_, 'cause we probably can't afford that one."
+          ],
+          "matched_ids": [],
+          "subject": "type of buttons for remote control",
+          "value": "The remote control should use a combination of pushbutton and scroll button for functionality and simplicity."
+        },
+        {
+          "title": "The remote control should use kinetic energy as its energy source for novelty and energy efficiency",
+          "evidence": [
+            "My personal preferences? I think we could go for the kinetic energy source. I don't, I think that's quite um an advanced kind of technology. It's not been seen before, so it could be quite a, a novelty factor, attractive as well. And also energy saving 'cause you're producing the energy, you don't need an external sort of battery supply or solar panels. You just give it a shake."
+          ],
+          "matched_ids": [],
+          "subject": "energy source for remote control",
+          "value": "The remote control should use kinetic energy as its energy source for novelty and energy efficiency."
+        },
+        {
+          "title": "The actual remote would be hard plastic and the casings rubber",
+          "evidence": [
+            "ME: Okay. PM: Yeah. ME: So the actual remote would be hard plastic and the casings rubber. Okay. And the buttons obviously are rubber."
+          ],
+          "matched_ids": [
+            "ES2015c.d07"
+          ],
+          "subject": "remote exterior material",
+          "value": "The actual remote would be hard plastic and the casings rubber."
+        },
+        {
+          "title": "A solar backup could be incorporated as an alternative",
+          "evidence": [
+            "UI: Maybe we could you were saying about um solar power ma maybe not working indoors, but a lot of calculators, yeah, have solar power. So maybe that could be incorporated as"
+          ],
+          "matched_ids": [],
+          "subject": "backup energy source",
+          "value": "A solar backup could be incorporated as an alternative."
+        },
+        {
+          "title": "The participants decided to go with a command interface for the remote control as it would be less",
+          "evidence": [
+            "UI: Um, the co uh we've decided that the command interface would be the most useful for a remote control. As it would be less complicated, and the controls would be more user-friendly."
+          ],
+          "matched_ids": [],
+          "subject": "type of user interface for the remote control",
+          "value": "The participants decided to go with a command interface for the remote control as it would be less complicated and the controls would be more user-friendly."
+        },
+        {
+          "title": "The remote control will be designed to be simple and user-friendly, avoiding clutter of buttons",
+          "evidence": [
+            "We, we also have to keep in mind when we're designing our, um, more user-friendly remote control, that a lot of interfaces consist of a clutter of buttons, that, um, that their functions, colours and forms aren't always helpful."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design",
+          "value": "The remote control will be designed to be simple and user-friendly, avoiding clutter of buttons with different colors and forms."
+        },
+        {
+          "title": "The buttons will be kept to one same color to maintain a simplistic look and avoid color clashing",
+          "evidence": [
+            "I think if we go with the um design plate thing, we'll have to. Just because of colour clashing, and if we wanted to, so and, and we might, I mean, depending on what comes out of the design, we might have to stick to just black buttons."
+          ],
+          "matched_ids": [],
+          "subject": "button color",
+          "value": "The buttons will be kept to one same color to maintain a simplistic look and avoid color clashing."
+        },
+        {
+          "title": "The buttons will light up from the back when touched, requiring the use of translucent materials or",
+          "evidence": [
+            "ID: I'd assume, like, an internal light, that comes through. So there would have to, have to be some parts maybe transparent around the buttons, or something."
+          ],
+          "matched_ids": [],
+          "subject": "button lighting effect",
+          "value": "The buttons will light up from the back when touched, requiring the use of translucent materials or transparent parts around the buttons."
+        },
+        {
+          "title": "The buttons will be made of rubber, which is a more translucent product and allows for lighting",
+          "evidence": [
+            "PM: Yeah, and well rubber is a more translucent product too, so we have that taken care of."
+          ],
+          "matched_ids": [
+            "ES2015c.d02"
+          ],
+          "subject": "button material",
+          "value": "The buttons will be made of rubber, which is a more translucent product and allows for lighting effects."
+        },
+        {
+          "title": "The buttons will be raised up to be more tangible and easier to feel, rather than being flat like",
+          "evidence": [
+            "PM: Well, if they're raised up buttons. So that you can feel them. We were talking about it being more"
+          ],
+          "matched_ids": [],
+          "subject": "button design",
+          "value": "The buttons will be raised up to be more tangible and easier to feel, rather than being flat like on a cellphone."
+        },
+        {
+          "title": "The product will use the simple chip without LCD, which corresponds to using push buttons instead",
+          "evidence": [
+            "ID: Uh, so that's the simple."
+          ],
+          "matched_ids": [],
+          "subject": "chip type",
+          "value": "The product will use the simple chip without LCD, which corresponds to using push buttons instead of scroll buttons."
+        },
+        {
+          "title": "The remote control case will be made of plastic coated in rubber and will have interchangeable",
+          "evidence": [
+            "PM: Yeah. Well, I guess plastic and coated in rubber. Plastic with rubber ID: Rubber. Yeah. Plastic rubber coat. UI: Yeah plastic coat. PM: coating and interchangeable ID: Interchangeable, yeah. Still going for that. Yeah."
+          ],
+          "matched_ids": [
+            "ES2015c.d07"
+          ],
+          "subject": "remote control case",
+          "value": "The remote control case will be made of plastic coated in rubber and will have interchangeable plates."
+        },
+        {
+          "title": "We will have a simple audio button instead of more complex audio settings",
+          "evidence": [
+            "UI: It w it would seem silly if we'd having anything else, just have an audio button though."
+          ],
+          "matched_ids": [],
+          "subject": "audio button",
+          "value": "We will have a simple audio button instead of more complex audio settings."
+        },
+        {
+          "title": "We will stick to the fruit and veggie theme for the remote control design",
+          "evidence": [
+            "PM: 'Kay we'll stick to the fruit and veggie theme then. Alright."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design theme",
+          "value": "We will stick to the fruit and veggie theme for the remote control design."
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 2,
+      "meeting": "ES2015d",
+      "series": "ES2015",
+      "shaped": true,
+      "windows": 9,
+      "calls": 9,
+      "failure": null,
+      "wall_s": 52.16,
+      "items": [
+        {
+          "title": "The remote control case will have a circular design for the numbers because it is considered more",
+          "evidence": [
+            "ID: So it's just like. We deci"
+          ],
+          "matched_ids": [],
+          "subject": "remote control case",
+          "value": "The remote control case will have a circular design for the numbers because it is considered more natural movement than other options."
+        },
+        {
+          "title": "The remote control will be made out of a spongy material similar to Play Doh, which is designed to",
+          "evidence": [
+            "ID: Um and we're thinking to carry-on with the fruit and vegetable theme, the colour um combination just could just be named after different fruit, like banana could be black and yellow, watermelon red and green, or vanilla might be the most popular if it just uh blends in more settled cream instead of the others are all a bit garish."
+          ],
+          "matched_ids": [
+            "ES2015d.d02",
+            "ES2015d.d02-1",
+            "ES2015d.d02-2"
+          ],
+          "subject": "material for remote control",
+          "value": "The remote control will be made out of a spongy material similar to Play Doh, which is designed to help prevent repetitive stress injury."
+        },
+        {
+          "title": "The remote control will have volume and channel buttons on the top for easy access without taking",
+          "evidence": [
+            "ME: it should be fine. As long as there's not a big pause between the t hitting the two buttons."
+          ],
+          "matched_ids": [],
+          "subject": "button layout",
+          "value": "The remote control will have volume and channel buttons on the top for easy access without taking your hand off the remote."
+        },
+        {
+          "title": "The power button will be located in the middle of one of the little R_s",
+          "evidence": [
+            "UI: It's in the middle of one of the little R_s."
+          ],
+          "matched_ids": [],
+          "subject": "button placement",
+          "value": "The power button will be located in the middle of one of the little R_s."
+        },
+        {
+          "title": "The remote control will have a design that allows users to use their thumb for input, as it is",
+          "evidence": [
+            "ID: It could cause another type of repetitive stress injury though. But yeah, no I mean it's a different movement so yeah. Um and the feel of it, I mean, we've made this out of Play Doh, which is representing the, you know, the rubber, and the spongy rubberness."
+          ],
+          "matched_ids": [],
+          "subject": "button design",
+          "value": "The remote control will have a design that allows users to use their thumb for input, as it is considered ergonomic and helps prevent repetitive stress injury."
+        },
+        {
+          "title": "The remote control will use a colour scheme based on fruit and vegetables, with different",
+          "evidence": [
+            "ID: Um and we're thinking to carry-on with the fruit and vegetable theme, the colour um combination just could just be named after different fruit, like banana could be black and yellow, watermelon red and green, or vanilla might be the most popular if it just uh blends in more settled cream instead of the others are all a bit garish."
+          ],
+          "matched_ids": [
+            "ES2015d.d02",
+            "ES2015d.d02-1",
+            "ES2015d.d02-2"
+          ],
+          "subject": "colour scheme",
+          "value": "The remote control will use a colour scheme based on fruit and vegetables, with different combinations representing different colours, such as banana for black and yellow, watermelon for red and green, and vanilla for a more subtle cream colour."
+        },
+        {
+          "title": "The level of technological innovation is set to three",
+          "evidence": [
+            "PM: Yeah we want it simple."
+          ],
+          "matched_ids": [],
+          "subject": "technological innovation level",
+          "value": "The level of technological innovation is set to three."
+        },
+        {
+          "title": "The ease of use is rated as one",
+          "evidence": [
+            "UI: Yeah very. I think one for that. Yeah. No."
+          ],
+          "matched_ids": [],
+          "subject": "ease of use",
+          "value": "The ease of use is rated as one."
+        },
+        {
+          "title": "The appearance of the remote control is rated as two",
+          "evidence": [
+            "PM: Sure."
+          ],
+          "matched_ids": [],
+          "subject": "remote control appearance",
+          "value": "The appearance of the remote control is rated as two."
+        },
+        {
+          "title": "The marketing strategy will emphasize the product's long-term cost savings by not requiring",
+          "evidence": [
+            "ME: But you don't have to buy batteries. So in the long term this can actually save you money. So we'll market it that way too."
+          ],
+          "matched_ids": [],
+          "subject": "marketing strategy for price",
+          "value": "The marketing strategy will emphasize the product's long-term cost savings by not requiring batteries."
+        },
+        {
+          "title": "The remote control's alarm system will include a noise and light indicators to help locate it when",
+          "evidence": [
+            "PM: You press the button it makes a noise right?"
+          ],
+          "matched_ids": [],
+          "subject": "remote control's alarm system",
+          "value": "The remote control's alarm system will include a noise and light indicators to help locate it when lost."
+        },
+        {
+          "title": "We have decided to reduce it down to the basic buttons, which makes it easier to use",
+          "evidence": [
+            "ID: Yeah I think just because it's we've decided to reduce it down to the basic buttons, I think that in itself makes it so much easier to use."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design",
+          "value": "We have decided to reduce it down to the basic buttons, which makes it easier to use."
+        },
+        {
+          "title": "The middle button will be an enter button, requiring two buttons to be pressed every time",
+          "evidence": [
+            "ME: Does it make more sense for the middle one to be an just an enter button? So then you would have to push two buttons every time at least."
+          ],
+          "matched_ids": [],
+          "subject": "remote control button layout",
+          "value": "The middle button will be an enter button, requiring two buttons to be pressed every time."
+        },
+        {
+          "title": "We will say yes it's one for the question regarding minimising the effects of R_S_I_",
+          "evidence": [
+            "ME: Um, okay so we can we'll say yes it's uh one? Okay."
+          ],
+          "matched_ids": [],
+          "subject": "remote control R_S_I_ effects",
+          "value": "We will say yes it's one for the question regarding minimising the effects of R_S_I_."
+        },
+        {
+          "title": "We will have to talk to our executive managers to see if we can get away with just the R_R_",
+          "evidence": [
+            "ME: So I think we'll have to talk to our executive managers, and see if we can get away with just the R_R_."
+          ],
+          "matched_ids": [],
+          "subject": "remote control colour and logo",
+          "value": "We will have to talk to our executive managers to see if we can get away with just the R_R_."
+        },
+        {
+          "title": "The costs are within budget",
+          "evidence": [
+            "PM: Yes our costs are within budget."
+          ],
+          "matched_ids": [],
+          "subject": "costs",
+          "value": "The costs are within budget."
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 3,
+      "meeting": "ES2015a",
+      "series": "ES2015",
+      "shaped": true,
+      "windows": 4,
+      "calls": 4,
+      "failure": null,
+      "wall_s": 10.82,
+      "items": [
+        {
+          "title": "The remote control should be created with a cost of no more than twelve Euro and fifty cents",
+          "evidence": [
+            "we want it to cost, uh, absolute maximum of twelve Euro and fifty cents."
+          ],
+          "matched_ids": [
+            "ES2015a.d05"
+          ],
+          "subject": "remote control price",
+          "value": "The remote control should be created with a cost of no more than twelve Euro and fifty cents."
+        },
+        {
+          "title": "The selling price of the remote control will be twenty five Euros",
+          "evidence": [
+            "wanna make this um selling price of twenty five Euros."
+          ],
+          "matched_ids": [
+            "ES2015a.d02"
+          ],
+          "subject": "selling price",
+          "value": "The selling price of the remote control will be twenty five Euros."
+        },
+        {
+          "title": "The remote control will be designed for an international market",
+          "evidence": [
+            "make it for an international market."
+          ],
+          "matched_ids": [
+            "ES2015a.d04"
+          ],
+          "subject": "target market",
+          "value": "The remote control will be designed for an international market."
+        },
+        {
+          "title": "The remote control will have a profit margin of at least one hundred percent",
+          "evidence": [
+            "Okay, so we'll have a hundred percent profit then? Twelve fifty."
+          ],
+          "matched_ids": [],
+          "subject": "profit margin",
+          "value": "The remote control will have a profit margin of at least one hundred percent."
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 3,
+      "meeting": "ES2015b",
+      "series": "ES2015",
+      "shaped": true,
+      "windows": 11,
+      "calls": 11,
+      "failure": null,
+      "wall_s": 45.7,
+      "items": [
+        {
+          "title": "A single function remote control is preferable because it is easier to use, more compatible with a",
+          "evidence": [
+            "UI: Um, I think that a single function remote control would be preferable, because it's easier to use. It'd be more compatible with a range of television sets, making it more internationally sellable."
+          ],
+          "matched_ids": [],
+          "subject": "remote control function",
+          "value": "A single function remote control is preferable because it is easier to use, more compatible with a range of television sets, and more internationally sellable."
+        },
+        {
+          "title": "The remote control will be designed for television functions only, and will not include controls",
+          "evidence": [
+            "we've decided not to include them and make it a specific, just a specific television um function."
+          ],
+          "matched_ids": [
+            "ES2015b.d01"
+          ],
+          "subject": "remote control functionality",
+          "value": "The remote control will be designed for television functions only, and will not include controls for D_V_D_ or V_C_R_."
+        },
+        {
+          "title": "The remote control will not include teletext navigation",
+          "evidence": [
+            "we won't concern ourselves with um navigating the teletext option."
+          ],
+          "matched_ids": [],
+          "subject": "teletext navigation",
+          "value": "The remote control will not include teletext navigation."
+        },
+        {
+          "title": "The remote control will not have teletext, L_C_D_, or voice recognition",
+          "evidence": [
+            "ME: Okay. So no L_C_D_, no teletext, and no voice recognition."
+          ],
+          "matched_ids": [
+            "ES2015b.d04",
+            "ES2015b.d04-1",
+            "ES2015b.d04-2",
+            "ES2015b.d04-3"
+          ],
+          "subject": "remote control functions",
+          "value": "The remote control will not have teletext, L_C_D_, or voice recognition."
+        },
+        {
+          "title": "The alarm device should be adhesive and small enough to be placed on the back of any TV without",
+          "evidence": [
+            "ID: Maybe Yeah, yeah. Maybe something adhesive that you could like stick onto the back of any set that would be um yeah not very obtrusive. Obviously something small that's Yeah, that's a good point."
+          ],
+          "matched_ids": [],
+          "subject": "alarm device placement",
+          "value": "The alarm device should be adhesive and small enough to be placed on the back of any TV without being obtrusive."
+        },
+        {
+          "title": "The buttons will light up for ten seconds when touched, rather than having a constant light up",
+          "evidence": [
+            "if instead of a constant light up on the, on the remote control, if it lights up for ten seconds when it's touched again."
+          ],
+          "matched_ids": [],
+          "subject": "button lighting",
+          "value": "The buttons will light up for ten seconds when touched, rather than having a constant light up."
+        },
+        {
+          "title": "The buttons will be shaped like numbers and made of glow-in-the-dark material",
+          "evidence": [
+            "We could, may, possibly, sorry, incorporate them both so that the buttons could maybe be in the shape of the numbers themselves and be made out of some glow-in-the-dark material."
+          ],
+          "matched_ids": [
+            "ES2015b.d07"
+          ],
+          "subject": "button design",
+          "value": "The buttons will be shaped like numbers and made of glow-in-the-dark material."
+        },
+        {
+          "title": "The buttons will include tactile features such as raised numbers and arrows for accessibility",
+          "evidence": [
+            "the numbers themselves. But then the like up button and down button for the channel, channel changing."
+          ],
+          "matched_ids": [],
+          "subject": "tactile features",
+          "value": "The buttons will include tactile features such as raised numbers and arrows for accessibility."
+        },
+        {
+          "title": "The remote control will use a lighting feature that does not constantly drain the battery",
+          "evidence": [
+            "I just thought that it, it might be sucking more battery power, if there, if it is a light up."
+          ],
+          "matched_ids": [],
+          "subject": "battery usage",
+          "value": "The remote control will use a lighting feature that does not constantly drain the battery."
+        },
+        {
+          "title": "The participants decided to incorporate interchangeable face plates for the remote control, similar",
+          "evidence": [
+            "PM: Yeah. I think that we should incorporate that."
+          ],
+          "matched_ids": [
+            "ES2015b.d08"
+          ],
+          "subject": "remote control face plates",
+          "value": "The participants decided to incorporate interchangeable face plates for the remote control, similar to those found on an iPod or mobile phone, which could increase the remote's popularity and profitability as an accessory."
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 3,
+      "meeting": "ES2015c",
+      "series": "ES2015",
+      "shaped": true,
+      "windows": 9,
+      "calls": 9,
+      "failure": null,
+      "wall_s": 79.46,
+      "items": [
+        {
+          "title": "The shape of the remote control should be designed with ergonomics in mind to ensure comfort and",
+          "evidence": [
+            "We don't want something that's huge and you can't pick up. Or too small. Or too slidy. I know I've had a remote control before which you couldn't tell which was the front and the back, 'cause it had so many buttons on, and the shape was so symmetrical that I'd be pressing like a volume button instead of the on button. Because you can't really see which way round it is."
+          ],
+          "matched_ids": [],
+          "subject": "remote control shape",
+          "value": "The shape of the remote control should be designed with ergonomics in mind to ensure comfort and ease of use, avoiding symmetrical designs that make it difficult to determine the front and back."
+        },
+        {
+          "title": "The remote control casing should be made of rubber for its anti-R_S_I_ properties and aesthetic",
+          "evidence": [
+            "we could use rubber which might be more um ideal for the anti-R_S_I_. It's like the same sort of rubber that's used in stress balls and things like that, so it's very like soft, not so stressful on your hands."
+          ],
+          "matched_ids": [],
+          "subject": "material for the remote control casing",
+          "value": "The remote control casing should be made of rubber for its anti-R_S_I_ properties and aesthetic flexibility."
+        },
+        {
+          "title": "The remote control should use integrated pushbuttons as the primary input method, with the",
+          "evidence": [
+            "simple would go with the pushbutton."
+          ],
+          "matched_ids": [],
+          "subject": "type of buttons for the remote control",
+          "value": "The remote control should use integrated pushbuttons as the primary input method, with the possibility of incorporating scroll buttons."
+        },
+        {
+          "title": "The remote control should use kinetic energy as its energy source for its novelty factor and",
+          "evidence": [
+            "I think we could go for the kinetic energy source. I don't, I think that's quite um an advanced kind of technology. It's not been seen before, so it could be quite a, a novelty factor, attractive as well. And also energy saving 'cause you're producing the energy, you don't need an external sort of battery supply or solar panels. You just give it a shake. Sounds brilliant to me."
+          ],
+          "matched_ids": [],
+          "subject": "energy source for the remote control",
+          "value": "The remote control should use kinetic energy as its energy source for its novelty factor and energy-saving benefits."
+        },
+        {
+          "title": "The actual remote would be hard plastic and the casings rubber",
+          "evidence": [
+            "ME: Okay. PM: Yeah. ME: So the actual remote would be hard plastic and the casings rubber. Okay. And the buttons obviously are rubber."
+          ],
+          "matched_ids": [
+            "ES2015c.d07"
+          ],
+          "subject": "remote exterior material",
+          "value": "The actual remote would be hard plastic and the casings rubber."
+        },
+        {
+          "title": "The team considered using solar power as a backup energy source",
+          "evidence": [
+            "UI: Maybe we could you were saying about um solar power ma maybe not working indoors, but a lot of calculators, yeah, have solar power. So maybe that could be incorporated as"
+          ],
+          "matched_ids": [],
+          "subject": "backup energy source",
+          "value": "The team considered using solar power as a backup energy source."
+        },
+        {
+          "title": "The participants decided to go with a command interface for the remote control as it would be less",
+          "evidence": [
+            "UI: Um, the co uh we've decided that the command interface would be the most useful for a remote control. As it would be less complicated, and the controls would be more user-friendly."
+          ],
+          "matched_ids": [],
+          "subject": "type of user interface",
+          "value": "The participants decided to go with a command interface for the remote control as it would be less complicated and more user-friendly."
+        },
+        {
+          "title": "The remote control will be designed to be simple and user-friendly, avoiding clutter and ensuring",
+          "evidence": [
+            "We, we also have to keep in mind when we're designing our, um, more user-friendly remote control, that a lot of interfaces consist of a clutter of buttons, that, um, that their functions, colours and forms aren't always helpful."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design",
+          "value": "The remote control will be designed to be simple and user-friendly, avoiding clutter and ensuring that the functions, colours, and forms are helpful."
+        },
+        {
+          "title": "The buttons on the remote control will be black to avoid colour clashing and to allow for a",
+          "evidence": [
+            "I think if we go with the um design plate thing, we'll have to. Just because of colour clashing, and if we wanted to, so and, and we might, I mean, depending on what comes out of the design, we might have to stick to just black buttons."
+          ],
+          "matched_ids": [],
+          "subject": "button colour",
+          "value": "The buttons on the remote control will be black to avoid colour clashing and to allow for a simplistic look."
+        },
+        {
+          "title": "The buttons will have a lighting up effect, where all buttons light up when one is touched, and the",
+          "evidence": [
+            "I thought we had um decided that we would if you touched one of the buttons they'd all light up. And so if they were black, it wouldn't be possible for them to light up."
+          ],
+          "matched_ids": [],
+          "subject": "button lighting",
+          "value": "The buttons will have a lighting up effect, where all buttons light up when one is touched, and the light will come from the back of the buttons."
+        },
+        {
+          "title": "The buttons will be made of rubber, as it is a more translucent material, allowing light to pass",
+          "evidence": [
+            "PM: Yeah, and well rubber is a more translucent product too, so we have that taken care of."
+          ],
+          "matched_ids": [
+            "ES2015c.d02"
+          ],
+          "subject": "button material",
+          "value": "The buttons will be made of rubber, as it is a more translucent material, allowing light to pass through from the back."
+        },
+        {
+          "title": "The priority for the remote control design is to have a fancy look-and-feel instead of the current",
+          "evidence": [
+            "The first one is that there should be a fancy look-and-feel, instead of the current functional look-and-feel. Um, this should be our priority, as we've been saying."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design priority",
+          "value": "The priority for the remote control design is to have a fancy look-and-feel instead of the current functional look-and-feel."
+        },
+        {
+          "title": "The remote control should be easy to use",
+          "evidence": [
+            "The third most important aspect is that the remote control should be easy to use."
+          ],
+          "matched_ids": [],
+          "subject": "remote control usability",
+          "value": "The remote control should be easy to use."
+        },
+        {
+          "title": "The feel of the material for the remote control is expected to be spongy, as discussed with rubber",
+          "evidence": [
+            "also, in contra uh in contrast to last year, the feel of the material is expected to be spongy. Again, we've already discussed that with rubber versus hard plastic buttons."
+          ],
+          "matched_ids": [],
+          "subject": "material feel for remote control",
+          "value": "The feel of the material for the remote control is expected to be spongy, as discussed with rubber versus hard plastic buttons."
+        },
+        {
+          "title": "The temporary light-up idea will be stuck to",
+          "evidence": [
+            "The temporary light-up idea, sounds like we're gonna stick to that."
+          ],
+          "matched_ids": [
+            "ES2015c.d02"
+          ],
+          "subject": "temporary light-up idea",
+          "value": "The temporary light-up idea will be stuck to."
+        },
+        {
+          "title": "The fruit and vegetable theme is considered a strange idea for a remote control and may not be",
+          "evidence": [
+            "But fruits and vegetables seems a very strange idea for a remote control."
+          ],
+          "matched_ids": [],
+          "subject": "fruit and vegetable theme",
+          "value": "The fruit and vegetable theme is considered a strange idea for a remote control and may not be implemented."
+        },
+        {
+          "title": "The product will use the simple chip without LCD and will have push buttons instead of scroll",
+          "evidence": [
+            "I think we decided on the pushbuttons, right?"
+          ],
+          "matched_ids": [
+            "ES2015c.d05"
+          ],
+          "subject": "chip type",
+          "value": "The product will use the simple chip without LCD and will have push buttons instead of scroll buttons."
+        },
+        {
+          "title": "The remote control case will be made of plastic coated in rubber and will have interchangeable",
+          "evidence": [
+            "PM: Yeah. Well, I guess plastic and coated in rubber. Plastic with rubber ID: Rubber. Yeah. Plastic rubber coat. UI: Yeah plastic coat. PM: coating and interchangeable ID: Interchangeable, yeah. Still going for that. Yeah."
+          ],
+          "matched_ids": [
+            "ES2015c.d07"
+          ],
+          "subject": "remote control case",
+          "value": "The remote control case will be made of plastic coated in rubber and will have interchangeable plates."
+        },
+        {
+          "title": "The remote control will have basic button functions including power, channels, and volume",
+          "evidence": [
+            "ID: Yeah. So we're just going for power, channels, volume, PM: changes like that. PM: Volume."
+          ],
+          "matched_ids": [
+            "ES2015c.d08"
+          ],
+          "subject": "button functions on remote control",
+          "value": "The remote control will have basic button functions including power, channels, and volume."
+        },
+        {
+          "title": "We will have a simple audio button instead of more complex audio settings",
+          "evidence": [
+            "UI: It w it would seem silly if we'd having anything else, just have an audio button though."
+          ],
+          "matched_ids": [],
+          "subject": "audio button",
+          "value": "We will have a simple audio button instead of more complex audio settings."
+        },
+        {
+          "title": "We will stick to the fruit and veggie theme for the remote control design",
+          "evidence": [
+            "PM: 'Kay we'll stick to the fruit and veggie theme then. Alright."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design theme",
+          "value": "We will stick to the fruit and veggie theme for the remote control design."
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 3,
+      "meeting": "ES2015d",
+      "series": "ES2015",
+      "shaped": true,
+      "windows": 9,
+      "calls": 9,
+      "failure": null,
+      "wall_s": 46.98,
+      "items": [
+        {
+          "title": "The remote control will have a circular design for the numbers to allow for more natural movement",
+          "evidence": [
+            "ID: So it's just like. We deci"
+          ],
+          "matched_ids": [],
+          "subject": "remote control design",
+          "value": "The remote control will have a circular design for the numbers to allow for more natural movement and improve ergonomics."
+        },
+        {
+          "title": "The remote control will be made of a spongy, rubber-like material similar to Play Doh to reduce the",
+          "evidence": [
+            "ID: Um and we're thinking to carry-on with the fruit and vegetable theme, the colour um combination just could just be named after different fruit, like banana could be black and yellow, watermelon red and green, or vanilla might be the most popular if it just uh blends in more settled cream instead of the others are all a bit garish."
+          ],
+          "matched_ids": [
+            "ES2015d.d02",
+            "ES2015d.d02-1",
+            "ES2015d.d02-2"
+          ],
+          "subject": "remote control material",
+          "value": "The remote control will be made of a spongy, rubber-like material similar to Play Doh to reduce the risk of repetitive stress injury and provide a comfortable feel."
+        },
+        {
+          "title": "The remote control will have volume and channel buttons positioned for easy access without taking",
+          "evidence": [
+            "ME: It's the R_."
+          ],
+          "matched_ids": [],
+          "subject": "remote control button layout",
+          "value": "The remote control will have volume and channel buttons positioned for easy access without taking the hand off the remote."
+        },
+        {
+          "title": "The remote control will use a colour scheme based on fruit and vegetables, with options like banana",
+          "evidence": [
+            "ID: Um and we're thinking to carry-on with the fruit and vegetable theme, the colour um combination just could just be named after different fruit, like banana could be black and yellow, watermelon red and green, or vanilla might be the most popular if it just uh blends in more settled cream instead of the others are all a bit garish."
+          ],
+          "matched_ids": [
+            "ES2015d.d02",
+            "ES2015d.d02-1",
+            "ES2015d.d02-2"
+          ],
+          "subject": "remote control colour scheme",
+          "value": "The remote control will use a colour scheme based on fruit and vegetables, with options like banana (black and yellow), watermelon (red and green), and vanilla (cream)."
+        },
+        {
+          "title": "The team decided that the level of technological innovation is three",
+          "evidence": [
+            "I'd say maybe three."
+          ],
+          "matched_ids": [],
+          "subject": "technological innovation level",
+          "value": "The team decided that the level of technological innovation is three."
+        },
+        {
+          "title": "The team decided that the remote control is easy to use and assigned it a score of one",
+          "evidence": [
+            "I think one for that."
+          ],
+          "matched_ids": [],
+          "subject": "ease of use",
+          "value": "The team decided that the remote control is easy to use and assigned it a score of one."
+        },
+        {
+          "title": "The team decided that the remote control's appearance is rated as two",
+          "evidence": [
+            "Okay, so should we say two for that? Yeah?"
+          ],
+          "matched_ids": [],
+          "subject": "remote control appearance",
+          "value": "The team decided that the remote control's appearance is rated as two."
+        },
+        {
+          "title": "The marketing will emphasize the product's simplicity and long-term cost savings due to not",
+          "evidence": [
+            "ME: But you don't have to buy batteries. So in the long term this can actually save you money. So we'll market it that way too."
+          ],
+          "matched_ids": [],
+          "subject": "marketing strategy for the product",
+          "value": "The marketing will emphasize the product's simplicity and long-term cost savings due to not requiring batteries."
+        },
+        {
+          "title": "The alarm system will make a noise and have a light that turns on when activated",
+          "evidence": [
+            "PM: You press the button it makes a noise right?"
+          ],
+          "matched_ids": [],
+          "subject": "alarm system functionality",
+          "value": "The alarm system will make a noise and have a light that turns on when activated."
+        },
+        {
+          "title": "The remote control case will be designed to be simplistic to avoid deterring customers from",
+          "evidence": [
+            "UI: I think we have to market it in the right way, that um to say that it is simplistic. So people don't just see it and think, uh, this is so simplistic, I don't want to spend twenty five Euros."
+          ],
+          "matched_ids": [],
+          "subject": "remote control case design",
+          "value": "The remote control case will be designed to be simplistic to avoid deterring customers from spending twenty five Euros."
+        },
+        {
+          "title": "The prototype matches the operating behaviour of the average user",
+          "evidence": [
+            "UI: I think it does very well."
+          ],
+          "matched_ids": [],
+          "subject": "operating behaviour of the remote control",
+          "value": "The prototype matches the operating behaviour of the average user."
+        },
+        {
+          "title": "We decided that the remote control case will be easier to find compared to every other remote ever",
+          "evidence": [
+            "We can give it a one, because compared to every other remote ever m ever made, this one will be easier to find."
+          ],
+          "matched_ids": [],
+          "subject": "remote control case",
+          "value": "We decided that the remote control case will be easier to find compared to every other remote ever made."
+        },
+        {
+          "title": "We decided that the remote control may not fully minimise the effects of R_S_I_, and more research",
+          "evidence": [
+            "We may have to do some more research into other strain injuries that we don't know about."
+          ],
+          "matched_ids": [],
+          "subject": "remote control effects on R_S_I_",
+          "value": "We decided that the remote control may not fully minimise the effects of R_S_I_, and more research may be needed."
+        },
+        {
+          "title": "We decided that the remote control will not always incorporate the company colour and logo due to",
+          "evidence": [
+            "We can't really do that because for example on the banana theme we can't have it as being yellow. It won't stand out. So n it's not always gonna be the same colour."
+          ],
+          "matched_ids": [],
+          "subject": "remote control colour and logo",
+          "value": "We decided that the remote control will not always incorporate the company colour and logo due to design constraints."
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 4,
+      "meeting": "ES2015a",
+      "series": "ES2015",
+      "shaped": true,
+      "windows": 4,
+      "calls": 4,
+      "failure": null,
+      "wall_s": 14.62,
+      "items": [
+        {
+          "title": "The remote control will be made for a maximum cost of twelve Euro and fifty cents to ensure a",
+          "evidence": [
+            "we want it to cost, uh, absolute maximum of twelve Euro and fifty cents."
+          ],
+          "matched_ids": [
+            "ES2015a.d05"
+          ],
+          "subject": "target profit margin",
+          "value": "The remote control will be made for a maximum cost of twelve Euro and fifty cents to ensure a hundred percent profit margin."
+        },
+        {
+          "title": "The remote control will be designed for an international market",
+          "evidence": [
+            "make it for an international market."
+          ],
+          "matched_ids": [
+            "ES2015a.d04"
+          ],
+          "subject": "target market",
+          "value": "The remote control will be designed for an international market."
+        },
+        {
+          "title": "The design team will need to consider different kinds of V_C_R_s depending on the country",
+          "evidence": [
+            "one thing we'd have to think about internationally is in the design of, um, like different kinds of, uh, V_C_R_s."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design considerations",
+          "value": "The design team will need to consider different kinds of V_C_R_s depending on the country."
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 4,
+      "meeting": "ES2015b",
+      "series": "ES2015",
+      "shaped": true,
+      "windows": 11,
+      "calls": 11,
+      "failure": null,
+      "wall_s": 43.8,
+      "items": [
+        {
+          "title": "A single function remote control is preferable because it is easier to use, more compatible with a",
+          "evidence": [
+            "UI: Um, I think that a single function remote control would be preferable, because it's easier to use. It'd be more compatible with a range of television sets, making it more internationally sellable."
+          ],
+          "matched_ids": [],
+          "subject": "remote control function",
+          "value": "A single function remote control is preferable because it is easier to use, more compatible with a range of television sets, and more internationally sellable."
+        },
+        {
+          "title": "The remote control will be designed for television functions only, without including DVD or VCR",
+          "evidence": [
+            "we've decided not to include them and make it a specific, just a specific television um function."
+          ],
+          "matched_ids": [
+            "ES2015b.d01"
+          ],
+          "subject": "remote control functionality",
+          "value": "The remote control will be designed for television functions only, without including DVD or VCR controls."
+        },
+        {
+          "title": "The remote control will not include teletext functionality as it is considered outdated",
+          "evidence": [
+            "the management feels that teletext is outdated, because more people are using the internet now. And so uh we won't concern ourselves with um navigating the teletext option."
+          ],
+          "matched_ids": [],
+          "subject": "teletext functionality",
+          "value": "The remote control will not include teletext functionality as it is considered outdated."
+        },
+        {
+          "title": "The remote control will not have teletext, L_C_D_, or voice recognition functions",
+          "evidence": [
+            "Okay. So no L_C_D_, no teletext, and no voice recognition."
+          ],
+          "matched_ids": [
+            "ES2015b.d04",
+            "ES2015b.d04-1",
+            "ES2015b.d04-2",
+            "ES2015b.d04-3"
+          ],
+          "subject": "remote control functions",
+          "value": "The remote control will not have teletext, L_C_D_, or voice recognition functions."
+        },
+        {
+          "title": "The remote control should have minimal buttons and prioritize findability",
+          "evidence": [
+            "I think we should definitely go ahead with the alarm system idea that you had. 'Cause I'm sure that could be inex inexpensive because we could use the same kind of infrared"
+          ],
+          "matched_ids": [
+            "ES2015b.d05"
+          ],
+          "subject": "remote control design",
+          "value": "The remote control should have minimal buttons and prioritize findability."
+        },
+        {
+          "title": "The alarm system will use a beeping noise or vibration similar to a mobile phone",
+          "evidence": [
+            "It could just like make a little beeping noise. It's not that expensive to do."
+          ],
+          "matched_ids": [],
+          "subject": "alarm system",
+          "value": "The alarm system will use a beeping noise or vibration similar to a mobile phone."
+        },
+        {
+          "title": "The alarm system device should be adhesive and small enough to stick onto the back of any TV set",
+          "evidence": [
+            "Maybe something adhesive that you could like stick onto the back of any set that would be um yeah not very obtrusive. Obviously something small that's Yeah, that's a good point."
+          ],
+          "matched_ids": [],
+          "subject": "alarm system device placement",
+          "value": "The alarm system device should be adhesive and small enough to stick onto the back of any TV set without being obtrusive."
+        },
+        {
+          "title": "The alarm system device will likely require a battery, unless a universal connection to the TV's",
+          "evidence": [
+            "Probably, I mean. That's your department you'll have to sort that out."
+          ],
+          "matched_ids": [],
+          "subject": "alarm system power source",
+          "value": "The alarm system device will likely require a battery, unless a universal connection to the TV's power socket can be found."
+        },
+        {
+          "title": "The remote control buttons will have a glow-in-the-dark, fluorescent, or similar system",
+          "evidence": [
+            "um, the glow-in-the-dark, fluorescent, whatever, system, um is a go ahead. Is everyone interested in that?"
+          ],
+          "matched_ids": [
+            "ES2015b.d06"
+          ],
+          "subject": "remote control buttons",
+          "value": "The remote control buttons will have a glow-in-the-dark, fluorescent, or similar system."
+        },
+        {
+          "title": "The buttons will light up for ten seconds when touched, similar to how a cellphone lights up when a",
+          "evidence": [
+            "if instead of a constant light up on the, on the remote control, if it lights up for ten seconds when it's touched again."
+          ],
+          "matched_ids": [],
+          "subject": "button lighting",
+          "value": "The buttons will light up for ten seconds when touched, similar to how a cellphone lights up when a button is pressed."
+        },
+        {
+          "title": "The buttons will be designed with raised numbers and tactile features for accessibility",
+          "evidence": [
+            "the numbers themselves. But then the like up button and down button for the channel, channel changing."
+          ],
+          "matched_ids": [],
+          "subject": "button design",
+          "value": "The buttons will be designed with raised numbers and tactile features for accessibility."
+        },
+        {
+          "title": "The buttons could be made out of glow-in-the-dark material",
+          "evidence": [
+            "made out of some glow-in-the-dark material. 'Cause I d I don't think that glow-in-the-dark material, um, like the actual soft plastic, um, costs that much more than other colours."
+          ],
+          "matched_ids": [],
+          "subject": "button material",
+          "value": "The buttons could be made out of glow-in-the-dark material."
+        },
+        {
+          "title": "The decision was made to use lighting up instantly rather than glow-in-the-dark material for the",
+          "evidence": [
+            "Alright. So we've decided on lighting up things."
+          ],
+          "matched_ids": [
+            "ES2015b.d06"
+          ],
+          "subject": "remote control button lighting",
+          "value": "The decision was made to use lighting up instantly rather than glow-in-the-dark material for the remote control buttons."
+        },
+        {
+          "title": "The decision was made to incorporate interchangeable face plates for the remote control",
+          "evidence": [
+            "I think that we should incorporate that."
+          ],
+          "matched_ids": [
+            "ES2015b.d08"
+          ],
+          "subject": "face plates for remote control",
+          "value": "The decision was made to incorporate interchangeable face plates for the remote control."
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 4,
+      "meeting": "ES2015c",
+      "series": "ES2015",
+      "shaped": true,
+      "windows": 9,
+      "calls": 9,
+      "failure": null,
+      "wall_s": 59.61,
+      "items": [
+        {
+          "title": "Rubber casing would be the best choice for the remote control, as it provides anti-R_S_I_ benefits",
+          "evidence": [
+            "Rubber casing I thing would probably the best, if we're going for the anti-R_S_I_ and like more choice with um aesthetics. Like it could be pretty much any colour we want. Um, and gives you, yeah, more flexibility there."
+          ],
+          "matched_ids": [],
+          "subject": "material for the remote control casing",
+          "value": "Rubber casing would be the best choice for the remote control, as it provides anti-R_S_I_ benefits and allows for more flexibility in aesthetics and color options."
+        },
+        {
+          "title": "The remote control should use a combination of scroll and push buttons, but not an L_C_D_ display,",
+          "evidence": [
+            "probably the regular chip as opposed to the simple, then we could possibly have the scroll and the push, but no L_C_D_, 'cause we probably can't afford that one."
+          ],
+          "matched_ids": [],
+          "subject": "type of buttons for the remote control",
+          "value": "The remote control should use a combination of scroll and push buttons, but not an L_C_D_ display, due to budget constraints."
+        },
+        {
+          "title": "The remote control should use kinetic energy as its energy source, as it is an advanced and",
+          "evidence": [
+            "My personal preferences? I think we could go for the kinetic energy source. I don't, I think that's quite um an advanced kind of technology. It's not been seen before, so it could be quite a, a novelty factor, attractive as well. And also energy saving 'cause you're producing the energy, you don't need an external sort of battery supply or solar panels. You just give it a shake. Sounds brilliant to me."
+          ],
+          "matched_ids": [],
+          "subject": "energy source for the remote control",
+          "value": "The remote control should use kinetic energy as its energy source, as it is an advanced and energy-saving technology that could serve as a novelty factor."
+        },
+        {
+          "title": "The actual remote would be hard plastic and the casings rubber",
+          "evidence": [
+            "ME: Okay. PM: Yeah. ME: So the actual remote would be hard plastic and the casings rubber. Okay. And the buttons obviously are rubber."
+          ],
+          "matched_ids": [
+            "ES2015c.d07"
+          ],
+          "subject": "remote exterior material",
+          "value": "The actual remote would be hard plastic and the casings rubber."
+        },
+        {
+          "title": "A backup energy source, such as solar power, was considered as an alternative",
+          "evidence": [
+            "UI: Maybe we could you were saying about um solar power ma maybe not working indoors, but a lot of calculators, yeah, have solar power. So maybe that could be incorporated as"
+          ],
+          "matched_ids": [],
+          "subject": "backup energy source",
+          "value": "A backup energy source, such as solar power, was considered as an alternative."
+        },
+        {
+          "title": "The participants decided to go with a command interface for the remote control as it would be less",
+          "evidence": [
+            "UI: Um, the co uh we've decided that the command interface would be the most useful for a remote control. As it would be less complicated, and the controls would be more user-friendly."
+          ],
+          "matched_ids": [],
+          "subject": "type of user interface",
+          "value": "The participants decided to go with a command interface for the remote control as it would be less complicated and more user-friendly."
+        },
+        {
+          "title": "The remote control will be designed to be simple and user-friendly, avoiding cluttered buttons with",
+          "evidence": [
+            "We, we also have to keep in mind when we're designing our, um, more user-friendly remote control, that a lot of interfaces consist of a clutter of buttons, that, um, that their functions, colours and forms aren't always helpful."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design",
+          "value": "The remote control will be designed to be simple and user-friendly, avoiding cluttered buttons with different colors and forms."
+        },
+        {
+          "title": "The buttons will be kept to one same color to maintain a simplistic look and avoid color clashing",
+          "evidence": [
+            "I think if we go with the um design plate thing, we'll have to. Just because of colour clashing, and if we wanted to, so and, and we might, I mean, depending on what comes out of the design, we might have to stick to just black buttons."
+          ],
+          "matched_ids": [],
+          "subject": "button color",
+          "value": "The buttons will be kept to one same color to maintain a simplistic look and avoid color clashing."
+        },
+        {
+          "title": "The buttons will light up from the back when touched, and the material will be rubber to allow for",
+          "evidence": [
+            "If they were white they would glow, probably. If they were made out of rubber."
+          ],
+          "matched_ids": [],
+          "subject": "button lighting effect",
+          "value": "The buttons will light up from the back when touched, and the material will be rubber to allow for translucency and glowing effect."
+        },
+        {
+          "title": "The product will use the simple chip without LCD, which corresponds to using push buttons instead",
+          "evidence": [
+            "so that was without the L_C_D_. So that means we're not doing the advanced. So it depends on whether we wanted the scroll buttons or just the push buttons."
+          ],
+          "matched_ids": [],
+          "subject": "chip type",
+          "value": "The product will use the simple chip without LCD, which corresponds to using push buttons instead of scroll buttons."
+        },
+        {
+          "title": "The remote control case will be made of plastic coated in rubber and will have interchangeable",
+          "evidence": [
+            "PM: Yeah. Well, I guess plastic and coated in rubber. Plastic with rubber ID: Rubber. Yeah. Plastic rubber coat. UI: Yeah plastic coat. PM: coating and interchangeable ID: Interchangeable, yeah. Still going for that. Yeah."
+          ],
+          "matched_ids": [
+            "ES2015c.d07"
+          ],
+          "subject": "remote control case",
+          "value": "The remote control case will be made of plastic coated in rubber and will have interchangeable plates."
+        },
+        {
+          "title": "The remote control will have basic button functions including power, channels, and volume",
+          "evidence": [
+            "ID: Yeah. So we're just going for power, channels, volume, PM: changes like that. PM: Volume."
+          ],
+          "matched_ids": [
+            "ES2015c.d08"
+          ],
+          "subject": "remote control buttons",
+          "value": "The remote control will have basic button functions including power, channels, and volume."
+        },
+        {
+          "title": "We decided to stick to the fruit and veggie theme for the casing ideas",
+          "evidence": [
+            "PM: 'Kay we'll stick to the fruit and veggie theme then. Alright."
+          ],
+          "matched_ids": [],
+          "subject": "theme for casing ideas",
+          "value": "We decided to stick to the fruit and veggie theme for the casing ideas."
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 4,
+      "meeting": "ES2015d",
+      "series": "ES2015",
+      "shaped": true,
+      "windows": 9,
+      "calls": 9,
+      "failure": null,
+      "wall_s": 50.57,
+      "items": [
+        {
+          "title": "The remote control design includes a circular layout for the numbers to allow for more natural",
+          "evidence": [
+            "ID: So it's just like. We deci"
+          ],
+          "matched_ids": [],
+          "subject": "remote control design",
+          "value": "The remote control design includes a circular layout for the numbers to allow for more natural thumb movement and improve ergonomics."
+        },
+        {
+          "title": "The remote control design allows for all buttons to be accessible without taking the hand off the",
+          "evidence": [
+            "UI: Yeah, so it's all accessible. Without m taking your hand off the remote."
+          ],
+          "matched_ids": [],
+          "subject": "remote control button placement",
+          "value": "The remote control design allows for all buttons to be accessible without taking the hand off the remote."
+        },
+        {
+          "title": "The remote control is made with a spongy, rubber-like material similar to Play Doh to reduce the",
+          "evidence": [
+            "ID: Um and we're thinking to carry-on with the fruit and vegetable theme, the colour um combination just could just be named after different fruit, like banana could be black and yellow, watermelon red and green, or vanilla might be the most popular if it just uh blends in more settled cream instead of the others are all a bit garish."
+          ],
+          "matched_ids": [
+            "ES2015d.d02",
+            "ES2015d.d02-1",
+            "ES2015d.d02-2"
+          ],
+          "subject": "remote control material",
+          "value": "The remote control is made with a spongy, rubber-like material similar to Play Doh to reduce the risk of repetitive stress injury and provide a comfortable feel."
+        },
+        {
+          "title": "The remote control will use a color scheme based on fruit and vegetable themes, with colors named",
+          "evidence": [
+            "ID: Um and we're thinking to carry-on with the fruit and vegetable theme, the colour um combination just could just be named after different fruit, like banana could be black and yellow, watermelon red and green, or vanilla might be the most popular if it just uh blends in more settled cream instead of the others are all a bit garish."
+          ],
+          "matched_ids": [
+            "ES2015d.d02",
+            "ES2015d.d02-1",
+            "ES2015d.d02-2"
+          ],
+          "subject": "remote control color scheme",
+          "value": "The remote control will use a color scheme based on fruit and vegetable themes, with colors named after specific fruits, such as banana (black and yellow) and watermelon (red and green)."
+        },
+        {
+          "title": "The team decided to rate the technological innovation level as three",
+          "evidence": [
+            "I'd say maybe three."
+          ],
+          "matched_ids": [],
+          "subject": "technological innovation level",
+          "value": "The team decided to rate the technological innovation level as three."
+        },
+        {
+          "title": "The team decided to rate the ease of use as one",
+          "evidence": [
+            "I think one for that. Yeah."
+          ],
+          "matched_ids": [],
+          "subject": "ease of use",
+          "value": "The team decided to rate the ease of use as one."
+        },
+        {
+          "title": "The marketing strategy will emphasize the product's simplicity and long-term cost savings by not",
+          "evidence": [
+            "ME: So yeah I think with a good marketing scheme um and the personalisation options, it'll"
+          ],
+          "matched_ids": [],
+          "subject": "marketing strategy for the product",
+          "value": "The marketing strategy will emphasize the product's simplicity and long-term cost savings by not requiring batteries."
+        },
+        {
+          "title": "The alarm system will include a noise and a light that activates when the alarm is triggered",
+          "evidence": [
+            "PM: You press the button it makes a noise right?"
+          ],
+          "matched_ids": [],
+          "subject": "alarm system features",
+          "value": "The alarm system will include a noise and a light that activates when the alarm is triggered."
+        },
+        {
+          "title": "The remote control case will be designed to be simplistic to appeal to users",
+          "evidence": [
+            "UI: I think we have to market it in the right way, that um to say that it is simplistic."
+          ],
+          "matched_ids": [],
+          "subject": "remote control case design",
+          "value": "The remote control case will be designed to be simplistic to appeal to users."
+        },
+        {
+          "title": "We will give it a one because compared to every other remote ever made, this one will be easier to",
+          "evidence": [
+            "ME: We can give it a one, because compared to every other remote ever m ever made, this one will be easier to find. Okay. Um"
+          ],
+          "matched_ids": [],
+          "subject": "remote control case",
+          "value": "We will give it a one because compared to every other remote ever made, this one will be easier to find."
+        },
+        {
+          "title": "It has to be easy for users to pick it up and know what to do",
+          "evidence": [
+            "ME: Question number eight. Will it be easy to learn how to use this remote when brand new? Remember that thirty four percent of users usually found it difficult. So it has to be yeah, it's eas they'll pick it up and they'll know what to do. The plus thing needs to be worked on."
+          ],
+          "matched_ids": [],
+          "subject": "remote control ease of use",
+          "value": "It has to be easy for users to pick it up and know what to do."
+        },
+        {
+          "title": "It will be reduced down to the basic buttons, making it easier to use",
+          "evidence": [
+            "ID: Yeah I think just because it's we've decided to reduce it down to the basic buttons, I think that in itself makes it so much easier to use."
+          ],
+          "matched_ids": [],
+          "subject": "remote control button layout",
+          "value": "It will be reduced down to the basic buttons, making it easier to use."
+        },
+        {
+          "title": "The middle button will be an enter button, requiring two buttons to be pressed every time",
+          "evidence": [
+            "ME: Does it make more sense for the middle one to be an just an enter button? So then you would have to push two buttons every time at least."
+          ],
+          "matched_ids": [],
+          "subject": "remote control button function",
+          "value": "The middle button will be an enter button, requiring two buttons to be pressed every time."
+        },
+        {
+          "title": "We will say yes it's one for minimising the effects of R_S_I_",
+          "evidence": [
+            "ME: Um, okay so we can we'll say yes it's uh one? Okay."
+          ],
+          "matched_ids": [],
+          "subject": "remote control R_S_I_ effects",
+          "value": "We will say yes it's one for minimising the effects of R_S_I_."
+        },
+        {
+          "title": "We will have to talk to our executive managers to see if we can get away with just the R_R_",
+          "evidence": [
+            "ME: So I think we'll have to talk to our executive managers, and see if we can get away with just the R_R_."
+          ],
+          "matched_ids": [],
+          "subject": "remote control colour and logo",
+          "value": "We will have to talk to our executive managers to see if we can get away with just the R_R_."
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 5,
+      "meeting": "ES2015a",
+      "series": "ES2015",
+      "shaped": true,
+      "windows": 4,
+      "calls": 4,
+      "failure": null,
+      "wall_s": 12.17,
+      "items": [
+        {
+          "title": "The remote control should be created with a cost of no more than twelve Euro and fifty cents",
+          "evidence": [
+            "we want it to cost, uh, absolute maximum of twelve Euro and fifty cents."
+          ],
+          "matched_ids": [
+            "ES2015a.d05"
+          ],
+          "subject": "remote control price",
+          "value": "The remote control should be created with a cost of no more than twelve Euro and fifty cents."
+        },
+        {
+          "title": "The remote control should have a selling price of twenty five Euros",
+          "evidence": [
+            "wanna make this um selling price of twenty five Euros."
+          ],
+          "matched_ids": [
+            "ES2015a.d02"
+          ],
+          "subject": "remote control selling price",
+          "value": "The remote control should have a selling price of twenty five Euros."
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 5,
+      "meeting": "ES2015b",
+      "series": "ES2015",
+      "shaped": true,
+      "windows": 11,
+      "calls": 11,
+      "failure": null,
+      "wall_s": 64.87,
+      "items": [
+        {
+          "title": "A single function remote control is preferable because it is easier to use, more compatible with a",
+          "evidence": [
+            "UI: Um, I think that a single function remote control would be preferable, because it's easier to use. It'd be more compatible with a range of television sets, making it more internationally sellable."
+          ],
+          "matched_ids": [],
+          "subject": "remote control function",
+          "value": "A single function remote control is preferable because it is easier to use, more compatible with a range of television sets, and more internationally sellable."
+        },
+        {
+          "title": "The target age group is young adults, specifically those aged thirty five to sixty five, as they",
+          "evidence": [
+            "PM: I agree with um if we're targeting young adults then it would be something we should look into. Um, financially and and functionally. Um, and especially if we are um trying to be trendy, go with fashions, things like that. Um, ages like from thirty five to sixty five which show lower numbers probably won't be as concerned."
+          ],
+          "matched_ids": [],
+          "subject": "target age group",
+          "value": "The target age group is young adults, specifically those aged thirty five to sixty five, as they are more likely to be concerned with financial and functional aspects and being trendy."
+        },
+        {
+          "title": "The intention is to have a simplistic design",
+          "evidence": [
+            "PM: Yeah. If we're looking for a simplistic design, if We need to decide if that is our um intention is, is a simplistic design."
+          ],
+          "matched_ids": [],
+          "subject": "design intention",
+          "value": "The intention is to have a simplistic design."
+        },
+        {
+          "title": "Voice-activated features are not intended to be included as they would negate the need for a remote",
+          "evidence": [
+            "PM: Yeah, and that would sort of negate the whole remote control thing, because if people can activate the television with their voice then they won't be using a, they won't be talking into a remote, I'm sure."
+          ],
+          "matched_ids": [],
+          "subject": "voice-activated features",
+          "value": "Voice-activated features are not intended to be included as they would negate the need for a remote control."
+        },
+        {
+          "title": "An LCD screen is considered as a potential feature, but its exact use is not determined",
+          "evidence": [
+            "ME: Oh just like an electronic screen. As opposed to just buttons. There would be like a little, like on Yeah. Like on the top of a cellphone, the the little L_C_D_ screen. Um, now that's, I, I dunno exactly what exactly we'd put on there. I guess the channel that you're on, the v the volume setting."
+          ],
+          "matched_ids": [],
+          "subject": "LCD screen",
+          "value": "An LCD screen is considered as a potential feature, but its exact use is not determined."
+        },
+        {
+          "title": "The remote control will be designed for television functions only, without including DVD or VCR",
+          "evidence": [
+            "we've decided not to include them and make it a specific, just a specific television um function."
+          ],
+          "matched_ids": [
+            "ES2015b.d01"
+          ],
+          "subject": "remote control functionality",
+          "value": "The remote control will be designed for television functions only, without including DVD or VCR controls."
+        },
+        {
+          "title": "The remote control will not include teletext functionality as it is considered outdated",
+          "evidence": [
+            "the management feels that teletext is outdated, because more people are using the internet now. And so uh we won't concern ourselves with um navigating the teletext option."
+          ],
+          "matched_ids": [],
+          "subject": "teletext functionality",
+          "value": "The remote control will not include teletext functionality as it is considered outdated."
+        },
+        {
+          "title": "The remote control must incorporate the company's logo and color scheme for brand recognition",
+          "evidence": [
+            "we need to, we probably would have to have that colour and, and logo decided upon."
+          ],
+          "matched_ids": [],
+          "subject": "branding on remote control",
+          "value": "The remote control must incorporate the company's logo and color scheme for brand recognition."
+        },
+        {
+          "title": "The remote control will not have teletext, L_C_D_, or voice recognition",
+          "evidence": [
+            "Okay. So no L_C_D_, no teletext, and no voice recognition."
+          ],
+          "matched_ids": [
+            "ES2015b.d04",
+            "ES2015b.d04-1",
+            "ES2015b.d04-2",
+            "ES2015b.d04-3"
+          ],
+          "subject": "remote control functions",
+          "value": "The remote control will not have teletext, L_C_D_, or voice recognition."
+        },
+        {
+          "title": "The remote control should have minimal buttons and focus on findability",
+          "evidence": [
+            "I think we should definitely go ahead with the alarm system idea that you had. 'Cause I'm sure that could be inex inexpensive because we could use the same kind of infrared"
+          ],
+          "matched_ids": [
+            "ES2015b.d05"
+          ],
+          "subject": "remote control design",
+          "value": "The remote control should have minimal buttons and focus on findability."
+        },
+        {
+          "title": "The alarm system will use a beeping noise or vibration similar to a mobile phone",
+          "evidence": [
+            "It could just like make a little beeping noise. It's not that expensive to do."
+          ],
+          "matched_ids": [],
+          "subject": "alarm system",
+          "value": "The alarm system will use a beeping noise or vibration similar to a mobile phone."
+        },
+        {
+          "title": "The alarm system device should be adhesive and small enough to be stuck on the back of any TV set",
+          "evidence": [
+            "Maybe something adhesive that you could like stick onto the back of any set that would be um yeah not very obtrusive. Obviously something small that's Yeah, that's a good point."
+          ],
+          "matched_ids": [],
+          "subject": "alarm system device placement",
+          "value": "The alarm system device should be adhesive and small enough to be stuck on the back of any TV set."
+        },
+        {
+          "title": "The alarm system device will probably need a battery, unless a universal connection to the TV's",
+          "evidence": [
+            "Probably, I mean. That's your department you'll have to sort that out."
+          ],
+          "matched_ids": [],
+          "subject": "alarm system power source",
+          "value": "The alarm system device will probably need a battery, unless a universal connection to the TV's power socket can be found."
+        },
+        {
+          "title": "The glow-in-the-dark, fluorescent, or similar system for the buttons is approved",
+          "evidence": [
+            "um, the glow-in-the-dark, fluorescent, whatever, system, um is a go ahead. Is everyone interested in that?"
+          ],
+          "matched_ids": [
+            "ES2015b.d06"
+          ],
+          "subject": "remote control buttons",
+          "value": "The glow-in-the-dark, fluorescent, or similar system for the buttons is approved."
+        },
+        {
+          "title": "The buttons will light up for ten seconds when touched, similar to how a cellphone lights up when a",
+          "evidence": [
+            "if instead of a constant light up on the, on the remote control, if it lights up for ten seconds when it's touched again."
+          ],
+          "matched_ids": [],
+          "subject": "button lighting",
+          "value": "The buttons will light up for ten seconds when touched, similar to how a cellphone lights up when a button is pressed."
+        },
+        {
+          "title": "The buttons will be designed with raised numbers and tactile elements for accessibility",
+          "evidence": [
+            "the numbers themselves. But then the like up button and down button for the channel, channel changing."
+          ],
+          "matched_ids": [],
+          "subject": "button design",
+          "value": "The buttons will be designed with raised numbers and tactile elements for accessibility."
+        },
+        {
+          "title": "The buttons could be made out of glow-in-the-dark material",
+          "evidence": [
+            "made out of some glow-in-the-dark material. 'Cause I d I don't think that glow-in-the-dark material, um, like the actual soft plastic, um, costs that much more than other colours."
+          ],
+          "matched_ids": [],
+          "subject": "material for buttons",
+          "value": "The buttons could be made out of glow-in-the-dark material."
+        },
+        {
+          "title": "The decision was made to use a lighting up instantly method instead of a glow-in-the-dark look for",
+          "evidence": [
+            "Alright. So we've decided on lighting up things."
+          ],
+          "matched_ids": [
+            "ES2015b.d06"
+          ],
+          "subject": "button lighting method",
+          "value": "The decision was made to use a lighting up instantly method instead of a glow-in-the-dark look for the buttons."
+        },
+        {
+          "title": "The participants decided to incorporate interchangeable face plates for the remote control",
+          "evidence": [
+            "I think that we should incorporate that."
+          ],
+          "matched_ids": [
+            "ES2015b.d08"
+          ],
+          "subject": "face plates",
+          "value": "The participants decided to incorporate interchangeable face plates for the remote control."
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 5,
+      "meeting": "ES2015c",
+      "series": "ES2015",
+      "shaped": true,
+      "windows": 9,
+      "calls": 9,
+      "failure": null,
+      "wall_s": 81.95,
+      "items": [
+        {
+          "title": "The regular chip with integrated pushbutton and scroll button would be the best choice, as it is",
+          "evidence": [
+            "probably the regular chip as opposed to the simple, then we could possibly have the scroll and the push, but no L_C_D_, 'cause we probably can't afford that one."
+          ],
+          "matched_ids": [],
+          "subject": "type of buttons for the remote control",
+          "value": "The regular chip with integrated pushbutton and scroll button would be the best choice, as it is more affordable and practical."
+        },
+        {
+          "title": "The kinetic energy source would be the preferred choice, as it is an advanced technology with",
+          "evidence": [
+            "My personal preferences? I think we could go for the kinetic energy source. I don't, I think that's quite um an advanced kind of technology. It's not been seen before, so it could be quite a, a novelty factor, attractive as well. And also energy saving 'cause you're producing the energy, you don't need an external sort of battery supply or solar panels. You just give it a shake. Sounds brilliant to me."
+          ],
+          "matched_ids": [],
+          "subject": "energy source for the remote control",
+          "value": "The kinetic energy source would be the preferred choice, as it is an advanced technology with energy-saving benefits and novelty appeal."
+        },
+        {
+          "title": "The actual remote would be hard plastic and the casings rubber. The buttons obviously are rubber",
+          "evidence": [
+            "ME: Okay. PM: Yeah. ME: So the actual remote would be hard plastic and the casings rubber. Okay. And the buttons obviously are rubber."
+          ],
+          "matched_ids": [
+            "ES2015c.d07"
+          ],
+          "subject": "remote exterior material",
+          "value": "The actual remote would be hard plastic and the casings rubber. The buttons obviously are rubber."
+        },
+        {
+          "title": "A backup energy source, such as solar power, was considered as an alternative",
+          "evidence": [
+            "UI: Maybe we could you were saying about um solar power ma maybe not working indoors, but a lot of calculators, yeah, have solar power. So maybe that could be incorporated as"
+          ],
+          "matched_ids": [],
+          "subject": "backup energy source",
+          "value": "A backup energy source, such as solar power, was considered as an alternative."
+        },
+        {
+          "title": "The decision was made to use a command interface for the remote control as it would be less",
+          "evidence": [
+            "UI: Um, the co uh we've decided that the command interface would be the most useful for a remote control. As it would be less complicated, and the controls would be more user-friendly."
+          ],
+          "matched_ids": [],
+          "subject": "type of user interface",
+          "value": "The decision was made to use a command interface for the remote control as it would be less complicated and the controls would be more user-friendly."
+        },
+        {
+          "title": "The remote control will be designed to be simple and user-friendly, avoiding clutter and ensuring",
+          "evidence": [
+            "We, we also have to keep in mind when we're designing our, um, more user-friendly remote control, that a lot of interfaces consist of a clutter of buttons, that, um, that their functions, colours and forms aren't always helpful."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design",
+          "value": "The remote control will be designed to be simple and user-friendly, avoiding clutter and ensuring that buttons are easy to understand."
+        },
+        {
+          "title": "The buttons on the remote control will be kept to one same colour to maintain a simplistic look and",
+          "evidence": [
+            "I think if we go with the um design plate thing, we'll have to. Just because of colour clashing, and if we wanted to, so and, and we might, I mean, depending on what comes out of the design, we might have to stick to just black buttons."
+          ],
+          "matched_ids": [],
+          "subject": "button colour",
+          "value": "The buttons on the remote control will be kept to one same colour to maintain a simplistic look and avoid colour clashing."
+        },
+        {
+          "title": "The buttons on the remote control will light up from the back when touched, and the light will come",
+          "evidence": [
+            "I thought we had um decided that we would if you touched one of the buttons they'd all light up. And so if they were black, it wouldn't be possible for them to light up."
+          ],
+          "matched_ids": [],
+          "subject": "button lighting effect",
+          "value": "The buttons on the remote control will light up from the back when touched, and the light will come from an internal source."
+        },
+        {
+          "title": "The buttons on the remote control will be made out of rubber, as it is a more translucent material",
+          "evidence": [
+            "PM: Yeah, and well rubber is a more translucent product too, so we have that taken care of."
+          ],
+          "matched_ids": [
+            "ES2015c.d02"
+          ],
+          "subject": "button material",
+          "value": "The buttons on the remote control will be made out of rubber, as it is a more translucent material that allows for lighting effects."
+        },
+        {
+          "title": "The buttons on the remote control will be raised up to make them more tangible and easier to use",
+          "evidence": [
+            "PM: Well, if they're raised up buttons. So that you can feel them. We were talking about it being more"
+          ],
+          "matched_ids": [],
+          "subject": "button design",
+          "value": "The buttons on the remote control will be raised up to make them more tangible and easier to use."
+        },
+        {
+          "title": "The priority for the remote control design is to have a fancy look-and-feel instead of the current",
+          "evidence": [
+            "The first one is that there should be a fancy look-and-feel, instead of the current functional look-and-feel. Um, this should be our priority, as we've been saying."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design priority",
+          "value": "The priority for the remote control design is to have a fancy look-and-feel instead of the current functional look-and-feel."
+        },
+        {
+          "title": "The remote control should be easy to use",
+          "evidence": [
+            "The third most important aspect is that the remote control should be easy to use."
+          ],
+          "matched_ids": [],
+          "subject": "remote control usability",
+          "value": "The remote control should be easy to use."
+        },
+        {
+          "title": "The feel of the material is expected to be spongy, as discussed with rubber versus hard plastic",
+          "evidence": [
+            "also, in contra uh in contrast to last year, the feel of the material is expected to be spongy. Again, we've already discussed that with rubber versus hard plastic buttons."
+          ],
+          "matched_ids": [],
+          "subject": "material feel",
+          "value": "The feel of the material is expected to be spongy, as discussed with rubber versus hard plastic buttons."
+        },
+        {
+          "title": "The temporary light-up idea is something we're going to stick to",
+          "evidence": [
+            "The temporary light-up idea, sounds like we're gonna stick to that."
+          ],
+          "matched_ids": [
+            "ES2015c.d02"
+          ],
+          "subject": "temporary light-up idea",
+          "value": "The temporary light-up idea is something we're going to stick to."
+        },
+        {
+          "title": "The fruit and vegetable theme is considered a strange idea for a remote control and may not be",
+          "evidence": [
+            "But fruits and vegetables seems a very strange idea for a remote control."
+          ],
+          "matched_ids": [],
+          "subject": "fruit and vegetable theme",
+          "value": "The fruit and vegetable theme is considered a strange idea for a remote control and may not be suitable."
+        },
+        {
+          "title": "The product will use the simple chip without an LCD, which means it will have push buttons instead",
+          "evidence": [
+            "so that was without the L_C_D_. So that means we're not doing the advanced. So it depends on whether we wanted the scroll buttons or just the push buttons."
+          ],
+          "matched_ids": [],
+          "subject": "chip type",
+          "value": "The product will use the simple chip without an LCD, which means it will have push buttons instead of scroll buttons."
+        },
+        {
+          "title": "The remote control case will be made of plastic coated in rubber and will have interchangeable",
+          "evidence": [
+            "PM: Yeah. Well, I guess plastic and coated in rubber. Plastic with rubber ID: Rubber. Yeah. Plastic rubber coat. UI: Yeah plastic coat. PM: coating and interchangeable ID: Interchangeable, yeah. Still going for that. Yeah."
+          ],
+          "matched_ids": [
+            "ES2015c.d07"
+          ],
+          "subject": "remote control case",
+          "value": "The remote control case will be made of plastic coated in rubber and will have interchangeable plates."
+        },
+        {
+          "title": "They decided to keep the fruit and vegetable theme for the remote control design, as it was the",
+          "evidence": [
+            "PM: 'Kay we'll stick to the fruit and veggie theme then. Alright."
+          ],
+          "matched_ids": [],
+          "subject": "remote control design theme",
+          "value": "They decided to keep the fruit and vegetable theme for the remote control design, as it was the most popular aspect from the market research."
+        }
+      ]
+    },
+    {
+      "arm": "pass",
+      "run": 5,
+      "meeting": "ES2015d",
+      "series": "ES2015",
+      "shaped": true,
+      "windows": 9,
+      "calls": 9,
+      "failure": null,
+      "wall_s": 49.68,
+      "items": [
+        {
+          "title": "The remote control will have a circular design for the numbers to allow for more natural movement",
+          "evidence": [
+            "ID: So it's just like. We deci"
+          ],
+          "matched_ids": [],
+          "subject": "remote control design",
+          "value": "The remote control will have a circular design for the numbers to allow for more natural movement with the thumb."
+        },
+        {
+          "title": "The remote control will be made of a spongy rubber material similar to Play Doh to help prevent",
+          "evidence": [
+            "ID: Um and we're thinking to carry-on with the fruit and vegetable theme, the colour um combination just could just be named after different fruit, like banana could be black and yellow, watermelon red and green, or vanilla might be the most popular if it just uh blends in more settled cream instead of the others are all a bit garish."
+          ],
+          "matched_ids": [
+            "ES2015d.d02",
+            "ES2015d.d02-1",
+            "ES2015d.d02-2"
+          ],
+          "subject": "remote control material",
+          "value": "The remote control will be made of a spongy rubber material similar to Play Doh to help prevent repetitive stress injury."
+        },
+        {
+          "title": "The remote control will use a colour scheme based on fruit and vegetable themes, with banana being",
+          "evidence": [
+            "ID: Banana's more representative of our colour scheme, like the company the yellow and black."
+          ],
+          "matched_ids": [],
+          "subject": "remote control colour scheme",
+          "value": "The remote control will use a colour scheme based on fruit and vegetable themes, with banana being the most representative of the company's colour scheme."
+        },
+        {
+          "title": "The level of technological innovation is set to three",
+          "evidence": [
+            "I'd say maybe three."
+          ],
+          "matched_ids": [],
+          "subject": "technological innovation level",
+          "value": "The level of technological innovation is set to three."
+        },
+        {
+          "title": "The ease of use is rated as one",
+          "evidence": [
+            "I think one for that."
+          ],
+          "matched_ids": [],
+          "subject": "ease of use",
+          "value": "The ease of use is rated as one."
+        },
+        {
+          "title": "The appearance of the remote control is rated as two",
+          "evidence": [
+            "Should we say two for that? Yeah?"
+          ],
+          "matched_ids": [],
+          "subject": "remote control appearance",
+          "value": "The appearance of the remote control is rated as two."
+        },
+        {
+          "title": "The marketing strategy will emphasize the product's simplicity and long-term cost savings to",
+          "evidence": [
+            "ME: But you don't have to buy batteries. So in the long term this can actually save you money. So we'll market it that way too."
+          ],
+          "matched_ids": [],
+          "subject": "marketing strategy for product price",
+          "value": "The marketing strategy will emphasize the product's simplicity and long-term cost savings to justify the price of twenty five Euros."
+        },
+        {
+          "title": "The remote control will have an alarm system that includes a noise and light, even if it is not",
+          "evidence": [
+            "UI: It would have to be in the market"
+          ],
+          "matched_ids": [],
+          "subject": "remote control's alarm system",
+          "value": "The remote control will have an alarm system that includes a noise and light, even if it is not immediately visible from the outside."
+        },
+        {
+          "title": "We will give it a one because compared to every other remote ever made, this one will be easier to",
+          "evidence": [
+            "ME: We can give it a one, because compared to every other remote ever m ever made, this one will be easier to find. Okay. Um"
+          ],
+          "matched_ids": [],
+          "subject": "remote control case",
+          "value": "We will give it a one because compared to every other remote ever made, this one will be easier to find."
+        },
+        {
+          "title": "We have decided that reducing it down to the basic buttons makes it easier to use",
+          "evidence": [
+            "ID: Yeah I think just because it's we've decided to reduce it down to the basic buttons, I think that in itself makes it so much easier to use."
+          ],
+          "matched_ids": [],
+          "subject": "remote control ease of use",
+          "value": "We have decided that reducing it down to the basic buttons makes it easier to use."
+        },
+        {
+          "title": "The middle button will be an enter button, requiring two buttons to be pressed every time",
+          "evidence": [
+            "ME: Does it make more sense for the middle one to be an just an enter button? So then you would have to push two buttons every time at least."
+          ],
+          "matched_ids": [],
+          "subject": "remote control button layout",
+          "value": "The middle button will be an enter button, requiring two buttons to be pressed every time."
+        },
+        {
+          "title": "We will say two because we think it will minimise the effects of R_S_I_ but we may have to do more",
+          "evidence": [
+            "ME: So, one or two do you think? UI: I I'd say t two. Yeah. ID: I think yeah, I think too."
+          ],
+          "matched_ids": [],
+          "subject": "remote control R_S_I_ effects",
+          "value": "We will say two because we think it will minimise the effects of R_S_I_ but we may have to do more research."
+        },
+        {
+          "title": "We did incorporate the company colour and logo, but the colour may vary depending on the theme",
+          "evidence": [
+            "PM: Yes we did. UI: Yeah. UI: N We we can't really do that because for example on the banana theme we can't have it as being yellow. It won't stand out. So n it's not always gonna be the same colour."
+          ],
+          "matched_ids": [],
+          "subject": "remote control colour and logo",
+          "value": "We did incorporate the company colour and logo, but the colour may vary depending on the theme."
+        },
+        {
+          "title": "They decided that the plates are interchangeable, allowing for different fruit-themed plates such",
+          "evidence": [
+            "ME: No, uh, are the plates interchangeable? I think I missed a few they are? So you can have banana and kiwi and okay. Okay, so that's something that's kind of in the making too, like maybe it'll become more"
+          ],
+          "matched_ids": [],
+          "subject": "number of plates",
+          "value": "They decided that the plates are interchangeable, allowing for different fruit-themed plates such as banana and kiwi."
+        },
+        {
+          "title": "They decided to average the fashion scores, resulting in a score between one and two",
+          "evidence": [
+            "ME: Okay, so our average there, five, six, eight, ten, eleven, twelve, thirteen, fifteen, nineteen, twenty one, divided by eleven"
+          ],
+          "matched_ids": [],
+          "subject": "fashion score",
+          "value": "They decided to average the fashion scores, resulting in a score between one and two."
+        },
+        {
+          "title": "They decided to tally up the production costs using an Excel file that was shared and locked for",
+          "evidence": [
+            "PM: Okay here we go. So we need to tally up how much our w our product will be costing. So um if you can look up at the screen, um the large screen, oh I guess looking at your own too and telling me which one you think."
+          ],
+          "matched_ids": [],
+          "subject": "production costs",
+          "value": "They decided to tally up the production costs using an Excel file that was shared and locked for editing."
+        },
+        {
+          "title": "The costs are within budget",
+          "evidence": [
+            "PM: Yes our costs are within budget."
+          ],
+          "matched_ids": [],
+          "subject": "costs",
+          "value": "The costs are within budget."
+        }
+      ]
+    }
+  ]
+}

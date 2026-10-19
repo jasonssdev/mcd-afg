@@ -1,0 +1,5 @@
+qwen3:8b exit=0 wall=785s
+qwen3:14b exit=0 wall=340s
+qwen3.6:35b-a3b exit=0 wall=209s
+qwen3.6:27b exit=0 wall=855s
+DONE
