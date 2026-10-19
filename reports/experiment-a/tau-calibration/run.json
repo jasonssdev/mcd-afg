@@ -1,0 +1,13 @@
+{
+  "judge_model": "gpt-oss:20b",
+  "judge_seconds_total": 1080.1114356652251,
+  "model_digest": "f38aa0c53da5f8c49d08c43a99df24ff53167fe68e24664a7777288e7656fdfe",
+  "n_failures": 0,
+  "n_pairs": 200,
+  "prompt_sha256": "c34d5fc3eb80dc9c90f39ed996d646df7ff1cc3d172745a9655e3a982ce0a758",
+  "prompt_version": "same-decision-v1",
+  "sample_seed": 42,
+  "seed": 42,
+  "temperature": 0.0,
+  "think": "low"
+}
