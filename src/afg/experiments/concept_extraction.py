@@ -18,6 +18,13 @@ OpenKOS ran three pre-registered, model-free-to-read evaluations of its concept 
   check and cite, over synthetic bundles only (no AMI material): ``ask-screen/round1.json``,
   ``round2.json`` and ``confirmation.json``, the harness's comparison reports (no generated
   text).
+- **#1585 and #1587, the sufficiency swap.** ADR-0076's adoption bar for that check, on
+  the measuring host (``ask-screen/swap-measure.json``) and with one chat model resident
+  (``runtime-screen/floor/``): per-question ``openkos query`` wall times only.
+- **#1586, the local runtime screen.** Ollama against ``llama.cpp`` and MLX: a performance
+  gate (``runtime-screen/stage1/``, summaries without local paths) and output equivalence
+  on the #1560 sufficiency arm (``runtime-screen/ask/``) and the #1557 replay
+  (``runtime-screen/concept/runtime-both.json``).
 - **#1558, the window-size screen.** Which ``_CHUNK_TARGET`` the extractor should cut a
   source into: ``window-screen/w8b.json`` and ``window-screen/decisions/w8b.json``.
 
@@ -63,6 +70,7 @@ __all__ = [
     "STAGES",
     "WINDOW_ARMS",
     "ConceptScreens",
+    "SwapBar",
     "WindowForecast",
     "ask_halving",
     "ask_penalty_frame",
@@ -82,7 +90,12 @@ __all__ = [
     "round_frame",
     "round_one_vetoes",
     "round_two_selection",
+    "runtime_ask_equivalence",
+    "runtime_concept_equivalence",
+    "runtime_gate",
+    "runtime_verdict",
     "stage_frame",
+    "swap_bar",
     "trace_frame",
     "window_arm_frame",
     "window_selection",
@@ -135,6 +148,13 @@ class ConceptScreens:
     window_decision: dict[str, Any]
     judge_study: dict[str, Any]
     ask_rounds: dict[str, dict[str, Any]]
+    swap_measure: list[dict[str, Any]]
+    floor: dict[str, list[dict[str, Any]]]
+    runtime_perf: dict[str, Any]
+    runtime_swap: dict[str, Any]
+    runtime_stage1: dict[str, Any]
+    runtime_ask: dict[str, dict[str, Any]]
+    runtime_concept: dict[str, Any]
 
 
 def _read(path: Path) -> Any:
@@ -146,6 +166,8 @@ def _meetings_in(screens: ConceptScreens) -> set[str]:
     for score in (screens.round1, screens.round2, screens.validity):
         for per_model in score.get("per_window", {}).values():
             meetings |= set(per_model)
+    for per_model in screens.runtime_concept.get("per_window", {}).values():
+        meetings |= set(per_model)
     for arm in screens.window["arms"].values():
         meetings |= set(arm.get("per_meeting", {}))
     meetings |= {row["meeting"] for row in screens.ablation_classes}
@@ -183,6 +205,19 @@ def load_concept_screens(
             name: _read(root / "ask-screen" / f"{name}.json")
             for name in ("round1", "round2", "confirmation")
         },
+        swap_measure=_read(root / "ask-screen" / "swap-measure.json"),
+        floor={
+            c: _read(root / "runtime-screen" / "floor" / f"floor-{c}-results.json")
+            for c in ("A", "B")
+        },
+        runtime_perf=_read(root / "runtime-screen" / "stage1" / "perf-summary.json"),
+        runtime_swap=_read(root / "runtime-screen" / "stage1" / "swap-summary.json"),
+        runtime_stage1=_read(root / "runtime-screen" / "stage1" / "stage1-verdict.json"),
+        runtime_ask={
+            m: _read(root / "runtime-screen" / "ask" / f"ask-{m}.json")
+            for m in ("qwen3-8b", "gemma4-26b-a4b")
+        },
+        runtime_concept=_read(root / "runtime-screen" / "concept" / "runtime-both.json"),
     )
     for row in screens.ablation_classes:
         if {"title", "description"} & set(row):
@@ -633,6 +668,185 @@ def ask_penalty_frame(report: Mapping[str, Any]) -> pd.DataFrame:
                 }
             )
     return pd.DataFrame(rows)
+
+
+# --------------------------------------------- #1585 / #1587, the sufficiency swap bar
+
+
+@dataclass(frozen=True)
+class SwapBar:
+    """ADR-0076's adoption bar over interleaved ``openkos query`` sequences.
+
+    Arm ``a`` runs the check on ``qwen3:8b``, arm ``b`` on ``gemma4:26b-a4b``; each sequence
+    is one cold question (index 0) and five warm ones.
+    """
+
+    cold_median_s: dict[str, float]
+    warm_median_s: dict[str, float]
+    warm_ratio: float
+    failed_questions: int
+    both_resident_b: int
+    questions_b: int
+    passes: bool
+
+
+def _median(values: Sequence[float]) -> float:
+    ordered = sorted(values)
+    mid = len(ordered) // 2
+    return ordered[mid] if len(ordered) % 2 else (ordered[mid - 1] + ordered[mid]) / 2
+
+
+def swap_bar(
+    sequences: Iterable[Mapping[str, Any]],
+    *,
+    warm_ratio_max: float = 1.5,
+    cold_max_s: float = 30.0,
+    chat_models: tuple[str, str] = ("qwen3:8b", "gemma4:26b-a4b"),
+) -> SwapBar:
+    """Apply ADR-0076's bar: (b)'s warm median <= 1.5 x (a)'s and (b)'s cold median <= 30 s.
+
+    Warm medians pool the five warm questions of every sequence of an arm; cold medians are
+    over the sequences' first questions. A failed question (non-zero exit) voids the bar.
+    ``both_resident_b`` counts arm-(b) questions after which ``ollama ps`` listed both chat
+    models, i.e. no swap happened (the memory condition was not enforced).
+    """
+    cold: dict[str, list[float]] = {}
+    warm: dict[str, list[float]] = {}
+    failed = 0
+    both = 0
+    questions_b = 0
+    for seq in sequences:
+        arm = seq["arm"]
+        for t in seq["times"]:
+            failed += t["rc"] != 0
+            (cold if t["q"] == 0 else warm).setdefault(arm, []).append(t["seconds"])
+            if arm == "b":
+                questions_b += 1
+                ps = t.get("ps") or ""
+                both += all(m in ps for m in chat_models)
+    cold_med = {a: _median(v) for a, v in cold.items()}
+    warm_med = {a: _median(v) for a, v in warm.items()}
+    ratio = warm_med["b"] / warm_med["a"]
+    passes = failed == 0 and ratio <= warm_ratio_max and cold_med["b"] <= cold_max_s
+    return SwapBar(cold_med, warm_med, ratio, failed, both, questions_b, passes)
+
+
+# ------------------------------------------------------------- #1586, the runtime screen
+
+_GAIN_SPEED: Final = 1.15
+_REGRESS_SPEED: Final = 0.90
+_GAIN_MEMORY: Final = 0.85
+_REGRESS_MEMORY: Final = 1.10
+_REGRESS_LOAD_RATIO: Final = 2.0
+_REGRESS_LOAD_EXTRA_S: Final = 10.0
+_GAIN_SWAP: Final = 0.5
+_EMBED_GIB: Final = 0.66
+_BUDGET_GIB: Final = 24.0
+
+
+def runtime_gate(
+    perf: Mapping[str, Any],
+    swap: Mapping[str, Any],
+    runtime: str,
+    *,
+    model: str = "qwen3-8b",
+    second: str = "gemma4-26b-a4b",
+    baseline: str = "ollama",
+) -> dict[str, Any]:
+    """#1586's stage-1 gate: no regression and at least one gain against Ollama.
+
+    Speed gains at >= 1.15x (regression < 0.90x) for decode and prefill; resident memory
+    gain at <= 0.85x (regression > 1.10x); load regresses only when > 2.0x **and** more
+    than 10 s slower; swap gains when its median is <= 0.5x Ollama's, or when both chat
+    models plus ``bge-m3`` (0.66 GiB) fit within 24 GiB where Ollama's do not.
+    """
+    cand = perf[f"{runtime}-{model}"]["summary"]
+    base = perf[f"{baseline}-{model}"]["summary"]
+    ratios = {
+        "decode": cand["decode_tps"] / base["decode_tps"],
+        "prefill": cand["prefill_tps"] / base["prefill_tps"],
+        "memory": cand["resident_gib"] / base["resident_gib"],
+        "load": cand["load_s_median"] / base["load_s_median"],
+        "swap": swap[runtime]["swap_s_median"] / swap[baseline]["swap_s_median"],
+    }
+
+    def both_gib(rt: str) -> float:
+        return (
+            perf[f"{rt}-{model}"]["summary"]["resident_gib"]
+            + perf[f"{rt}-{second}"]["summary"]["resident_gib"]
+            + _EMBED_GIB
+        )
+
+    both = {"candidate": both_gib(runtime), "baseline": both_gib(baseline)}
+    gains = [axis for axis in ("decode", "prefill") if ratios[axis] >= _GAIN_SPEED]
+    regressions = [axis for axis in ("decode", "prefill") if ratios[axis] < _REGRESS_SPEED]
+    if ratios["memory"] <= _GAIN_MEMORY:
+        gains.append("memory")
+    if ratios["memory"] > _REGRESS_MEMORY:
+        regressions.append("memory")
+    slower = cand["load_s_median"] - base["load_s_median"]
+    if ratios["load"] > _REGRESS_LOAD_RATIO and slower > _REGRESS_LOAD_EXTRA_S:
+        regressions.append("load")
+    if ratios["swap"] <= _GAIN_SWAP:
+        gains.append("swap")
+    if both["candidate"] <= _BUDGET_GIB < both["baseline"]:
+        gains.append("co-residence")
+    return {
+        "runtime": runtime,
+        **{f"{k}_ratio": v for k, v in ratios.items()},
+        "both_gib": both["candidate"],
+        "baseline_both_gib": both["baseline"],
+        "gains": tuple(gains),
+        "regressions": tuple(regressions),
+        "passes": bool(gains) and not regressions,
+    }
+
+
+def runtime_ask_equivalence(frame: pd.DataFrame) -> dict[str, bool]:
+    """#1586's equivalence on the #1560 sufficiency arm, per ``model@runtime`` row.
+
+    Equivalent when the pooled delta's 95% upper bound is not below 0 and none of V1, V2,
+    S2 or X1 fires; S1 is reported, not gating (its zero margin would trip an equal
+    runtime on about half of all runs).
+    """
+    gating = {"V1", "V2", "S2", "X1"}
+    return {
+        r.model: (not r.delta_high < 0) and not (set(r.vetoes) & gating) for r in frame.itertuples()
+    }
+
+
+def runtime_concept_equivalence(
+    frame: pd.DataFrame, g1: pd.DataFrame, *, baseline: str = BASELINE_MODEL
+) -> dict[str, dict[str, bool]]:
+    """#1586's equivalence on the #1557 replay: #1557's round-1 bars plus G1.
+
+    Window dlift upper bound not below 0; V1, V3, V4, V5 at #1557's registered values
+    against the Ollama rows; G1's lower bound >= -0.05.
+    """
+    base = frame.set_index("model").loc[baseline]
+    low, high = _volume_bounds(base.objects_per_meeting)
+    g = g1.set_index("model")
+    out = {}
+    for r in frame[frame.model != baseline].itertuples():
+        checks = {
+            "dlift upper >= 0": not r.dlift_high < 0,
+            "V1": r.failure_rate <= base.failure_rate + _V1_MARGIN + 1e-12
+            and r.failure_rate <= _V1_ABSOLUTE,
+            "V3": r.wrong_language_rate <= base.wrong_language_rate + _V3_MARGIN + 1e-12,
+            "V4": low - 1e-12 <= r.objects_per_meeting <= high + 1e-12,
+            "V5": r.verbatim_rate <= base.verbatim_rate + _V5_MARGIN + 1e-12,
+            "G1": g.loc[r.model].dprecision_low >= _G1_FLOOR,
+        }
+        flags = {k: bool(v) for k, v in checks.items()}
+        out[r.model] = {**flags, "equivalent": all(flags.values())}
+    return out
+
+
+def runtime_verdict(stage1_passes: bool, equivalent: Iterable[bool]) -> str:
+    """#1586's verdict: ``adopt-candidate``, ``faster but not equivalent`` or ``no gain``."""
+    if not stage1_passes:
+        return "no gain"
+    return "adopt-candidate" if all(equivalent) else "faster but not equivalent"
 
 
 # --------------------------------------------------------- #1558, the window-size screen
