@@ -1,0 +1,41 @@
+{
+ "llama.cpp": {
+  "qwen": {
+   "passes": true,
+   "gains": [
+    "prefill 1.21x"
+   ],
+   "regressions": []
+  },
+  "gemma_report": {
+   "passes": true,
+   "gains": [
+    "decode 1.38x"
+   ],
+   "regressions": []
+  },
+  "both_plus_embed_gib": 26.359999999254942,
+  "swap_s": 1.772000228986144
+ },
+ "mlx": {
+  "qwen": {
+   "passes": true,
+   "gains": [
+    "prefill 1.18x",
+    "both resident in 23.56 GiB"
+   ],
+   "regressions": []
+  },
+  "gemma_report": {
+   "passes": true,
+   "gains": [
+    "decode 1.28x",
+    "prefill 1.20x",
+    "memory 0.77x"
+   ],
+   "regressions": []
+  },
+  "both_plus_embed_gib": 23.559999999441207,
+  "swap_s": 3.3434722909587435
+ }
+}
