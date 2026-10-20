@@ -379,8 +379,9 @@ filas por archivo, con la semilla ya registrada). No las regeneres: `afg gold re
 se niega a sobrescribir una muestra que ya existe, y forzarlo con `--force` es decisión de
 `jss`, no tuya.
 
-`uv run afg gold setup --annotator gv` crea tus cuatro copias,
-`<serie>.recall-sample.gv.csv`, junto con el resto de tus archivos. Mismas columnas y
+`uv run afg gold setup --annotator gv` (o `prepare`) crea tu copia
+`<serie>.recall-sample.gv.csv` de cada serie que `jss` ya abrió, junto con el resto de tus
+archivos; las de series aún no abiertas aparecen al abrirse. Mismas columnas y
 **mismas reglas que la Tarea B**: mismo conjunto cerrado de `relation`, mismo `direction_ok`,
 misma `confidence`. `afg gold validate --annotator gv --series <serie>` revisa cada una con
 las mismas reglas de Tarea B, pero solo cuando el archivo existe; si aún no lo creaste, lo
