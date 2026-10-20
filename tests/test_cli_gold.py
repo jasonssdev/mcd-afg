@@ -253,6 +253,33 @@ class TestGoldValidateNotStarted:
         assert "errores" not in _row_for(result.output, "ES3")
 
 
+class TestGoldValidateRecallPending:
+    def test_missing_recall_file_is_reported_pending_and_does_not_fail(
+        self, plan: AnnotationPlan, paths: WorkspacePaths, sources: WorkspacePaths
+    ) -> None:
+        prepare_annotator_workspace(plan, "gm", paths=sources)
+        (sources.relations_dir / "ES2.recall-sample.gm.csv").unlink()
+
+        runner = CliRunner()
+        result = runner.invoke(afg_cli.app, ["gold", "validate", "--annotator", "gm"])
+
+        assert result.exit_code == 0, result.output
+        assert "Sin errores" in result.output
+        assert "ES2 Tarea C: pendiente (se entrega en un PR aparte)" in result.output
+        assert "sin preparar" not in _row_for(result.output, "ES2")
+
+    def test_present_recall_file_shows_no_pending_line(
+        self, plan: AnnotationPlan, paths: WorkspacePaths, sources: WorkspacePaths
+    ) -> None:
+        prepare_annotator_workspace(plan, "gm", paths=sources)
+
+        runner = CliRunner()
+        result = runner.invoke(afg_cli.app, ["gold", "validate", "--annotator", "gm"])
+
+        assert result.exit_code == 0, result.output
+        assert "Tarea C" not in result.output
+
+
 # --- defect 2: status --annotator -----------------------------------------------------
 
 

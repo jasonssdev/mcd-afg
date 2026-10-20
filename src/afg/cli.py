@@ -1282,7 +1282,8 @@ def gold_validate(
     quedó a medio llenar, y las columnas de máquina siguen idénticas al archivo base. Una
     serie sin preparar no cuenta como error de contenido -- se marca `sin preparar`, no
     `errores` -- pero de todos modos sale con código distinto de cero: no se puede abrir un
-    PR para archivos que no existen.
+    PR para archivos que no existen. La Tarea C (muestra de recall) se entrega en un PR
+    aparte: si su archivo aún no existe se informa como `pendiente`, sin fallar.
     """
     from afg.annotation.workspace import IssueKind, UnknownAnnotatorError, validate_annotator
 
@@ -1307,6 +1308,10 @@ def gold_validate(
             f"{progress.decisions_total} decisiones, {progress.candidates_filled}/"
             f"{progress.candidates_total} candidatos  (fase {progress.phase})  {mark}"
         )
+        if progress.recall_pending:
+            console.print(
+                f"  [dim]{progress.series_id} Tarea C: pendiente (se entrega en un PR aparte)[/dim]"
+            )
 
     if report.ok:
         console.print(
