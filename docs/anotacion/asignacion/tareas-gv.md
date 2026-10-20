@@ -385,7 +385,9 @@ archivos; las de series aún no abiertas aparecen al abrirse. Mismas columnas y
 **mismas reglas que la Tarea B**: mismo conjunto cerrado de `relation`, mismo `direction_ok`,
 misma `confidence`. `afg gold validate --annotator gv --series <serie>` revisa cada una con
 las mismas reglas de Tarea B, pero solo cuando el archivo existe; si aún no lo creaste, lo
-informa como `Tarea C: pendiente (se entrega en un PR aparte)` y no falla.
+informa como `Tarea C: pendiente (se entrega en un PR aparte)` y no falla. Como en las demás
+tareas, `validate` no exige que el archivo esté lleno (0/N no es un error): el avance, por
+ejemplo `0/50`, lo muestra `uv run afg gold status --annotator gv`.
 
 **Orden y carga.** ES2016, IS1003 y TS3005 son series de tu Fase 2; IS1004 es de la Fase 3.
 Cada muestra se hace al terminar la serie de la misma fase, para tener fresco el contexto de
