@@ -452,7 +452,10 @@ por sitio de grabación (ES2016, IS1003 y TS3005). Para cada serie:
 
 1. `uv run afg gold recall-sample --series <SERIE> --n 50 --seed 42` extrae 50 pares
    **rechazados** por el blocker, al azar, con semilla fija (la misma en las cuatro series).
-2. Los adjudicas con las mismas reglas de la Tarea B.
+2. Los adjudicas con las mismas reglas de la Tarea B, juzgando cada decisión por su estado en
+   la referencia: el `final_status` adjudicado en las series de doble anotación, la etiqueta
+   de quien anota en las de anotación individual. Por eso la muestra de una serie doble se
+   hace después de su adjudicación.
 3. Cualquier par que resulte distinto de `no_relacionada` es un **falso negativo del
    blocker**.
 

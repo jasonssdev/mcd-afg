@@ -35,7 +35,8 @@ ES2015 ya está adjudicada. Lo que sigue, en este orden:
 3. **Independencia:** no abras el PR, la rama ni el CSV de Gustavo, ni comenten casos de
    TS3009, hasta que `jss` anuncie la adjudicación de TS3009.
 4. **Espera la adjudicación de TS3009.** Después sigue ES2016 con la misma receta (§9).
-   Al cerrar ES2016, IS1003 y TS3005 haces además la Tarea C de cada una (§7), en PR aparte.
+   Cuando ES2016, IS1003 y TS3005 queden adjudicadas, haces además la Tarea C de cada una (§7),
+   en PR aparte.
 
 ---
 
@@ -386,13 +387,20 @@ misma `confidence`. `afg gold validate --annotator gv --series <serie>` revisa c
 las mismas reglas de Tarea B.
 
 **Orden y carga.** ES2016, IS1003 y TS3005 son series de tu Fase 2; IS1004 es de la Fase 3.
-Cada muestra se hace al terminar la serie de la misma fase, para tener fresco el contexto de
-las reuniones. Son 200 pares en total, ≈ 5 h a 1,5 min por par (150 pares de las tres series
+Cada muestra se hace apenas `jss` adjudica la serie, para tener fresco el contexto de las
+reuniones (IS1004, de anotación individual, al cerrarla). Son 200 pares en total, ≈ 5 h a 1,5 min por par (150 pares de las tres series
 de evaluación, ≈ 3,75 h, más los 50 de IS1004).
 
 **Qué mide.** Cada par que resulte **distinto de `no_relacionada`** es un **falso negativo
 del bloqueador**: una relación real que el filtro tiró. Sin esta muestra el bloqueador es una
 caja negra y la tesis no puede reportar qué se perdió (manual §5).
+
+**Contra qué decisiones se juzga.** La regla de la Tarea B (ninguna relación distinta de
+`no_relacionada` apunta a una decisión `sin_soporte`, `descartar` o `no_decision`) se aplica
+con el estado de la **referencia**, no con tus etiquetas: en ES2016, IS1003 y TS3005, el
+`final_status` de `<serie>.decisions.adjudicated.csv`; en IS1004, que no tiene doble
+anotación, tus propias etiquetas. Una `compuesta` se juzga por sus filas hijas. Así la
+Tarea C mide los falsos negativos contra el mismo conjunto de referencia que usa la tesis.
 
 **Si crees que hace falta otra muestra, no la generes.** Esa decisión la toma `jss` al ver
 los resultados de las cuatro. Escríbelo en el PR y para ahí.
