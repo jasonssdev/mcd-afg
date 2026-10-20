@@ -419,11 +419,46 @@ class TestRecallSampleSeries:
         prepare_annotator_workspace(multi, "gv", paths=sources)
         assert validate_annotator(multi, "gv", paths=sources, series="ES2008").ok
 
-        (sources.relations_dir / "ES2008.recall-sample.gv.csv").unlink()
+        # an existing recall file keeps being validated: tamper with a machine column
+        recall_file = sources.relations_dir / "ES2008.recall-sample.gv.csv"
+        tampered = recall_file.read_text(encoding="utf-8").replace("ES2008a.d01", "XX.d01")
+        recall_file.write_text(tampered, encoding="utf-8")
         report = validate_annotator(multi, "gv", paths=sources, series="ES2008")
         assert any("recall-sample" in issue.message for issue in report.issues)
+        assert not report.series[0].recall_pending
+
+        # a missing recall file is Task C delivered in a separate PR: pending, not an issue
+        recall_file.unlink()
+        report = validate_annotator(multi, "gv", paths=sources, series="ES2008")
+        assert report.ok
+        assert report.series[0].recall_pending
+        assert not report.series[0].not_started
         # the first recall series is unaffected by the missing second file
         assert validate_annotator(multi, "gv", paths=sources, series="IS1004").ok
+
+    def test_a_recall_file_without_its_base_file_is_still_an_issue(
+        self, paths: WorkspacePaths, sources: WorkspacePaths
+    ) -> None:
+        multi = load_annotation_plan(self._config(["IS1004", "ES2008"]))
+        _write_csv(
+            paths.relations_dir / "ES2008.recall-sample.csv",
+            _CANDIDATE_COLUMNS,
+            [_candidate_row("ES2008.r001", "ES2008a.d01", "ES2008b.d02")],
+        )
+        prepare_annotator_workspace(multi, "gv", paths=sources)
+        (sources.relations_dir / "ES2008.recall-sample.csv").unlink()
+        report = validate_annotator(multi, "gv", paths=sources, series="ES2008")
+        assert not report.ok
+        assert not report.series[0].recall_pending
+
+    def test_no_recall_file_and_no_base_file_is_pending_not_an_issue(
+        self, paths: WorkspacePaths, sources: WorkspacePaths
+    ) -> None:
+        multi = load_annotation_plan(self._config(["IS1004", "ES2008"]))
+        prepare_annotator_workspace(multi, "gv", paths=sources)
+        report = validate_annotator(multi, "gv", paths=sources, series="ES2008")
+        assert report.ok
+        assert report.series[0].recall_pending
 
     def test_recall_series_outside_the_assignments_are_listed_but_not_validated(
         self, paths: WorkspacePaths, sources: WorkspacePaths

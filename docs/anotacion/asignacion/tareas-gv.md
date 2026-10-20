@@ -383,7 +383,8 @@ se niega a sobrescribir una muestra que ya existe, y forzarlo con `--force` es d
 `<serie>.recall-sample.gv.csv`, junto con el resto de tus archivos. Mismas columnas y
 **mismas reglas que la Tarea B**: mismo conjunto cerrado de `relation`, mismo `direction_ok`,
 misma `confidence`. `afg gold validate --annotator gv --series <serie>` revisa cada una con
-las mismas reglas de Tarea B.
+las mismas reglas de Tarea B, pero solo cuando el archivo existe; si aún no lo creaste, lo
+informa como `Tarea C: pendiente (se entrega en un PR aparte)` y no falla.
 
 **Orden y carga.** ES2016, IS1003 y TS3005 son series de tu Fase 2; IS1004 es de la Fase 3.
 Cada muestra se hace al terminar la serie de la misma fase, para tener fresco el contexto de
@@ -529,7 +530,8 @@ Marca solo lo verificado. Es el checklist del manual §7, con lo que este repart
 cerrados, las filas a medio llenar y que ninguna columna de máquina se haya tocado — no
 hace falta revisarlos a ojo antes de correrlo, pero el checklist los deja explícitos porque
 `validate` no juzga criterio (`sin_soporte` justificado, orden cronológico, `compuesta`
-dividida con sentido).
+dividida con sentido). Si tu serie tiene Tarea C, `validate` la informa como pendiente y sale
+sin errores mientras su archivo no exista: se entrega en un PR aparte (§9).
 
 ### Tarea A
 - [ ] El trabajo se hizo sobre `<serie>.decisions.gv.csv`; `<serie>.decisions.csv` quedó intacto

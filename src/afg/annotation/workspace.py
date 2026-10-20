@@ -643,6 +643,12 @@ class SeriesProgress:
     candidates_filled: int
     candidates_total: int
     issues: tuple[ValidationIssue, ...]
+    recall_pending: bool = False
+    """Task C applies to this series but its file is not there yet.
+
+    Not an issue: Task C is delivered in a separate pull request after the series closes,
+    so its absence must not fail the A/B gate. ``validate`` reports it on its own line.
+    """
 
     @property
     def ok(self) -> bool:
@@ -1079,7 +1085,10 @@ def validate_annotator(
 
     Three kinds of check, per file: closed-set legality, half-filled rows, and machine
     columns against the generated base file. The recall sample, when this person owns it,
-    is validated with the Task-B rules -- the manual adjudicates it by the same rules.
+    is validated with the Task-B rules -- the manual adjudicates it by the same rules --
+    but only once its file exists: Task C is delivered in a separate pull request after the
+    series closes, so a missing recall file is reported as ``recall_pending``, not as an
+    issue. A recall file present without its base file is still an issue.
 
     Raises:
         UnknownAnnotatorError: if ``initials`` is not in the plan.
@@ -1120,13 +1129,18 @@ def validate_annotator(
         )
         issues = [*issues, *candidate_issues]
 
+        recall_pending = False
         if recall.owner == initials and assignment.series_id in recall.series_ids:
-            _, _, recall_issues = _validate_file(
-                paths.target(TaskKind.RECALL_SAMPLE, assignment.series_id, initials),
-                paths.source(TaskKind.RECALL_SAMPLE, assignment.series_id),
-                TaskKind.RECALL_SAMPLE,
-            )
-            issues.extend(recall_issues)
+            recall_target = paths.target(TaskKind.RECALL_SAMPLE, assignment.series_id, initials)
+            if recall_target.exists():
+                _, _, recall_issues = _validate_file(
+                    recall_target,
+                    paths.source(TaskKind.RECALL_SAMPLE, assignment.series_id),
+                    TaskKind.RECALL_SAMPLE,
+                )
+                issues.extend(recall_issues)
+            else:
+                recall_pending = True
 
         progresses.append(
             SeriesProgress(
@@ -1137,6 +1151,7 @@ def validate_annotator(
                 candidates_filled=candidates_filled,
                 candidates_total=candidates_total,
                 issues=tuple(issues),
+                recall_pending=recall_pending,
             )
         )
 
