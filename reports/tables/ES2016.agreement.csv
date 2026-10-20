@@ -1,0 +1,4 @@
+series_id,annotator_a,annotator_b,axis,n_items,kappa,disagreeing_pair_ids
+ES2016,gm,gv,existence,4,nan,
+ES2016,gm,gv,type,4,1.0,
+ES2016,gm,gv,direction,4,nan,
