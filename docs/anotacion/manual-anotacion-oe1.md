@@ -114,11 +114,11 @@ copia con las columnas humanas vacías: el trabajo desaparece sin ningún error 
 
 | Valor | Cuándo |
 |---|---|
-| `decision` | Cumple las tres condiciones de §5.2: explícita, aceptada, anclada |
-| `no_decision` | Propuesta abierta, pregunta u opinión. **Se conserva**: mide falsos positivos |
-| `compuesta` | La frase contiene N decisiones. Se divide (ver abajo) |
-| `sin_soporte` | La evidencia no respalda lo que la frase afirma |
-| `descartar` | Frase truncada, rota o ininteligible, o que repite una decisión ya anotada en la misma reunión (ver abajo) |
+| `decision` | Cumple las tres condiciones de §5.2: explícita, aceptada, anclada. **Criterio de calibración GM/GV:** las decisiones deben centrarse estrictamente en la idea, producto u objeto del control; se excluyen asuntos sin impacto directo en su desarrollo. |
+| `no_decision` | Propuesta abierta, pregunta u opinión. **Se conserva**: mide falsos positivos. **Criterio de calibración GM/GV:** asuntos que no impactan en el desarrollo del producto, por ejemplo, acordar que en la siguiente reunión se analizará el material del control. |
+| `compuesta` | La frase contiene N decisiones. Se divide (ver abajo). **Criterio de calibración GM/GV:** si una frase contiene decisiones sobre más de una idea, producto u objeto del control, se divide en más de una fila, siguiendo la regla de separabilidad descrita abajo. |
+| `sin_soporte` | La evidencia no respalda lo que la frase afirma. **Criterio de calibración GM/GV:** no basta con que `evidence_text` esté vacío; se debe validar contra lo registrado en la reunión. |
+| `descartar` | Frase truncada, rota o ininteligible, o que repite una decisión ya anotada en la misma reunión (ver abajo). |
 
 **`compuesta` no es un veredicto final, es una instrucción.** Marcas la fila original como
 `compuesta` y creas N filas nuevas con `decision_id` sufijado `-1`, `-2`, … copiando
