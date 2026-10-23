@@ -114,7 +114,7 @@ copia con las columnas humanas vacías: el trabajo desaparece sin ningún error 
 
 | Valor | Cuándo |
 |---|---|
-| `decision` | Cumple las tres condiciones de §5.2: explícita, aceptada, anclada. **Criterio de calibración GM/GV:** las decisiones deben centrarse estrictamente en la idea, producto u objeto del control; se excluyen asuntos sin impacto directo en su desarrollo. |
+| `decision` | Compromiso sobre una acción o propiedad del producto que cumple las tres condiciones de §5.2: explícita, aceptada, anclada. **Criterio de calibración GM/GV:** las decisiones deben centrarse estrictamente en la idea, producto u objeto del control; se excluyen asuntos sin impacto directo en su desarrollo. |
 | `no_decision` | Propuesta abierta, pregunta u opinión. **Se conserva**: mide falsos positivos. **Criterio de calibración GM/GV:** asuntos que no impactan en el desarrollo del producto, por ejemplo, acordar que en la siguiente reunión se analizará el material del control. |
 | `compuesta` | La frase contiene N decisiones. Se divide (ver abajo). **Criterio de calibración GM/GV:** si una frase contiene decisiones sobre más de una idea, producto u objeto del control, se divide en más de una fila, siguiendo la regla de separabilidad descrita abajo. |
 | `sin_soporte` | La evidencia no respalda lo que la frase afirma. **Criterio de calibración GM/GV:** no basta con que `evidence_text` esté vacío; se debe validar contra lo registrado en la reunión. |
@@ -580,6 +580,8 @@ Marca solo lo verificado. Cada ítem corresponde a algo revisable después.
 - [ ] Toda fila con `status = decision` tiene `decision_object` **y** `decision_content`
 - [ ] Toda fila `compuesta` tiene sus filas hijas `-1`, `-2`, … creadas
 - [ ] Cada `compuesta` es realmente separable (una parte podría cambiar sin la otra); atributos y razones no se dividen
+- [ ] Toda fila `decision` trata sobre una acción o propiedad del producto; los acuerdos de proceso
+      (por ejemplo, qué se revisará en la siguiente reunión) quedaron como `no_decision`
 - [ ] Todo duplicado dentro de la reunión está marcado `descartar`, con `notes` indicando qué fila duplica
 - [ ] Ninguna fila hija quedó con `status = compuesta`
 - [ ] **Toda fila con `evidence_da_count = 0` fue revisada contra la transcripción**
