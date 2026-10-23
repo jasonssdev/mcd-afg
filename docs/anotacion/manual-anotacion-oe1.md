@@ -120,6 +120,15 @@ copia con las columnas humanas vacías: el trabajo desaparece sin ningún error 
 | `sin_soporte` | La evidencia no respalda lo que la frase afirma. **Criterio de calibración GM/GV:** no basta con que `evidence_text` esté vacío; se debe validar contra lo registrado en la reunión. |
 | `descartar` | Frase truncada, rota o ininteligible, o que repite una decisión ya anotada en la misma reunión (ver abajo). |
 
+> **Alcance de los criterios de calibración GM/GV.** Rigen para las series que se anoten a
+> partir de su incorporación. Las referencias ya adjudicadas (ES2015, TS3009 y ES2016) no se
+> readjudican: cambiarlas después de calcular resultados debilitaría la evaluación, y las
+> filas en que ambas personas coincidieron no pasan por adjudicación. El caso conocido que
+> este criterio clasificaría como `no_decision` es `TS3009a.d01` (se deja la definición de
+> componentes y materiales para la siguiente reunión; ambas personas lo marcaron `decision`).
+> El kappa no cambia, porque se calcula sobre las etiquetas de cada persona y no sobre la
+> adjudicación.
+
 **`compuesta` no es un veredicto final, es una instrucción.** Marcas la fila original como
 `compuesta` y creas N filas nuevas con `decision_id` sufijado `-1`, `-2`, … copiando
 `source_sentence_id` y `evidence_text`. Cada fila nueva lleva su propio
