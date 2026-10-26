@@ -34,6 +34,8 @@ from afg.bibliography.audit import run_audit
 from afg.bibliography.audit import write_csv as write_biblio_csv
 from afg.bibliography.library import load_library
 from afg.conditions.base import Condition
+from afg.conditions.c1_ablation import ABLATION_PATH as C1_ABLATION_PATH
+from afg.conditions.c1_ablation import evaluate_modes, save_ablation_results
 from afg.conditions.c1_document_rag import (
     ChatError,
     DocumentRagCondition,
@@ -45,9 +47,14 @@ from afg.conditions.c1_tuning import (
 )
 from afg.conditions.c1_tuning import (
     NoEligibleConfigError,
+    TuningConfig,
+    TuningQuestion,
     evaluate_grid,
+    load_pinned_c1_params,
     load_tuning_config,
     load_tuning_questions,
+    questions_with_any_delivered_hit,
+    questions_with_any_hit,
     save_tuning_results,
     select_winner,
     series_meetings,
@@ -2102,20 +2109,12 @@ def c1_ask(
     )
 
 
-@c1_app.command("tune")
-def c1_tune() -> None:
-    """Mide el recall de evidencia de C1 sobre desarrollo y elige segmentación y K.
+def _c1_development_inputs() -> tuple[TuningConfig, list[TuningQuestion], list[str]]:
+    """Development config, questions and meetings for the C1 retrieval analyses.
 
-    Solo recuperación (sin modelo generativo): para cada combinación de `max_chars`,
-    `overlap_turns` y K de `[retrieval.tuning]`, mide qué fracción de los actos de diálogo de
-    referencia llegan completos al modelo, es decir, sobrevivientes al recorte del presupuesto
-    de contexto de OpenKOS (recall entregado, el que decide), y los compara con los que caen
-    en los K fragmentos recuperados sin recortar (recall de fragmentos completos). Indexa la
-    serie completa (D15) y usa las preguntas respondibles (E1-E3) del conjunto de calibración
-    del juez. Los resultados quedan en `reports/c1-tuning/resultados.json`.
+    Refuses non-development series (ADR 0005) and checks that the embedding model is
+    installed in Ollama; prints the reason and exits with code 1 otherwise.
     """
-    from rich.table import Table
-
     quiet_http_logs()
     try:
         config = load_tuning_config()
@@ -2154,6 +2153,24 @@ def c1_tune() -> None:
             f"`ollama pull {model}`"
         )
         raise typer.Exit(code=1)
+    return config, questions, meetings
+
+
+@c1_app.command("tune")
+def c1_tune() -> None:
+    """Mide el recall de evidencia de C1 sobre desarrollo y elige segmentación y K.
+
+    Solo recuperación (sin modelo generativo): para cada combinación de `max_chars`,
+    `overlap_turns` y K de `[retrieval.tuning]`, mide qué fracción de los actos de diálogo de
+    referencia llegan completos al modelo, es decir, sobrevivientes al recorte del presupuesto
+    de contexto de OpenKOS (recall entregado, el que decide), y los compara con los que caen
+    en los K fragmentos recuperados sin recortar (recall de fragmentos completos). Indexa la
+    serie completa (D15) y usa las preguntas respondibles (E1-E3) del conjunto de calibración
+    del juez. Los resultados quedan en `reports/c1-tuning/resultados.json`.
+    """
+    from rich.table import Table
+
+    config, questions, meetings = _c1_development_inputs()
 
     n_configs = len(config.max_chars) * len(config.overlap_turns)
     console.print(
@@ -2212,6 +2229,59 @@ def c1_tune() -> None:
         C1_TUNING_RESULTS_PATH, results, selection, config=config, n_questions=len(questions)
     )
     console.print(f"Resultados guardados en {_short(C1_TUNING_RESULTS_PATH)}.")
+
+
+@c1_app.command("ablate")
+def c1_ablate() -> None:
+    """Compara BM25, denso e híbrido (RRF) como recuperador de C1 sobre desarrollo.
+
+    Solo recuperación (sin modelo generativo): con la segmentación y el K fijados en
+    `[retrieval.c1]`, mide para cada modo de recuperación las mismas cifras que `afg c1 tune`
+    (recall de evidencia, recall entregado tras el recorte del presupuesto de contexto y
+    preguntas con algún acierto). Usa las series de desarrollo de `[retrieval.tuning]`
+    (ADR 0005) y deja los resultados en `reports/c1-tuning/ablacion-recuperacion.json`.
+    """
+    from rich.table import Table
+
+    config, questions, meetings = _c1_development_inputs()
+    try:
+        params = load_pinned_c1_params()
+    except ValueError as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    console.print(
+        f"{len(questions)} preguntas, {len(meetings)} reuniones ({', '.join(config.series)}), "
+        f"max_chars={params.max_chars}, overlap_turns={params.overlap_turns}, K={params.k}."
+    )
+    try:
+        results = evaluate_modes(
+            questions, meetings, params, config, make_c1_embedder(), TRANSCRIPTS_DIR
+        )
+    except (ValueError, RuntimeError, FileNotFoundError) as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+
+    table = Table(title="Recuperación de C1 por modo")
+    for column in ("modo", "recall entregado", "recall fragmentos", "con acierto", "entregado"):
+        table.add_column(column, justify="right")
+    for r in results:
+        table.add_row(
+            r.mode,
+            f"{r.result.mean_delivered_recall:.3f}",
+            f"{r.result.mean_recall:.3f}",
+            f"{questions_with_any_hit(r.result)}/{len(questions)}",
+            f"{questions_with_any_delivered_hit(r.result)}/{len(questions)}",
+        )
+    console.print(table)
+    save_ablation_results(
+        C1_ABLATION_PATH,
+        results,
+        params=params,
+        config=config,
+        n_questions=len(questions),
+        git_commit=current_git_commit(),
+    )
+    console.print(f"Resultados guardados en {_short(C1_ABLATION_PATH)}.")
 
 
 def make_openkos_adapter(base_dir: Path) -> OpenKosAdapter:

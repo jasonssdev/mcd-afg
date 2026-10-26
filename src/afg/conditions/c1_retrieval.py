@@ -42,6 +42,7 @@ from afg.shared.config import get_settings, load_experiments_config
 
 DEFAULT_OLLAMA_HOST = "http://localhost:11434"
 MIN_POOL = 10
+RETRIEVAL_MODES: tuple[str, ...] = ("bm25", "dense", "hybrid")
 
 # English function words dropped from BM25 documents and queries. Small and explicit on
 # purpose: it removes grammatical glue and question words, not content words.
@@ -256,22 +257,33 @@ class RetrievedChunk:
 
 @dataclass(slots=True)
 class HybridRetriever:
-    """BM25 + dense retrieval fused with RRF over a fixed set of chunks."""
+    """BM25 + dense retrieval fused with RRF over a fixed set of chunks.
+
+    ``mode`` selects the channels: ``hybrid`` (default, what C1 runs with), or ``bm25`` /
+    ``dense`` for the single-channel ablation (the other channel is never queried; a
+    ``bm25`` retriever does not embed anything). Single-channel hits keep the pool and
+    ranking rules of the hybrid channels, so only the fusion is removed.
+    """
 
     chunks: Sequence[Chunk]
     embedder: Embedder
     rrf_k: int = 60
+    mode: str = "hybrid"
     _by_id: dict[str, Chunk] = field(init=False, repr=False)
     _bm25: Bm25Index = field(init=False, repr=False)
     _dense: DenseIndex = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
+        if self.mode not in RETRIEVAL_MODES:
+            raise ValueError(f"mode must be one of {RETRIEVAL_MODES}, got {self.mode!r}")
         self._by_id = {c.chunk_id: c for c in self.chunks}
         if len(self._by_id) != len(self.chunks):
             raise ValueError("chunk_id values must be unique")
         self._bm25 = Bm25Index([(c.chunk_id, c.text) for c in self.chunks])
-        vectors = self.embedder.embed([c.text for c in self.chunks]) if self.chunks else []
-        self._dense = DenseIndex([c.chunk_id for c in self.chunks], vectors)
+        embeds = self.mode != "bm25" and bool(self.chunks)
+        vectors = self.embedder.embed([c.text for c in self.chunks]) if embeds else []
+        ids = [c.chunk_id for c in self.chunks] if embeds else []
+        self._dense = DenseIndex(ids, vectors)
 
     @classmethod
     def from_config(cls, chunks: Sequence[Chunk], embedder: Embedder) -> HybridRetriever:
@@ -284,9 +296,13 @@ class HybridRetriever:
         if not self.chunks:
             return []
         pool = max(limit, MIN_POOL)
-        lexical = [i for i, score in self._bm25.scores(question)[:pool] if score > 0.0]
-        query_vector = self.embedder.embed([question])[0]
-        dense = [i for i, _ in self._dense.search(query_vector, pool)]
+        lexical: list[str] = []
+        dense: list[str] = []
+        if self.mode != "dense":
+            lexical = [i for i, score in self._bm25.scores(question)[:pool] if score > 0.0]
+        if self.mode != "bm25":
+            query_vector = self.embedder.embed([question])[0]
+            dense = [i for i, _ in self._dense.search(query_vector, pool)]
         lexical_rank = {i: r for r, i in enumerate(lexical, start=1)}
         dense_rank = {i: r for r, i in enumerate(dense, start=1)}
         fused = reciprocal_rank_fusion([lexical, dense], k=self.rrf_k)[:limit]

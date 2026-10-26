@@ -299,6 +299,7 @@ def evaluate_grid(
     transcripts_dir: Path = TRANSCRIPTS_DIR,
     *,
     rrf_k: int | None = None,
+    mode: str = "hybrid",
     progress: ProgressFn | None = None,
     context_window: int | None = None,
     max_generation_tokens: int | None = None,
@@ -307,6 +308,7 @@ def evaluate_grid(
 
     ``context_window`` and ``max_generation_tokens`` default to ``[shared_budget]``, the
     values C1 answers with, and set the text budget the retrieved blocks are trimmed to.
+    ``mode`` is the retriever's channel selection (``hybrid``, C1's own, unless ablating).
     """
     # Imported here: c1_document_rag imports this module for the pinned parameters.
     from afg.conditions.c1_document_rag import assemble_context
@@ -326,7 +328,7 @@ def evaluate_grid(
     results: list[ConfigResult] = []
     for done, (max_chars, overlap) in enumerate(pairs, start=1):
         chunks = chunk_meetings(meeting_ids, max_chars, overlap, transcripts_dir)
-        retriever = HybridRetriever(chunks, embedder, rrf_k=fusion_k)
+        retriever = HybridRetriever(chunks, embedder, rrf_k=fusion_k, mode=mode)
         rankings: dict[str, dict[int, list[Chunk]]] = {}
         for q in questions:
             if prefix_stable:
@@ -436,7 +438,7 @@ class StoredTuning:
     reason: str
 
 
-def _result_to_json(r: ConfigResult) -> dict[str, Any]:
+def result_to_json(r: ConfigResult) -> dict[str, Any]:
     return {
         "max_chars": r.max_chars,
         "overlap_turns": r.overlap_turns,
@@ -473,7 +475,7 @@ def save_tuning_results(
             "char_budget": config.char_budget,
             "tie_margin": config.tie_margin,
         },
-        "results": [_result_to_json(r) for r in results],
+        "results": [result_to_json(r) for r in results],
         "decision": {
             "max_chars": w.max_chars,
             "overlap_turns": w.overlap_turns,

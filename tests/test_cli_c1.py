@@ -12,7 +12,7 @@ from typer.testing import CliRunner
 
 import afg.cli as afg_cli
 from afg.conditions.c1_retrieval import configured_embedding_model
-from afg.conditions.c1_tuning import TuningConfig
+from afg.conditions.c1_tuning import PinnedC1Params, TuningConfig
 
 _HEADER = (
     "id,series_id,stratum,question,reference_answer,reference_evidence,answer_text,"
@@ -74,6 +74,11 @@ def env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict[str, Path]:
     monkeypatch.setattr(afg_cli, "TRANSCRIPTS_DIR", transcripts)
     monkeypatch.setattr(afg_cli, "CALIBRATION_PATH", calibration)
     monkeypatch.setattr(afg_cli, "C1_TUNING_RESULTS_PATH", results)
+    ablation = tmp_path / "out" / "ablacion.json"
+    monkeypatch.setattr(afg_cli, "C1_ABLATION_PATH", ablation)
+    monkeypatch.setattr(
+        afg_cli, "load_pinned_c1_params", lambda: PinnedC1Params(max_chars=40, overlap_turns=0, k=1)
+    )
     monkeypatch.setattr(afg_cli, "load_tuning_config", lambda: _config())
     monkeypatch.setattr(afg_cli, "make_c1_embedder", lambda: LetterEmbedder())
     monkeypatch.setattr(
@@ -83,7 +88,7 @@ def env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict[str, Path]:
         "afg.evaluation.judge_calibration_set.calibration_series",
         lambda: frozenset({"ES2015"}),
     )
-    return {"results": results, "calibration": calibration}
+    return {"results": results, "calibration": calibration, "ablation": ablation}
 
 
 def _tune() -> Any:
@@ -154,6 +159,45 @@ def test_tune_needs_the_calibration_file(env: dict[str, Path]) -> None:
     result = _tune()
     assert result.exit_code == 1
     assert "calibracion" in _out(result)
+
+
+def _ablate() -> Any:
+    return CliRunner().invoke(afg_cli.app, ["c1", "ablate"])
+
+
+def test_ablate_prints_the_three_modes_and_saves(env: dict[str, Path]) -> None:
+    result = _ablate()
+    assert result.exit_code == 0, result.output
+    out = _out(result)
+    assert "2 preguntas" in out
+    stored = json.loads(env["ablation"].read_text(encoding="utf-8"))
+    assert [m["mode"] for m in stored["modes"]] == ["bm25", "dense", "hybrid"]
+    assert stored["params"] == {"max_chars": 40, "overlap_turns": 0, "k": 1}
+    assert "git_commit" in stored
+    assert not env["results"].exists()  # the tuning results are never touched
+
+
+def test_ablate_refuses_series_outside_development(
+    env: dict[str, Path], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def refuse() -> TuningConfig:
+        raise ValueError("not development series (ADR 0005)")
+
+    monkeypatch.setattr(afg_cli, "load_tuning_config", refuse)
+    result = _ablate()
+    assert result.exit_code == 1
+    assert "ADR 0005" in _out(result)
+    assert not env["ablation"].exists()
+
+
+def test_ablate_stops_when_the_embedding_model_is_missing(
+    env: dict[str, Path], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(afg_cli, "list_installed_models", lambda: ["other:latest"])
+    result = _ablate()
+    assert result.exit_code == 1
+    assert f"ollama pull {configured_embedding_model()}" in _out(result)
+    assert not env["ablation"].exists()
 
 
 # --- afg c1 ask ------------------------------------------------------------------------
