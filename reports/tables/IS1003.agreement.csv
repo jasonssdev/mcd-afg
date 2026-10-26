@@ -1,0 +1,4 @@
+series_id,annotator_a,annotator_b,axis,n_items,kappa,disagreeing_pair_ids
+IS1003,gm,gv,existence,8,1.0,
+IS1003,gm,gv,type,3,0.5,IS1003.p003
+IS1003,gm,gv,direction,8,nan,
