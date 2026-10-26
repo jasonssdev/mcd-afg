@@ -2842,6 +2842,53 @@ def experiment_b_human_check(
     console.print(f"Guardado en {_short(run_dir / HUMAN_CHECK_FILE)}.")
 
 
+OE4_SHEET_FILE = "oe4-etapa-e1.csv"
+
+
+@experiment_app.command("b-oe4-sheet")
+def experiment_b_oe4_sheet(
+    run_name: Annotated[
+        str, typer.Option("--run-name", help="Carpeta de la corrida C2 en reports/experiment-b/.")
+    ],
+    questions: Annotated[
+        Path,
+        typer.Option("--questions", help="CSV de preguntas de la corrida (referencia)."),
+    ] = WORKSHEET_PATH,
+    force: Annotated[
+        bool, typer.Option("--force", help="Sobrescribir una hoja que ya tiene etiquetas.")
+    ] = False,
+) -> None:
+    """Hoja de evidencia OE4: fallas E1 de C2 que la traza no puede atribuir, con la base compilada.
+
+    La base se ubica con `c2_extraction` del manifiesto de la corrida. Para cada falla se listan
+    los objetos de la base con más términos de la referencia (y si se recuperaron) y la mejor
+    transcripción en bruto. La columna `etapa_humana` queda vacía: la etiqueta la pone una
+    persona (CONTRIBUTING §7.6).
+    """
+    import json
+
+    from afg.experiments.c2_base_evidence import (
+        bundle_dir_for_run,
+        oe4_worksheet_rows,
+        write_oe4_worksheet,
+    )
+
+    run_dir, records = _load_run_records(run_name)
+    try:
+        manifest = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8"))
+        bundle = bundle_dir_for_run(manifest)
+        bank = {q.id: q for q in load_experiment_questions(questions)}
+        rows = oe4_worksheet_rows(records, bank, bundle)
+        write_oe4_worksheet(run_dir / OE4_SHEET_FILE, rows, force=force)
+    except (ValueError, KeyError, FileNotFoundError, QuestionBankError, CalibrationSetError) as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    console.print(
+        f"{len(rows)} filas desde la base {_short(bundle)}. "
+        f"Hoja para la persona: {_short(run_dir / OE4_SHEET_FILE)}."
+    )
+
+
 # --- report ---------------------------------------------------------------------------------
 
 
