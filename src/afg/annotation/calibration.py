@@ -34,6 +34,7 @@ __all__ = [
     "resolved_disagreements",
     "side_taken_counts",
     "status_contingency",
+    "status_labels",
 ]
 
 _STATUS_SUFFIX = "_status"
@@ -103,15 +104,26 @@ def _split(
     return _annotators(header, _STATUS_SUFFIX), base, children
 
 
+def status_labels(
+    series_id: str, *, paths: WorkspacePaths | None = None
+) -> tuple[tuple[str, str], list[str], list[str]]:
+    """``(annotators, labels_a, labels_b)``: each annotator's own ``status`` on base rows.
+
+    These are the annotators' labels, never the adjudicated verdict. The one place that
+    selects the Task A items, shared by :func:`decision_agreement` and the pooled agreement.
+    """
+    (a, b), base, _ = _split(series_id, paths)
+    return (a, b), [r[f"{a}_status"] for r in base], [r[f"{b}_status"] for r in base]
+
+
 def decision_agreement(series_id: str, *, paths: WorkspacePaths | None = None) -> DecisionAgreement:
     """Status agreement (raw and Cohen's kappa) between the two annotators on base rows.
 
     Kappa goes through :func:`afg.annotation.agreement.compute_agreement`, the project's
     single implementation. It is ``nan`` when both annotators used one single category.
     """
-    (a, b), base, _ = _split(series_id, paths)
-    labels_a = [r[f"{a}_status"] for r in base]
-    labels_b = [r[f"{b}_status"] for r in base]
+    (a, b), labels_a, labels_b = status_labels(series_id, paths=paths)
+    _, base, _ = _split(series_id, paths)
     agree = sum(x == y for x, y in zip(labels_a, labels_b, strict=True))
     kappa = compute_agreement(labels_a, labels_b) if base else math.nan
     return DecisionAgreement(
