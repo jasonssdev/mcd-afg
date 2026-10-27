@@ -13,7 +13,7 @@ from typing import Any
 import pytest
 
 from afg.experiments import provenance as prov
-from afg.experiments.provenance import LiveProbe, collect_provenance
+from afg.experiments.provenance import LiveProbe, collect_provenance, manifest_provenance_table
 
 _C1 = {"max_chars": 1200, "overlap_turns": 1, "k": 5, "extra": "ignored"}
 
@@ -139,3 +139,47 @@ def test_c2_extraction_run_is_recorded_or_null() -> None:
         "es2015-explora-r3x"
     )
     assert _collect(FakeProbe())["c2_extraction"] is None
+
+
+def _manifest(**extra: Any) -> dict[str, Any]:
+    base: dict[str, Any] = {
+        "run_name": "r",
+        "conditions": ["C1"],
+        "settings": {"generative_model": "qwen3:8b", "judge_model": "gpt-oss:20b", "runs": 3},
+        "git_commit": "0123456789abcdef",
+        "git_dirty": False,
+    }
+    return {**base, **extra}
+
+
+def test_manifest_provenance_table_shortens_digests_and_commits() -> None:
+    manifest = _manifest(
+        generative_model_digest="500a1f067a9f782620b4",
+        judge_model_digest="f38aa0c53da5f8c49d08",
+        embedding_model_digest="7907646426070047a77",
+        ollama_version="0.32.9",
+        openkos_version="0.5.5",
+    )
+    (row,) = manifest_provenance_table({"run-a": manifest}).to_dict("records")
+    assert row["run"] == "run-a"
+    assert row["conditions"] == "C1"
+    assert row["runs"] == 3
+    assert row["generative_model"] == "qwen3:8b"
+    assert row["generative_digest"] == "500a1f067a9f"
+    assert row["judge_digest"] == "f38aa0c53da5"
+    assert row["embedding_digest"] == "790764642607"
+    assert row["ollama"] == "0.32.9"
+    assert row["openkos"] == "0.5.5"
+    assert row["commit"] == "01234567"
+    assert row["git_dirty"] is False
+
+
+def test_manifest_provenance_table_marks_fields_an_old_manifest_lacks() -> None:
+    (row,) = manifest_provenance_table({"old": _manifest()}).to_dict("records")
+    assert row["generative_digest"] == "—"
+    assert row["ollama"] == "—"
+    assert row["openkos"] == "—"
+
+
+def test_manifest_provenance_table_of_nothing_is_empty() -> None:
+    assert manifest_provenance_table({}).empty

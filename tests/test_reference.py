@@ -11,10 +11,12 @@ import pytest
 from afg.domain.decision import DecisionStatus
 from afg.evaluation.reference import (
     NotAdjudicatedError,
+    ReferenceDecision,
     ReferenceSet,
     load_reference,
     load_series_reference,
     primary_role,
+    reference_figures,
 )
 from afg.shared.paths import AMI_DIR, GOLD_DECISIONS_DIR, TRANSCRIPTS_DIR
 from tests.markers import requires
@@ -335,3 +337,38 @@ def test_split_child_keeps_its_own_fields_when_it_has_them(
     (child,) = reference.decisions
     assert child.evidence is not None
     assert child.evidence.dialogue_act_ids == ("da.1",)
+
+
+def _ref(decision_id: str, roles: tuple[str, ...]) -> ReferenceDecision:
+    return ReferenceDecision(
+        decision_id=decision_id,
+        series_id="S1",
+        meeting_id="S1a",
+        decision_object="o",
+        content="c",
+        evidence=None,
+        evidence_method="sentence_id",
+        role=roles[0] if roles else None,
+        roles=roles,
+    )
+
+
+def test_reference_figures_count_decisions_roles_and_exclusions() -> None:
+    reference = ReferenceSet(
+        series_id="S1",
+        decisions=(_ref("d1", ("PM",)), _ref("d2", ("PM", "ME")), _ref("d3", ("PM", "ME", "ID"))),
+        excluded={"no_decision": 3, "compuesta": 2},
+    )
+    figures = reference_figures(reference)
+    assert figures.series_id == "S1"
+    assert figures.n_decisions == 3
+    assert figures.n_multi_role == 2
+    assert figures.role_counts == {1: 1, 2: 1, 3: 1}
+    assert figures.n_excluded == 5
+    assert figures.excluded == {"no_decision": 3, "compuesta": 2}
+
+
+def test_reference_figures_of_an_empty_reference() -> None:
+    figures = reference_figures(ReferenceSet(series_id="S1", decisions=()))
+    assert (figures.n_decisions, figures.n_multi_role, figures.n_excluded) == (0, 0, 0)
+    assert figures.role_counts == {}

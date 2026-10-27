@@ -399,6 +399,43 @@ class JudgmentStore:
         )
 
 
+def load_stored_judgments(store: JudgmentStore) -> list[Judgment]:
+    """The judgments in ``store`` as :class:`Judgment` objects, without calling the judge.
+
+    Reads the latest record of every pair id, so a notebook can rebuild the bin table from
+    the stored run on a machine with no model server.
+    """
+    judgments = []
+    for record in store.load().values():
+        raw = record["pair"]
+        pair = SamplePair(
+            id=raw["id"],
+            bin_low=float(raw["bin_low"]),
+            similarity=float(raw["similarity"]),
+            extracted_text=raw["extracted_text"],
+            reference_text=raw["reference_text"],
+            reference_id=raw["reference_id"],
+            series=raw["series"],
+            meeting_id=raw["meeting_id"],
+            models=tuple(raw["models"]),
+            occurrences=int(raw["occurrences"]),
+            order=raw["order"],
+            sample_seed=int(raw["sample_seed"]),
+        )
+        judgments.append(
+            Judgment(
+                pair=pair,
+                same=record["same"],
+                rationale=record["rationale"],
+                raw_output=record["raw_output"],
+                failure=record["failure"],
+                order=record["order"],
+                seconds=float(record["seconds"]),
+            )
+        )
+    return judgments
+
+
 def _key(pair: SamplePair, settings: Mapping[str, Any]) -> str:
     payload = {
         "id": pair.id,

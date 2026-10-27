@@ -23,6 +23,7 @@ from afg.experiments.tau_calibration import (
     digest_of,
     examples_by_region,
     judge_sample,
+    load_stored_judgments,
     matched_pairs,
     null_coverage,
     null_curve_points,
@@ -496,3 +497,28 @@ def test_reference_shift_table_puts_both_languages_side_by_side() -> None:
     row = table.set_index(["model", "series", "tau"])
     assert row.loc[("m", "ES2015", 0.6), ["es", "en", "shift"]].tolist() == [1.0, 1.0, 0.0]
     assert row.loc[("m", "ES2015", 0.7), ["es", "en", "shift"]].tolist() == [0.0, 1.0, 1.0]
+
+
+def test_stored_judgments_are_read_back_as_the_judgments_that_were_written(tmp_path: Path) -> None:
+    sample = stratified_sample([_pair(i, 0.55) for i in range(4)], seed=3, per_bin=25)
+    store = JudgmentStore(tmp_path)
+    written = judge_sample(
+        sample.pairs,
+        backend=_FakeBackend(default=_yes()),
+        judge_model="gpt-oss:20b",
+        model_digest="abc123",
+        seed=42,
+        temperature=0.0,
+        think="low",
+        store=store,
+    )
+
+    read = load_stored_judgments(store)
+
+    assert sorted(read, key=lambda j: j.pair.id) == sorted(written, key=lambda j: j.pair.id)
+    # the stored judgments feed the same bin table without calling the judge again
+    assert bin_table(read).loc[0, ["n", "yes"]].tolist() == [4, 4]
+
+
+def test_stored_judgments_of_an_empty_store_are_an_empty_list(tmp_path: Path) -> None:
+    assert load_stored_judgments(JudgmentStore(tmp_path)) == []
