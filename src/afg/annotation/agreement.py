@@ -189,16 +189,37 @@ class AxisProfile:
     kappa_defined: bool
 
 
+@dataclass(frozen=True, slots=True)
+class SeriesAxisLabels:
+    """The two annotators' labels per axis for one series, in matched-pair order."""
+
+    annotators: tuple[str, str]
+    axes: dict[str, tuple[list[str], list[str]]]
+    """``axis -> (labels_a, labels_b)`` for ``existence``, ``type`` and ``direction``."""
+
+
+def series_axis_labels(paths: Sequence[Path]) -> SeriesAxisLabels:
+    """Existence, type and direction labels of both annotators for one series.
+
+    The one place that turns annotator CSVs into per-axis label lists; the per-series kappa
+    profiles and the pooled agreement both read it, so they describe the same items.
+    """
+    path_a, path_b, rows_a, rows_b, common_ids = _common_rows(paths)
+    labels = _aligned_labels(rows_a, rows_b, common_ids)
+    return SeriesAxisLabels(
+        annotators=(annotator_initials(path_a), annotator_initials(path_b)),
+        axes={
+            "existence": (labels.existence_a, labels.existence_b),
+            "type": (labels.type_a, labels.type_b),
+            "direction": (labels.direction_a, labels.direction_b),
+        },
+    )
+
+
 def series_axis_profiles(paths: Sequence[Path]) -> tuple[AxisProfile, ...]:
     """Raw agreement and category use for the existence, type and direction axes."""
-    _, _, rows_a, rows_b, common_ids = _common_rows(paths)
-    labels = _aligned_labels(rows_a, rows_b, common_ids)
     profiles = []
-    for axis, a, b in (
-        ("existence", labels.existence_a, labels.existence_b),
-        ("type", labels.type_a, labels.type_b),
-        ("direction", labels.direction_a, labels.direction_b),
-    ):
+    for axis, (a, b) in series_axis_labels(paths).axes.items():
         used = sorted(set(a) | set(b))
         profiles.append(
             AxisProfile(

@@ -631,15 +631,40 @@ def gold_link() -> None:
     raise typer.Exit(code=2)
 
 
+def _print_pooled_agreement() -> None:
+    from afg.annotation import pooled
+
+    report = pooled.pooled_agreement_report(_plan_or_exit())
+    if not report:
+        console.print("[bold red]Ninguna serie tiene la adjudicación completa.[/bold red]")
+        raise typer.Exit(code=1)
+    for group in report:
+        console.print(f"[bold]Kappa agrupado ({group.scope})[/bold]: {', '.join(group.series)}")
+        for item in group.axes:
+            console.print(
+                f"  {item.axis:<10} n={item.n_items:<3} desacuerdos={item.n_disagreements:<3} "
+                f"kappa={item.kappa:.3f}  acuerdo crudo={item.percent_agreement:.1%}"
+            )
+    out_path = pooled.write_pooled_csv(report, TABLES_DIR / "agreement-pooled.csv")
+    console.print(f"Escrito: {out_path}")
+
+
 @gold_app.command("agreement", rich_help_panel=_PANEL_MAINTENANCE)
 def gold_agreement(
-    series: str = typer.Option(..., "--series", help="Serie de AMI, p. ej. IS1004."),
+    series: str | None = typer.Option(None, "--series", help="Serie de AMI, p. ej. IS1004."),
+    pooled: bool = typer.Option(
+        False,
+        "--pooled",
+        help="Kappa agrupado de todas las series adjudicadas (en total y por fase).",
+    ),
 ) -> None:
     """(Mantenedor) Calcula el kappa de Cohen de existencia, tipo y dirección (manual, sección 6).
 
     Lee cada ``data/processed/relations/<serie>.candidates.<iniciales>.csv``
     (uno por anotador independiente) y escribe
-    ``reports/tables/<serie>.agreement.csv``.
+    ``reports/tables/<serie>.agreement.csv``. Con ``--pooled`` calcula un solo kappa por eje
+    sobre los ítems de todas las series adjudicadas (no el promedio de kappas) y escribe
+    ``reports/tables/agreement-pooled.csv``.
     """
     from afg.annotation.agreement import (
         AgreementInputError,
@@ -647,6 +672,13 @@ def gold_agreement(
         compute_series_agreement,
         write_agreement_csv,
     )
+
+    if pooled:
+        _print_pooled_agreement()
+        return
+    if series is None:
+        console.print("[bold red]Indica --series <serie> o --pooled.[/bold red]")
+        raise typer.Exit(code=2)
 
     pattern = f"{series}.candidates.<initials>.csv"
     paths = annotator_csvs(GOLD_RELATIONS_DIR, series, "candidates")
