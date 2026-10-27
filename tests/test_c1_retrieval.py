@@ -479,3 +479,39 @@ def test_ollama_host_prefers_the_afg_setting(monkeypatch: pytest.MonkeyPatch) ->
     monkeypatch.setenv("OLLAMA_HOST", "ignored:1")
     monkeypatch.setenv("AFG_OLLAMA_HOST", "wanted:2/")
     assert c1_retrieval.resolve_ollama_host() == "http://wanted:2"
+
+
+# --- retrieval mode (ablation) ---------------------------------------------------------
+
+
+def test_default_mode_is_hybrid() -> None:
+    assert HybridRetriever(corpus(), LetterEmbedder()).mode == "hybrid"
+
+
+def test_bm25_mode_uses_only_the_lexical_channel_and_never_embeds() -> None:
+    emb = LetterEmbedder()
+    retriever = HybridRetriever(corpus(), emb, mode="bm25")
+    hits = retriever.retrieve("price remote control", limit=3)
+    assert emb.calls == []
+    assert hits[0].chunk.chunk_id == "M.c000"
+    assert all(h.dense_rank is None and h.lexical_rank is not None for h in hits)
+    assert [h.lexical_rank for h in hits] == [1, 2, 3][: len(hits)]
+
+
+def test_bm25_mode_returns_nothing_when_no_term_matches() -> None:
+    retriever = HybridRetriever(corpus(), LetterEmbedder(), mode="bm25")
+    assert retriever.retrieve("zzz qqq", limit=3) == []
+
+
+def test_dense_mode_uses_only_the_dense_channel() -> None:
+    retriever = HybridRetriever(corpus(), LetterEmbedder(), mode="dense")
+    hits = retriever.retrieve("price remote control", limit=3)
+    assert len(hits) == 3
+    assert all(h.lexical_rank is None and h.dense_rank is not None for h in hits)
+    assert [h.dense_rank for h in hits] == [1, 2, 3]
+    assert hits[0].rrf_score == pytest.approx(1 / 61)
+
+
+def test_unknown_mode_is_rejected() -> None:
+    with pytest.raises(ValueError, match="mode"):
+        HybridRetriever(corpus(), LetterEmbedder(), mode="sparse")
