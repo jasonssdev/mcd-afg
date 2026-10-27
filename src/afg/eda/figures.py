@@ -16,6 +16,7 @@ from typing import Any, cast
 import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib.figure import Figure
+from matplotlib.ticker import FuncFormatter, MultipleLocator, NullFormatter
 
 from afg.eda.tables import format_thousands as _es
 
@@ -198,3 +199,120 @@ def plot_position_boxes(
     if title:
         ax.set_title(title, loc="left")
     return fig
+
+
+def _format_value(value: float) -> str:
+    """Spanish number: no decimals for a whole value, one decimal otherwise."""
+    return _es(value) if float(value).is_integer() else _es(value, 1)
+
+
+def plot_grouped_bars(
+    categories: Sequence[str],
+    groups: Mapping[str, Sequence[float]],
+    *,
+    ylabel: str,
+    title: str = "",
+    ylim: tuple[float, float] | None = None,
+) -> Figure:
+    """Bars of several groups side by side for each category, each bar labelled with its value.
+
+    ``groups`` maps a group name to one value per category (NaN leaves a gap without a label).
+
+    Raises:
+        ValueError: if a group does not have one value per category.
+    """
+    for name, values in groups.items():
+        if len(values) != len(categories):
+            raise ValueError(f"group {name!r} needs one value per category ({len(categories)}).")
+    fig, ax = plt.subplots()
+    width = 0.8 / max(len(groups), 1)
+    for i, (name, values) in enumerate(groups.items()):
+        offset = (i - (len(groups) - 1) / 2) * width
+        xs = [x + offset for x in range(len(categories))]
+        ax.bar(xs, values, width=width * 0.92, label=name, color=_COLORS[i % len(_COLORS)])
+        for x, value in zip(xs, values, strict=True):
+            if not pd.isna(value):
+                ax.text(x, value, _format_value(value), ha="center", va="bottom", fontsize=14)
+    ax.set_xticks(range(len(categories)), list(categories))
+    ax.set_ylabel(ylabel)
+    if ylim is not None:
+        ax.set_ylim(*ylim)
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.12), ncol=len(groups), frameon=False)
+    if title:
+        ax.set_title(title, loc="left")
+    return fig
+
+
+def plot_labeled_scatter(
+    points: Sequence[tuple[str, float, float]],
+    *,
+    xlabel: str,
+    ylabel: str,
+    title: str = "",
+    log_x: bool = False,
+) -> Figure:
+    """Scatter of ``(label, x, y)`` points, each written next to its marker."""
+    fig, ax = plt.subplots()
+    xs = [p[1] for p in points]
+    ys = [p[2] for p in points]
+    ax.scatter(xs, ys, s=160, color=_COLORS[0], zorder=3)
+    # Labels of the upper half of the points go above their marker and the rest below, so
+    # neighbours that are close in x (but not in y) never overlap.
+    median_y = sorted(ys)[len(ys) // 2]
+    for label, x, y in points:
+        offset = (10, 10) if y >= median_y else (10, -26)
+        ax.annotate(label, (x, y), xytext=offset, textcoords="offset points", fontsize=16)
+    if log_x:
+        ax.set_xscale("log")
+        _plain_log_axis(ax.xaxis, min(xs), max(xs))
+    ax.yaxis.set_major_locator(MultipleLocator(0.05))
+    ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: _es(v, 2)))
+    ax.margins(y=0.15)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    if title:
+        ax.set_title(title, loc="left")
+    return fig
+
+
+def plot_hbars(
+    values: Mapping[str, float],
+    *,
+    annotations: Sequence[str],
+    xlabel: str,
+    title: str = "",
+    log_x: bool = False,
+) -> Figure:
+    """Horizontal bars in the given order, each followed by its annotation text.
+
+    Raises:
+        ValueError: if ``annotations`` does not have one text per bar.
+    """
+    if len(annotations) != len(values):
+        raise ValueError("annotations needs one text per bar.")
+    fig, ax = plt.subplots()
+    labels = list(values)
+    widths = list(values.values())
+    ax.barh(labels, widths, color=_COLORS[0], height=0.6)
+    ax.invert_yaxis()
+    if log_x:
+        ax.set_xscale("log")
+        _plain_log_axis(ax.xaxis, min(widths), max(widths))
+    ax.grid(axis="y", visible=False)
+    for y, (width, text) in enumerate(zip(widths, annotations, strict=True)):
+        ax.text(width * 1.08 if log_x else width * 1.01, y, text, va="center")
+    ax.set_xlim(right=max(widths) * (6 if log_x else 1.35))
+    ax.set_xlabel(xlabel)
+    if title:
+        ax.set_title(title, loc="left")
+    return fig
+
+
+def _plain_log_axis(axis: Any, low: float, high: float, decimals: int = 0) -> None:
+    """Log axis with 1-2-5 ticks written as plain Spanish numbers instead of powers of ten."""
+    ticks = [
+        m * 10**e for e in range(-2, 6) for m in (1, 2, 5) if low / 1.5 <= m * 10**e <= high * 1.5
+    ]
+    axis.set_ticks(ticks)
+    axis.set_major_formatter(FuncFormatter(lambda v, _: _es(v, decimals)))
+    axis.set_minor_formatter(NullFormatter())

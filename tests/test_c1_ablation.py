@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from afg.conditions.c1_ablation import evaluate_modes, save_ablation_results
+from afg.conditions.c1_ablation import evaluate_modes, load_ablation_results, save_ablation_results
 from afg.conditions.c1_tuning import PinnedC1Params, evaluate_grid
 from tests.test_c1_tuning import (
     LetterEmbedder,
@@ -113,3 +113,30 @@ def test_results_file_carries_config_modes_and_commit(
     assert first["questions_with_any_hit"] == sum(
         1 for rank in first["first_hit_ranks"].values() if rank is not None
     )
+
+
+def test_stored_ablation_is_read_back_with_its_modes_and_params(
+    transcripts: Path,  # noqa: F811
+    tmp_path: Path,
+) -> None:
+    results = evaluate_modes(
+        questions(), ["ES2015a"], PARAMS, small_config(), LetterEmbedder(), transcripts
+    )
+    path = tmp_path / "ablacion.json"
+    save_ablation_results(
+        path, results, params=PARAMS, config=small_config(), n_questions=2, git_commit="abc123"
+    )
+
+    stored = load_ablation_results(path)
+
+    assert stored.n_questions == 2
+    assert stored.git_commit == "abc123"
+    assert stored.params == PARAMS
+    assert stored.modes == tuple(results)
+
+
+def test_an_unreadable_ablation_file_is_a_clear_error(tmp_path: Path) -> None:
+    path = tmp_path / "ablacion.json"
+    path.write_text("{}", encoding="utf-8")
+    with pytest.raises(ValueError, match=r"ablacion.json"):
+        load_ablation_results(path)

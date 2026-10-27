@@ -76,7 +76,8 @@ de las próximas presentaciones; la entregada sigue siendo el registro de lo que
 | Video de avance #3 (semana 7): propuesta metodológica + datos disponibles | [`03-jss-guion-video-semana7.md`](03-jss-guion-video-semana7.md) | Enviado el 2026-09-28; congelado |
 | Presentación final (semana 8) | [`04-jss-guion-video-semana8.md`](04-jss-guion-video-semana8.md) | Enviado el 2026-09-28; congelado |
 | Presentación final (semana 8), versión de estudio | [`04-jss-guion-video-semana8-v2.md`](04-jss-guion-video-semana8-v2.md) | Versión de estudio posterior a la entrega; no enviada |
-| Video de avance #1 de AFG2 (semana 2): análisis exploratorio | [`05-jss-guion-video-afg2-semana2.md`](05-jss-guion-video-afg2-semana2.md) | Borrador v1.3; envío pendiente |
+| Video de avance #1 de AFG2 (semana 2): análisis exploratorio | [`05-jss-guion-video-afg2-semana2.md`](05-jss-guion-video-afg2-semana2.md) | Borrador v1.4; envío pendiente |
+| Video de avance #2 de AFG2 (semana 4): modelado de datos | [`06-jss-guion-video-afg2-semana4.md`](06-jss-guion-video-afg2-semana4.md) | Borrador v1.0; envío pendiente |
 
 Todos los entregables de AFG1 se enviaron el 2026-09-28. La versión de estudio del guion de
 la semana 8 recoge la retroalimentación de la revisión entre equipos y es el punto de partida

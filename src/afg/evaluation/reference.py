@@ -59,10 +59,12 @@ __all__ = [
     "Language",
     "NotAdjudicatedError",
     "ReferenceDecision",
+    "ReferenceFigures",
     "ReferenceSet",
     "load_reference",
     "load_series_reference",
     "primary_role",
+    "reference_figures",
     "roles_of",
 ]
 
@@ -119,6 +121,37 @@ class ReferenceSet:
     decisions: tuple[ReferenceDecision, ...]
     excluded: Mapping[str, int] = field(default_factory=dict)
     evidence_misses: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class ReferenceFigures:
+    """The counts that describe one series' reference (and that documents quote)."""
+
+    series_id: str
+    n_decisions: int
+    """Reference decisions, counting the children of a ``compuesta`` row, not the parent."""
+    n_multi_role: int
+    """Decisions whose evidence involves more than one speaker role."""
+    role_counts: dict[int, int]
+    """Decisions by number of roles involved (``{1: 21, 2: 5, 3: 1}``)."""
+    excluded: dict[str, int]
+    """Adjudicated rows left out, by final status."""
+
+    @property
+    def n_excluded(self) -> int:
+        return sum(self.excluded.values())
+
+
+def reference_figures(reference: ReferenceSet) -> ReferenceFigures:
+    """Count the decisions, the multi-role ones and the exclusions of ``reference``."""
+    roles = Counter(len(d.roles) for d in reference.decisions)
+    return ReferenceFigures(
+        series_id=reference.series_id,
+        n_decisions=len(reference.decisions),
+        n_multi_role=sum(n for count, n in roles.items() if count > 1),
+        role_counts=dict(sorted(roles.items())),
+        excluded=dict(reference.excluded),
+    )
 
 
 def _turn_positions(turns: Sequence[FrozenTurn]) -> dict[str, tuple[int, int]]:

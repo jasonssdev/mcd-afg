@@ -189,6 +189,85 @@ def stratum_summary(records: Iterable[Mapping[str, Any]]) -> list[StratumSummary
     return summaries
 
 
+@dataclass(frozen=True, slots=True)
+class FailureSplit:
+    """How the records of one stratum split into right, wrong and abstained.
+
+    ``wrong_answer`` is an answer that the judge marked incorrect (a confident error);
+    ``abstained_wrong`` is an abstention on a question that had an answer; ``abstained_right``
+    is an abstention the judge accepted (the correct behaviour in E4). Records with no
+    verdict (an error or a judge failure) are ``unjudged``.
+    """
+
+    stratum: str
+    n: int
+    correct: int
+    wrong_answer: int
+    abstained_wrong: int
+    abstained_right: int
+    unjudged: int
+
+
+def failure_split(records: Iterable[Mapping[str, Any]]) -> list[FailureSplit]:
+    """One :class:`FailureSplit` per stratum, ordered by stratum label."""
+    grouped: dict[str, list[RecordRow]] = {}
+    for row in record_rows(records):
+        grouped.setdefault(row.stratum, []).append(row)
+    splits = []
+    for stratum in sorted(grouped):
+        rows = grouped[stratum]
+        abstained = [r for r in rows if r.outcome == ABSTENTION_OUTCOME]
+        splits.append(
+            FailureSplit(
+                stratum=stratum,
+                n=len(rows),
+                correct=sum(1 for r in rows if r.correct is True),
+                wrong_answer=sum(
+                    1 for r in rows if r.correct is False and r.outcome != ABSTENTION_OUTCOME
+                ),
+                abstained_wrong=sum(1 for r in abstained if r.correct is False),
+                abstained_right=sum(1 for r in abstained if r.correct is True),
+                unjudged=sum(1 for r in rows if r.correct is None),
+            )
+        )
+    return splits
+
+
+@dataclass(frozen=True, slots=True)
+class AbstentionCauses:
+    """Why the abstentions of a run happened."""
+
+    n_abstained: int
+    refused_by_sufficiency: int
+    """Abstentions where the pre-synthesis sufficiency check replied that the context lacks
+    the answer (the check, not the synthesis, decided)."""
+
+    @property
+    def other(self) -> int:
+        return self.n_abstained - self.refused_by_sufficiency
+
+
+def _sufficiency_refused(record: Mapping[str, Any]) -> bool:
+    """Whether the sufficiency check refused, in either trace shape (C1 flat, C2 nested)."""
+    trace = _trace(record)
+    nested = trace.get("sufficiency")
+    if isinstance(nested, Mapping):
+        return bool(nested.get("refused"))
+    if trace.get("sufficiency_invoked"):
+        reply = str(trace.get("sufficiency_raw_reply") or "")
+        return reply.strip().strip("\"'`*. \t\n").upper() == "NONE"
+    return False
+
+
+def abstention_causes(records: Iterable[Mapping[str, Any]]) -> AbstentionCauses:
+    """Count the abstentions and how many the sufficiency check decided."""
+    abstained = [r for r in records if _trace(r).get("outcome") == ABSTENTION_OUTCOME]
+    return AbstentionCauses(
+        n_abstained=len(abstained),
+        refused_by_sufficiency=sum(1 for r in abstained if _sufficiency_refused(r)),
+    )
+
+
 def citation_tally(records: Sequence[Mapping[str, Any]]) -> CitationTally:
     """Tally the deterministic citation outcome of answered records with at least one citation."""
     correct = incorrect = with_marker = with_correct_answer = 0

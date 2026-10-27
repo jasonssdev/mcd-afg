@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Sequence
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, fields, replace
 from pathlib import Path
 
 from afg.conditions.c1_retrieval import RETRIEVAL_MODES, Embedder
@@ -104,3 +104,39 @@ def save_ablation_results(
     }
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+@dataclass(frozen=True, slots=True)
+class StoredAblation:
+    """What :func:`save_ablation_results` wrote, read back."""
+
+    n_questions: int
+    git_commit: str | None
+    params: PinnedC1Params
+    modes: tuple[ModeResult, ...]
+
+
+def load_ablation_results(path: Path) -> StoredAblation:
+    """Read the ablation file written by :func:`save_ablation_results`.
+
+    Raises:
+        ValueError: if the file is missing, malformed or lacks a field.
+    """
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        raw = data["params"]
+        params = PinnedC1Params(
+            max_chars=int(raw["max_chars"]),
+            overlap_turns=int(raw["overlap_turns"]),
+            k=int(raw["k"]),
+        )
+        modes = tuple(
+            ModeResult(
+                str(m["mode"]),
+                ConfigResult(**{f.name: m[f.name] for f in fields(ConfigResult)}),
+            )
+            for m in data["modes"]
+        )
+        return StoredAblation(int(data["n_questions"]), data.get("git_commit"), params, modes)
+    except (ValueError, KeyError, TypeError, OSError) as exc:
+        raise ValueError(f"{path.name}: could not be read ({exc!r}).") from exc

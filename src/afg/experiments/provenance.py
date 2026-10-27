@@ -23,6 +23,8 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, Protocol
 
+import pandas as pd
+
 from afg.conditions.c1_retrieval import resolve_ollama_host
 from afg.extraction.openkos.capabilities import parse_version
 from afg.extraction.openkos.commands import SubprocessRunner
@@ -150,3 +152,40 @@ def collect_provenance(
         "questions_sha256": file_sha256(questions_path),
         "git_dirty": probe.git_dirty(),
     }
+
+
+_MISSING = "—"
+_DIGEST_SHOWN = 12
+_COMMIT_SHOWN = 8
+
+
+def _short(value: Any, length: int) -> str:
+    return str(value)[:length] if value else _MISSING
+
+
+def manifest_provenance_table(manifests: Mapping[str, Mapping[str, Any]]) -> pd.DataFrame:
+    """One row per run manifest with the fields that make a run reproducible.
+
+    Digests are shortened to 12 characters and commits to 8. A field the manifest lacks
+    (manifests written before provenance was recorded) reads ``—`` instead of failing.
+    """
+    rows = []
+    for name, manifest in manifests.items():
+        settings = manifest.get("settings") or {}
+        rows.append(
+            {
+                "run": name,
+                "conditions": ", ".join(manifest.get("conditions") or []),
+                "runs": settings.get("runs"),
+                "generative_model": settings.get("generative_model") or _MISSING,
+                "generative_digest": _short(manifest.get("generative_model_digest"), _DIGEST_SHOWN),
+                "judge_model": settings.get("judge_model") or _MISSING,
+                "judge_digest": _short(manifest.get("judge_model_digest"), _DIGEST_SHOWN),
+                "embedding_digest": _short(manifest.get("embedding_model_digest"), _DIGEST_SHOWN),
+                "ollama": manifest.get("ollama_version") or _MISSING,
+                "openkos": manifest.get("openkos_version") or _MISSING,
+                "commit": _short(manifest.get("git_commit"), _COMMIT_SHOWN),
+                "git_dirty": manifest.get("git_dirty"),
+            }
+        )
+    return pd.DataFrame(rows)

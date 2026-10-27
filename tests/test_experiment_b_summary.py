@@ -9,8 +9,10 @@ import pytest
 from afg.domain.decision import EvidenceSpan
 from afg.domain.question import Question, QuestionStratum
 from afg.experiments.summary import (
+    abstention_causes,
     citation_tally,
     citation_width_summary,
+    failure_split,
     has_inline_used_marker,
     inline_marker_rows,
     record_row,
@@ -361,3 +363,46 @@ def test_citation_width_summary_skips_records_with_errors() -> None:
 def test_citation_width_summary_reads_old_schema_records_from_the_answer() -> None:
     record = {**_cited("q1", _span("m1", "a.1", "a.2")), "schema_version": 1}
     assert citation_width_summary([record], BANK).mean_act_coverage == 1.0
+
+
+def test_failure_split_separates_wrong_answers_from_abstentions() -> None:
+    records = [
+        _record("ES2015.q001", correct=True),
+        _record("ES2015.q002", correct=False),
+        _record("ES2015.q003", correct=False),
+        _abstention("ES2015.q004", "E1_point_fact", correct=False),
+        _abstention("ES2015.q031", "E4_unanswerable", correct=True),
+        _record("ES2015.q032", stratum="E4_unanswerable", correct=False),
+    ]
+    split = {s.stratum: s for s in failure_split(records)}
+    e1 = split["E1"]
+    assert (e1.n, e1.correct, e1.wrong_answer, e1.abstained_wrong) == (4, 1, 2, 1)
+    e4 = split["E4"]
+    assert (e4.n, e4.correct, e4.wrong_answer, e4.abstained_wrong) == (2, 1, 1, 0)
+    assert e4.abstained_right == 1
+    assert e1.abstained_right == 0
+
+
+def test_failure_split_counts_a_record_without_verdict_as_unjudged() -> None:
+    split = {s.stratum: s for s in failure_split([_record(correct=None)])}
+    e1 = split["E1"]
+    assert (e1.correct, e1.wrong_answer, e1.abstained_wrong, e1.unjudged) == (0, 0, 0, 1)
+
+
+def test_abstention_causes_reads_both_trace_shapes() -> None:
+    c2_refused = _abstention("ES2015.q001", "E1_point_fact", correct=False)
+    c2_refused["trace"]["sufficiency"] = {"invoked": True, "refused": True}
+    c1_refused = _abstention("ES2015.q002", "E1_point_fact", correct=False)
+    c1_refused["trace"].update(sufficiency_invoked=True, sufficiency_raw_reply=' "none". ')
+    other = _abstention("ES2015.q003", "E1_point_fact", correct=False)
+    other["trace"]["sufficiency"] = {"invoked": True, "refused": False}
+    answered = _record("ES2015.q004")
+    causes = abstention_causes([c2_refused, c1_refused, other, answered])
+    assert causes.n_abstained == 3
+    assert causes.refused_by_sufficiency == 2
+    assert causes.other == 1
+
+
+def test_abstention_causes_of_no_abstentions() -> None:
+    causes = abstention_causes([_record("ES2015.q001")])
+    assert (causes.n_abstained, causes.refused_by_sufficiency, causes.other) == (0, 0, 0)

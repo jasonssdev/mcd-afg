@@ -19,7 +19,7 @@ modelos.
 | [`06-jss-metodologia.md`](06-jss-metodologia.md) | Los ocho pasos, con el diseño real del proyecto |
 | [`07-jss-analisis-exploratorio.md`](07-jss-analisis-exploratorio.md) | El análisis exploratorio de datos de AFG2, con sus figuras e interpretación |
 | [`08-jss-metricas-y-criterio-de-exito.md`](08-jss-metricas-y-criterio-de-exito.md) | Qué se mide, sobre qué, con qué umbral, y cómo se decide si el experimento tuvo éxito |
-| [`09-jss-modelos-y-justificacion.md`](09-jss-modelos-y-justificacion.md) | Las condiciones comparadas como modelos, sus parámetros y su evidencia |
+| [`09-jss-modelos-y-justificacion.md`](09-jss-modelos-y-justificacion.md) | Qué es «el modelo» en una tesis sin entrenamiento: los *pipelines* comparados, los modelos por rol, la búsqueda de parámetros, la línea base y las limitaciones (v3.0, etapa de modelado) |
 
 ## De dónde sale el contenido
 

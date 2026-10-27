@@ -18,6 +18,9 @@ from afg.eda.figures import (
     FIGURE_DPI,
     apply_style,
     plot_funnel,
+    plot_grouped_bars,
+    plot_hbars,
+    plot_labeled_scatter,
     plot_level_sizes,
     plot_position_boxes,
     plot_rate_by_bin,
@@ -189,3 +192,61 @@ class TestApplyStyle:
             first = dict(plt.rcParams)
             apply_style()
             assert dict(plt.rcParams) == first
+
+
+class TestPlotGroupedBars:
+    def test_one_bar_per_group_and_category_with_values_written(self) -> None:
+        fig = plot_grouped_bars(
+            ["E1", "E2"],
+            {"C0": [20.0, 0.0], "C1": [71.4, 100.0]},
+            ylabel="% correctas",
+        )
+        ax = fig.axes[0]
+        assert [p.get_height() for p in ax.patches] == [20.0, 0.0, 71.4, 100.0]
+        texts = {t.get_text() for t in ax.texts}
+        assert {"20", "0", "71,4", "100"} <= texts
+        assert [t.get_text() for t in ax.get_xticklabels()] == ["E1", "E2"]
+        assert {t.get_text() for t in ax.get_legend().get_texts()} == {"C0", "C1"}
+
+    def test_a_group_with_the_wrong_number_of_values_is_rejected(self) -> None:
+        with pytest.raises(ValueError, match="C1"):
+            plot_grouped_bars(["E1", "E2"], {"C1": [1.0]}, ylabel="y")
+
+    def test_missing_values_are_left_without_a_bar_label(self) -> None:
+        fig = plot_grouped_bars(["E1", "E2"], {"C1": [50.0, float("nan")]}, ylabel="y")
+        assert {t.get_text() for t in fig.axes[0].texts} == {"50"}
+
+
+class TestPlotLabeledScatter:
+    POINTS: ClassVar[list[tuple[str, float, float]]] = [
+        ("qwen3:8b", 165.7, 0.289),
+        ("qwen3.6:27b", 597.6, 0.470),
+    ]
+
+    def test_one_point_per_entry_with_its_label(self) -> None:
+        fig = plot_labeled_scatter(self.POINTS, xlabel="s", ylabel="F1")
+        ax = fig.axes[0]
+        assert {t.get_text() for t in ax.texts} == {"qwen3:8b", "qwen3.6:27b"}
+        assert len(ax.collections[0].get_offsets()) == 2
+
+    def test_log_axis_is_optional(self) -> None:
+        fig = plot_labeled_scatter(self.POINTS, xlabel="s", ylabel="F1", log_x=True)
+        assert fig.axes[0].get_xscale() == "log"
+
+
+class TestPlotHbars:
+    def test_bars_in_the_given_order_with_annotations(self) -> None:
+        fig = plot_hbars(
+            {"respuesta": 10.0, "extracción": 600.0},
+            annotations=["10 s", "600 s"],
+            xlabel="s",
+            log_x=True,
+        )
+        ax = fig.axes[0]
+        assert [t.get_text() for t in ax.get_yticklabels()] == ["respuesta", "extracción"]
+        assert [p.get_width() for p in ax.patches] == [10.0, 600.0]
+        assert {"10 s", "600 s"} <= {t.get_text() for t in ax.texts}
+
+    def test_annotations_must_match_the_bars(self) -> None:
+        with pytest.raises(ValueError, match="annotations"):
+            plot_hbars({"a": 1.0}, annotations=[], xlabel="x")
