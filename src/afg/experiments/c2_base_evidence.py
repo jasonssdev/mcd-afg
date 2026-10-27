@@ -238,6 +238,25 @@ def read_worksheet_rows(path: Path) -> list[dict[str, str]]:
     return read_rows(path)
 
 
+def count_stages(
+    rule_stages: Iterable[str], worksheet: Sequence[Mapping[str, str]]
+) -> dict[str, int]:
+    """Count failures per OE4 stage: rule-based ones plus the worksheet's human labels.
+
+    Every worksheet row must carry one of :data:`ETAPA_VALUES`; an empty or unknown label
+    raises ``ValueError`` so a half-labelled sheet never yields a partial figure.
+    """
+    counts = dict.fromkeys(ETAPA_VALUES, 0)
+    for stage in rule_stages:
+        counts[stage] += 1
+    for row in worksheet:
+        label = row["etapa_humana"].strip()
+        if label not in counts:
+            raise ValueError(f"{row['pregunta_id']}: etapa_humana invalida o vacia ({label!r})")
+        counts[label] += 1
+    return counts
+
+
 __all__ = [
     "ETAPA_VALUES",
     "WORKSHEET_COLUMNS",
@@ -245,6 +264,7 @@ __all__ = [
     "ObjectCoverage",
     "WorksheetLabeledError",
     "bundle_dir_for_run",
+    "count_stages",
     "oe4_worksheet_rows",
     "rank_bundle_objects",
     "read_worksheet_rows",
