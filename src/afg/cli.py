@@ -2313,6 +2313,66 @@ EXPERIMENT_A_PROVENANCE_KEYS = (
 """The :func:`collect_provenance` fields that apply to Experiment A (it has no judge or C1)."""
 
 
+def _require_development_series(series_ids: Sequence[str]) -> str:
+    """The partition of ``series_ids`` when all are development; otherwise refuse and exit.
+
+    The one place the Experiment A gate lives (``a`` and ``a-batch``): while the OpenKOS
+    version is not pinned, only development series run (ADR 0005 and ADR 0006).
+    """
+    partition_of = configured_partition_of()
+    refused = [(s, partition_of(s)) for s in series_ids if partition_of(s) != "development"]
+    if refused:
+        partitions = ", ".join(sorted({partition for _, partition in refused}))
+        names = ", ".join(series for series, _ in refused)
+        subject = (
+            f"{names} no es una serie de desarrollo"
+            if len(refused) == 1
+            else f"{names} no son series de desarrollo"
+        )
+        console.print(
+            f"[bold red]{subject} (partición: {partitions}). "
+            "El Experimento A solo corre series de desarrollo mientras la versión de OpenKOS "
+            "no esté fijada (ADR 0005 y ADR 0006).[/bold red]"
+        )
+    if refused:
+        raise typer.Exit(code=1)
+    return "development"
+
+
+def _experiment_a_manifest(name: str, series: str, partition: str, n_runs: int) -> dict[str, Any]:
+    """The opening manifest of an Experiment A run directory (settings and provenance)."""
+    from datetime import UTC, datetime
+
+    run_settings = openkos_run_settings()
+    provenance = collect_provenance(
+        make_provenance_probe(),
+        generative_model=run_settings.generative_model,
+        embedding_model=run_settings.embedding_model,
+    )
+    return {
+        "schema_version": 1,
+        "run_name": name,
+        "created_at": datetime.now(UTC).isoformat(),
+        "git_commit": current_git_commit(),
+        "series": series,
+        "partition": partition,
+        "runs": n_runs,
+        "openkos": {
+            "executable": run_settings.executable,
+            "generative_model": run_settings.generative_model,
+            "embedding_model": run_settings.embedding_model,
+            "seed": run_settings.base_seed,
+            "temperature": run_settings.temperature,
+            "versions": [],
+            **{key: provenance[key] for key in EXPERIMENT_A_PROVENANCE_KEYS},
+        },
+        "git_dirty": provenance["git_dirty"],
+        "status": "running",
+        "completed_runs": [],
+        "error": None,
+    }
+
+
 @experiment_app.command("a")
 def experiment_a(
     series: Annotated[
@@ -2344,14 +2404,7 @@ def experiment_a(
     import json
     from datetime import UTC, datetime
 
-    partition = configured_partition_of()(series)
-    if partition != "development":
-        console.print(
-            f"[bold red]{series} no es una serie de desarrollo (partición: {partition}). "
-            "El Experimento A solo corre series de desarrollo mientras la versión de OpenKOS "
-            "no esté fijada (ADR 0005 y ADR 0006).[/bold red]"
-        )
-        raise typer.Exit(code=1)
+    partition = _require_development_series([series])
 
     budget = load_experiments_config()["shared_budget"]
     n_runs = runs if runs is not None else int(budget["runs_per_config"])
@@ -2364,34 +2417,7 @@ def experiment_a(
         )
         raise typer.Exit(code=1)
 
-    run_settings = openkos_run_settings()
-    provenance = collect_provenance(
-        make_provenance_probe(),
-        generative_model=run_settings.generative_model,
-        embedding_model=run_settings.embedding_model,
-    )
-    manifest: dict[str, Any] = {
-        "schema_version": 1,
-        "run_name": name,
-        "created_at": datetime.now(UTC).isoformat(),
-        "git_commit": current_git_commit(),
-        "series": series,
-        "partition": partition,
-        "runs": n_runs,
-        "openkos": {
-            "executable": run_settings.executable,
-            "generative_model": run_settings.generative_model,
-            "embedding_model": run_settings.embedding_model,
-            "seed": run_settings.base_seed,
-            "temperature": run_settings.temperature,
-            "versions": [],
-            **{key: provenance[key] for key in EXPERIMENT_A_PROVENANCE_KEYS},
-        },
-        "git_dirty": provenance["git_dirty"],
-        "status": "running",
-        "completed_runs": [],
-        "error": None,
-    }
+    manifest = _experiment_a_manifest(name, series, partition, n_runs)
     manifest_path = run_dir / "manifest.json"
     records_path = run_dir / "extracciones.jsonl"
 
@@ -2428,6 +2454,98 @@ def experiment_a(
     manifest["status"] = "ok"
     save_manifest()
     console.print(f"Listo. Manifiesto en {_short(manifest_path)}.")
+
+
+def _batch_series(series: str | None, partition: str | None) -> list[str]:
+    """The series of an ``a-batch`` request: ``--series`` xor ``--partition``."""
+    if (series is None) == (partition is None):
+        console.print("[bold red]Indica --series o --partition, pero no ambos.[/bold red]")
+        raise typer.Exit(code=2)
+    if series is not None:
+        ids = list(dict.fromkeys(s.strip() for s in series.split(",") if s.strip()))
+        if not ids:
+            console.print("[bold red]--series no tiene ninguna serie.[/bold red]")
+            raise typer.Exit(code=2)
+        return ids
+    if partition not in ("development", "evaluation"):
+        console.print("[bold red]--partition es development o evaluation.[/bold red]")
+        raise typer.Exit(code=2)
+    return list(load_corpus_config()["oe1"][f"{partition}_series"])
+
+
+@experiment_app.command("a-batch")
+def experiment_a_batch(
+    series: Annotated[
+        str | None,
+        typer.Option("--series", help="Series separadas por comas (solo de desarrollo, ADR 0005)."),
+    ] = None,
+    partition: Annotated[
+        str | None,
+        typer.Option(
+            "--partition",
+            help="Todas las series de una partición (development; evaluation se rechaza).",
+        ),
+    ] = None,
+    runs: Annotated[
+        int | None,
+        typer.Option("--runs", min=1, help="Corridas por serie (por defecto runs_per_config)."),
+    ] = None,
+    run_name: Annotated[
+        str | None,
+        typer.Option(
+            "--run-name",
+            help="Carpeta en reports/experiment-a/. Si ya es un lote, se reanuda: se omiten "
+            "las corridas completas y se rehacen las demás.",
+        ),
+    ] = None,
+) -> None:
+    """Experimento A en lote: varias series y corridas sin supervisión, bajo un solo nombre.
+
+    Corre cada par (serie, corrida) como `afg experiment a` y los guarda juntos en
+    `reports/experiment-a/<run-name>/` (cada registro conserva su serie) y en
+    `data/interim/openkos/<run-name>/`, donde C2 los busca. Un par fallido se registra y el
+    lote sigue; el código de salida es distinto de cero si alguno falló. Al final imprime un
+    resumen de integridad, sin puntajes (ADR 0005). Repetir `--run-name` reanuda el lote.
+    Solo series de desarrollo mientras la versión de OpenKOS no esté fijada (ADR 0006).
+    """
+    import time
+    from datetime import UTC, datetime
+
+    from afg.experiments.extraction_batch import (
+        BatchConflictError,
+        batch_summary_lines,
+        run_batch,
+    )
+
+    series_ids = _batch_series(series, partition)
+    batch_partition = _require_development_series(series_ids)
+    budget = load_experiments_config()["shared_budget"]
+    n_runs = runs if runs is not None else int(budget["runs_per_config"])
+    name = run_name or datetime.now(UTC).strftime("a-%Y%m%d-%H%M%S")
+    base_manifest = _experiment_a_manifest(name, ",".join(series_ids), batch_partition, n_runs)
+    base_manifest.pop("completed_runs")
+    base_manifest.pop("error")
+    run_dir = EXPERIMENT_A_DIR / name
+    console.print(f"{', '.join(series_ids)}: {n_runs} corrida(s) por serie -> {_short(run_dir)}")
+    started = time.monotonic()
+    try:
+        manifest = run_batch(
+            make_openkos_adapter(OPENKOS_WORKSPACES_DIR / name),
+            run_dir=run_dir,
+            workspace_root=OPENKOS_WORKSPACES_DIR / name,
+            series_ids=series_ids,
+            runs=n_runs,
+            base_manifest=base_manifest,
+            report=lambda line: console.print(escape(line)),
+        )
+    except BatchConflictError as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    for line in batch_summary_lines(manifest, elapsed_seconds=time.monotonic() - started):
+        console.print(escape(line))
+    console.print(f"Manifiesto en {_short(run_dir / 'manifest.json')}.")
+    if manifest["status"] != "ok":
+        raise typer.Exit(code=1)
 
 
 def make_provenance_probe() -> ProvenanceProbe:
