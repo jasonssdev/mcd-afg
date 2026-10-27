@@ -1,0 +1,4 @@
+series_id,annotator_a,annotator_b,axis,n_items,kappa,disagreeing_pair_ids
+TS3005,gm,gv,existence,11,0.7441860465116279,TS3005.p005
+TS3005,gm,gv,type,8,0.19999999999999996,TS3005.p006;TS3005.p007;TS3005.p010;TS3005.p011
+TS3005,gm,gv,direction,11,nan,
