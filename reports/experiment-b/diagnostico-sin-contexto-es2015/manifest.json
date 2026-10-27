@@ -1,0 +1,43 @@
+{
+  "schema_version": 2,
+  "run_name": "diagnostico-sin-contexto-es2015",
+  "created_at": "2026-10-26T23:21:01.244306+00:00",
+  "updated_at": "2026-10-26T23:59:54.974614+00:00",
+  "git_commit": "c9a632bab67793d7649e8082a5690811af4c73c7",
+  "settings": {
+    "generative_model": "qwen3:8b",
+    "temperature": 0.1,
+    "base_seed": 42,
+    "runs": 3,
+    "judge_model": "gpt-oss:20b",
+    "judge_order": "reference_first",
+    "judge_seed": 42,
+    "judge_temperature": 0.0
+  },
+  "conditions": [
+    "C0"
+  ],
+  "series": [
+    "ES2015"
+  ],
+  "partition": "development",
+  "development_only": true,
+  "note": "Development series (ADR 0005): these figures never enter a results table.",
+  "counts": {
+    "questions": 21,
+    "expected": 63,
+    "records": 63,
+    "complete": 63,
+    "errors": 0
+  },
+  "generative_model_digest": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41",
+  "judge_model_digest": "f38aa0c53da5f8c49d08c43a99df24ff53167fe68e24664a7777288e7656fdfe",
+  "embedding_model_digest": "7907646426070047a77226ac3e684fbbe8410524f7b4a74d02837e43f2146bab",
+  "model_digest_source": "ollama /api/tags",
+  "ollama_version": "0.32.9",
+  "openkos_version": "0.5.5",
+  "c1_params": {},
+  "c2_extraction": null,
+  "questions_sha256": "4292f1e2154a1716b3347c8d0dd42809cf664d8882132610699eff9bc9801e37",
+  "git_dirty": true
+}

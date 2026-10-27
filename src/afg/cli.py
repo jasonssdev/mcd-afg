@@ -34,12 +34,18 @@ from afg.bibliography.audit import run_audit
 from afg.bibliography.audit import write_csv as write_biblio_csv
 from afg.bibliography.library import load_library
 from afg.conditions.base import Condition
+from afg.conditions.c0_closed_book import (
+    ClosedBookCondition,
+    EvaluationSeriesError,
+    require_development_series,
+)
 from afg.conditions.c1_ablation import ABLATION_PATH as C1_ABLATION_PATH
 from afg.conditions.c1_ablation import evaluate_modes, save_ablation_results
 from afg.conditions.c1_document_rag import (
     ChatError,
     DocumentRagCondition,
     GenerationSettings,
+    OllamaChatBackend,
 )
 from afg.conditions.c1_retrieval import OllamaEmbedder, configured_embedding_model
 from afg.conditions.c1_tuning import (
@@ -121,6 +127,7 @@ from afg.evaluation.judge_calibration_runner import (
 )
 from afg.evaluation.judge_calibration_set import (
     CalibrationSetError,
+    development_series,
     load_calibration_items,
     summarize_calibration_set,
 )
@@ -2441,6 +2448,21 @@ EXPERIMENT_B_CONDITIONS: tuple[str, ...] = ("c1", "c2", "c3")
 """Condition ids ``--conditions`` knows; only those in :func:`make_experiment_b_condition` run."""
 
 
+def experiment_b_settings(runs: int | None) -> RunSettings:
+    """Run settings of Experiment B from ``[shared_budget]``; ``runs`` defaults to the config."""
+    budget = load_experiments_config()["shared_budget"]
+    return RunSettings(
+        generative_model=str(budget["generative_model"]),
+        temperature=float(budget["temperature"]),
+        base_seed=int(budget["seed"]),
+        runs=runs if runs is not None else int(budget["runs_per_config"]),
+        judge_model=get_settings().judge_model,
+        judge_order=JUDGE_ORDER,
+        judge_seed=int(budget["seed"]),
+        judge_temperature=JUDGE_TEMPERATURE,
+    )
+
+
 def make_judge_backend() -> OllamaJudgeBackend:
     """The production judge backend, with the reasoning setting of ``[judge.calibration.think]``."""
     return OllamaJudgeBackend(think=load_think_settings())
@@ -2567,17 +2589,7 @@ def experiment_b(
         raise typer.Exit(code=1) from exc
 
     config = load_experiments_config()
-    budget = config["shared_budget"]
-    settings = RunSettings(
-        generative_model=str(budget["generative_model"]),
-        temperature=float(budget["temperature"]),
-        base_seed=int(budget["seed"]),
-        runs=runs if runs is not None else int(budget["runs_per_config"]),
-        judge_model=get_settings().judge_model,
-        judge_order=JUDGE_ORDER,
-        judge_seed=int(budget["seed"]),
-        judge_temperature=JUDGE_TEMPERATURE,
-    )
+    settings = experiment_b_settings(runs)
     try:
         needed = [settings.generative_model, settings.judge_model, configured_embedding_model()]
         absent = missing_models(needed, list_installed_models())
@@ -2619,6 +2631,107 @@ def experiment_b(
         summary = run_experiment_b(
             bank,
             built,
+            settings=settings,
+            judge_backend=make_judge_backend(),
+            run_dir=run_dir,
+            partition_of=configured_partition_of(),
+            excerpt_for=default_excerpt_for,
+            git_commit=current_git_commit(),
+            provenance=provenance,
+            progress=report,
+        )
+    except (JudgeConfigurationError, ManifestMismatchError, RunAbortedError, ValueError) as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    console.print(
+        f"{summary.written} registros nuevos, {summary.skipped} ya hechos, "
+        f"{summary.errors} con error. Manifiesto en {_short(run_dir / 'manifest.json')}."
+    )
+
+
+CLOSED_BOOK_RUN_NAME = "diagnostico-sin-contexto-es2015"
+
+
+def make_closed_book_condition() -> ClosedBookCondition:
+    """C0 wired to the shared generation settings and the local Ollama (no retrieval)."""
+    return ClosedBookCondition(chat=OllamaChatBackend(), settings=GenerationSettings.from_config())
+
+
+@experiment_app.command("b-closed-book")
+def experiment_b_closed_book(
+    questions: Annotated[
+        Path,
+        typer.Option(
+            "--questions",
+            help="CSV de preguntas de calibración (hoja `ES2015.preguntas.csv`).",
+        ),
+    ] = WORKSHEET_PATH,
+    runs: Annotated[
+        int | None,
+        typer.Option("--runs", min=1, help="Corridas por pregunta (por defecto runs_per_config)."),
+    ] = None,
+    run_name: Annotated[
+        str,
+        typer.Option(
+            "--run-name",
+            help="Nombre de la carpeta en reports/experiment-b/. Repetir un nombre reanuda.",
+        ),
+    ] = CLOSED_BOOK_RUN_NAME,
+) -> None:
+    """Diagnóstico de desarrollo: el modelo de C1 responde sin ningún contexto recuperado.
+
+    Mide el punto de partida más simple y cuánto del escenario AMI ya conoce el modelo. No es una
+    condición de la tesis (C1, C2, C3): solo corre sobre series de desarrollo (ADR 0005), con el
+    mismo modelo, ajustes, semillas (`seed + r`) y juez que el Experimento B, y escribe en
+    `reports/experiment-b/<run-name>/` con el mismo formato. Repetir el nombre reanuda.
+    """
+    quiet_http_logs()
+    try:
+        bank = load_experiment_questions(questions)
+        require_development_series(bank, development_series())
+    except (QuestionBankError, EvaluationSeriesError, ValueError, FileNotFoundError) as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+
+    settings = experiment_b_settings(runs)
+    try:
+        absent = missing_models(
+            [settings.generative_model, settings.judge_model], list_installed_models()
+        )
+    except (RuntimeError, ConnectionError, OSError) as exc:
+        console.print(
+            f"[bold red]No se pudo consultar los modelos instalados en Ollama: {exc}[/bold red] "
+            "Comprueba que Ollama esté corriendo."
+        )
+        raise typer.Exit(code=1) from exc
+    if absent:
+        for name in absent:
+            console.print(
+                f"[bold red]Falta el modelo {name} en Ollama:[/bold red] `ollama pull {name}`"
+            )
+        raise typer.Exit(code=1)
+
+    run_dir = EXPERIMENT_B_DIR / run_name
+    provenance = collect_provenance(
+        make_provenance_probe(),
+        generative_model=settings.generative_model,
+        judge_model=settings.judge_model,
+        embedding_model=configured_embedding_model(),
+        questions_path=questions,
+    )
+
+    def report(done: int, total: int) -> None:
+        step = max(total // 10, 1)
+        if done == total or done % step == 0:
+            console.print(f"  {done}/{total} registros")
+
+    console.print(
+        f"{len(bank)} preguntas sin contexto x {settings.runs} corridas -> {_short(run_dir)}"
+    )
+    try:
+        summary = run_experiment_b(
+            bank,
+            {"C0": make_closed_book_condition()},
             settings=settings,
             judge_backend=make_judge_backend(),
             run_dir=run_dir,
