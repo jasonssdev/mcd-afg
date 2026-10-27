@@ -14,6 +14,7 @@ from afg.experiments.c2_base_evidence import (
     WORKSHEET_COLUMNS,
     WorksheetLabeledError,
     bundle_dir_for_run,
+    count_stages,
     oe4_worksheet_rows,
     rank_bundle_objects,
     read_worksheet_rows,
@@ -187,3 +188,23 @@ def test_worksheet_round_trips_through_the_reader(tmp_path: Path) -> None:
     row = {**blank, "pregunta_id": "ES2015.q1", "respuesta_c2": 'dice "sí", y más'}
     write_oe4_worksheet(path, [row])
     assert read_worksheet_rows(path) == [row]
+
+
+def test_count_stages_adds_rule_stages_to_human_labels() -> None:
+    sheet = [
+        {"pregunta_id": "ES2015.q1", "etapa_humana": "recuperacion"},
+        {"pregunta_id": "ES2015.q2", "etapa_humana": " extraccion "},
+        {"pregunta_id": "ES2015.q3", "etapa_humana": "recuperacion"},
+    ]
+    assert count_stages(["sintesis"], sheet) == {
+        "extraccion": 1,
+        "recuperacion": 2,
+        "sintesis": 1,
+    }
+
+
+def test_count_stages_rejects_unlabeled_or_unknown_rows() -> None:
+    with pytest.raises(ValueError, match=r"ES2015\.q1"):
+        count_stages([], [{"pregunta_id": "ES2015.q1", "etapa_humana": ""}])
+    with pytest.raises(ValueError, match=r"ES2015\.q2"):
+        count_stages([], [{"pregunta_id": "ES2015.q2", "etapa_humana": "otra"}])

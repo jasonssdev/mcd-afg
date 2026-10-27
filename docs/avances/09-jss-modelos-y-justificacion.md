@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 09 — Modelos y su justificación |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 3.0 |
+| **Versión** | 4.0 |
 | **Fecha** | 2026-10-26 |
 | **Estado** | Vigente |
 
@@ -18,6 +18,7 @@
 | 1.3 | 2026-10-15 | Se retira la mención al extra `retrieval` (`rank-bm25`): el canal léxico BM25 está implementado en el paquete y la dependencia se eliminó de `pyproject.toml`. No cambia ninguna cifra ni decisión. | Corrección de código del 2026-10-15 (rama `fix/auditoria-codigo`): la dependencia declarada no se importaba en ninguna parte. |
 | 2.0 | 2026-10-19 | La dificultad 7 deja de decir que τ sigue sin fijarse y remite al ADR 0012 (τ principal 0,70; 0,75 y 0,80 como sensibilidad). | El ADR 0012 fijó τ con el notebook 17: el juez marca la misma decisión en ≤ 0,32 de los pares bajo 0,70 y en ≥ 0,76 desde 0,70. |
 | 3.0 | 2026-10-26 | Reestructuración completa para seguir el orden que pide el curso en la etapa de modelado (qué es el modelo, qué significa funcionar bien, restricciones del análisis exploratorio, estrategia experimental, *pipelines*, modelos por rol, búsqueda de parámetros, línea base, dificultades, pendientes y limitaciones), derivada del [notebook 19](../../notebooks/19-jss-modelos.ipynb). Se agregan: la tabla que traduce cada concepto del curso a su equivalente en la tesis; las particiones con volúmenes y porcentajes; los modelos por rol con su evidencia, incluida la de OpenKOS; los métodos de búsqueda de parámetros nombrados uno a uno; la ablación de la recuperación; el diagnóstico sin contexto (C0); la tabla de costo y latencia; el costo de los errores; las restricciones del análisis exploratorio; y las decisiones pendientes. Se concilian cifras que se citaban con distinto denominador (27 frente a 29 decisiones en ES2015; 6 frente a 9 decisiones con evidencia de varios roles) y el kappa de la segunda persona que etiquetó (0,865, antes redondeado a 0,87). Se retira el primer intento de extracción con OpenKOS 0.5.2 (4 objetos), reemplazado por el de la 0.5.5 (69 a 71 decisiones por corrida). | Video de avance #2 (modelado de datos, semana 4) y sesión sincrónica 2 del 2026-10-20: el notebook 19 es ahora la fuente única de las cifras de esta etapa, y este documento la de su guion. |
+| 4.0 | 2026-10-26 | Se incorporan las etiquetas de atribución del error (OE4) de las fallas de C2 en E1: de nueve fallas, 4 son de recuperación, 3 de extracción y 2 de síntesis (sección 8.4). Se actualizan la dificultad 8, la decisión pendiente sobre fuentes en bruto (#146) y las limitaciones del juez, que además de indulgente con lo genérico es estricto con lo parcial. Son datos de desarrollo, de una sola serie y de una sola persona: una dirección, no un resultado. | Las etiquetas las puso jss al revisar las ocho fallas que la regla no podía atribuir (PR #177); el documento decía que no había ninguna cifra de OE4. Las cifras salen del [notebook 16](../../notebooks/16-jss-c2-fuentes-e1.ipynb) y del [notebook 19](../../notebooks/19-jss-modelos.ipynb). |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -690,9 +691,32 @@ el piso de C0 y obliga a que la verificación humana del 20 % mire justo este ti
 La pérdida de C2 en E1 es el hallazgo más fuerte de las corridas de humo. El notebook 16 miró
 qué texto recuperó C2 en cada pregunta y dejó una hoja para que una persona clasifique cada falla
 según la etapa donde nació: extracción (el hecho no quedó bien en la base), recuperación (estaba
-y no se recuperó) o síntesis (se recuperó y la respuesta lo contradice). La hoja tiene 8 fallas
-que el rastro no atribuye, con una pista automática cada una; **0 tienen etiqueta humana todavía**,
-porque la atribución es trabajo humano. No hay ninguna cifra de OE4 que reportar aún.
+y no se recuperó) o síntesis (se recuperó y la respuesta lo contradice). La regla automática
+atribuye una sola de las nueve fallas (`q003`, síntesis). Las otras ocho las etiquetó una persona
+(jss) con la base compilada a la vista. Con las dos fuentes juntas:
+
+| Etapa donde nació el error | Fallas | Preguntas |
+|---|---|---|
+| Recuperación | 4 | q002, q006, q017, q020 |
+| Extracción | 3 | q004, q011, q026 |
+| Síntesis | 2 | q003 (por regla), q023 (etiqueta de jss) |
+
+Lo que dicen las notas de quien etiquetó:
+
+- **La recuperación suele traer la decisión vecina, no la correcta.** En q006 llegó la decisión
+  sobre DVD y VCR del mismo tramo de la reunión en lugar de la exclusión del teletexto, que sí
+  estaba en la base.
+- **Los resúmenes de tema llegan recortados y pierden el dato clave** (q017 y q023).
+- **Memoria contaminada (q017).** La extracción guardó como decisión una propuesta descartada
+  (botones de desplazamiento) y esa entrada engañó al modelo frente a la decisión correcta
+  (botones de presión).
+- **El juez es estricto con las respuestas parciales** (q011 y q023). En q023 la granada sí aparece
+  en la reunión y en el resumen recuperado; la respuesta es correcta en lo sustancial y el juez
+  la marcó incorrecta (falso negativo).
+
+Son nueve fallas de una sola serie de desarrollo, etiquetadas por una persona: indican una
+dirección (en esta serie pesa más la recuperación que la síntesis) y no son un resultado de la
+tesis.
 
 ## 9. Variabilidad, reproducibilidad y costo
 
@@ -752,9 +776,9 @@ distinta máquina).
 | 5 | Cruce de idiomas | La extracción sale en inglés y la ground truth está en español; ni la oración inglesa de origen alcanza una similitud alta contra su propia referencia en español. La cobertura colapsa con τ alto por el idioma, no por los modelos | Mitigado: la ground truth se traduce al inglés para comparar (la traducción nunca es una etiqueta) y τ se calibra después de traducir |
 | 6 | El control nulo del umbral τ tiene un defecto | Al cruzar dos equipos con el mismo encargo, parte del «azar» es la misma decisión de verdad; la regla daba τ = 0,80 y casi no dejaba cobertura real | Desvío declarado: τ principal 0,70 con 0,75 y 0,80 de sensibilidad (ADR 0012). Pendiente: concordancia del juez con una persona sobre 50 pares |
 | 7 | El modelo base es menos fiable de lo que el *screen* mostraba | Con 5 corridas `qwen3:8b` no falló ninguna reunión en TS3009 (0 de 20); con 15 corridas nuevas fallaron 6 de 60 por tope de generación | Aprendizaje: la confirmatoria con corridas nuevas no es un trámite. Alimenta la decisión del extractor (#143) |
-| 8 | C2 pierde en E1 frente a C1 | 5 de 14 frente a 10 de 14; las abstenciones de ambas las decidió la verificación de suficiencia | En curso: hoja de OE4 con 8 fallas (0 etiquetadas); decisión sobre fuentes en bruto en C2 (#146) |
+| 8 | C2 pierde en E1 frente a C1 | 5 de 14 frente a 10 de 14; las abstenciones de ambas las decidió la verificación de suficiencia | OE4 etiquetado por jss: recuperación 4, extracción 3, síntesis 2 (de 9 fallas; una serie, una persona). Pendiente: decisión sobre fuentes en bruto en C2 (#146) |
 | 9 | El cargador de la ground truth no leía TS3009 | Las dos filas compuestas de TS3009 traen vacíos la reunión, la oración y la cita de sus hijas, y el cargador buscaba la transcripción de una reunión vacía | Corregido con prueba: una hija vacía hereda los campos de su fila compuesta (notebook 15) |
-| 10 | El juez es indulgente con una respuesta genérica | Marcó correcta una respuesta sin contexto que no afirma lo que dice la referencia (8.3); su calibración pudo quedar algo inflada porque el identificador delataba cómo se generó cada respuesta | Declarado. Mitigación prevista: verificación humana del 20 % de las respuestas del experimento |
+| 10 | El juez es indulgente con una respuesta genérica y estricto con una parcial | Marcó correcta una respuesta sin contexto que no afirma lo que dice la referencia (8.3) y marcó incorrecta una respuesta correcta en lo sustancial por faltarle elementos (q023, 8.4); su calibración pudo quedar algo inflada porque el identificador delataba cómo se generó cada respuesta | Declarado. Mitigación prevista: verificación humana del 20 % de las respuestas del experimento |
 
 Dos aprendizajes atraviesan la lista. **Primero, medir lo que de verdad llega al modelo**: el
 recorte de contexto invalidó una medición propia, y la lección se aplicó después (el mismo
@@ -774,7 +798,7 @@ El equivalente a «usar el conjunto de prueba una sola vez» es **congelar todo 
 | 1 | Modelo extractor de C2 y alcance de la regla del «mismo modelo» (#143) | `qwen3.6:27b` gana en F1 pero tarda 1,8 a 3,6 veces más; `qwen3:8b` es el más rápido pero falló reuniones en la confirmatoria; `qwen3.6:35b-a3b` es más rápido que el 27b pero no pasa la regla de OpenKOS con 15 corridas. ¿La regla de la propuesta (§5.3) obliga al extractor a ser el mismo modelo que responde, o solo al que responde? | El costo del Experimento A y el sentido de comparar C2 con C1 y C3 |
 | 2 | Fijar la versión de OpenKOS (#94) | Hoy hay un piso (`>=0.5.5`), no una versión; la 0.6.0 ya existe y la rama principal cambia la verificación de suficiencia | Ninguna evaluación se corre sin versión fijada; hay que enmendar el ADR 0006 |
 | 3 | Verificación de suficiencia de C2 y C3 (6.5) | Versión sin esa verificación, o `models: {sufficiency: qwen3:8b}` en el espacio de trabajo | Sin esto, C1 y C2 abstendrían con modelos distintos |
-| 4 | Fuentes en bruto en C2 (#146) | C2 recupera la transcripción en bruto (`sources/`), que no es resultado de la extracción; hay que decidir si cuenta como parte de C2 | Qué mide la comparación en E1 |
+| 4 | Fuentes en bruto en C2 (#146) | C2 recupera la transcripción en bruto (`sources/`), que no es resultado de la extracción; hay que decidir si cuenta como parte de C2. Ya hay evidencia de OE4 (8.4): recuperación 4, extracción 3, síntesis 2 de 9 fallas, en desarrollo y con una serie | Qué mide la comparación en E1 |
 | 5 | Concordancia del juez de τ con una persona | 50 pares de la muestra juzgada; sin anotador asignado (ADR 0012) | Si es baja, el ADR 0012 se reemplaza con otro |
 
 ### 11.2 Lo que debe estar listo y congelado antes de evaluar
@@ -823,8 +847,13 @@ desarrollo, antes de la primera corrida.
 - La elección del extractor se apoya en dos series de desarrollo y en un puntaje (τ = 0,60) que
   incluye parecido temático; la decisión final no está tomada.
 - El juez se calibró con 42 ítems de una serie, generados por el mismo generador y con un
-  identificador que delataba su origen; es indulgente con respuestas genéricas. Su validación con
-  personas sobre el experimento real sigue pendiente.
+  identificador que delataba su origen. Su validación con personas sobre el experimento real
+  sigue pendiente.
+- El juez tiene dos sesgos vistos al etiquetar: es indulgente con una respuesta genérica que no
+  se compromete (C0, q008) y estricto con una respuesta parcial correcta en lo sustancial (C2,
+  q023, un falso negativo; también q011). Infla el piso de C0, puede subestimar a C2 y es una razón
+  más para la verificación humana del 20 %.
+- Las nueve etapas de OE4 las atribuyó una sola persona, sobre una serie de desarrollo.
 - La citación se mide con una regla determinista aparte; queda abierto si el tamaño distinto de
   las citas de C1 y C2 sesga la comparación (#97).
 
