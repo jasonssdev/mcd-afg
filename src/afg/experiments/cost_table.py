@@ -277,7 +277,8 @@ def extraction_manifest_cost(
 ) -> CostRow:
     """The full OpenKOS extraction of one series, from a run manifest's timestamps.
 
-    The duration spans every run of the folder, so ``mean_seconds`` divides it by ``runs``.
+    The duration spans every run of the folder, so ``mean_seconds`` divides it by the number of
+    series-runs: ``runs``, times the series of an ``a-batch`` manifest (``series_ids``).
 
     Raises:
         ValueError: if the manifest has no ``created_at``/``updated_at`` pair.
@@ -287,7 +288,7 @@ def extraction_manifest_cost(
     start = datetime.fromisoformat(str(manifest["created_at"]))
     end = datetime.fromisoformat(str(manifest["updated_at"]))
     total = (end - start).total_seconds()
-    runs = int(manifest.get("runs") or 1)
+    runs = int(manifest.get("runs") or 1) * max(1, len(manifest.get("series_ids") or ()))
     openkos = manifest.get("openkos") or {}
     versions = ", ".join(str(v) for v in openkos.get("versions", []))
     return CostRow(

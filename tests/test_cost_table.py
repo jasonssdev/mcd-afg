@@ -168,6 +168,20 @@ class TestOtherSources:
         assert row.total_seconds == pytest.approx(25 * 60 + 42)
         assert "0.5.5" in row.detail
 
+    def test_batch_manifest_counts_one_unit_per_series_and_run(self) -> None:
+        manifest = {
+            "created_at": "2026-10-16T16:00:00+00:00",
+            "updated_at": "2026-10-16T17:00:00+00:00",
+            "kind": "batch",
+            "runs": 3,
+            "series": "ES2015,TS3009",
+            "series_ids": ["ES2015", "TS3009"],
+            "openkos": {"generative_model": "qwen3:8b", "versions": ["0.6.0"]},
+        }
+        row = extraction_manifest_cost(manifest, label="lote")
+        assert row.units == 6
+        assert row.mean_seconds == pytest.approx(600.0)
+
     def test_extraction_manifest_without_update_time_is_rejected(self) -> None:
         with pytest.raises(ValueError, match="updated_at"):
             extraction_manifest_cost({"created_at": "2026-10-16T16:53:59+00:00"}, label="x")
