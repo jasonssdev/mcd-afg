@@ -26,6 +26,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import pandas as pd
+
 from afg.domain.question import Question
 from afg.experiments.c2_context import (
     _blocks,
@@ -257,6 +259,22 @@ def count_stages(
     return counts
 
 
+def stage_shares(counts: Mapping[str, int]) -> pd.DataFrame:
+    """Cases and share of the total per OE4 stage, in the order of ``counts``.
+
+    ``counts`` is the result of :func:`count_stages`. ``share`` is a fraction (0 to 1) of the
+    stages' sum; with no failures at all every share is 0 rather than a division by zero.
+    """
+    total = sum(counts.values())
+    return pd.DataFrame(
+        {
+            "cases": list(counts.values()),
+            "share": [n / total if total else 0.0 for n in counts.values()],
+        },
+        index=pd.Index(list(counts), name="stage"),
+    )
+
+
 __all__ = [
     "ETAPA_VALUES",
     "WORKSHEET_COLUMNS",
@@ -268,5 +286,6 @@ __all__ = [
     "oe4_worksheet_rows",
     "rank_bundle_objects",
     "read_worksheet_rows",
+    "stage_shares",
     "write_oe4_worksheet",
 ]

@@ -208,6 +208,10 @@ class TestPlotGroupedBars:
         assert [t.get_text() for t in ax.get_xticklabels()] == ["E1", "E2"]
         assert {t.get_text() for t in ax.get_legend().get_texts()} == {"C0", "C1"}
 
+    def test_decimals_fix_the_precision_of_every_bar_label(self) -> None:
+        fig = plot_grouped_bars(["S1"], {"A": [0.289], "B": [0.5]}, ylabel="F1", decimals=3)
+        assert {t.get_text() for t in fig.axes[0].texts} == {"0,289", "0,500"}
+
     def test_a_group_with_the_wrong_number_of_values_is_rejected(self) -> None:
         with pytest.raises(ValueError, match="C1"):
             plot_grouped_bars(["E1", "E2"], {"C1": [1.0]}, ylabel="y")
