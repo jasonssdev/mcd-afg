@@ -4,11 +4,11 @@
 |---|---|
 | **Entrega** | Video de avance #2 de AFG2 (semana 4) — modelado de datos |
 | **Fecha de envío** | Pendiente |
-| **Versión** | 1.1 |
-| **Construido desde** | `docs/avances/09-jss-modelos-y-justificacion.md` v4.1 · `notebooks/19-jss-modelos.ipynb` (fuente de las cifras; el [20](../../notebooks/20-gm-mejoras-modelado.ipynb) lo complementa) · `docs/entregables/figuras/modelos-*.png` (seis figuras exportadas por el notebook 19) |
+| **Versión** | 1.2 |
+| **Construido desde** | `docs/avances/09-jss-modelos-y-justificacion.md` v4.2 · `notebooks/19-jss-modelos.ipynb` (fuente principal de las cifras) · `docs/entregables/figuras/modelos-*.png` (seis figuras exportadas por el notebook 19) |
 | **Duración objetivo** | 9:58 a 145 palabras por minuto (máximo de la rúbrica: 10:00) |
 | **Formato** | Tres presentadores en cuatro bloques consecutivos, en este orden: Jason, Germán, Gustavo, Jason. Con diapositivas de apoyo |
-| **Extensión hablada** | 1.445 palabras: 389 + 390 + 396 + 270. A 145 palabras por minuto son 9:58; a 140, 10:19 |
+| **Extensión hablada** | 1.444 palabras: 392 + 390 + 392 + 270. A 145 palabras por minuto son 9:58; a 140, 10:19 |
 
 > **Por qué existe este documento.** El profesor evalúa solo el video, así que el trabajo
 > técnico debe verse y oírse en él: cada modelo y cada técnica se nombra, y se explica con
@@ -24,6 +24,7 @@
 |---|---|---|---|
 | 1.0 | 2026-10-26 | Versión inicial: guion del segundo video de avance de AFG2, centrado en el modelado de datos. | Pauta de la semana 4 y documento 09 v3.0. |
 | 1.1 | 2026-10-27 | Se agrega al bloque 4 la atribución del error (OE4) de las fallas de C2 en E1, con una figura nueva (la 14) y unas 57 palabras habladas; las láminas 14 y 15 pasan a ser la 15 y la 16. Se actualizan extensión, tiempos del bloque 4 y fuentes (documento 09 v4.1). | El guion se construyó con el documento 09 v3.0 y no decía dónde nace el error de C2; el PR #187 incorporó el reparto por etapa (4 recuperación, 3 extracción, 2 síntesis) y la figura `modelos-etapas-fallas-c2.png`. El guion aún no se había enviado. |
+| 1.2 | 2026-10-28 | Se ajusta el alcance de C0, la descripción de C3 y la interpretación de C1/C2; se conservan cifras y estructura. Extensión: 1.444 palabras (392 + 390 + 392 + 270). | Coherencia con el avance 09 v4.2. |
 
 ## Qué pide el curso y dónde se cubre
 
@@ -52,12 +53,12 @@ finales: importa el proceso de selección y el trabajo inicial.
 
 | Bloque | Persona | Palabras | Tiempo (145 ppm) | Mensaje central |
 |---|---|---|---|---|
-| El problema en un caso, qué es «el modelo» y qué significa funcionar bien | Jason Sepúlveda | 389 | 0:00 – 2:41 | El precio de venta en C0, C1 y C2; no se entrena nada, se comparan *pipelines*; el juez es un instrumento; criterio de éxito y costo de los errores |
-| Estrategia experimental y modelos por rol | Germán Vega | 390 | 2:41 – 5:22 | Partición 3 + 11 series con conjunto de prueba bajo llave; fuga declarada; restricciones del análisis exploratorio; generador, *embeddings*, juez (3 candidatos) y extractor (4 candidatos, decisión pendiente) |
-| Búsqueda de parámetros, línea base, primeros resultados y costo | Gustavo Martínez | 396 | 5:22 – 8:06 | *Grid search* y su corrección, ablación, τ; línea base C0 y C1 frente a C2 por estrato, solo desarrollo; sin contaminación; costo; librerías |
+| El problema en un caso, qué es «el modelo» y qué significa funcionar bien | Jason Sepúlveda | 392 | 0:00 – 2:42 | El precio de venta en C0, C1 y C2; no se entrena nada, se comparan *pipelines*; el juez es un instrumento; criterio de éxito y costo de los errores |
+| Estrategia experimental y modelos por rol | Germán Vega | 390 | 2:42 – 5:24 | Partición 3 + 11 series con conjunto de prueba bajo llave; fuga declarada; restricciones del análisis exploratorio; generador, *embeddings*, juez (3 candidatos) y extractor (4 candidatos, decisión pendiente) |
+| Búsqueda de parámetros, línea base, primeros resultados y costo | Gustavo Martínez | 392 | 5:24 – 8:06 | *Grid search* y su corrección, ablación, τ; línea base C0 y C1 frente a C2 por estrato, solo desarrollo; límites de C0; costo; librerías |
 | Dificultades, pendientes, limitaciones y próximos pasos | Jason Sepúlveda | 270 | 8:06 – 9:58 | Aprendizajes, atribución del error de C2 (OE4, solo desarrollo), decisiones abiertas, limitaciones y el paso siguiente: congelar y evaluar una vez |
 
-Reparto por persona: Jason 659 palabras, Germán 390, Gustavo 396. Jason abre y cierra
+Reparto por persona: Jason 662 palabras, Germán 390, Gustavo 392. Jason abre y cierra
 porque plantea el problema y reúne las decisiones pendientes; Germán concentra la estrategia
 experimental y la elección de modelos; Gustavo, los métodos de búsqueda y los resultados.
 Margen sobre el tope de 10:00: 0:02 a 145 palabras por minuto; a 140 el guion se pasa (10:19), así que el ensayo debe cronometrarse y, si hace falta, recortar según la nota de grabación.
@@ -78,13 +79,13 @@ Margen sobre el tope de 10:00: 0:02 a 145 palabras por minuto; a 140 el guion se
   con lo que debe verse en pantalla.
 - Cronometrar un ensayo completo antes de grabar. Si se pasa de 10:00, recortar primero la
   frase de librerías del bloque 3 y la mención de τ, y no los ejemplos ni los nombres de modelos.
-- Las cifras de este guion salen de `docs/avances/09-jss-modelos-y-justificacion.md` v4.1 y del
+- Las cifras de este guion salen de `docs/avances/09-jss-modelos-y-justificacion.md` v4.2 y del
   notebook 19. Ninguna se calcula aquí. Los porcentajes dichos en voz son los de la fuente
   redondeados al entero (21 %, 79 %, 22 %, 76 %, 48 %, 57 %, 37 %, 42 %). Las de OE4 se dicen como conteos (4, 3 y 2 de 9), con la frase «una serie y una persona».
 
 ---
 
-## Bloque 1 — Jason Sepúlveda (0:00 – 2:41)
+## Bloque 1 — Jason Sepúlveda (0:00 – 2:42)
 
 ### Texto hablado
 
@@ -102,9 +103,9 @@ Empiezo con un caso real. En una serie de cuatro reuniones, un equipo diseña un
 > | C1 | Busca fragmentos de la transcripción y responde con ellos | Veinticinco euros | Sí |
 > | C2 | Responde desde una base de decisiones construida antes | Encontró conceptos relacionados, pero ninguno responde | No |
 
-**C0** responde sin ningún texto de apoyo, solo con lo que el modelo ya sabe: dice que no tiene información. Se equivoca. **C1** busca fragmentos de la transcripción y responde con ellos: veinticinco euros. Acierta. **C2** responde desde una base de decisiones que otro proceso construyó antes: dice que ninguno de los conceptos encontrados responde. Se equivoca. El precio sí está en la reunión; lo que cambia es cómo se organiza la información antes de consultarla. Eso es lo que medimos.
+**C0** responde sin ningún texto de apoyo, solo con lo que el modelo ya sabe: dice que no tiene información. Se equivoca. **C1** busca fragmentos de la transcripción y responde con ellos: veinticinco euros. Acierta. **C2** responde desde una base de decisiones que otro proceso construyó antes: dice que ninguno de los conceptos encontrados responde. Se equivoca. El precio sí está en la reunión. C1 lo recuperó y C2 no; queremos comprobar si la diferencia persiste al controlar el resto del proceso.
 
-Ahora, ¿cuál es nuestro «modelo»? El curso entiende por modelo un algoritmo que se entrena con datos. Nosotros **no entrenamos nada**. Usamos **LLM**, modelos de lenguaje ya entrenados, que corren en nuestros computadores con **Ollama**. Lo que comparamos son ***pipelines***: cada condición completa, desde el texto hasta la respuesta. C1 busca fragmentos; C2 usa la base construida por la máquina; C3, la misma base construida por personas. El **juez**, otro LLM que califica las respuestas, es un instrumento de medida, no un modelo bajo prueba.
+Ahora, ¿cuál es nuestro «modelo»? El curso entiende por modelo un algoritmo que se entrena con datos. Nosotros **no entrenamos nada**. Usamos **LLM**, modelos de lenguaje ya entrenados, que corren en nuestros computadores con **Ollama**. Lo que comparamos son ***pipelines***: cada condición completa, desde el texto hasta la respuesta. C1 busca fragmentos; C2 usa la base construida por la máquina; C3, una base de referencia construida con anotaciones humanas. El **juez**, otro LLM que califica las respuestas, es un instrumento de medida, no un modelo bajo prueba.
 
 > **▶ Lámina 2 — se muestra al decir «Cada práctica del curso tiene su equivalente».**
 >
@@ -139,7 +140,7 @@ Germán sigue con la estrategia experimental y los modelos.
 
 ---
 
-## Bloque 2 — Germán Vega (2:41 – 5:22)
+## Bloque 2 — Germán Vega (2:42 – 5:24)
 
 ### Texto hablado
 
@@ -194,7 +195,7 @@ Gustavo sigue con la búsqueda de parámetros y los primeros resultados.
 
 ---
 
-## Bloque 3 — Gustavo Martínez (5:22 – 8:06)
+## Bloque 3 — Gustavo Martínez (5:24 – 8:06)
 
 ### Texto hablado
 
@@ -229,7 +230,7 @@ Ahora la línea base. El curso pide siempre una simple. Tenemos dos: C0, el mode
 >
 > ![Respuestas correctas por estrato en desarrollo, ES2015, 21 preguntas: C0 sin contexto 19,0 % en E1 y 50 % en E4; C1 71,4 % en E1, 100 % en E2 y 100 % en E4; C2 35,7 % en E1, 50 % en E2 y 100 % en E4; E3 en 0 % para las tres con un solo caso](figuras/modelos-baseline-por-estrato.png)
 
-Esto es **solo desarrollo**: una serie, 21 preguntas, una corrida. Sin contexto, el modelo acierta cerca del 22 %. Con C1, cerca del 76 %. Con C2, cerca del 48 %. C2 pierde sobre todo en preguntas de un hecho puntual, porque contesta algo equivocado más que callar. Y hay un solo caso de evolución, así que no podemos decir nada de lo que la tesis quiere probar. C0 sirve además para descartar contaminación: el precio y el costo máximo fallan en sus tres corridas, así que el modelo no se sabe esas reuniones de memoria.
+Esto es **solo desarrollo**: una serie, 21 preguntas, una corrida. Sin contexto, el modelo acierta cerca del 22 %. Con C1, cerca del 76 %. Con C2, cerca del 48 %. C2 pierde sobre todo en preguntas de un hecho puntual, porque contesta algo equivocado más que callar. Y hay un solo caso de evolución, así que no podemos decir nada de lo que la tesis quiere probar. C0 falló el precio y el costo máximo en las tres corridas. Eso no descarta que el modelo haya visto AMI durante su entrenamiento.
 
 > **▶ Figura 11 — se muestra al decir «Costo: responder tarda».**
 >
@@ -309,7 +310,7 @@ Lo que sigue: decidir lo pendiente, congelar modelos, versiones y código, y sol
 
 | Cifra o afirmación | Fuente |
 |---|---|
-| Caso del precio: respuesta de referencia «veinticinco euros»; C0 sin información (incorrecta), C1 acierta, C2 no encuentra (incorrecta) | `docs/avances/09-jss-modelos-y-justificacion.md` v4.1, «Un caso para entrar en materia»; notebook 19, mismo apartado |
+| Caso del precio: respuesta de referencia «veinticinco euros»; C0 sin información (incorrecta), C1 acierta, C2 no encuentra (incorrecta) | `docs/avances/09-jss-modelos-y-justificacion.md` v4.2, «Un caso para entrar en materia»; notebook 19, mismo apartado |
 | No se entrena ningún modelo; Ollama local; el juez es instrumento; C1, C2 y C3 | Documento 09, §1 y §5; ADR 0005 |
 | Criterio de éxito: diferencia pareada C2 − C1 en E3, intervalo bootstrap por encima de 0 | Documento 09, §2.1 (ADR 0010, D16/D17) |
 | Costo de los errores; precision y recall por separado | Documento 09, §2.2 |
@@ -323,7 +324,7 @@ Lo que sigue: decidir lo pendiente, congelar modelos, versiones y código, y sol
 | Ablación: 0,373 BM25, 0,417 denso, 0,569 híbrido | Documento 09, §7.2; figura `modelos-ablacion-recuperacion.png` |
 | τ principal 0,70 con control nulo y juez | Documento 09, §7.3; ADR 0012; notebook 17 |
 | Línea base: 22,2 % (C0), 76,2 % (C1), 47,6 % (C2); pérdida de C2 en E1 por respuestas equivocadas; un solo caso de E3 | Documento 09, §8.1 y §8.2; figura `modelos-baseline-por-estrato.png` |
-| Sin indicio de contaminación: precio y costo máximo fallan en las 3 corridas de C0 | Documento 09, §8.3 |
+| C0: precio y costo máximo fallan en 3 corridas; no se descarta exposición previa a AMI | Documento 09, §8.3 |
 | Costo: unos 9 s por respuesta, 4 s por juicio, entre 2 y 12 minutos por serie al extraer | Documento 09, §9; figura `modelos-costo-latencia-por-rol.png` |
 | Librerías: Ollama, OpenKOS, sentence-transformers, scikit-learn, scipy, pandas; BM25 propio | Documento 09, §5; `pyproject.toml`; `src/afg/conditions/c1_retrieval.py` |
 | `qwen3:8b`: 0 de 20 reuniones fallidas con 5 corridas y 6 de 60 con 15 corridas nuevas | Documento 09, §6.2 y dificultad 7 |
