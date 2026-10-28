@@ -11,6 +11,7 @@ from afg.evaluation.judge_calibration_results import StoredCalibration, StoredCa
 from afg.experiments.cost_table import (
     CostRow,
     answer_and_judge_costs,
+    compare_to_baseline,
     cost_frame,
     extraction_manifest_cost,
     judge_calibration_costs,
@@ -358,3 +359,36 @@ def test_the_rule_reproduces_the_stored_screen_of_notebook_15() -> None:
     assert not bool(row["margin_ok"])  # 0.097 gain against 0.099 needed
     assert row["d_f1"] == pytest.approx(0.097, abs=5e-4)
     assert row["needed"] == pytest.approx(0.099, abs=5e-4)
+
+
+class TestCompareToBaseline:
+    ROWS: ClassVar[list] = [
+        ("base", "S1", 0.30, 0.25, 0.35, 0.50, 10.0, 100.0, 1),
+        ("big", "S1", 0.50, 0.45, 0.55, 0.60, 8.0, 360.0, 0),
+        ("base", "S2", 0.40, 0.35, 0.45, 0.70, 12.0, 200.0, 4),
+        ("big", "S2", 0.45, 0.40, 0.50, 0.65, 9.0, 300.0, 2),
+        ("other", "S1", 0.10, 0.05, 0.15, 0.20, 5.0, 50.0, 0),
+    ]
+
+    def test_one_row_per_series_with_the_candidate_against_the_baseline(self) -> None:
+        out = compare_to_baseline(_quality(self.ROWS), baseline="base", candidate="big")
+        assert list(out.index) == ["S1", "S2"]
+        assert out.loc["S1", "f1_baseline"] == pytest.approx(0.30)
+        assert out.loc["S1", "f1_candidate"] == pytest.approx(0.50)
+        assert out.loc["S1", "d_f1"] == pytest.approx(0.20)
+        assert out.loc["S2", "d_recall"] == pytest.approx(-0.05)
+        assert out.loc["S1", "seconds_baseline"] == pytest.approx(100.0)
+        assert out.loc["S1", "time_ratio"] == pytest.approx(3.6)
+        assert out.loc["S2", "time_ratio"] == pytest.approx(1.5)
+        assert out.loc["S2", "failed_baseline"] == 4
+        assert out.loc["S2", "failed_candidate"] == 2
+        assert out.loc["S2", "meeting_runs"] == 20
+
+    def test_a_series_missing_for_one_model_is_left_out(self) -> None:
+        rows = [r for r in self.ROWS if not (r[0] == "big" and r[1] == "S2")]
+        out = compare_to_baseline(_quality(rows), baseline="base", candidate="big")
+        assert list(out.index) == ["S1"]
+
+    def test_an_absent_model_is_an_error(self) -> None:
+        with pytest.raises(ValueError, match="nope"):
+            compare_to_baseline(_quality(self.ROWS), baseline="base", candidate="nope")

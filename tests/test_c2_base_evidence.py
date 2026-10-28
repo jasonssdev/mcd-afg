@@ -18,6 +18,7 @@ from afg.experiments.c2_base_evidence import (
     oe4_worksheet_rows,
     rank_bundle_objects,
     read_worksheet_rows,
+    stage_shares,
     write_oe4_worksheet,
 )
 
@@ -208,3 +209,16 @@ def test_count_stages_rejects_unlabeled_or_unknown_rows() -> None:
         count_stages([], [{"pregunta_id": "ES2015.q1", "etapa_humana": ""}])
     with pytest.raises(ValueError, match=r"ES2015\.q2"):
         count_stages([], [{"pregunta_id": "ES2015.q2", "etapa_humana": "otra"}])
+
+
+def test_stage_shares_gives_count_and_fraction_per_stage_in_the_given_order() -> None:
+    shares = stage_shares({"recuperacion": 4, "extraccion": 3, "sintesis": 2})
+    assert list(shares.index) == ["recuperacion", "extraccion", "sintesis"]
+    assert list(shares["cases"]) == [4, 3, 2]
+    assert shares.loc["recuperacion", "share"] == pytest.approx(4 / 9)
+    assert shares["share"].sum() == pytest.approx(1.0)
+
+
+def test_stage_shares_of_no_failures_is_all_zero_not_a_division_error() -> None:
+    shares = stage_shares({"recuperacion": 0, "extraccion": 0, "sintesis": 0})
+    assert list(shares["share"]) == [0.0, 0.0, 0.0]

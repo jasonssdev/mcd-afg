@@ -213,10 +213,13 @@ def plot_grouped_bars(
     ylabel: str,
     title: str = "",
     ylim: tuple[float, float] | None = None,
+    decimals: int | None = None,
 ) -> Figure:
     """Bars of several groups side by side for each category, each bar labelled with its value.
 
     ``groups`` maps a group name to one value per category (NaN leaves a gap without a label).
+    Labels show a whole value with no decimals and any other with one, unless ``decimals``
+    fixes the precision of every label (for values such as an F1 of 0,289).
 
     Raises:
         ValueError: if a group does not have one value per category.
@@ -232,7 +235,8 @@ def plot_grouped_bars(
         ax.bar(xs, values, width=width * 0.92, label=name, color=_COLORS[i % len(_COLORS)])
         for x, value in zip(xs, values, strict=True):
             if not pd.isna(value):
-                ax.text(x, value, _format_value(value), ha="center", va="bottom", fontsize=14)
+                label = _format_value(value) if decimals is None else _es(value, decimals)
+                ax.text(x, value, label, ha="center", va="bottom", fontsize=14)
     ax.set_xticks(range(len(categories)), list(categories))
     ax.set_ylabel(ylabel)
     if ylim is not None:
