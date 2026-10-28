@@ -8,7 +8,7 @@
 | **Construido desde** | `docs/avances/09-jss-modelos-y-justificacion.md` v4.2 · `notebooks/19-jss-modelos.ipynb` (fuente principal de las cifras) · `docs/entregables/figuras/modelos-*.png` (seis figuras exportadas por el notebook 19) |
 | **Duración objetivo** | 9:58 a 145 palabras por minuto (máximo de la rúbrica: 10:00) |
 | **Formato** | Tres presentadores en cuatro bloques consecutivos, en este orden: Jason, Germán, Gustavo, Jason. Con diapositivas de apoyo |
-| **Extensión hablada** | 1.445 palabras: 389 + 390 + 396 + 270. A 145 palabras por minuto son 9:58; a 140, 10:19 |
+| **Extensión hablada** | 1.444 palabras: 392 + 390 + 392 + 270. A 145 palabras por minuto son 9:58; a 140, 10:19 |
 
 > **Por qué existe este documento.** El profesor evalúa solo el video, así que el trabajo
 > técnico debe verse y oírse en él: cada modelo y cada técnica se nombra, y se explica con
@@ -24,7 +24,7 @@
 |---|---|---|---|
 | 1.0 | 2026-10-26 | Versión inicial: guion del segundo video de avance de AFG2, centrado en el modelado de datos. | Pauta de la semana 4 y documento 09 v3.0. |
 | 1.1 | 2026-10-27 | Se agrega al bloque 4 la atribución del error (OE4) de las fallas de C2 en E1, con una figura nueva (la 14) y unas 57 palabras habladas; las láminas 14 y 15 pasan a ser la 15 y la 16. Se actualizan extensión, tiempos del bloque 4 y fuentes (documento 09 v4.1). | El guion se construyó con el documento 09 v3.0 y no decía dónde nace el error de C2; el PR #187 incorporó el reparto por etapa (4 recuperación, 3 extracción, 2 síntesis) y la figura `modelos-etapas-fallas-c2.png`. El guion aún no se había enviado. |
-| 1.2 | 2026-10-28 | Se ajusta el alcance de C0, la descripción de C3 y la interpretación de C1/C2; se conservan cifras y estructura. | Coherencia con el avance 09 v4.2. |
+| 1.2 | 2026-10-28 | Se ajusta el alcance de C0, la descripción de C3 y la interpretación de C1/C2; se conservan cifras y estructura. Extensión: 1.444 palabras (392 + 390 + 392 + 270). | Coherencia con el avance 09 v4.2. |
 
 ## Qué pide el curso y dónde se cubre
 
@@ -53,12 +53,12 @@ finales: importa el proceso de selección y el trabajo inicial.
 
 | Bloque | Persona | Palabras | Tiempo (145 ppm) | Mensaje central |
 |---|---|---|---|---|
-| El problema en un caso, qué es «el modelo» y qué significa funcionar bien | Jason Sepúlveda | 389 | 0:00 – 2:41 | El precio de venta en C0, C1 y C2; no se entrena nada, se comparan *pipelines*; el juez es un instrumento; criterio de éxito y costo de los errores |
-| Estrategia experimental y modelos por rol | Germán Vega | 390 | 2:41 – 5:22 | Partición 3 + 11 series con conjunto de prueba bajo llave; fuga declarada; restricciones del análisis exploratorio; generador, *embeddings*, juez (3 candidatos) y extractor (4 candidatos, decisión pendiente) |
-| Búsqueda de parámetros, línea base, primeros resultados y costo | Gustavo Martínez | 396 | 5:22 – 8:06 | *Grid search* y su corrección, ablación, τ; línea base C0 y C1 frente a C2 por estrato, solo desarrollo; límites de C0; costo; librerías |
+| El problema en un caso, qué es «el modelo» y qué significa funcionar bien | Jason Sepúlveda | 392 | 0:00 – 2:42 | El precio de venta en C0, C1 y C2; no se entrena nada, se comparan *pipelines*; el juez es un instrumento; criterio de éxito y costo de los errores |
+| Estrategia experimental y modelos por rol | Germán Vega | 390 | 2:42 – 5:24 | Partición 3 + 11 series con conjunto de prueba bajo llave; fuga declarada; restricciones del análisis exploratorio; generador, *embeddings*, juez (3 candidatos) y extractor (4 candidatos, decisión pendiente) |
+| Búsqueda de parámetros, línea base, primeros resultados y costo | Gustavo Martínez | 392 | 5:24 – 8:06 | *Grid search* y su corrección, ablación, τ; línea base C0 y C1 frente a C2 por estrato, solo desarrollo; límites de C0; costo; librerías |
 | Dificultades, pendientes, limitaciones y próximos pasos | Jason Sepúlveda | 270 | 8:06 – 9:58 | Aprendizajes, atribución del error de C2 (OE4, solo desarrollo), decisiones abiertas, limitaciones y el paso siguiente: congelar y evaluar una vez |
 
-Reparto por persona: Jason 659 palabras, Germán 390, Gustavo 396. Jason abre y cierra
+Reparto por persona: Jason 662 palabras, Germán 390, Gustavo 392. Jason abre y cierra
 porque plantea el problema y reúne las decisiones pendientes; Germán concentra la estrategia
 experimental y la elección de modelos; Gustavo, los métodos de búsqueda y los resultados.
 Margen sobre el tope de 10:00: 0:02 a 145 palabras por minuto; a 140 el guion se pasa (10:19), así que el ensayo debe cronometrarse y, si hace falta, recortar según la nota de grabación.
@@ -85,7 +85,7 @@ Margen sobre el tope de 10:00: 0:02 a 145 palabras por minuto; a 140 el guion se
 
 ---
 
-## Bloque 1 — Jason Sepúlveda (0:00 – 2:41)
+## Bloque 1 — Jason Sepúlveda (0:00 – 2:42)
 
 ### Texto hablado
 
@@ -140,7 +140,7 @@ Germán sigue con la estrategia experimental y los modelos.
 
 ---
 
-## Bloque 2 — Germán Vega (2:41 – 5:22)
+## Bloque 2 — Germán Vega (2:42 – 5:24)
 
 ### Texto hablado
 
@@ -195,7 +195,7 @@ Gustavo sigue con la búsqueda de parámetros y los primeros resultados.
 
 ---
 
-## Bloque 3 — Gustavo Martínez (5:22 – 8:06)
+## Bloque 3 — Gustavo Martínez (5:24 – 8:06)
 
 ### Texto hablado
 
