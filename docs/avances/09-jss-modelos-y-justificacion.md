@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 09 — Modelos y su justificación |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 4.0 |
-| **Fecha** | 2026-10-26 |
+| **Versión** | 4.1 |
+| **Fecha** | 2026-10-27 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -19,6 +19,7 @@
 | 2.0 | 2026-10-19 | La dificultad 7 deja de decir que τ sigue sin fijarse y remite al ADR 0012 (τ principal 0,70; 0,75 y 0,80 como sensibilidad). | El ADR 0012 fijó τ con el notebook 17: el juez marca la misma decisión en ≤ 0,32 de los pares bajo 0,70 y en ≥ 0,76 desde 0,70. |
 | 3.0 | 2026-10-26 | Reestructuración completa para seguir el orden que pide el curso en la etapa de modelado (qué es el modelo, qué significa funcionar bien, restricciones del análisis exploratorio, estrategia experimental, *pipelines*, modelos por rol, búsqueda de parámetros, línea base, dificultades, pendientes y limitaciones), derivada del [notebook 19](../../notebooks/19-jss-modelos.ipynb). Se agregan: la tabla que traduce cada concepto del curso a su equivalente en la tesis; las particiones con volúmenes y porcentajes; los modelos por rol con su evidencia, incluida la de OpenKOS; los métodos de búsqueda de parámetros nombrados uno a uno; la ablación de la recuperación; el diagnóstico sin contexto (C0); la tabla de costo y latencia; el costo de los errores; las restricciones del análisis exploratorio; y las decisiones pendientes. Se concilian cifras que se citaban con distinto denominador (27 frente a 29 decisiones en ES2015; 6 frente a 9 decisiones con evidencia de varios roles) y el kappa de la segunda persona que etiquetó (0,865, antes redondeado a 0,87). Se retira el primer intento de extracción con OpenKOS 0.5.2 (4 objetos), reemplazado por el de la 0.5.5 (69 a 71 decisiones por corrida). | Video de avance #2 (modelado de datos, semana 4) y sesión sincrónica 2 del 2026-10-20: el notebook 19 es ahora la fuente única de las cifras de esta etapa, y este documento la de su guion. |
 | 4.0 | 2026-10-26 | Se incorporan las etiquetas de atribución del error (OE4) de las fallas de C2 en E1: de nueve fallas, 4 son de recuperación, 3 de extracción y 2 de síntesis (sección 8.4). Se actualizan la dificultad 8, la decisión pendiente sobre fuentes en bruto (#146) y las limitaciones del juez, que además de indulgente con lo genérico es estricto con lo parcial. Son datos de desarrollo, de una sola serie y de una sola persona: una dirección, no un resultado. | Las etiquetas las puso jss al revisar las ocho fallas que la regla no podía atribuir (PR #177); el documento decía que no había ninguna cifra de OE4. Las cifras salen del [notebook 16](../../notebooks/16-jss-c2-fuentes-e1.ipynb) y del [notebook 19](../../notebooks/19-jss-modelos.ipynb). |
+| 4.1 | 2026-10-27 | Se agregan a las decisiones abiertas (sección 11.1) los cuatro controles de comparabilidad que el notebook 19 (sección 5.6) deja por revisar antes de la corrida formal: huella del generador por corrida, versión y huella de los *embeddings*, texto efectivo entregado al modelo y revisión de las instrucciones copiadas de OpenKOS. En la sección 8.4 se enlaza la figura de las etapas de las fallas de C2 y se remite al [notebook 20](../../notebooks/20-gm-mejoras-modelado.ipynb) como complemento. No cambia ninguna cifra ni decisión. | El PR #187 integró la revisión del modelado hecha por otro integrante del equipo (notebook 20) en el notebook 19; este documento, que es su guion, debía reflejar los controles pendientes. No cambia ninguna figura del documento. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -716,7 +717,7 @@ Lo que dicen las notas de quien etiquetó:
 
 Son nueve fallas de una sola serie de desarrollo, etiquetadas por una persona: indican una
 dirección (en esta serie pesa más la recuperación que la síntesis) y no son un resultado de la
-tesis.
+tesis. El reparto se grafica en [`modelos-etapas-fallas-c2.png`](../entregables/figuras/modelos-etapas-fallas-c2.png) (sección 7.5 del notebook 19). El [notebook 20](../../notebooks/20-gm-mejoras-modelado.ipynb) complementa esta sección con la revisión del modelado hecha por otro integrante del equipo.
 
 ## 9. Variabilidad, reproducibilidad y costo
 
@@ -800,6 +801,12 @@ El equivalente a «usar el conjunto de prueba una sola vez» es **congelar todo 
 | 3 | Verificación de suficiencia de C2 y C3 (6.5) | Versión sin esa verificación, o `models: {sufficiency: qwen3:8b}` en el espacio de trabajo | Sin esto, C1 y C2 abstendrían con modelos distintos |
 | 4 | Fuentes en bruto en C2 (#146) | C2 recupera la transcripción en bruto (`sources/`), que no es resultado de la extracción; hay que decidir si cuenta como parte de C2. Ya hay evidencia de OE4 (8.4): recuperación 4, extracción 3, síntesis 2 de 9 fallas, en desarrollo y con una serie | Qué mide la comparación en E1 |
 | 5 | Concordancia del juez de τ con una persona | 50 pares de la muestra juzgada; sin anotador asignado (ADR 0012) | Si es baja, el ADR 0012 se reemplaza con otro |
+| 6 | Huella del generador en cada corrida | Confirmar que C1 y C2 usan el mismo `qwen3:8b` por su huella en Ollama y no solo por la etiqueta (9) | Sin esto, «el mismo generador» solo se sostiene por el nombre |
+| 7 | Versión y huella de los *embeddings* | `bge-m3` está declarado como compartido, pero la versión y la huella de cada backend aún no se registran | Sin esto, la recuperación de C1 y C2 podría diferir sin que se note |
+| 8 | Texto efectivo entregado, no solo K | Comparar lo que realmente llega al generador en C1 y en C2 tras el recorte de contexto (ADR 0007), y no únicamente K o el límite nominal | Sin esto, la comparación puede favorecer a la condición que recibe más texto |
+| 9 | Instrucciones copiadas de OpenKOS | Revisar que las menciones a *bundle* y a objetos en los *prompts* de respuesta de C1 no favorezcan a C2 (ADR 0006) | Sin esto, parte de la ventaja de C2 podría venir de la redacción de las instrucciones |
+
+Los controles 6 a 9 son los que el notebook 19 (sección 5.6) lista antes de la corrida formal; el [notebook 20](../../notebooks/20-gm-mejoras-modelado.ipynb) los ordena junto con los de las secciones 4, 8.2, 9 y 11 en una tabla de referencia.
 
 ### 11.2 Lo que debe estar listo y congelado antes de evaluar
 
@@ -897,7 +904,7 @@ Cada sección de este documento se deriva del [notebook 19](../../notebooks/19-j
 | 8. Línea base y primeros resultados | 7 | `reports/experiment-b/`; [notebook 07](../../notebooks/07-jss-runner-experimento-b.ipynb); [notebook 16](../../notebooks/16-jss-c2-fuentes-e1.ipynb) |
 | 9. Variabilidad, reproducibilidad y costo | 8 | `reports/experiment-a/`; `src/afg/experiments/cost_table.py` |
 | 10. Dificultades y aprendizajes | 9 | [ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md), [0009](../decisions/0009-adr-regla-de-citacion-correcta.md), [0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md); issues #87, #94, #97, #143, #146 |
-| 11. Decisiones pendientes y congelamiento | 10 | [ADR 0005](../decisions/0005-adr-development-evaluation-split.md); issues #94, #143, #146 |
+| 11. Decisiones pendientes y congelamiento | 5.6 y 10 | [ADR 0005](../decisions/0005-adr-development-evaluation-split.md), [0006](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md), [0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md); [notebook 20](../../notebooks/20-gm-mejoras-modelado.ipynb); issues #94, #143, #146 |
 | 12. Limitaciones | 11 | [documento 08](08-jss-metricas-y-criterio-de-exito.md); [ADR 0006](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) |
 
-Las cinco figuras de este documento están en [`../entregables/figuras/`](../entregables/figuras/) (`modelos-*.png`).
+Las cinco figuras de este documento, más la de las etapas de OE4 enlazada en la sección 8.4, están en [`../entregables/figuras/`](../entregables/figuras/) (`modelos-*.png`).
