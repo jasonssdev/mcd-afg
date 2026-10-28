@@ -130,6 +130,7 @@ Ejecuta y confirma que pasan:
 ```bash
 uv run pytest -q
 uv run ruff check .
+uv run ruff format --check .
 uv run mypy src/afg
 ```
 
@@ -208,6 +209,39 @@ agrega uno nuevo en vez de renumerar.
   ```
 - Los errores y los caminos equivocados se dejan escritos, no se ocultan: el
   razonamiento es parte del aporte.
+
+**Crear un notebook nuevo, paso a paso**
+
+1. **Número.** Toma el siguiente número libre de la serie (§7.2). No reserves
+   números para notebooks futuros ni renumeres los existentes.
+2. **Nombre.** `NN-{iniciales}-{nombre}.ipynb`, con tus iniciales de §1.
+3. **Encabezado.** Título (`# NN — ...`), **Autor**, **Depende de** (enlaces a
+   los notebooks y ADRs que usa) y un bloque de **estado** que diga qué es
+   (descriptivo, de desarrollo, resultado de la tesis) y que no se corrió
+   ningún modelo, si es el caso. Copia el de un notebook existente.
+4. **Cifras solo desde `src/afg/`, con test** (§7.1). Si un número necesita
+   lógica nueva (una diferencia, una proporción, un cociente), primero se
+   escribe la función en `src/afg/` con su test y después el notebook la
+   importa. En la prosa, las cifras se escriben con f-strings a partir de
+   variables, nunca a mano.
+5. **Resultados guardados.** Lee de `reports/` con los mismos cargadores y
+   rutas que los notebooks existentes; no copies valores a las celdas.
+6. **Voz y nombres.** Impersonal o primera persona del plural (arriba), sin
+   nombres propios en la prosa: para referirte a un notebook, un ADR o un
+   issue usa su número; a una persona, sus iniciales de §1.
+7. **Idioma.** Código, identificadores y comentarios en inglés; todo texto que
+   lee una persona (markdown, títulos de gráficos, etiquetas de tablas) en
+   español (§7.4).
+8. **Formato de las celdas.** `ruff` también revisa las celdas de código:
+   líneas de hasta 100 caracteres y sin caracteres ambiguos como `×`. Antes de
+   subir, ejecuta `uv run ruff check .` y `uv run ruff format --check .`
+   (si el segundo falla, `uv run ruff format .` lo corrige).
+9. **Ejecución de punta a punta** con el comando de nbconvert de arriba, y
+   revisa que no queden salidas de error.
+10. **Registro.** Agrega la fila del notebook a la tabla de
+    [`notebooks/README.md`](notebooks/README.md).
+11. **PR.** En la descripción, indica qué notebook cubre qué cómputo y pega el
+    resultado de los comandos de §6.
 
 ### 7.4 Idioma
 
