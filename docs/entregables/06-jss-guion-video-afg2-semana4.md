@@ -4,11 +4,11 @@
 |---|---|
 | **Entrega** | Video de avance #2 de AFG2 (semana 4) — modelado de datos |
 | **Fecha de envío** | Pendiente |
-| **Versión** | 1.0 |
-| **Construido desde** | `docs/avances/09-jss-modelos-y-justificacion.md` v3.0 · `notebooks/19-jss-modelos.ipynb` (fuente de las cifras) · `docs/entregables/figuras/modelos-*.png` (figuras exportadas por el notebook 19) |
-| **Duración objetivo** | 9:34 a 145 palabras por minuto (máximo de la rúbrica: 10:00) |
+| **Versión** | 1.1 |
+| **Construido desde** | `docs/avances/09-jss-modelos-y-justificacion.md` v4.1 · `notebooks/19-jss-modelos.ipynb` (fuente de las cifras; el [20](../../notebooks/20-gm-mejoras-modelado.ipynb) lo complementa) · `docs/entregables/figuras/modelos-*.png` (seis figuras exportadas por el notebook 19) |
+| **Duración objetivo** | 9:58 a 145 palabras por minuto (máximo de la rúbrica: 10:00) |
 | **Formato** | Tres presentadores en cuatro bloques consecutivos, en este orden: Jason, Germán, Gustavo, Jason. Con diapositivas de apoyo |
-| **Extensión hablada** | 1.388 palabras: 389 + 390 + 396 + 213. A 145 palabras por minuto son 9:34; a 140, 9:55 |
+| **Extensión hablada** | 1.445 palabras: 389 + 390 + 396 + 270. A 145 palabras por minuto son 9:58; a 140, 10:19 |
 
 > **Por qué existe este documento.** El profesor evalúa solo el video, así que el trabajo
 > técnico debe verse y oírse en él: cada modelo y cada técnica se nombra, y se explica con
@@ -23,6 +23,7 @@
 | Versión | Fecha | Cambio | Motivo |
 |---|---|---|---|
 | 1.0 | 2026-10-26 | Versión inicial: guion del segundo video de avance de AFG2, centrado en el modelado de datos. | Pauta de la semana 4 y documento 09 v3.0. |
+| 1.1 | 2026-10-27 | Se agrega al bloque 4 la atribución del error (OE4) de las fallas de C2 en E1, con una figura nueva (la 14) y unas 57 palabras habladas; las láminas 14 y 15 pasan a ser la 15 y la 16. Se actualizan extensión, tiempos del bloque 4 y fuentes (documento 09 v4.1). | El guion se construyó con el documento 09 v3.0 y no decía dónde nace el error de C2; el PR #187 incorporó el reparto por etapa (4 recuperación, 3 extracción, 2 síntesis) y la figura `modelos-etapas-fallas-c2.png`. El guion aún no se había enviado. |
 
 ## Qué pide el curso y dónde se cubre
 
@@ -37,7 +38,7 @@ finales: importa el proceso de selección y el trabajo inicial.
 | Modelos explorados, explicados con claridad | Bloque 1 (qué es «el modelo» aquí: *pipelines* C1, C2 y C3, LLM, juez); bloque 2 (generador, *embeddings*, juez y extractor con sus etiquetas exactas) |
 | Justificación de la elección en relación con el problema | Bloque 2 (por qué `qwen3:8b`, `bge-m3`, `gpt-oss:20b`; screen de cuatro extractores); bloque 3 (por qué un RAG híbrido como línea base) |
 | Intentos, parámetros, librerías | Bloque 3 (*grid search* de 32 configuraciones y su corrección, ablación, τ, librerías); bloque 2 (candidatos probados) |
-| Dificultades encontradas | Bloque 3 (error de medición del recorte de contexto); bloque 4 (muestras pequeñas, juez indulgente, defecto del control nulo) |
+| Dificultades encontradas | Bloque 3 (error de medición del recorte de contexto); bloque 4 (muestras pequeñas, juez indulgente, defecto del control nulo, dónde nace el error de C2) |
 | Coherencia y reflexión | Bloque 4 (dos aprendizajes, decisiones abiertas, limitaciones) |
 | Métrica de éxito y costo de los errores | Bloque 1 |
 | Conjunto de prueba separado y usado una vez; reparto en porcentajes y volúmenes; fuga de datos | Bloque 2 (3 series de desarrollo y 11 de evaluación bajo llave; fuga declarada); bloque 4 (congelar y evaluar una vez) |
@@ -54,12 +55,12 @@ finales: importa el proceso de selección y el trabajo inicial.
 | El problema en un caso, qué es «el modelo» y qué significa funcionar bien | Jason Sepúlveda | 389 | 0:00 – 2:41 | El precio de venta en C0, C1 y C2; no se entrena nada, se comparan *pipelines*; el juez es un instrumento; criterio de éxito y costo de los errores |
 | Estrategia experimental y modelos por rol | Germán Vega | 390 | 2:41 – 5:22 | Partición 3 + 11 series con conjunto de prueba bajo llave; fuga declarada; restricciones del análisis exploratorio; generador, *embeddings*, juez (3 candidatos) y extractor (4 candidatos, decisión pendiente) |
 | Búsqueda de parámetros, línea base, primeros resultados y costo | Gustavo Martínez | 396 | 5:22 – 8:06 | *Grid search* y su corrección, ablación, τ; línea base C0 y C1 frente a C2 por estrato, solo desarrollo; sin contaminación; costo; librerías |
-| Dificultades, pendientes, limitaciones y próximos pasos | Jason Sepúlveda | 213 | 8:06 – 9:34 | Aprendizajes, decisiones abiertas, limitaciones y el paso siguiente: congelar y evaluar una vez |
+| Dificultades, pendientes, limitaciones y próximos pasos | Jason Sepúlveda | 270 | 8:06 – 9:58 | Aprendizajes, atribución del error de C2 (OE4, solo desarrollo), decisiones abiertas, limitaciones y el paso siguiente: congelar y evaluar una vez |
 
-Reparto por persona: Jason 602 palabras, Germán 390, Gustavo 396. Jason abre y cierra
+Reparto por persona: Jason 659 palabras, Germán 390, Gustavo 396. Jason abre y cierra
 porque plantea el problema y reúne las decisiones pendientes; Germán concentra la estrategia
 experimental y la elección de modelos; Gustavo, los métodos de búsqueda y los resultados.
-Margen sobre el tope de 10:00: 0:26 a 145 palabras por minuto.
+Margen sobre el tope de 10:00: 0:02 a 145 palabras por minuto; a 140 el guion se pasa (10:19), así que el ensayo debe cronometrarse y, si hace falta, recortar según la nota de grabación.
 
 ## Notas de grabación
 
@@ -77,9 +78,9 @@ Margen sobre el tope de 10:00: 0:26 a 145 palabras por minuto.
   con lo que debe verse en pantalla.
 - Cronometrar un ensayo completo antes de grabar. Si se pasa de 10:00, recortar primero la
   frase de librerías del bloque 3 y la mención de τ, y no los ejemplos ni los nombres de modelos.
-- Las cifras de este guion salen de `docs/avances/09-jss-modelos-y-justificacion.md` v3.0 y del
+- Las cifras de este guion salen de `docs/avances/09-jss-modelos-y-justificacion.md` v4.1 y del
   notebook 19. Ninguna se calcula aquí. Los porcentajes dichos en voz son los de la fuente
-  redondeados al entero (21 %, 79 %, 22 %, 76 %, 48 %, 57 %, 37 %, 42 %).
+  redondeados al entero (21 %, 79 %, 22 %, 76 %, 48 %, 57 %, 37 %, 42 %). Las de OE4 se dicen como conteos (4, 3 y 2 de 9), con la frase «una serie y una persona».
 
 ---
 
@@ -254,7 +255,7 @@ Jason cierra con las dificultades y lo que sigue.
 
 ---
 
-## Bloque 4 — Jason Sepúlveda (8:06 – 9:34)
+## Bloque 4 — Jason Sepúlveda (8:06 – 9:58)
 
 ### Texto hablado
 
@@ -273,7 +274,15 @@ Gracias, Gustavo. Cierro con lo que aprendimos y lo que falta.
 
 Dejo dos aprendizajes. Primero, **medir lo que de verdad llega al modelo**: el recorte de contexto invalidó una medición nuestra. Segundo, **desconfiar de las muestras pequeñas**: con cinco corridas, `qwen3:8b` no falló ninguna reunión en una serie; con quince corridas nuevas, falló 6 de 60. También vimos que el juez es indulgente con una respuesta genérica, así que una persona revisará el 20 % de las respuestas del experimento. Y el control nulo de τ tenía un defecto, por eso declaramos el desvío.
 
-> **▶ Lámina 14 — se muestra al decir «Quedan decisiones abiertas».**
+> **▶ Figura 14 — se muestra al decir «Y un resultado sobre dónde falla C2».**
+>
+> Texto sobrepuesto: «Solo desarrollo · ES2015 · 9 fallas · una persona».
+>
+> ![Etapa probable de las nueve fallas de C2 en E1, desarrollo, ES2015: recuperación 4 de 9 (44,4 %), extracción 3 de 9 (33,3 %) y síntesis 2 de 9 (22,2 %)](figuras/modelos-etapas-fallas-c2.png)
+
+Y un resultado sobre dónde falla C2, la atribución del error, OE4. De las nueve fallas de C2 en desarrollo, en cuatro el dato estaba en la base pero no llegó al modelo: es **recuperación**. Tres nacieron en la extracción y dos al redactar la respuesta. Es una serie y una persona: una dirección, no un resultado.
+
+> **▶ Lámina 15 — se muestra al decir «Quedan decisiones abiertas».**
 >
 > Título: «Decisiones pendientes».
 >
@@ -288,7 +297,7 @@ Quedan decisiones abiertas. Qué extractor usar, y si debe ser el mismo modelo q
 
 Las limitaciones están declaradas: una serie, 21 preguntas, un solo dominio con habla actuada, referencia traducida del español, y no exploramos la temperatura ni otros generadores. Además, esperamos la respuesta del tutor sobre nuestro encuadre.
 
-> **▶ Lámina 15 — se muestra al decir «Lo que sigue».**
+> **▶ Lámina 16 — se muestra al decir «Lo que sigue».**
 >
 > Título: «Próximos pasos». Tres pasos en secuencia: «1. Decidir lo pendiente» → «2. Congelar modelos, versiones y código» → «3. Evaluar una sola vez». Pie: «Limitaciones: una serie · 21 preguntas · un dominio · referencia traducida».
 
@@ -300,7 +309,7 @@ Lo que sigue: decidir lo pendiente, congelar modelos, versiones y código, y sol
 
 | Cifra o afirmación | Fuente |
 |---|---|
-| Caso del precio: respuesta de referencia «veinticinco euros»; C0 sin información (incorrecta), C1 acierta, C2 no encuentra (incorrecta) | `docs/avances/09-jss-modelos-y-justificacion.md` v3.0, «Un caso para entrar en materia»; notebook 19, mismo apartado |
+| Caso del precio: respuesta de referencia «veinticinco euros»; C0 sin información (incorrecta), C1 acierta, C2 no encuentra (incorrecta) | `docs/avances/09-jss-modelos-y-justificacion.md` v4.1, «Un caso para entrar en materia»; notebook 19, mismo apartado |
 | No se entrena ningún modelo; Ollama local; el juez es instrumento; C1, C2 y C3 | Documento 09, §1 y §5; ADR 0005 |
 | Criterio de éxito: diferencia pareada C2 − C1 en E3, intervalo bootstrap por encima de 0 | Documento 09, §2.1 (ADR 0010, D16/D17) |
 | Costo de los errores; precision y recall por separado | Documento 09, §2.2 |
@@ -319,6 +328,7 @@ Lo que sigue: decidir lo pendiente, congelar modelos, versiones y código, y sol
 | Librerías: Ollama, OpenKOS, sentence-transformers, scikit-learn, scipy, pandas; BM25 propio | Documento 09, §5; `pyproject.toml`; `src/afg/conditions/c1_retrieval.py` |
 | `qwen3:8b`: 0 de 20 reuniones fallidas con 5 corridas y 6 de 60 con 15 corridas nuevas | Documento 09, §6.2 y dificultad 7 |
 | Juez indulgente con respuestas genéricas; verificación humana del 20 % | Documento 09, §8.3 y §10 |
+| Atribución del error de C2 en E1 (OE4): 4 de recuperación, 3 de extracción y 2 de síntesis, de 9 fallas; una serie, una persona, solo desarrollo | Documento 09, §8.4; notebook 19, §7.5; figura `modelos-etapas-fallas-c2.png` |
 | Decisiones abiertas: extractor (#143), versión de OpenKOS (#94), verificación de suficiencia, fuentes en bruto (#146) | Documento 09, §6.5 y §11.1 |
 | Respuesta del tutor pendiente | Documento 09, §1 |
 
@@ -341,5 +351,6 @@ En orden de aparición. Los PNG están en `docs/entregables/figuras/`; las lámi
 | 11 | 3 | Gustavo | `figuras/modelos-costo-latencia-por-rol.png` |
 | 12 | 3 | Gustavo | lámina de texto/tabla |
 | 13 | 4 | Jason | lámina de texto/tabla |
-| 14 | 4 | Jason | lámina de texto/tabla |
+| 14 | 4 | Jason | `figuras/modelos-etapas-fallas-c2.png` |
 | 15 | 4 | Jason | lámina de texto/tabla |
+| 16 | 4 | Jason | lámina de texto/tabla |
