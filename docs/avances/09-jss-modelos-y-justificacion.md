@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 09 — Modelos y su justificación |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 4.1 |
-| **Fecha** | 2026-10-27 |
+| **Versión** | 4.2 |
+| **Fecha** | 2026-10-28 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -20,6 +20,7 @@
 | 3.0 | 2026-10-26 | Reestructuración completa para seguir el orden que pide el curso en la etapa de modelado (qué es el modelo, qué significa funcionar bien, restricciones del análisis exploratorio, estrategia experimental, *pipelines*, modelos por rol, búsqueda de parámetros, línea base, dificultades, pendientes y limitaciones), derivada del [notebook 19](../../notebooks/19-jss-modelos.ipynb). Se agregan: la tabla que traduce cada concepto del curso a su equivalente en la tesis; las particiones con volúmenes y porcentajes; los modelos por rol con su evidencia, incluida la de OpenKOS; los métodos de búsqueda de parámetros nombrados uno a uno; la ablación de la recuperación; el diagnóstico sin contexto (C0); la tabla de costo y latencia; el costo de los errores; las restricciones del análisis exploratorio; y las decisiones pendientes. Se concilian cifras que se citaban con distinto denominador (27 frente a 29 decisiones en ES2015; 6 frente a 9 decisiones con evidencia de varios roles) y el kappa de la segunda persona que etiquetó (0,865, antes redondeado a 0,87). Se retira el primer intento de extracción con OpenKOS 0.5.2 (4 objetos), reemplazado por el de la 0.5.5 (69 a 71 decisiones por corrida). | Video de avance #2 (modelado de datos, semana 4) y sesión sincrónica 2 del 2026-10-20: el notebook 19 es ahora la fuente única de las cifras de esta etapa, y este documento la de su guion. |
 | 4.0 | 2026-10-26 | Se incorporan las etiquetas de atribución del error (OE4) de las fallas de C2 en E1: de nueve fallas, 4 son de recuperación, 3 de extracción y 2 de síntesis (sección 8.4). Se actualizan la dificultad 8, la decisión pendiente sobre fuentes en bruto (#146) y las limitaciones del juez, que además de indulgente con lo genérico es estricto con lo parcial. Son datos de desarrollo, de una sola serie y de una sola persona: una dirección, no un resultado. | Las etiquetas las puso jss al revisar las ocho fallas que la regla no podía atribuir (PR #177); el documento decía que no había ninguna cifra de OE4. Las cifras salen del [notebook 16](../../notebooks/16-jss-c2-fuentes-e1.ipynb) y del [notebook 19](../../notebooks/19-jss-modelos.ipynb). |
 | 4.1 | 2026-10-27 | Se agregan a las decisiones abiertas (sección 11.1) los cuatro controles de comparabilidad que el notebook 19 (sección 5.6) deja por revisar antes de la corrida formal: huella del generador por corrida, versión y huella de los *embeddings*, texto efectivo entregado al modelo y revisión de las instrucciones copiadas de OpenKOS. En la sección 8.4 se enlaza la figura de las etapas de las fallas de C2 y se remite al [notebook 20](../../notebooks/20-gm-mejoras-modelado.ipynb) como complemento. No cambia ninguna cifra ni decisión. | El PR #187 integró la revisión del modelado hecha por otro integrante del equipo (notebook 20) en el notebook 19; este documento, que es su guion, debía reflejar los controles pendientes. No cambia ninguna figura del documento. |
+| 4.2 | 2026-10-28 | Se precisan los controles C1/C2/C3, la referencia humana C3 y el alcance de C0, sin cambiar cifras ni decisiones. | Alinear el avance con las correcciones del notebook 19. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -267,25 +268,25 @@ issue #99 (queda como pregunta abierta en el notebook 14, §3). **Cifra vigente:
 
 ## 5. Los *pipelines*: qué se compara
 
-El curso pide tratar el preprocesamiento y el modelo como un solo *pipeline*. Aquí cada
-condición es un *pipeline* completo, desde el material de partida hasta la respuesta, y **lo
-único que cambia entre C1, C2 y C3 es la representación que se consulta**. Todo lo demás es
-común y está fijado en `config/experiments.toml`, sección `[shared_budget]`: así, si una
-condición responde mejor, la única explicación posible es cómo organiza la información.
+Cada condición abarca un *pipeline* completo, desde la preparación de la información hasta la respuesta.
+El diseño compara distintas representaciones del conocimiento bajo componentes compartidos
+(`config/experiments.toml`, `[shared_budget]`). Aún debemos comprobar la equivalencia efectiva
+entre condiciones: suficiencia, fuentes disponibles, texto entregado y versiones de los modelos
+(secciones 6.5 y 11.1). Hasta hacerlo, no podemos atribuir todas las diferencias a la representación.
 
 ```
 Transcripción ─► C1: fragmentos ─► BM25 + vectores ─► fusión RRF ─► K fragmentos ─┐
                                                                                    ├─► ¿alcanza el contexto?
 Transcripción ─► C2: OpenKOS (modelo extractor) ─► base compilada ─► consulta ─────┤      │
                                                                                    │      ▼
-Anotación humana ─► C3: la misma base, sin errores de extracción ─► consulta ──────┘   modelo generador ─► respuesta + fuentes ─► juez
+Anotación humana ─► C3: referencia humana adjudicada ─► consulta ──────┘   modelo generador ─► respuesta + fuentes ─► juez
 (C0, diagnóstico: la pregunta va directo al modelo generador, sin ningún texto de apoyo)
 ```
 
 | Paso | C0 (diagnóstico, no es condición) | C1 (línea base) | C2 (la propuesta) | C3 (ground truth humana) |
 |---|---|---|---|---|
 | Material de partida | Ninguno | Transcripciones congeladas de la serie | Transcripciones, procesadas de la reunión a a la d | Anotación humana adjudicada de la serie (OE1) |
-| Preparación | — | Troceo en fragmentos de turnos completos: hasta 1.200 caracteres, 1 turno compartido entre fragmentos | OpenKOS extrae objetos (decisiones, temas, eventos) con un modelo extractor y guarda la fuente en bruto | Los mismos objetos que C2, escritos desde la anotación: sin errores de extracción |
+| Preparación | — | Troceo en fragmentos de turnos completos: hasta 1.200 caracteres, 1 turno compartido entre fragmentos | OpenKOS extrae objetos (decisiones, temas, eventos) con un modelo extractor y guarda la fuente en bruto | Objetos equivalentes a los de C2, elaborados desde anotaciones humanas adjudicadas |
 | Índice | — | BM25 (léxico) + vectores densos de `bge-m3` | Índice híbrido de OpenKOS con `bge-m3` | Igual que C2 |
 | Recuperación | — | Fusión RRF (k = 60) y los 5 mejores fragmentos | `openkos query --limit 5`, sin modificar | Igual que C2 |
 | Presupuesto de contexto | — | Mismo recorte que OpenKOS (sus funciones, portadas línea por línea) | El de OpenKOS | Igual que C2 |
@@ -314,15 +315,15 @@ puntuales.
 
 **C3: la misma base, construida por personas.** Sin C3, una mala respuesta de C2 no se podría
 atribuir: no se sabría si la idea de la base no sirve o si la máquina la llenó mal. La distancia
-C1 → C3 mide el valor de tener la base; la distancia C3 → C2, el costo de los errores de la
-máquina. Por eso las etiquetas de la ground truth las pone siempre una persona. **C3 todavía no
+C1 → C3 permitiría estimar el valor de la base; C3 → C2, el efecto de construirla
+automáticamente, considerando también la fiabilidad de la referencia humana. Por eso las etiquetas de la ground truth las pone siempre una persona. **C3 todavía no
 se puede ejecutar**: depende de la anotación humana de las series y hoy lanza un error
 explícito de «sin implementar»; no hay ninguna cifra de C3 en este documento.
 
-**C0: diagnóstico sin contexto.** El mismo generador responde sin ningún texto de apoyo. No es
-una condición de la tesis (no se puede ejecutar sobre evaluación); sirve para dar el piso más
-simple posible y para comprobar si el modelo ya conoce el escenario de AMI de memoria, lo que
-contaminaría la comparación (sección 8.3).
+**C0: diagnóstico sin contexto.** El generador responde sin evidencia recuperada. Se usa
+solo en desarrollo, como referencia sin recuperación y para explorar posibles señales de
+conocimiento previo del corpus AMI. No demuestra ni descarta contaminación del entrenamiento
+(sección 8.3).
 
 ### 5.1 Lo que se comparte entre condiciones (§5.3 de la propuesta)
 
@@ -669,14 +670,13 @@ la sección 6.5.
 
 ### 8.3 El diagnóstico sin contexto: ¿hay contaminación?
 
-C0 permite descartar una explicación incómoda: que el modelo ya «se sepa» las reuniones de AMI,
-un corpus público que pudo haber estado en su entrenamiento. Si así fuera, acertaría sin contexto
-datos que solo están en la reunión, como el precio de venta o el costo máximo. De las 14
-preguntas de E1, C0 no acierta ninguna de sus 3 corridas en 11 y acierta alguna en 3 (q007, q008
-y q020). Las dos preguntas que más delatarían una memorización, el precio de venta (veinticinco
-euros) y el costo máximo (doce euros con cincuenta), fallan en las 3 corridas. **No hay indicio de
-contaminación con AMI.** Los aciertos se leen como conocimiento general sobre controles remotos,
-según la revisión humana registrada en el PR #175. Solo 1 de las 21 preguntas cambió de veredicto
+C0 permite observar respuestas sin contexto recuperado. Como AMI es público, no podemos
+excluir que parte del corpus haya estado presente durante el entrenamiento. De 14 preguntas E1,
+C0 no acierta ninguna de sus 3 corridas en 11 y acierta alguna en 3 (q007, q008 y q020).
+El precio de venta (veinticinco euros) y el costo máximo (doce euros con cincuenta) fallan
+en las 3 corridas. Estos errores no muestran memorización de esos hechos, pero no descartan
+exposición previa al corpus. La revisión humana del PR #175 interpretó los aciertos como
+conocimiento general sobre controles remotos. Solo 1 de 21 preguntas cambió de veredicto
 entre corridas.
 
 **Una limitación del juez.** Los dos aciertos más claros de C0 (3 de 3 corridas) son q020, que
@@ -708,7 +708,7 @@ Lo que dicen las notas de quien etiquetó:
   sobre DVD y VCR del mismo tramo de la reunión en lugar de la exclusión del teletexto, que sí
   estaba en la base.
 - **Los resúmenes de tema llegan recortados y pierden el dato clave** (q017 y q023).
-- **Memoria contaminada (q017).** La extracción guardó como decisión una propuesta descartada
+- **Propuesta descartada en la base compilada (q017).** La extracción guardó como decisión una propuesta descartada
   (botones de desplazamiento) y esa entrada engañó al modelo frente a la decisión correcta
   (botones de presión).
 - **El juez es estricto con las respuestas parciales** (q011 y q023). En q023 la granada sí aparece
