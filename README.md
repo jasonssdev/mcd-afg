@@ -327,9 +327,10 @@ uv run afg judge calibration-agreement  # kappa entre las dos personas que etiqu
 uv run afg c1 tune                  # mide el recall de evidencia de C1 sobre desarrollo y elige segmentación y K (ADR 0007)
 uv run afg c1 ask                   # responde una pregunta con C1 como lo haría `openkos query`, con fragmentos de transcripción
 
+uv run afg c3 build                 # construye las bases de C3: copia los espacios de una corrida de C2 (`--c2-extraction`, `--series S1,S2`, `--runs N`) y sustituye sus decisiones por las de la anotación de oro (en inglés, relaciones como enlaces), reindexa y deja `c3-manifest.json` con lo escrito y lo descartado (ADR 0013); solo series de desarrollo; `--overwrite` reemplaza
 uv run afg experiment a             # Experimento A: extracción de decisiones con OpenKOS sobre una serie de desarrollo
 uv run afg experiment a-batch       # Experimento A en lote: varias series x corridas bajo un solo --run-name (`--series S1,S2` o `--partition development`); un par fallido no detiene el lote, repetir el nombre lo reanuda y al final imprime un resumen de integridad sin puntajes
-uv run afg experiment b             # Experimento B: preguntas x condiciones x corridas, con juicio y citación; hoy corren C1 y C2 (C2 con `--c2-extraction <corrida de experiment a>`); C3 sigue pendiente
+uv run afg experiment b             # Experimento B: preguntas x condiciones x corridas, con juicio y citación; corren C1, C2 y C3 (C2 y C3 con `--c2-extraction <corrida de experiment a>`; C3 pide antes `afg c3 build`)
 uv run afg experiment b-report      # análisis del Experimento B: tasas, intervalos bootstrap y comparación D16
 uv run afg experiment b-sample      # muestra para la verificación humana: una corrida por pregunta y condición
 uv run afg experiment b-human-check # acuerdo juez-humano (kappa de Cohen) por etiqueta, con el umbral prerregistrado

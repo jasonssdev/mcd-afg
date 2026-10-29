@@ -134,11 +134,52 @@ def test_second_invocation_resumes(env: dict[str, Any]) -> None:
 
 
 @pytest.mark.parametrize("condition", ["c3", "c1,c3"])
-def test_other_conditions_are_refused_clearly(env: dict[str, Any], condition: str) -> None:
+def test_c3_requires_the_extraction_run(env: dict[str, Any], condition: str) -> None:
     result = _invoke(env, "--conditions", condition)
     assert result.exit_code == 1
-    assert "no está disponible" in _out(result)
+    assert "--c2-extraction" in _out(result)
     assert not env["out"].exists()
+
+
+def test_c3_workspaces_must_have_been_built(env: dict[str, Any], tmp_path: Path) -> None:
+    env["monkeypatch"].setattr(afg_cli, "OPENKOS_C3_WORKSPACES_DIR", tmp_path / "nowhere")
+    result = _invoke(env, "--conditions", "c3", "--c2-extraction", "nope")
+    assert result.exit_code == 1
+    assert "nope" in _out(result) and "afg c3 build" in _out(result)
+    assert not env["out"].exists()
+
+
+def test_runs_c3_and_records_its_sources_in_the_manifest(
+    env: dict[str, Any], tmp_path: Path
+) -> None:
+    class FakeC3(FakeC1):
+        condition_id = "C3"
+
+    env["monkeypatch"].setattr(afg_cli, "OPENKOS_C3_WORKSPACES_DIR", tmp_path / "c3-base")
+    env["monkeypatch"].setattr(afg_cli, "make_c3_condition", lambda run: FakeC3())
+    result = _invoke(
+        env, "--conditions", "c3", "--c2-extraction", "es-run", "--runs", "1", "--run-name", "t"
+    )
+    assert result.exit_code == 0, result.output
+    manifest = json.loads((env["out"] / "t" / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["c2_extraction"] == "es-run"
+    assert manifest["c3_workspaces"] == str(tmp_path / "c3-base")
+    _invoke(env, "--runs", "1", "--run-name", "u")
+    other = json.loads((env["out"] / "u" / "manifest.json").read_text(encoding="utf-8"))
+    assert other["c3_workspaces"] is None
+
+
+def test_make_experiment_b_condition_builds_c3(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from afg.conditions.c3_compiled_gold import CompiledGoldCondition
+
+    (tmp_path / "es-run").mkdir()
+    monkeypatch.setattr(afg_cli, "OPENKOS_C3_WORKSPACES_DIR", tmp_path)
+    condition = afg_cli.make_experiment_b_condition("c3", c2_extraction="es-run")
+    assert isinstance(condition, CompiledGoldCondition)
+    assert condition.extraction_run == "es-run" and condition.base_dir == tmp_path
+    assert condition.condition_id == "C3"
 
 
 @pytest.mark.parametrize("condition", ["c2", "c1,c2"])
