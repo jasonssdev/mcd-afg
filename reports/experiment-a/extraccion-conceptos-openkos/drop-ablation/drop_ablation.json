@@ -1,0 +1,552 @@
+{
+  "primary": {
+    "qwen3:8b": {
+      "invalid": [],
+      "rules": {
+        "dedup": {
+          "lift": 0.0389542805921584,
+          "base_lift": 0.0389542805921584,
+          "delta": {
+            "point": 0.0,
+            "low": 0.0,
+            "high": 0.0
+          },
+          "dropped": 0,
+          "windows_emptied": 0,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        },
+        "language": {
+          "lift": 0.0389542805921584,
+          "base_lift": 0.0389542805921584,
+          "delta": {
+            "point": 0.0,
+            "low": 0.0,
+            "high": 0.0
+          },
+          "dropped": 0,
+          "windows_emptied": 0,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        },
+        "framing": {
+          "lift": 0.047843579029378046,
+          "base_lift": 0.0389542805921584,
+          "delta": {
+            "point": 0.008889298437219641,
+            "low": -0.011541428223723218,
+            "high": 0.03931653478306171
+          },
+          "dropped": 9,
+          "windows_emptied": 9,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        },
+        "twins": {
+          "lift": 0.0389542805921584,
+          "base_lift": 0.0389542805921584,
+          "delta": {
+            "point": 0.0,
+            "low": 0.0,
+            "high": 0.0
+          },
+          "dropped": 0,
+          "windows_emptied": 0,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        }
+      },
+      "l7_loss": 0.008889298437219641,
+      "l6_loss": -0.0,
+      "recorded_lift": {
+        "raw": 0.047843579029378046,
+        "dedup": 0.047843579029378046,
+        "drops": 0.0389542805921584,
+        "pre_ceiling": 0.0389542805921584,
+        "ceiling": 0.0389542805921584,
+        "judge": 0.03060756912081632,
+        "final": 0.03060756912081632
+      },
+      "caps": {
+        "ceiling": {
+          "delta": 0.0,
+          "objects_cut": 0
+        },
+        "backstop": {
+          "delta": 0.0,
+          "objects_cut": 0
+        }
+      }
+    },
+    "qwen3.6:35b-a3b": {
+      "invalid": [],
+      "rules": {
+        "dedup": {
+          "lift": 0.05312668343941492,
+          "base_lift": 0.05312668343941492,
+          "delta": {
+            "point": 0.0,
+            "low": 0.0,
+            "high": 0.0
+          },
+          "dropped": 0,
+          "windows_emptied": 0,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        },
+        "language": {
+          "lift": 0.05312668343941492,
+          "base_lift": 0.05312668343941492,
+          "delta": {
+            "point": 0.0,
+            "low": 0.0,
+            "high": 0.0
+          },
+          "dropped": 0,
+          "windows_emptied": 0,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        },
+        "framing": {
+          "lift": 0.06417474085308819,
+          "base_lift": 0.05312668343941492,
+          "delta": {
+            "point": 0.011048057413673268,
+            "low": -0.010295501172976477,
+            "high": 0.042458238174647445
+          },
+          "dropped": 21,
+          "windows_emptied": 8,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        },
+        "twins": {
+          "lift": 0.05312668343941492,
+          "base_lift": 0.05312668343941492,
+          "delta": {
+            "point": 0.0,
+            "low": 0.0,
+            "high": 0.0
+          },
+          "dropped": 0,
+          "windows_emptied": 0,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        }
+      },
+      "l7_loss": 0.011048057413673268,
+      "l6_loss": -0.00029678592893835775,
+      "recorded_lift": {
+        "raw": 0.06387795492414984,
+        "dedup": 0.06417474085308819,
+        "drops": 0.05312668343941492,
+        "pre_ceiling": 0.05312668343941492,
+        "ceiling": 0.05312668343941492,
+        "judge": 0.041709398449361,
+        "final": 0.041709398449361
+      },
+      "caps": {
+        "ceiling": {
+          "delta": 0.0,
+          "objects_cut": 0
+        },
+        "backstop": {
+          "delta": 0.0,
+          "objects_cut": 0
+        }
+      }
+    },
+    "gemma4:26b-a4b": {
+      "invalid": [],
+      "rules": {
+        "dedup": {
+          "lift": 0.043560400571192384,
+          "base_lift": 0.04054666924431286,
+          "delta": {
+            "point": 0.0030137313268795247,
+            "low": 0.0,
+            "high": 0.010203411848539116
+          },
+          "dropped": 2,
+          "windows_emptied": 0,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        },
+        "language": {
+          "lift": 0.04054666924431286,
+          "base_lift": 0.04054666924431286,
+          "delta": {
+            "point": 0.0,
+            "low": 0.0,
+            "high": 0.0
+          },
+          "dropped": 0,
+          "windows_emptied": 0,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        },
+        "framing": {
+          "lift": 0.05627626164725166,
+          "base_lift": 0.04054666924431286,
+          "delta": {
+            "point": 0.0157295924029388,
+            "low": -0.004429152448356265,
+            "high": 0.04720407193026578
+          },
+          "dropped": 20,
+          "windows_emptied": 5,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        },
+        "twins": {
+          "lift": 0.04054666924431286,
+          "base_lift": 0.04054666924431286,
+          "delta": {
+            "point": 0.0,
+            "low": 0.0,
+            "high": 0.0
+          },
+          "dropped": 0,
+          "windows_emptied": 0,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        }
+      },
+      "l7_loss": 0.0157295924029388,
+      "l6_loss": 0.0028106957368588814,
+      "recorded_lift": {
+        "raw": 0.05908695738411055,
+        "dedup": 0.05627626164725166,
+        "drops": 0.04054666924431286,
+        "pre_ceiling": 0.04054666924431286,
+        "ceiling": 0.04054666924431286,
+        "judge": 0.030755336889634673,
+        "final": 0.030755336889634673
+      },
+      "caps": {
+        "ceiling": {
+          "delta": 0.0,
+          "objects_cut": 0
+        },
+        "backstop": {
+          "delta": 0.0,
+          "objects_cut": 0
+        }
+      }
+    },
+    "qwen3:14b": {
+      "invalid": [],
+      "rules": {
+        "dedup": {
+          "lift": 0.07291954924957324,
+          "base_lift": 0.0737442741832062,
+          "delta": {
+            "point": -0.0008247249336329731,
+            "low": -0.0023952896114374923,
+            "high": 0.0
+          },
+          "dropped": 3,
+          "windows_emptied": 0,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        },
+        "language": {
+          "lift": 0.0737442741832062,
+          "base_lift": 0.0737442741832062,
+          "delta": {
+            "point": 0.0,
+            "low": 0.0,
+            "high": 0.0
+          },
+          "dropped": 0,
+          "windows_emptied": 0,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        },
+        "framing": {
+          "lift": 0.07737457686972204,
+          "base_lift": 0.0737442741832062,
+          "delta": {
+            "point": 0.0036303026865158335,
+            "low": -0.0011842373718678927,
+            "high": 0.01059907036492818
+          },
+          "dropped": 9,
+          "windows_emptied": 0,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        },
+        "twins": {
+          "lift": 0.0737442741832062,
+          "base_lift": 0.0737442741832062,
+          "delta": {
+            "point": 0.0,
+            "low": 0.0,
+            "high": 0.0
+          },
+          "dropped": 0,
+          "windows_emptied": 0,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        }
+      },
+      "l7_loss": 0.0036303026865158335,
+      "l6_loss": -0.00048692330601015813,
+      "recorded_lift": {
+        "raw": 0.07688765356371188,
+        "dedup": 0.07737457686972204,
+        "drops": 0.0737442741832062,
+        "pre_ceiling": 0.0737442741832062,
+        "ceiling": 0.06717923937649206,
+        "judge": 0.055904542549553085,
+        "final": 0.055904542549553085
+      },
+      "caps": {
+        "ceiling": {
+          "delta": -0.0065650348067141425,
+          "objects_cut": 51
+        },
+        "backstop": {
+          "delta": 0.0,
+          "objects_cut": 0
+        }
+      }
+    },
+    "qwen3.6:27b": {
+      "invalid": [],
+      "rules": {
+        "dedup": {
+          "lift": 0.06473031974154955,
+          "base_lift": 0.06355559949874329,
+          "delta": {
+            "point": 0.001174720242806269,
+            "low": 0.0,
+            "high": 0.004698880971225076
+          },
+          "dropped": 1,
+          "windows_emptied": 1,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        },
+        "language": {
+          "lift": 0.06355559949874329,
+          "base_lift": 0.06355559949874329,
+          "delta": {
+            "point": 0.0,
+            "low": 0.0,
+            "high": 0.0
+          },
+          "dropped": 0,
+          "windows_emptied": 0,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        },
+        "framing": {
+          "lift": 0.06185106009973789,
+          "base_lift": 0.06355559949874329,
+          "delta": {
+            "point": -0.0017045393990053968,
+            "low": -0.012592252828198904,
+            "high": 0.011774929209865573
+          },
+          "dropped": 10,
+          "windows_emptied": 6,
+          "false_positives": 1,
+          "false_positive_delta": 0.00047474857038819695
+        },
+        "twins": {
+          "lift": 0.06355559949874329,
+          "base_lift": 0.06355559949874329,
+          "delta": {
+            "point": 0.0,
+            "low": 0.0,
+            "high": 0.0
+          },
+          "dropped": 0,
+          "windows_emptied": 0,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        }
+      },
+      "l7_loss": -0.0017045393990053968,
+      "l6_loss": 0.001174720242806269,
+      "recorded_lift": {
+        "raw": 0.06302578034254416,
+        "dedup": 0.06185106009973789,
+        "drops": 0.06355559949874329,
+        "pre_ceiling": 0.06355559949874329,
+        "ceiling": 0.06355559949874329,
+        "judge": 0.023848380293415638,
+        "final": 0.023848380293415638
+      },
+      "caps": {
+        "ceiling": {
+          "delta": 0.0,
+          "objects_cut": 0
+        },
+        "backstop": {
+          "delta": 0.0,
+          "objects_cut": 0
+        }
+      }
+    }
+  },
+  "secondary": {
+    "qwen3:8b": {
+      "invalid": [],
+      "rules": {
+        "dedup": {
+          "lift": 0.035669613448961766,
+          "base_lift": 0.035669613448961766,
+          "delta": {
+            "point": 0.0,
+            "low": 0.0,
+            "high": 0.0
+          },
+          "dropped": 0,
+          "windows_emptied": 0,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        },
+        "language": {
+          "lift": 0.035669613448961766,
+          "base_lift": 0.035669613448961766,
+          "delta": {
+            "point": 0.0,
+            "low": 0.0,
+            "high": 0.0
+          },
+          "dropped": 0,
+          "windows_emptied": 0,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        },
+        "framing": {
+          "lift": 0.0464075598695195,
+          "base_lift": 0.035669613448961766,
+          "delta": {
+            "point": 0.010737946420557736,
+            "low": -0.007672308770647942,
+            "high": 0.04012461138104336
+          },
+          "dropped": 21,
+          "windows_emptied": 20,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        },
+        "twins": {
+          "lift": 0.035669613448961766,
+          "base_lift": 0.035669613448961766,
+          "delta": {
+            "point": 0.0,
+            "low": 0.0,
+            "high": 0.0
+          },
+          "dropped": 0,
+          "windows_emptied": 0,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        }
+      },
+      "l7_loss": 0.010737946420557736,
+      "l6_loss": -0.0,
+      "recorded_lift": {
+        "raw": 0.0464075598695195,
+        "dedup": 0.0464075598695195,
+        "drops": 0.035669613448961766,
+        "pre_ceiling": 0.035669613448961766,
+        "ceiling": 0.035669613448961766,
+        "judge": 0.031862557130383114,
+        "final": 0.031862557130383114
+      },
+      "caps": {
+        "ceiling": {
+          "delta": 0.0,
+          "objects_cut": 0
+        },
+        "backstop": {
+          "delta": 0.0,
+          "objects_cut": 0
+        }
+      }
+    },
+    "qwen3.6:27b": {
+      "invalid": [],
+      "rules": {
+        "dedup": {
+          "lift": 0.06583460758264453,
+          "base_lift": 0.06524724746124141,
+          "delta": {
+            "point": 0.0005873601214031345,
+            "low": 0.0,
+            "high": 0.002349440485612538
+          },
+          "dropped": 1,
+          "windows_emptied": 1,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        },
+        "language": {
+          "lift": 0.06524724746124141,
+          "base_lift": 0.06524724746124141,
+          "delta": {
+            "point": 0.0,
+            "low": 0.0,
+            "high": 0.0
+          },
+          "dropped": 0,
+          "windows_emptied": 0,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        },
+        "framing": {
+          "lift": 0.07104907470518312,
+          "base_lift": 0.06524724746124141,
+          "delta": {
+            "point": 0.00580182724394172,
+            "low": -0.004080601795914687,
+            "high": 0.020438195675815177
+          },
+          "dropped": 21,
+          "windows_emptied": 10,
+          "false_positives": 1,
+          "false_positive_delta": 0.00023737428519409847
+        },
+        "twins": {
+          "lift": 0.06524724746124141,
+          "base_lift": 0.06524724746124141,
+          "delta": {
+            "point": 0.0,
+            "low": 0.0,
+            "high": 0.0
+          },
+          "dropped": 0,
+          "windows_emptied": 0,
+          "false_positives": 0,
+          "false_positive_delta": 0.0
+        }
+      },
+      "l7_loss": 0.00580182724394172,
+      "l6_loss": 0.0005873601214031345,
+      "recorded_lift": {
+        "raw": 0.07163643482658626,
+        "dedup": 0.07104907470518312,
+        "drops": 0.06524724746124141,
+        "pre_ceiling": 0.06524724746124141,
+        "ceiling": 0.06524724746124141,
+        "judge": 0.023919991072998546,
+        "final": 0.023919991072998546
+      },
+      "caps": {
+        "ceiling": {
+          "delta": 0.0,
+          "objects_cut": 0
+        },
+        "backstop": {
+          "delta": 0.0,
+          "objects_cut": 0
+        }
+      }
+    }
+  }
+}
