@@ -16,6 +16,9 @@ from afg.experiments.concept_extraction import (
     drop_rule_frame,
     exploratory_forecast,
     g1_frame,
+    judge_labels,
+    judge_study_frame,
+    judge_verdict,
     l7_attribution,
     load_concept_screens,
     per_meeting_deltas,
@@ -132,6 +135,7 @@ def _write(root: Path, *, classes: list[dict[str, Any]], meetings: tuple[str, ..
         "window-screen/w8b.json": _window_score(),
         "window-screen/stage0.json": {"models": {}},
         "window-screen/decisions/w8b.json": {"trace": []},
+        "judge-study/judge_study.json": {"primary": {}},
     }
     for name, content in files.items():
         path = root / name
@@ -383,3 +387,86 @@ def test_exploratory_forecast_follows_the_registered_formula() -> None:
     assert forecast.stage0_s == pytest.approx(65.0)
     assert forecast.total_s == pytest.approx(220 + 240 + 10 + 65)
     assert forecast.runs
+
+
+def _judge_arm(lift: float, loss: tuple[float, float, float] | None) -> dict[str, Any]:
+    arm: dict[str, Any] = {"lift": lift, "kept": 10.0}
+    if loss is not None:
+        arm |= {
+            "loss": _ci(*loss),
+            "judged_out": 5.0,
+            "seeds": [0, 1, 2],
+            "seed_lifts": {"0": lift, "1": lift, "2": lift},
+            "judge_failed": 0,
+        }
+    return arm
+
+
+def _extractor(
+    *, fixed_loss: tuple[float, float, float], coupling: tuple[float, float, float]
+) -> dict[str, Any]:
+    return {
+        "meeting_runs": 5,
+        "arms": {
+            "none": _judge_arm(0.05, None),
+            "self": _judge_arm(0.03, (-0.02, -0.04, -0.001)),
+            "fixed": _judge_arm(0.04, fixed_loss),
+        },
+        "deltas": {"coupling": _ci(*coupling)},
+    }
+
+
+def _judge_study() -> dict[str, Any]:
+    return {
+        "primary": {
+            # Coupling lower bound above 0, even though the fixed loss also excludes 0.
+            "qwen3.6:27b": _extractor(
+                fixed_loss=(-0.02, -0.04, -0.01), coupling=(0.01, 0.001, 0.03)
+            ),
+            # No coupling; the fixed loss excludes 0.
+            "qwen3:8b": _extractor(
+                fixed_loss=(-0.02, -0.04, -0.003), coupling=(-0.01, -0.02, -0.0)
+            ),
+            # Both intervals hold 0.
+            "qwen3.6:35b-a3b": _extractor(
+                fixed_loss=(-0.01, -0.02, 0.004), coupling=(0.006, -0.004, 0.02)
+            ),
+            # The fixed judge's own model: never labelled.
+            "gemma4:26b-a4b": _extractor(
+                fixed_loss=(-0.01, -0.03, -0.001), coupling=(0.0, 0.0, 0.0)
+            ),
+        }
+    }
+
+
+def test_judge_study_frame_reads_arms_losses_and_seeds() -> None:
+    frame = judge_study_frame(_judge_study()).set_index("model")
+    assert frame.index.tolist()[0] == "qwen3:8b"
+    assert frame.loc["qwen3:8b", "none_lift"] == pytest.approx(0.05)
+    assert frame.loc["qwen3:8b", "fixed_loss_high"] == pytest.approx(-0.003)
+    assert frame.loc["qwen3:8b", "self_seed_lifts"] == (0.03, 0.03, 0.03)
+
+
+def test_judge_labels_apply_the_registered_order() -> None:
+    labels = judge_labels(judge_study_frame(_judge_study()))
+    assert labels == {
+        "qwen3:8b": "judge",
+        "qwen3.6:35b-a3b": "unresolved",
+        "qwen3.6:27b": "coupling",
+    }
+
+
+@pytest.mark.parametrize(
+    ("labels", "verdict", "follow_up"),
+    [
+        ({"a": "coupling", "b": "judge", "c": "judge"}, "not_resolved", True),
+        ({"a": "coupling", "b": "coupling", "c": "judge"}, "coupling", True),
+        ({"a": "judge", "b": "judge", "c": "unresolved"}, "judge", True),
+        ({"a": "judge", "b": "unresolved"}, "not_resolved", True),
+        ({"a": "unresolved", "b": "unresolved"}, "not_resolved", False),
+    ],
+)
+def test_judge_verdict_needs_two_of_a_kind_and_no_conflict(
+    labels: dict[str, str], verdict: str, follow_up: bool
+) -> None:
+    assert judge_verdict(labels) == (verdict, follow_up)
