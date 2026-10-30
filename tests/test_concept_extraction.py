@@ -12,6 +12,11 @@ import pytest
 from afg.experiments.concept_extraction import (
     STAGES,
     WINDOW_ARMS,
+    ask_halving,
+    ask_penalty_frame,
+    ask_role_frame,
+    ask_select,
+    ask_vetoes,
     drop_class_counts,
     drop_rule_frame,
     exploratory_forecast,
@@ -136,6 +141,9 @@ def _write(root: Path, *, classes: list[dict[str, Any]], meetings: tuple[str, ..
         "window-screen/stage0.json": {"models": {}},
         "window-screen/decisions/w8b.json": {"trace": []},
         "judge-study/judge_study.json": {"primary": {}},
+        "ask-screen/round1.json": {},
+        "ask-screen/round2.json": {},
+        "ask-screen/confirmation.json": {},
     }
     for name, content in files.items():
         path = root / name
@@ -470,3 +478,121 @@ def test_judge_verdict_needs_two_of_a_kind_and_no_conflict(
     labels: dict[str, str], verdict: str, follow_up: bool
 ) -> None:
     assert judge_verdict(labels) == (verdict, follow_up)
+
+
+def _guard(**overrides: float | None) -> dict[str, float | None]:
+    g: dict[str, float | None] = {
+        "suff_failure": 0.0,
+        "ans_failure": 0.0,
+        "suff_median_s": 2.0,
+        "ans_median_s": 4.0,
+        "grounded_refused": 0.2,
+        "adjacent_missed": 0.0,
+        "spanish_answers": 0.9,
+        "compliance": 1.0,
+    }
+    g.update(overrides)
+    return g
+
+
+def _candidate(point: float, low: float, high: float, es_en_high: float = 0.1) -> dict[str, Any]:
+    per_set = {
+        name: {"n": 32, "mean": point, "lo": low, "hi": high} for name in ("es-es", "es-built")
+    }
+    per_set["es-en"] = {"n": 32, "mean": point, "lo": low, "hi": es_en_high}
+    return {
+        "delta": {"n": 96, "mean": point, "lo": low, "hi": high},
+        "per_set": per_set,
+        "vetoes": [],
+    }
+
+
+def _ask_report(
+    guards: dict[str, dict[str, float | None]], role: str, cands: dict[str, Any]
+) -> dict[str, Any]:
+    return {
+        "baseline": "base",
+        "guardrails": {"base": _guard(), **guards},
+        "roles": {role: {"baseline_mean": 0.8, "candidates": cands}},
+        "penalty": {"base": {"sufficiency": {"n": 32, "mean": 0.01, "lo": -0.05, "hi": 0.07}}},
+    }
+
+
+@pytest.mark.parametrize(
+    ("role", "guard", "es_en_high", "expected"),
+    [
+        ("sufficiency", {}, 0.1, []),
+        ("sufficiency", {"suff_failure": 0.03}, 0.1, ["V1"]),
+        ("sufficiency", {"suff_median_s": 4.1}, 0.1, ["V2"]),
+        # 4.0 s is exactly 2.0x the baseline: allowed.
+        ("sufficiency", {"suff_median_s": 4.0}, 0.1, []),
+        ("sufficiency", {"grounded_refused": 0.21}, 0.1, ["S1"]),
+        ("sufficiency", {"adjacent_missed": 0.03}, 0.1, ["S2"]),
+        ("sufficiency", {}, -0.01, ["X1"]),
+        ("answer", {"spanish_answers": 0.84}, 0.1, ["V3"]),
+        ("answer", {"spanish_answers": 0.85}, 0.1, []),
+        ("citation", {"compliance": 0.94}, 0.1, ["V4"]),
+        # A veto of another role never applies.
+        ("citation", {"spanish_answers": 0.1, "grounded_refused": 0.9}, 0.1, []),
+        # No answer call (confirmation): no latency veto on that call.
+        ("answer", {"ans_median_s": None}, 0.1, []),
+    ],
+)
+def test_ask_vetoes_apply_each_registered_bar(
+    role: str, guard: dict[str, float | None], es_en_high: float, expected: list[str]
+) -> None:
+    report = _ask_report(
+        {"m": _guard(**guard)}, role, {"m": _candidate(0.05, 0.01, 0.1, es_en_high)}
+    )
+    assert ask_vetoes(report, role, "m") == expected
+
+
+def test_ask_halving_keeps_the_top_half_of_the_eligible() -> None:
+    report = _ask_report(
+        {"a": _guard(), "b": _guard(), "c": _guard(), "d": _guard(adjacent_missed=0.1)},
+        "sufficiency",
+        {
+            "a": _candidate(0.05, -0.01, 0.1),
+            "b": _candidate(0.07, 0.01, 0.1),
+            "c": _candidate(0.03, -0.02, 0.08),
+            "d": _candidate(0.09, 0.02, 0.15),
+        },
+    )
+    frame = ask_role_frame(report, "sufficiency")
+    assert frame.set_index("model").loc["d", "vetoes"] == ("S2",)
+    assert ask_halving(frame) == {"a", "b"}
+
+
+def test_ask_select_needs_a_positive_lower_bound_and_breaks_ties_by_name() -> None:
+    report = _ask_report(
+        {"z": _guard(), "g": _guard(), "q": _guard()},
+        "sufficiency",
+        {
+            "z": _candidate(0.08, 0.02, 0.14),
+            "g": _candidate(0.08, 0.03, 0.13),
+            "q": _candidate(0.12, 0.0, 0.2),
+        },
+    )
+    assert ask_select(ask_role_frame(report, "sufficiency")) == "g"
+
+
+def test_ask_select_returns_none_when_every_candidate_is_vetoed() -> None:
+    report = _ask_report(
+        {"m": _guard(spanish_answers=0.5)}, "answer", {"m": _candidate(0.1, 0.05, 0.2)}
+    )
+    assert ask_select(ask_role_frame(report, "answer")) is None
+
+
+def test_ask_penalty_frame_reads_each_model_and_role() -> None:
+    report = _ask_report({}, "sufficiency", {})
+    frame = ask_penalty_frame(report)
+    assert frame.to_dict("records") == [
+        {
+            "model": "base",
+            "role": "sufficiency",
+            "n": 32,
+            "penalty": 0.01,
+            "low": -0.05,
+            "high": 0.07,
+        }
+    ]
