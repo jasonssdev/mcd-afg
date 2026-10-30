@@ -273,6 +273,10 @@ reports/figures/*.png
 # (frozen deliverable assets, produced by notebook 11); this rule does not reach that folder.
 !docs/entregables/figuras/*.png
 
+# Local smoke run of the experiment A batch (development series); a throwaway check of the
+# runner, not a reported result.
+reports/experiment-a/humo-lote-dev/
+
 # CodeGraph local index (rebuilt per checkout).
 .codegraph/
 
