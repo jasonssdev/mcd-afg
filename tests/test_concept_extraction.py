@@ -7,6 +7,7 @@ import math
 from pathlib import Path
 from typing import Any
 
+import pandas as pd
 import pytest
 
 from afg.experiments.concept_extraction import (
@@ -30,7 +31,12 @@ from afg.experiments.concept_extraction import (
     round_frame,
     round_one_vetoes,
     round_two_selection,
+    runtime_ask_equivalence,
+    runtime_concept_equivalence,
+    runtime_gate,
+    runtime_verdict,
     stage_frame,
+    swap_bar,
     trace_frame,
     window_arm_frame,
     window_selection,
@@ -144,6 +150,15 @@ def _write(root: Path, *, classes: list[dict[str, Any]], meetings: tuple[str, ..
         "ask-screen/round1.json": {},
         "ask-screen/round2.json": {},
         "ask-screen/confirmation.json": {},
+        "ask-screen/swap-measure.json": [],
+        "runtime-screen/floor/floor-A-results.json": [],
+        "runtime-screen/floor/floor-B-results.json": [],
+        "runtime-screen/stage1/perf-summary.json": {},
+        "runtime-screen/stage1/swap-summary.json": {},
+        "runtime-screen/stage1/stage1-verdict.json": {},
+        "runtime-screen/ask/ask-qwen3-8b.json": {},
+        "runtime-screen/ask/ask-gemma4-26b-a4b.json": {},
+        "runtime-screen/concept/runtime-both.json": {"per_window": {"m": {"IS1004b": {}}}},
     }
     for name, content in files.items():
         path = root / name
@@ -596,3 +611,157 @@ def test_ask_penalty_frame_reads_each_model_and_role() -> None:
             "high": 0.07,
         }
     ]
+
+
+def test_loader_refuses_an_evaluation_meeting_in_the_runtime_replay(tmp_path: Path) -> None:
+    _write(tmp_path, classes=[_CLASS_ROW], meetings=("ES2015a",))
+    path = tmp_path / "runtime-screen" / "concept" / "runtime-both.json"
+    path.write_text(json.dumps({"per_window": {"m": {"IS1009a": {}}}}), encoding="utf-8")
+    with pytest.raises(ValueError, match="IS1009a"):
+        load_concept_screens(tmp_path, partition_of=_partition)
+
+
+def _sequence(arm: str, times: list[float], ps: str = "qwen3:8b", rc: int = 0) -> dict[str, Any]:
+    return {
+        "arm": arm,
+        "times": [{"q": i, "seconds": t, "rc": rc, "ps": ps} for i, t in enumerate(times)],
+    }
+
+
+def test_swap_bar_pools_warm_questions_and_takes_the_cold_median() -> None:
+    both = "qwen3:8b\ngemma4:26b-a4b"
+    seqs = [
+        _sequence("a", [20.0, 10.0, 10.0, 10.0, 10.0, 10.0]),
+        _sequence("b", [29.0, 14.0, 15.0, 15.0, 15.0, 16.0], ps=both),
+        _sequence("a", [22.0, 10.0, 10.0, 10.0, 10.0, 10.0]),
+        _sequence("b", [31.0, 15.0, 15.0, 15.0, 15.0, 15.0]),
+        _sequence("a", [24.0, 10.0, 10.0, 10.0, 10.0, 10.0]),
+        _sequence("b", [30.0, 15.0, 15.0, 15.0, 15.0, 15.0]),
+    ]
+    bar = swap_bar(seqs)
+    assert bar.cold_median_s == {"a": 22.0, "b": 30.0}
+    assert bar.warm_ratio == pytest.approx(1.5)
+    # 30 s and 1.5x are both inclusive.
+    assert bar.passes
+    assert (bar.both_resident_b, bar.questions_b) == (6, 18)
+
+
+def test_swap_bar_fails_on_a_slow_cold_question_or_a_failed_call() -> None:
+    a = _sequence("a", [20.0, 10.0, 10.0, 10.0, 10.0, 10.0])
+    assert not swap_bar([a, _sequence("b", [30.5, 10.0, 10.0, 10.0, 10.0, 10.0])]).passes
+    assert not swap_bar([a, _sequence("b", [20.0, 10.0, 10.0, 10.0, 10.0, 10.0], rc=1)]).passes
+    assert not swap_bar([a, _sequence("b", [20.0, 16.0, 16.0, 16.0, 16.0, 16.0])]).passes
+
+
+def _perf(decode: float, prefill: float, resident: float, load: float) -> dict[str, Any]:
+    return {
+        "summary": {
+            "decode_tps": decode,
+            "prefill_tps": prefill,
+            "resident_gib": resident,
+            "load_s_median": load,
+        }
+    }
+
+
+def _runtime_perf(**candidate: dict[str, Any]) -> dict[str, Any]:
+    perf = {
+        "ollama-qwen3-8b": _perf(30.0, 300.0, 8.0, 1.0),
+        "ollama-gemma4-26b-a4b": _perf(30.0, 600.0, 20.0, 10.0),
+        "rt-gemma4-26b-a4b": _perf(30.0, 600.0, 20.0, 10.0),
+    }
+    perf["rt-qwen3-8b"] = candidate.get("qwen", _perf(30.0, 300.0, 8.0, 1.0))
+    if "gemma" in candidate:
+        perf["rt-gemma4-26b-a4b"] = candidate["gemma"]
+    return perf
+
+
+_SWAP = {"ollama": {"swap_s_median": 2.0}, "rt": {"swap_s_median": 2.0}}
+
+
+@pytest.mark.parametrize(
+    ("qwen", "gemma", "swap", "gains", "regressions"),
+    [
+        (_perf(34.5, 300.0, 8.0, 1.0), None, 2.0, ("decode",), ()),
+        (_perf(30.0, 345.0, 8.0, 1.0), None, 2.0, ("prefill",), ()),
+        (_perf(30.0, 300.0, 6.8, 1.0), None, 2.0, ("memory",), ()),
+        (_perf(34.5, 300.0, 8.9, 1.0), None, 2.0, ("decode",), ("memory",)),
+        (_perf(30.0, 260.0, 8.0, 1.0), None, 1.0, ("swap",), ("prefill",)),
+        # 2.5x slower to load but only 1.5 s more: not a regression.
+        (_perf(34.5, 300.0, 8.0, 2.5), None, 2.0, ("decode",), ()),
+        (_perf(34.5, 300.0, 8.0, 12.0), None, 2.0, ("decode",), ("load",)),
+        # Both chat models + bge-m3 fit 24 GiB where Ollama's (28.66) do not.
+        (_perf(30.0, 300.0, 8.0, 1.0), _perf(30.0, 600.0, 15.0, 1.0), 2.0, ("co-residence",), ()),
+        (_perf(30.0, 300.0, 8.0, 1.0), None, 2.0, (), ()),
+    ],
+)
+def test_runtime_gate_applies_each_axis(
+    qwen: dict[str, Any],
+    gemma: dict[str, Any] | None,
+    swap: float,
+    gains: tuple[str, ...],
+    regressions: tuple[str, ...],
+) -> None:
+    perf = _runtime_perf(qwen=qwen, **({"gemma": gemma} if gemma else {}))
+    gate = runtime_gate(perf, {**_SWAP, "rt": {"swap_s_median": swap}}, "rt")
+    assert gate["gains"] == gains
+    assert gate["regressions"] == regressions
+    assert gate["passes"] == (bool(gains) and not regressions)
+
+
+def test_runtime_ask_equivalence_ignores_s1_but_not_a_clear_loss() -> None:
+    frame = pd.DataFrame(
+        [
+            {"model": "a", "delta_high": 0.0, "vetoes": ("S1",)},
+            {"model": "b", "delta_high": -0.001, "vetoes": ()},
+            {"model": "c", "delta_high": 0.05, "vetoes": ("V2",)},
+        ]
+    )
+    assert runtime_ask_equivalence(frame) == {"a": True, "b": False, "c": False}
+
+
+def test_runtime_concept_equivalence_needs_g1() -> None:
+    score = {
+        "models": {
+            "qwen3:8b": _model(),
+            "qwen3:8b@x": _model(dlift=_ci(0.0, -0.01, 0.01)),
+            "qwen3:8b@y": _model(dlift=_ci(0.0, -0.01, 0.01)),
+        },
+        "g1": {
+            "qwen3:8b": {
+                "precision": _frac(9, 10),
+                "partial": 0,
+                "unsupported": 1,
+                "judge_coverage_mean": None,
+            },
+            "qwen3:8b@x": {
+                "precision": _frac(9, 10),
+                "partial": 0,
+                "unsupported": 1,
+                "dprecision": _ci(0.0, -0.06, 0.05),
+                "judge_coverage_mean": None,
+            },
+            "qwen3:8b@y": {
+                "precision": _frac(9, 10),
+                "partial": 0,
+                "unsupported": 1,
+                "dprecision": _ci(0.0, -0.05, 0.05),
+                "judge_coverage_mean": None,
+            },
+        },
+    }
+    out = runtime_concept_equivalence(round_frame(score), g1_frame(score))
+    assert not out["qwen3:8b@x"]["equivalent"] and not out["qwen3:8b@x"]["G1"]
+    assert out["qwen3:8b@y"]["equivalent"]
+
+
+@pytest.mark.parametrize(
+    ("stage1", "equivalent", "verdict"),
+    [
+        (False, [True], "no gain"),
+        (True, [True, True], "adopt-candidate"),
+        (True, [True, False], "faster but not equivalent"),
+    ],
+)
+def test_runtime_verdict(stage1: bool, equivalent: list[bool], verdict: str) -> None:
+    assert runtime_verdict(stage1, equivalent) == verdict
