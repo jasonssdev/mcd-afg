@@ -231,3 +231,46 @@ class TestDeliveredState:
 
         recall = {r.series_id: r.state for r in status.recall}
         assert recall["ES3"] is SeriesState.TO_START
+
+
+def _recall_status(
+    env: WorkspacePaths, monkeypatch: pytest.MonkeyPatch, *, recall_on_main: bool
+) -> tuple[SeriesState, list[list[Path]]]:
+    """ES3 delivered; its complete Task C sample on ``main`` or not, as ``recall_on_main``."""
+    _use(monkeypatch, ["ES1", "ES3"])
+    plan = load_annotation_plan(_config(["ES1", "ES3"]))
+    prepare_annotator_workspace(plan, "gv", paths=env)
+    _fill_decisions(env.decisions_dir / "ES3.decisions.gv.csv", "gv")
+    _fill_candidates(env.relations_dir / "ES3.candidates.gv.csv", "gv")
+    sample = env.relations_dir / "ES3.recall-sample.gv.csv"
+    _fill_candidates(sample, "gv")
+    seen: list[list[Path]] = []
+
+    def fake(paths: Iterable[Path]) -> bool:
+        targets = list(paths)
+        seen.append(targets)
+        return recall_on_main or sample not in targets
+
+    status = annotator_status(plan, "gv", paths=env, delivered=fake)
+    recall = {r.series_id: r.state for r in status.recall}
+    return recall["ES3"], seen
+
+
+class TestRecallDeliveredState:
+    def test_complete_sample_on_main_is_delivered(
+        self, env: WorkspacePaths, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        state, _ = _recall_status(env, monkeypatch, recall_on_main=True)
+        assert state is SeriesState.DELIVERED
+
+    def test_complete_sample_not_on_main_is_ready(
+        self, env: WorkspacePaths, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        state, _ = _recall_status(env, monkeypatch, recall_on_main=False)
+        assert state is SeriesState.READY
+
+    def test_checks_the_sample_file(
+        self, env: WorkspacePaths, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        _, seen = _recall_status(env, monkeypatch, recall_on_main=True)
+        assert [env.relations_dir / "ES3.recall-sample.gv.csv"] in seen
