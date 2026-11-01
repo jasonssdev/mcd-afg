@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 08 — Métricas y criterio de éxito |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.3 |
-| **Fecha** | 2026-10-15 |
+| **Versión** | 2.0 |
+| **Fecha** | 2026-11-01 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -16,6 +16,7 @@
 | 1.1 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (ground truth, precision, recall, accuracy, LLM-as-a-judge, filtro léxico (*blocking*)). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
 | 1.2 | 2026-10-15 | Se agrega la sección «Trazabilidad», con las funciones, pruebas, notebooks y decisiones en que se apoya cada métrica. No cambia ninguna cifra, decisión ni sección anterior. | Auditoría de gobernanza del 2026-10-15: los documentos 06 a 09 no tenían la sección de trazabilidad que sí tienen los documentos 01 a 05. |
 | 1.3 | 2026-10-15 | La sección E de decisiones abiertas pasa a resuelta: la función `agreement_meets_threshold` se eliminó del código. No cambia ninguna cifra ni métrica. | Corrección de código del 2026-10-15 (rama `fix/auditoria-codigo`): el código sugería un umbral de kappa que el diseño rechaza. |
+| 2.0 | 2026-11-01 | §4.1 y la tabla de métricas pasan de «series de control pendientes» a los kappas medidos de la Fase 2: existencia 0,783 (37 pares), tipo 0,554 (18 pares), dirección indefinida (acuerdo total). | Las cuatro series de control quedaron adjudicadas (notebook 18, §6.1; `reports/tables/agreement-pooled.csv`). Detalle en el [documento 10](10-jss-confiabilidad-de-la-referencia.md). |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -160,7 +161,7 @@ implementada y además tener una cifra preliminar sobre desarrollo.
 
 | Métrica | Qué mide (en simple) | Se aplica a | Cómo se calcula | Umbral / intervalo / regla de lectura | Dónde está definida | Estado |
 |---|---|---|---|---|---|---|
-| **Kappa de anotación** (existencia, tipo, dirección) | Cuánto coinciden dos personas al marcar si dos decisiones se relacionan, cómo y en qué sentido | Series de control con doble anotación (4 de las 11 series de evaluación, 36,4 %; más 2 series de calibración de desarrollo) | Kappa de Cohen, un valor por cada uno de los tres ejes, nunca combinados | **Sin umbral de aceptación, por diseño.** Se reporta tal como salga; un kappa bajo es un hallazgo | Doc. 06 §1 y §5–6; manual de anotación §6; `annotation/agreement.py` | Implementada. Medida solo como diagnóstico en la calibración (kappa de estado 0,094 en ES2015); series de control pendientes |
+| **Kappa de anotación** (existencia, tipo, dirección) | Cuánto coinciden dos personas al marcar si dos decisiones se relacionan, cómo y en qué sentido | Series de control con doble anotación (4 de las 11 series de evaluación, 36,4 %; más 2 series de calibración de desarrollo) | Kappa de Cohen, un valor por cada uno de los tres ejes, nunca combinados | **Sin umbral de aceptación, por diseño.** Se reporta tal como salga; un kappa bajo es un hallazgo | Doc. 06 §1 y §5–6; manual de anotación §6; `annotation/agreement.py` | Medida en las cuatro series de control (Fase 2): existencia 0,783 (37 pares), tipo 0,554 (18 pares), dirección indefinida por acuerdo total (notebook 18, §6.1; documento 10) |
 | **Recall del filtro léxico** (*blocking*) | Qué parte de las relaciones reales deja pasar el filtro que decide qué pares se anotan | 200 pares rechazados (50 por serie × IS1004, ES2016, IS1003, TS3005) | Relaciones reales halladas entre los rechazados, sobre el total muestreado; por sitio y en conjunto, con IC bootstrap | **Sin umbral.** Se reporta la cifra y su intervalo | Doc. 06 §2; manual de anotación §5; `annotation/blocking.py`; `config/annotation.toml` `[annotation.recall_sample]` | Muestra generada, sin anotar. Pendiente |
 | **Precision, recall y F1** (OE2) | Qué tan bien la máquina encuentra las decisiones de la referencia | Decisiones extraídas por la máquina frente a las 343 de la referencia | Conteos de aciertos, sobras y faltantes tras el alineamiento (§4.3); F1 como **curva sobre τ** | Sin umbral ni criterio de éxito; curva con τ de 0,50 a 0,90 en pasos de 0,05 | Propuesta §5.4 y §5.6; [`docs/protocols/alignment.md`](../protocols/alignment.md); [`config/experiments.toml`](../../config/experiments.toml) `[alignment]` | Implementada. Pendiente de medir (no hay extracción real de evaluación) |
 | **Accuracy de tipo y de dirección** (OE2) | Si la máquina acierta qué relación hay entre dos decisiones y cuál revisa a cuál | Relaciones entre decisiones | Fracción de relaciones con etiqueta (o sentido) igual a la referencia; se reportan por separado | Sin umbral | Propuesta §5.6; `evaluation/metrics.py` | Implementada. Pendiente |
@@ -202,10 +203,12 @@ acuerdo real. Las bandas de Landis y Koch (0,41–0,60 moderado, 0,61–0,80 sus
 son solo una ayuda de lectura. Un kappa bajo se reporta como hallazgo, junto con los
 desacuerdos que lo explican.
 
-**Lo medido hasta ahora** es solo diagnóstico: la calibración sobre ES2015 dio un kappa de
-estado de 0,094 (13 de 29 filas en acuerdo), porque la guía no tenía un criterio de umbral;
-se corrigió la guía y se recalibra sobre TS3009 antes de tocar una serie de control (notebook
-04; documento 06, §5–6). Esa cifra no se reporta como resultado.
+**Lo medido.** La calibración sobre ES2015 dio un kappa de estado de 0,094 (13 de 29 filas
+en acuerdo), porque la guía no tenía un criterio de umbral; se corrigió la guía y se recalibró
+sobre TS3009 (notebook 04; documento 06, §5–6). Esa cifra es diagnóstica y no se reporta. Sobre
+las cuatro series de control, los kappas que sí se reportan son existencia 0,783 (37 pares) y
+tipo 0,554 (18 pares); la dirección no tiene kappa porque el acuerdo fue total (notebook 18,
+§6.1). La lectura completa está en el [documento 10](10-jss-confiabilidad-de-la-referencia.md).
 
 ### 4.2 El filtro léxico y su recall
 

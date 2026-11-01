@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 03 — Objetivos |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 3.0 |
-| **Fecha** | 2026-10-15 |
+| **Versión** | 3.1 |
+| **Fecha** | 2026-11-01 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -19,6 +19,7 @@
 | 2.3 | 2026-10-15 | Se agrega, en cada objetivo específico, un párrafo «Cómo se mide» que remite a la sección correspondiente del [documento 08](08-jss-metricas-y-criterio-de-exito.md), y una subsección sobre el criterio de éxito del experimento (D16). El objetivo general, los objetivos específicos, los criterios de cumplimiento, las hipótesis y las cifras no cambian. | Retroalimentación del profesor sobre las métricas: faltaba ver, objetivo por objetivo, qué se mide y con qué regla se lee el resultado. |
 | 2.4 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (ground truth, precision, recall, accuracy, LLM-as-a-judge). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
 | 3.0 | 2026-10-15 | Cambia un criterio: el criterio de éxito del experimento (D16) se enuncia con la regla de decisión enmendada por D17, que es el intervalo bootstrap del 95 % de la **diferencia pareada** C2 − C1 en E3 por encima de 0, y ya no la no superposición de los intervalos independientes (que queda como cifra de robustez). Además: OE2 se mide sobre las 11 series de evaluación (ADR 0005) y no sobre las 14; la escala grande del instrumento se nombra como ≈32B (`qwen3:32b`); se elimina un párrafo que describía la versión 2.2 en pasado. | Enmienda D17 ([ADR 0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md)), hecha el 2026-10-15 antes de cualquier corrida de evaluación, con simulación de potencia en el [notebook 10](../../notebooks/10-jss-potencia-criterio-d16.ipynb); el alcance de OE2 sigue el ADR 0005 y el modelo grande sale de `config/experiments.toml`. |
+| 3.1 | 2026-11-01 | Se agrega, en OE1, una remisión al [documento 10](10-jss-confiabilidad-de-la-referencia.md), que reporta los resultados de confiabilidad. El objetivo, los criterios, las hipótesis y las cifras no cambian. | Los resultados de la Fase 2 de OE1 ya existen y tienen su propio documento. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -121,6 +122,9 @@ adjudicación documentada para todo desacuerdo.
 aceptación por diseño: un kappa bajo se reporta como hallazgo. El detalle está en el
 [documento 08, §4.1](08-jss-metricas-y-criterio-de-exito.md#41-oe1-el-ground-truth-y-su-confiabilidad); el recall del filtro que selecciona los pares a anotar, en el
 [documento 08, §4.2](08-jss-metricas-y-criterio-de-exito.md#42-el-filtro-léxico-y-su-recall).
+
+Los resultados de confiabilidad de la anotación están en el
+[documento 10](10-jss-confiabilidad-de-la-referencia.md).
 
 ### OE2 — Medir la calidad de la extracción automática (Experimento A)
 
