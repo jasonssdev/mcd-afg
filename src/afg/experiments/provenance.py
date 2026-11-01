@@ -60,7 +60,7 @@ class LiveProbe:
         try:
             with urllib.request.urlopen(f"{self._host}{path}", timeout=_TIMEOUT_S) as response:
                 return json.loads(response.read().decode("utf-8"))
-        except (urllib.error.URLError, OSError, ValueError):
+        except urllib.error.URLError, OSError, ValueError:
             return None
 
     def model_digests(self) -> Mapping[str, str] | None:
@@ -100,7 +100,7 @@ class LiveProbe:
                 check=True,
                 timeout=10,
             )
-        except (OSError, subprocess.SubprocessError):
+        except OSError, subprocess.SubprocessError:
             return None
         return bool(done.stdout.strip())
 

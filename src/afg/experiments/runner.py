@@ -126,7 +126,7 @@ def current_git_commit() -> str | None:
             check=True,
             timeout=10,
         )
-    except (OSError, subprocess.SubprocessError):
+    except OSError, subprocess.SubprocessError:
         return None
     return done.stdout.strip() or None
 

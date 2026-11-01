@@ -18,7 +18,7 @@ jobs:
         with:
           enable-cache: true
 
-      # uv reads .python-version (3.13) and downloads that interpreter.
+      # uv reads .python-version (3.14) and downloads that interpreter.
       - name: Install dependencies
         run: uv sync --group dev
 

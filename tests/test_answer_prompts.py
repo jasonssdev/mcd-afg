@@ -3,12 +3,13 @@
 C2 and C3 answer through ``openkos query``; C1 must answer with the exact same two system
 prompts so that any difference between conditions comes from the retrieved material, not
 from the instructions. The pinned SHA-256 values are those of
-``src/openkos/prompts/answer/{system,sufficiency}.md`` at openkos commit ``473b3fbb``.
+``src/openkos/prompts/answer/{system,sufficiency}.md`` at openkos release ``v0.7.0``.
 """
 
 from __future__ import annotations
 
 import hashlib
+from importlib import resources
 
 import pytest
 
@@ -16,7 +17,7 @@ from afg.conditions import answer_prompts
 from afg.shared.config import load_experiments_config
 
 _PINNED_RAW_SHA256 = {
-    "system": "9cbf11e8ac9f8220253b233f1475b5cea9716b86b5868ce78ae31b235917119c",
+    "system": "ec8a87ca28585d9e51030984d0797f8aedc09ec9168aaf8e1b382f9c6e8d5cee",
     "sufficiency": "afc4644b27500c2cd69ea6c28919275d5447baaf7ce8ff938e9de7add7936f56",
 }
 
@@ -29,6 +30,13 @@ class TestCopiedPromptFiles:
 
     def test_module_constants_pin_the_same_hashes(self) -> None:
         assert answer_prompts.PINNED_RAW_SHA256 == _PINNED_RAW_SHA256
+
+    @pytest.mark.parametrize("name", ["system", "sufficiency"])
+    def test_copy_matches_the_installed_openkos(self, name: str) -> None:
+        """The pinned hash alone cannot see OpenKOS change its prompt in a new version."""
+        openkos = pytest.importorskip("openkos")
+        installed = resources.files(openkos) / "prompts" / "answer" / f"{name}.md"
+        assert answer_prompts.read_raw_prompt(name) == installed.read_text(encoding="utf-8")
 
 
 class TestRenderedPrompts:
