@@ -194,6 +194,7 @@ def _recall_statuses(
     initials: str,
     paths: WorkspacePaths,
     by_series: dict[str, SeriesStatus],
+    delivered: Callable[[Iterable[Path]], bool],
 ) -> tuple[RecallStatus, ...]:
     recall = plan.recall_sample
     if recall.owner != initials:
@@ -215,7 +216,7 @@ def _recall_statuses(
         if issues:
             state = SeriesState.ERRORS
         elif total and filled == total:
-            state = SeriesState.READY
+            state = SeriesState.DELIVERED if delivered([target]) else SeriesState.READY
         elif filled == 0:
             state = SeriesState.TO_START
         else:
@@ -415,7 +416,7 @@ def annotator_status(
             )
         )
     series = tuple(items)
-    recall = _recall_statuses(plan, initials, paths, {s.series_id: s for s in series})
+    recall = _recall_statuses(plan, initials, paths, {s.series_id: s for s in series}, delivered)
     bank, bank_role = _bank(plan, initials, paths)
     return AnnotatorStatus(
         initials=initials,
