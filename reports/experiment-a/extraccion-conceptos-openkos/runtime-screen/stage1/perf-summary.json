@@ -1,0 +1,176 @@
+{
+ "llama.cpp-gemma4-26b-a4b": {
+  "runtime": "llama.cpp",
+  "label": "gemma4:26b-a4b",
+  "digest": "sha256:a8bdd07a49b895083bb1420bb895ad9ab3e3b8f7d5cc42c7582ca0fa765eede2",
+  "loads_s": [
+   4.882247707922943,
+   1.6948691670550033,
+   1.707019833032973
+  ],
+  "prefill_tps_client": [
+   628.1385711488111,
+   679.4203932608215,
+   680.5358912795939
+  ],
+  "decode_tps_client": [
+   44.239969177151515,
+   44.92304319257933,
+   44.411505187061685
+  ],
+  "summary": {
+   "load_s_median": 1.707019833032973,
+   "load_s_first": 4.882247707922943,
+   "prefill_tps": 679.4203932608215,
+   "decode_tps": 44.411505187061685,
+   "resident_gib": 17.799999999813735,
+   "footprint_gib": 1.699999999254942,
+   "loader_gib": null
+  }
+ },
+ "llama.cpp-qwen3-8b": {
+  "runtime": "llama.cpp",
+  "label": "qwen3:8b",
+  "digest": "sha256:a3de86cd1c132c822487ededd47a324c50491393e6565cd14bafa40d0b8e686f",
+  "loads_s": [
+   3.060451374971308,
+   0.9172438749810681,
+   0.9076897499617189
+  ],
+  "prefill_tps_client": [
+   359.0152782893548,
+   359.80681328718345,
+   361.1691203179636
+  ],
+  "decode_tps_client": [
+   34.25214412097493,
+   34.80925818018371,
+   34.4753325656155
+  ],
+  "summary": {
+   "load_s_median": 0.9172438749810681,
+   "load_s_first": 3.060451374971308,
+   "prefill_tps": 359.80681328718345,
+   "decode_tps": 34.4753325656155,
+   "resident_gib": 7.8999999994412065,
+   "footprint_gib": 2.699999999254942,
+   "loader_gib": null
+  }
+ },
+ "mlx-gemma4-26b-a4b": {
+  "runtime": "mlx",
+  "label": "gemma4:26b-a4b",
+  "digest": "sha256:49487176c2bbae43ad765f64dd6cb73884498bf64eac9de2181e931da9609422",
+  "loads_s": [
+   4.198410207987763,
+   3.458316499949433,
+   3.83711475005839
+  ],
+  "prefill_tps_client": [
+   724.110625819806,
+   743.8743279513046,
+   739.14970316138
+  ],
+  "decode_tps_client": [
+   40.90467656422464,
+   41.24738773373344,
+   41.17095196222766
+  ],
+  "summary": {
+   "load_s_median": 3.83711475005839,
+   "load_s_first": 4.198410207987763,
+   "prefill_tps": 739.14970316138,
+   "decode_tps": 41.17095196222766,
+   "resident_gib": 15.5,
+   "footprint_gib": 15.099999999627471,
+   "loader_gib": null
+  }
+ },
+ "mlx-qwen3-8b": {
+  "runtime": "mlx",
+  "label": "qwen3:8b",
+  "digest": "sha256:f2d29621aab300336ad645567ff38c42aac755513006ef4e8a579cf7ef5256d8",
+  "loads_s": [
+   4.593109917012043,
+   1.4567308749537915,
+   1.4971325419610366
+  ],
+  "prefill_tps_client": [
+   370.11811589181633,
+   351.8482568955168,
+   347.056251554526
+  ],
+  "decode_tps_client": [
+   34.80754428151868,
+   34.794257307461145,
+   34.035143221469276
+  ],
+  "summary": {
+   "load_s_median": 1.4971325419610366,
+   "load_s_first": 4.593109917012043,
+   "prefill_tps": 351.8482568955168,
+   "decode_tps": 34.794257307461145,
+   "resident_gib": 7.3999999994412065,
+   "footprint_gib": 7.0,
+   "loader_gib": null
+  }
+ },
+ "ollama-gemma4-26b-a4b": {
+  "runtime": "ollama",
+  "label": "gemma4:26b-a4b",
+  "digest": "001e5dafc3c77684c2307ebc6ab8e336e10c9b18eca52acf547d72fc83c3ca8c",
+  "loads_s": [
+   9.80783991701901,
+   10.456252500065602,
+   3.1374759998871014
+  ],
+  "prefill_tps_client": [
+   613.7427565720036,
+   604.7366996562308,
+   614.0346010307023
+  ],
+  "decode_tps_client": [
+   32.22171262310489,
+   32.632852982920966,
+   30.569515075572195
+  ],
+  "summary": {
+   "load_s_median": 9.80783991701901,
+   "load_s_first": 9.80783991701901,
+   "prefill_tps": 613.7427565720036,
+   "decode_tps": 32.22171262310489,
+   "resident_gib": 20.062011717818677,
+   "footprint_gib": 3.06689453125,
+   "loader_gib": 0.8824511718749999
+  }
+ },
+ "ollama-qwen3-8b": {
+  "runtime": "ollama",
+  "label": "qwen3:8b",
+  "digest": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41",
+  "loads_s": [
+   3.8462290840689093,
+   1.0653153749881312,
+   1.0748868340160698
+  ],
+  "prefill_tps_client": [
+   308.2040251745523,
+   298.3549043759395,
+   298.46590788261153
+  ],
+  "decode_tps_client": [
+   31.54336905378565,
+   31.169807844561415,
+   29.62240369894452
+  ],
+  "summary": {
+   "load_s_median": 1.0748868340160698,
+   "load_s_first": 3.8462290840689093,
+   "prefill_tps": 298.46590788261153,
+   "decode_tps": 31.169807844561415,
+   "resident_gib": 8.283300780691206,
+   "footprint_gib": 2.7445312486961484,
+   "loader_gib": 6.34984375
+  }
+ }
+}

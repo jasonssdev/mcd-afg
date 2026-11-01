@@ -141,6 +141,13 @@ def test_c2_extraction_run_is_recorded_or_null() -> None:
     assert _collect(FakeProbe())["c2_extraction"] is None
 
 
+def test_c3_workspaces_are_recorded_or_null() -> None:
+    assert _collect(FakeProbe(), c3_workspaces="data/interim/openkos-c3")["c3_workspaces"] == (
+        "data/interim/openkos-c3"
+    )
+    assert _collect(FakeProbe())["c3_workspaces"] is None
+
+
 def _manifest(**extra: Any) -> dict[str, Any]:
     base: dict[str, Any] = {
         "run_name": "r",

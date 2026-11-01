@@ -158,3 +158,33 @@ def test_agreement_warns_about_extra_files_in_spanish(isolated_dirs: Path, monke
     text = _flat(result.output)
     assert "Se encontraron 3 archivos de anotadores; se usan los dos primeros" in text
     assert "Found 3" not in text
+
+
+def test_agreement_pooled_prints_spanish_table_and_writes_csv(
+    isolated_dirs: Path, monkeypatch
+) -> None:
+    import afg.annotation.pooled as pooled_module
+
+    axes = tuple(
+        pooled_module.PooledAxis(name, 10, 2, 0.5, 0.8) for name in pooled_module.POOLED_AXES
+    )
+    report = (pooled_module.PooledAgreement("overall", ("A", "B"), axes),)
+    written: list[Path] = []
+    monkeypatch.setattr(pooled_module, "pooled_agreement_report", lambda plan: report)
+    monkeypatch.setattr(pooled_module, "write_pooled_csv", lambda r, p: written.append(p) or p)
+    monkeypatch.setattr(afg_cli, "_plan_or_exit", lambda: object())
+
+    result = CliRunner().invoke(afg_cli.app, ["gold", "agreement", "--pooled"])
+
+    assert result.exit_code == 0, result.output
+    text = _flat(result.output)
+    assert "Kappa agrupado" in text
+    assert "A, B" in text
+    assert written == [isolated_dirs / "TABLES_DIR" / "agreement-pooled.csv"]
+
+
+def test_agreement_requires_series_or_pooled(isolated_dirs: Path) -> None:
+    result = CliRunner().invoke(afg_cli.app, ["gold", "agreement"])
+
+    assert result.exit_code == 2
+    assert "--series" in _flat(result.output)

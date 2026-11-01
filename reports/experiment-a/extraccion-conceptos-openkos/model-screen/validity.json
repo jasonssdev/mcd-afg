@@ -1,0 +1,350 @@
+{
+  "pool": "DA",
+  "runs": [
+    1
+  ],
+  "models": {
+    "qwen3:8b": {
+      "failures": {
+        "num": 1,
+        "den": 41
+      },
+      "failure_causes": {
+        "unparseable": 1
+      },
+      "objects_per_meeting": 5.4,
+      "objects_total": 27,
+      "meeting_runs": 5,
+      "verbatim": {
+        "num": 0,
+        "den": 27
+      },
+      "title_language": {
+        "en": 10,
+        "es": 0,
+        "neither": 17
+      },
+      "median_window_s": 31.42488741700072,
+      "window_calls_timed": 41,
+      "mean_s_per_meeting_run": 244.6673851747997,
+      "total_s": 1223.3369258739986,
+      "window_lift_mean": 0.030607569009897802,
+      "meeting_lift_mean": 0.004529638719902318,
+      "stage_table": {
+        "raw": {
+          "meeting_runs": 5,
+          "units": 32,
+          "own": 0.5532665471612901,
+          "foreign": 0.5428367849322264,
+          "lift": 0.010429762229063722,
+          "own_sum": 53.75576003433114,
+          "own_covered_tau": 4,
+          "foreign_covered_tau": 3,
+          "gold_n": 97,
+          "foreign_n": 104
+        },
+        "dedup": {
+          "meeting_runs": 5,
+          "units": 39,
+          "own": 0.5573838244208636,
+          "foreign": 0.5451828525958898,
+          "lift": 0.012200971824973761,
+          "own_sum": 53.9512278929486,
+          "own_covered_tau": 4,
+          "foreign_covered_tau": 3,
+          "gold_n": 97,
+          "foreign_n": 104
+        },
+        "drops": {
+          "meeting_runs": 5,
+          "units": 22,
+          "own": 0.5413830043504138,
+          "foreign": 0.5301539004369711,
+          "lift": 0.011229103913442628,
+          "own_sum": 52.44512442797431,
+          "own_covered_tau": 4,
+          "foreign_covered_tau": 2,
+          "gold_n": 97,
+          "foreign_n": 104
+        },
+        "pre_ceiling": {
+          "meeting_runs": 5,
+          "units": 31,
+          "own": 0.5465205615823974,
+          "foreign": 0.5344017375593066,
+          "lift": 0.01211882402309088,
+          "own_sum": 52.753377861893334,
+          "own_covered_tau": 4,
+          "foreign_covered_tau": 2,
+          "gold_n": 97,
+          "foreign_n": 104
+        },
+        "ceiling": {
+          "meeting_runs": 5,
+          "units": 31,
+          "own": 0.5465205615823974,
+          "foreign": 0.5344017375593066,
+          "lift": 0.01211882402309088,
+          "own_sum": 52.753377861893334,
+          "own_covered_tau": 4,
+          "foreign_covered_tau": 2,
+          "gold_n": 97,
+          "foreign_n": 104
+        },
+        "judge": {
+          "meeting_runs": 5,
+          "units": 27,
+          "own": 0.5355078280531576,
+          "foreign": 0.5309781893332552,
+          "lift": 0.004529638719902318,
+          "own_sum": 51.573068265113434,
+          "own_covered_tau": 3,
+          "foreign_covered_tau": 2,
+          "gold_n": 97,
+          "foreign_n": 104
+        },
+        "final": {
+          "meeting_runs": 5,
+          "units": 27,
+          "own": 0.5355078280531576,
+          "foreign": 0.5309781893332552,
+          "lift": 0.004529638719902318,
+          "own_sum": 51.573068265113434,
+          "own_covered_tau": 3,
+          "foreign_covered_tau": 2,
+          "gold_n": 97,
+          "foreign_n": 104
+        }
+      },
+      "stage_window_lift": {
+        "raw": 0.047843578764526766,
+        "dedup": 0.04527484922409641,
+        "drops": 0.03895428051542368,
+        "pre_ceiling": 0.03895428051542368,
+        "ceiling": 0.03895428051542368,
+        "judge": 0.030607569009897802,
+        "final": 0.030607569009897802
+      },
+      "counters": {
+        "skipped_chunks": 0,
+        "wrong_language_dropped": 0,
+        "recombined_dropped": 0,
+        "pre_judge_dropped": 0,
+        "judged_out": 4,
+        "backstop_discarded": 0,
+        "reask_added": 0,
+        "participant_added": 9,
+        "judge_status": {
+          "ok": 5,
+          "failed": 0,
+          "empty": 0,
+          "skipped": 0
+        },
+        "optional_call_failures": 0
+      },
+      "curves": {
+        "own": [
+          0.6023569023569023,
+          0.45505050505050504,
+          0.27744107744107743,
+          0.09983164983164983,
+          0.05,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "foreign": [
+          0.5989113098952916,
+          0.4576127406791022,
+          0.21603217529990984,
+          0.07963849016480595,
+          0.02222222222222222,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "sections": {
+        "abstract": 0.5709285724453022,
+        "decisions": 0.5074793947848095,
+        "problems": 0.478537998331318
+      },
+      "prose": {
+        "wrong_language": {
+          "num": 0,
+          "den": 16
+        },
+        "wrong_language_dropped": 1,
+        "subject_recall_exact": {
+          "num": 26,
+          "den": 33
+        },
+        "subject_recall_embedding": {
+          "num": 26,
+          "den": 33
+        },
+        "whole_source_failures": 0,
+        "per_fixture": {
+          "large-03-skills-vs-tools": {
+            "exact": 7,
+            "embedding": 7,
+            "of": 7
+          },
+          "medium-08-sdk-skills": {
+            "exact": 4,
+            "embedding": 4,
+            "of": 4
+          },
+          "medium-09-sdk-skills-notes": {
+            "exact": 3,
+            "embedding": 3,
+            "of": 4
+          },
+          "medium-10-reunion-plataforma": {
+            "exact": 6,
+            "embedding": 6,
+            "of": 11
+          },
+          "small-04-pre-build-skills": {
+            "exact": 6,
+            "embedding": 6,
+            "of": 7
+          }
+        }
+      },
+      "lift_ci": {
+        "point": 0.030607569009897802,
+        "low": 0.01069245467835503,
+        "high": 0.0579838178875701
+      }
+    }
+  },
+  "per_window": {
+    "qwen3:8b": {
+      "ES2015a": {
+        "0": [
+          0.0
+        ],
+        "1": [
+          0.27452974879338615
+        ],
+        "2": [
+          -0.024611256732804843
+        ],
+        "3": [
+          -0.027826667359278467
+        ]
+      },
+      "IS1004b": {
+        "0": [
+          0.12537501643216142
+        ],
+        "1": [
+          0.13364000400120746
+        ],
+        "2": [
+          0.0001045112861922659
+        ],
+        "3": [
+          0.044739781313131055
+        ],
+        "4": [
+          -0.020559863218333585
+        ],
+        "5": [
+          0.0
+        ],
+        "6": [
+          0.0
+        ],
+        "7": [
+          0.026281309575834633
+        ],
+        "8": [
+          0.0
+        ]
+      },
+      "TS3009c": {
+        "0": [
+          0.0
+        ],
+        "1": [
+          0.05157985091166489
+        ],
+        "2": [
+          0.0
+        ],
+        "3": [
+          0.0
+        ],
+        "4": [
+          0.0
+        ],
+        "5": [
+          0.16494036313415922
+        ],
+        "6": [
+          0.0
+        ],
+        "7": [
+          0.0
+        ],
+        "8": [
+          0.06168896362622339
+        ],
+        "9": [
+          0.0
+        ]
+      },
+      "ES2015d": {
+        "0": [
+          0.0
+        ],
+        "1": [
+          0.041270050799967095
+        ],
+        "2": [
+          0.0
+        ],
+        "3": [
+          0.0
+        ],
+        "6": [
+          -0.02239392479249097
+        ],
+        "7": [
+          0.061198087961144454
+        ],
+        "8": [
+          0.0
+        ]
+      },
+      "IS1004d": {
+        "0": [
+          0.0
+        ],
+        "1": [
+          0.0
+        ],
+        "2": [
+          0.0
+        ],
+        "3": [
+          0.15945466134570252
+        ],
+        "4": [
+          0.0
+        ],
+        "5": [
+          0.0
+        ],
+        "6": [
+          0.08306941628835196
+        ]
+      }
+    }
+  },
+  "g1": null
+}

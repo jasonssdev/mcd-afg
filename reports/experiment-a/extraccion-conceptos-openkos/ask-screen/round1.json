@@ -1,0 +1,436 @@
+{
+ "baseline": "qwen3:8b",
+ "guardrails": {
+  "qwen3:8b": {
+   "suff_failure": 0.0,
+   "ans_failure": 0.0,
+   "suff_median_s": 2.7215,
+   "ans_median_s": 4.754,
+   "grounded_refused": 0.21212121212121213,
+   "adjacent_missed": 0.0,
+   "spanish_answers": 0.9166666666666666,
+   "compliance": 1.0
+  },
+  "gemma4:26b-a4b": {
+   "suff_failure": 0.0,
+   "ans_failure": 0.0,
+   "suff_median_s": 1.8984999999999999,
+   "ans_median_s": 2.8335,
+   "grounded_refused": 0.12121212121212122,
+   "adjacent_missed": 0.0,
+   "spanish_answers": 0.78125,
+   "compliance": 0.9791666666666666
+  },
+  "qwen3:14b": {
+   "suff_failure": 0.0,
+   "ans_failure": 0.0,
+   "suff_median_s": 4.943,
+   "ans_median_s": 6.5705,
+   "grounded_refused": 0.10606060606060606,
+   "adjacent_missed": 0.0,
+   "spanish_answers": 0.7708333333333334,
+   "compliance": 1.0
+  },
+  "qwen3.6:35b-a3b": {
+   "suff_failure": 0.0,
+   "ans_failure": 0.0,
+   "suff_median_s": 2.0515,
+   "ans_median_s": 3.2185,
+   "grounded_refused": 0.10606060606060606,
+   "adjacent_missed": 0.06666666666666667,
+   "spanish_answers": 0.7708333333333334,
+   "compliance": 0.9583333333333334
+  }
+ },
+ "roles": {
+  "sufficiency": {
+   "baseline_mean": 0.8541666666666666,
+   "candidates": {
+    "gemma4:26b-a4b": {
+     "delta": {
+      "n": 96,
+      "mean": 0.0625,
+      "lo": 0.0,
+      "hi": 0.125
+     },
+     "per_set": {
+      "es-built": {
+       "n": 32,
+       "mean": 0.09375,
+       "lo": 0.0,
+       "hi": 0.21875
+      },
+      "es-en": {
+       "n": 32,
+       "mean": 0.0625,
+       "lo": -0.0625,
+       "hi": 0.1875
+      },
+      "es-es": {
+       "n": 32,
+       "mean": 0.03125,
+       "lo": -0.0625,
+       "hi": 0.15625
+      }
+     },
+     "vetoes": []
+    },
+    "qwen3:14b": {
+     "delta": {
+      "n": 96,
+      "mean": 0.07291666666666667,
+      "lo": 0.020833333333333332,
+      "hi": 0.125
+     },
+     "per_set": {
+      "es-built": {
+       "n": 32,
+       "mean": 0.09375,
+       "lo": 0.0,
+       "hi": 0.1875
+      },
+      "es-en": {
+       "n": 32,
+       "mean": 0.09375,
+       "lo": 0.0,
+       "hi": 0.1875
+      },
+      "es-es": {
+       "n": 32,
+       "mean": 0.03125,
+       "lo": 0.0,
+       "hi": 0.09375
+      }
+     },
+     "vetoes": []
+    },
+    "qwen3.6:35b-a3b": {
+     "delta": {
+      "n": 96,
+      "mean": 0.052083333333333336,
+      "lo": -0.010416666666666666,
+      "hi": 0.11458333333333333
+     },
+     "per_set": {
+      "es-built": {
+       "n": 32,
+       "mean": 0.0625,
+       "lo": 0.0,
+       "hi": 0.15625
+      },
+      "es-en": {
+       "n": 32,
+       "mean": 0.0625,
+       "lo": -0.0625,
+       "hi": 0.1875
+      },
+      "es-es": {
+       "n": 32,
+       "mean": 0.03125,
+       "lo": -0.0625,
+       "hi": 0.15625
+      }
+     },
+     "vetoes": [
+      "S2 adjacent misses above baseline"
+     ]
+    }
+   },
+   "kept": [
+    "qwen3:14b",
+    "gemma4:26b-a4b"
+   ],
+   "dropped": {
+    "qwen3.6:35b-a3b": "veto: S2 adjacent misses above baseline"
+   },
+   "selected": "qwen3:14b"
+  },
+  "answer": {
+   "baseline_mean": 0.8333333333333334,
+   "candidates": {
+    "gemma4:26b-a4b": {
+     "delta": {
+      "n": 36,
+      "mean": 0.0,
+      "lo": -0.1111111111111111,
+      "hi": 0.1111111111111111
+     },
+     "per_set": {
+      "es-built": {
+       "n": 12,
+       "mean": -0.16666666666666666,
+       "lo": -0.4166666666666667,
+       "hi": 0.0
+      },
+      "es-en": {
+       "n": 12,
+       "mean": 0.08333333333333333,
+       "lo": 0.0,
+       "hi": 0.25
+      },
+      "es-es": {
+       "n": 12,
+       "mean": 0.08333333333333333,
+       "lo": 0.0,
+       "hi": 0.25
+      }
+     },
+     "vetoes": [
+      "V3 answer language"
+     ]
+    },
+    "qwen3:14b": {
+     "delta": {
+      "n": 36,
+      "mean": -0.08333333333333333,
+      "lo": -0.2222222222222222,
+      "hi": 0.05555555555555555
+     },
+     "per_set": {
+      "es-built": {
+       "n": 12,
+       "mean": -0.3333333333333333,
+       "lo": -0.5833333333333334,
+       "hi": -0.08333333333333333
+      },
+      "es-en": {
+       "n": 12,
+       "mean": 0.08333333333333333,
+       "lo": 0.0,
+       "hi": 0.25
+      },
+      "es-es": {
+       "n": 12,
+       "mean": 0.0,
+       "lo": -0.25,
+       "hi": 0.25
+      }
+     },
+     "vetoes": [
+      "V3 answer language"
+     ]
+    },
+    "qwen3.6:35b-a3b": {
+     "delta": {
+      "n": 36,
+      "mean": 0.0,
+      "lo": -0.1388888888888889,
+      "hi": 0.1388888888888889
+     },
+     "per_set": {
+      "es-built": {
+       "n": 12,
+       "mean": -0.08333333333333333,
+       "lo": -0.3333333333333333,
+       "hi": 0.16666666666666666
+      },
+      "es-en": {
+       "n": 12,
+       "mean": 0.08333333333333333,
+       "lo": 0.0,
+       "hi": 0.25
+      },
+      "es-es": {
+       "n": 12,
+       "mean": 0.0,
+       "lo": -0.25,
+       "hi": 0.25
+      }
+     },
+     "vetoes": [
+      "V3 answer language"
+     ]
+    }
+   },
+   "kept": [],
+   "dropped": {
+    "gemma4:26b-a4b": "veto: V3 answer language",
+    "qwen3:14b": "veto: V3 answer language",
+    "qwen3.6:35b-a3b": "veto: V3 answer language"
+   },
+   "selected": null
+  },
+  "citation": {
+   "baseline_mean": 0.8645833333333334,
+   "candidates": {
+    "gemma4:26b-a4b": {
+     "delta": {
+      "n": 96,
+      "mean": 0.052083333333333336,
+      "lo": -0.010416666666666666,
+      "hi": 0.125
+     },
+     "per_set": {
+      "es-built": {
+       "n": 32,
+       "mean": 0.0,
+       "lo": -0.15625,
+       "hi": 0.15625
+      },
+      "es-en": {
+       "n": 32,
+       "mean": 0.03125,
+       "lo": 0.0,
+       "hi": 0.09375
+      },
+      "es-es": {
+       "n": 32,
+       "mean": 0.125,
+       "lo": 0.03125,
+       "hi": 0.25
+      }
+     },
+     "vetoes": []
+    },
+    "qwen3:14b": {
+     "delta": {
+      "n": 96,
+      "mean": 0.03125,
+      "lo": -0.041666666666666664,
+      "hi": 0.10416666666666667
+     },
+     "per_set": {
+      "es-built": {
+       "n": 32,
+       "mean": 0.0,
+       "lo": -0.15625,
+       "hi": 0.15625
+      },
+      "es-en": {
+       "n": 32,
+       "mean": 0.0,
+       "lo": -0.09375,
+       "hi": 0.09375
+      },
+      "es-es": {
+       "n": 32,
+       "mean": 0.09375,
+       "lo": 0.0,
+       "hi": 0.21875
+      }
+     },
+     "vetoes": []
+    },
+    "qwen3.6:35b-a3b": {
+     "delta": {
+      "n": 96,
+      "mean": 0.010416666666666666,
+      "lo": -0.0625,
+      "hi": 0.08333333333333333
+     },
+     "per_set": {
+      "es-built": {
+       "n": 32,
+       "mean": -0.09375,
+       "lo": -0.21875,
+       "hi": 0.03125
+      },
+      "es-en": {
+       "n": 32,
+       "mean": 0.0,
+       "lo": -0.09375,
+       "hi": 0.09375
+      },
+      "es-es": {
+       "n": 32,
+       "mean": 0.125,
+       "lo": 0.03125,
+       "hi": 0.25
+      }
+     },
+     "vetoes": []
+    }
+   },
+   "kept": [
+    "gemma4:26b-a4b",
+    "qwen3:14b"
+   ],
+   "dropped": {
+    "qwen3.6:35b-a3b": "halving: rank below the top 2"
+   },
+   "selected": null
+  }
+ },
+ "penalty": {
+  "qwen3:8b": {
+   "sufficiency": {
+    "n": 32,
+    "mean": -0.03125,
+    "lo": -0.15625,
+    "hi": 0.09375
+   },
+   "answer": {
+    "n": 12,
+    "mean": 0.0,
+    "lo": 0.0,
+    "hi": 0.0
+   },
+   "citation": {
+    "n": 32,
+    "mean": 0.0625,
+    "lo": 0.0,
+    "hi": 0.15625
+   }
+  },
+  "gemma4:26b-a4b": {
+   "sufficiency": {
+    "n": 32,
+    "mean": 0.0,
+    "lo": 0.0,
+    "hi": 0.0
+   },
+   "answer": {
+    "n": 12,
+    "mean": 0.0,
+    "lo": 0.0,
+    "hi": 0.0
+   },
+   "citation": {
+    "n": 32,
+    "mean": -0.03125,
+    "lo": -0.09375,
+    "hi": 0.0
+   }
+  },
+  "qwen3:14b": {
+   "sufficiency": {
+    "n": 32,
+    "mean": 0.03125,
+    "lo": 0.0,
+    "hi": 0.09375
+   },
+   "answer": {
+    "n": 12,
+    "mean": 0.08333333333333333,
+    "lo": 0.0,
+    "hi": 0.25
+   },
+   "citation": {
+    "n": 32,
+    "mean": -0.03125,
+    "lo": -0.09375,
+    "hi": 0.0
+   }
+  },
+  "qwen3.6:35b-a3b": {
+   "sufficiency": {
+    "n": 32,
+    "mean": 0.0,
+    "lo": 0.0,
+    "hi": 0.0
+   },
+   "answer": {
+    "n": 12,
+    "mean": 0.08333333333333333,
+    "lo": 0.0,
+    "hi": 0.25
+   },
+   "citation": {
+    "n": 32,
+    "mean": -0.0625,
+    "lo": -0.15625,
+    "hi": 0.0
+   }
+  }
+ }
+}

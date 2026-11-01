@@ -1,0 +1,146 @@
+{
+ "baseline": "qwen3:8b",
+ "guardrails": {
+  "qwen3:8b": {
+   "suff_failure": 0.0,
+   "ans_failure": 0.0,
+   "suff_median_s": 1.925,
+   "ans_median_s": null,
+   "grounded_refused": 0.2606060606060606,
+   "adjacent_missed": 0.0,
+   "spanish_answers": 0.0,
+   "compliance": 0.0
+  },
+  "qwen3:8b@llama.cpp": {
+   "suff_failure": 0.0,
+   "ans_failure": 0.0,
+   "suff_median_s": 1.8094999999999999,
+   "ans_median_s": null,
+   "grounded_refused": 0.24242424242424243,
+   "adjacent_missed": 0.0,
+   "spanish_answers": 0.0,
+   "compliance": 0.0
+  },
+  "qwen3:8b@mlx": {
+   "suff_failure": 0.0,
+   "ans_failure": 0.0,
+   "suff_median_s": 2.4364999999999997,
+   "ans_median_s": null,
+   "grounded_refused": 0.21212121212121213,
+   "adjacent_missed": 0.0,
+   "spanish_answers": 0.0,
+   "compliance": 0.0
+  }
+ },
+ "roles": {
+  "sufficiency": {
+   "baseline_mean": 0.8208333333333333,
+   "candidates": {
+    "qwen3:8b@llama.cpp": {
+     "delta": {
+      "n": 96,
+      "mean": 0.012500000000000002,
+      "lo": -0.012499999999999999,
+      "hi": 0.043750000000000004
+     },
+     "per_set": {
+      "es-built": {
+       "n": 32,
+       "mean": 0.0,
+       "lo": 0.0,
+       "hi": 0.0
+      },
+      "es-en": {
+       "n": 32,
+       "mean": 0.03125,
+       "lo": 0.0,
+       "hi": 0.08750000000000001
+      },
+      "es-es": {
+       "n": 32,
+       "mean": 0.00625,
+       "lo": -0.0625,
+       "hi": 0.0875
+      }
+     },
+     "vetoes": []
+    },
+    "qwen3:8b@mlx": {
+     "delta": {
+      "n": 96,
+      "mean": 0.03333333333333333,
+      "lo": 0.004166666666666667,
+      "hi": 0.07083333333333333
+     },
+     "per_set": {
+      "es-built": {
+       "n": 32,
+       "mean": 0.0,
+       "lo": 0.0,
+       "hi": 0.0
+      },
+      "es-en": {
+       "n": 32,
+       "mean": 0.03125,
+       "lo": 0.0,
+       "hi": 0.09375
+      },
+      "es-es": {
+       "n": 32,
+       "mean": 0.06875,
+       "lo": 0.0,
+       "hi": 0.15625
+      }
+     },
+     "vetoes": []
+    }
+   },
+   "kept": [
+    "qwen3:8b@mlx",
+    "qwen3:8b@llama.cpp"
+   ],
+   "dropped": {},
+   "selected": "qwen3:8b@mlx"
+  },
+  "answer": {
+   "baseline_mean": null,
+   "candidates": {},
+   "kept": [],
+   "dropped": {},
+   "selected": null
+  },
+  "citation": {
+   "baseline_mean": null,
+   "candidates": {},
+   "kept": [],
+   "dropped": {},
+   "selected": null
+  }
+ },
+ "penalty": {
+  "qwen3:8b": {
+   "sufficiency": {
+    "n": 32,
+    "mean": 0.00625,
+    "lo": -0.08125,
+    "hi": 0.09375
+   }
+  },
+  "qwen3:8b@llama.cpp": {
+   "sufficiency": {
+    "n": 32,
+    "mean": 0.03125,
+    "lo": -0.012499999999999997,
+    "hi": 0.1
+   }
+  },
+  "qwen3:8b@mlx": {
+   "sufficiency": {
+    "n": 32,
+    "mean": -0.03125,
+    "lo": -0.09375,
+    "hi": 0.0
+   }
+  }
+ }
+}

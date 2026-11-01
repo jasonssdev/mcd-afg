@@ -1,0 +1,39 @@
+{
+  "model": "qwen3:8b",
+  "primary": "meeting coverage lift",
+  "validity": {
+    "base_meeting_lift": {
+      "point": 0.009781490455352721,
+      "low": 0.0030693732974811446,
+      "high": 0.017421544656073918
+    },
+    "primary": "meeting coverage lift"
+  },
+  "exploratory": false,
+  "winner": null,
+  "trace": [
+    {
+      "arm": 6000,
+      "passed": false,
+      "reasons": [
+        "dlift lower bound -0.0124 <= 0"
+      ]
+    },
+    {
+      "arm": 8000,
+      "passed": false,
+      "reasons": [
+        "dlift lower bound -0.0237 <= 0"
+      ]
+    },
+    {
+      "arm": 12000,
+      "passed": false,
+      "reasons": [
+        "V1 failed chars 21059 of 451338 (0.047) > 4,000 arm 0.022 + 0.02",
+        "V4 volume 2.20 outside [2.30, 6.90]",
+        "dlift lower bound -0.0095 <= 0"
+      ]
+    }
+  ]
+}

@@ -40,6 +40,7 @@ class FakeRunner:
     config_template: str = CONFIG_TEMPLATE
     ingest_codes: dict[str, list[int]] = field(default_factory=dict)
     init_code: int = 0
+    reindex_code: int = 0
     calls: list[tuple[tuple[str, ...], Path | None]] = field(default_factory=list)
 
     def run(self, args: Sequence[str], *, cwd: Path | None = None) -> CommandResult:
@@ -56,6 +57,10 @@ class FakeRunner:
             if self.init_code == 0 and cwd is not None:
                 (cwd / "openkos.yaml").write_text(self.config_template, encoding="utf-8")
             return ok(returncode=self.init_code, stderr="init failed" if self.init_code else "")
+        if rest[:1] == ("reindex",):
+            return ok(
+                returncode=self.reindex_code, stderr="reindex failed" if self.reindex_code else ""
+            )
         if rest[:1] == ("ingest",):
             name = Path(rest[1]).name
             codes = self.ingest_codes.get(name)

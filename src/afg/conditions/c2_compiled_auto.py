@@ -38,6 +38,7 @@ from __future__ import annotations
 import dataclasses
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Self
 
 from afg.conditions.c1_document_rag import NO_ANSWER_IN_CONTEXT, NO_MATCH
 from afg.domain.decision import EvidenceSpan
@@ -160,7 +161,7 @@ class CompiledAutoCondition:
     run: int | None = None
     _shared: _Shared = field(default_factory=_Shared, init=False, repr=False)
 
-    def with_seed(self, seed: int) -> CompiledAutoCondition:
+    def with_seed(self, seed: int) -> Self:
         """A copy bound to run ``seed - base_seed`` (the runner's seed of run ``r`` is base + r).
 
         Caches are shared with the original, so re-seeding does not read a bundle twice.
@@ -169,7 +170,7 @@ class CompiledAutoCondition:
         if run < 0:
             raise ValueError(
                 f"Seed {seed} is below the base seed {self.settings.base_seed}: "
-                "C2 cannot tell which run's workspace to query."
+                f"{self.condition_id} cannot tell which run's workspace to query."
             )
         copy = dataclasses.replace(self, run=run)
         copy._shared = self._shared
@@ -178,12 +179,15 @@ class CompiledAutoCondition:
     def _workspace(self, series_id: str, run: int) -> Path:
         workspace = self.base_dir / self.extraction_run / series_id / f"run-{run}"
         if not (workspace / BUNDLE_DIRNAME).is_dir():
-            raise WorkspaceNotFoundError(
-                f"No workspace for {series_id} run-{run} in the Experiment A run "
-                f"{self.extraction_run!r} ({project_relative(workspace)}). Run "
-                f"`afg experiment a --run-name {self.extraction_run}` with enough runs first."
-            )
+            raise WorkspaceNotFoundError(self._missing_workspace_message(series_id, run, workspace))
         return workspace
+
+    def _missing_workspace_message(self, series_id: str, run: int, workspace: Path) -> str:
+        return (
+            f"No workspace for {series_id} run-{run} in the Experiment A run "
+            f"{self.extraction_run!r} ({project_relative(workspace)}). Run "
+            f"`afg experiment a --run-name {self.extraction_run}` with enough runs first."
+        )
 
     def _evidence(self, workspace: Path, series_id: str) -> _WorkspaceEvidence:
         """Evidence of the decisions and the other concepts of ``workspace``, read once."""
@@ -230,7 +234,10 @@ class CompiledAutoCondition:
                 that is not schema v1.
         """
         if self.run is None:
-            raise ValueError("C2 needs a run: call with_seed(base_seed + run) before answering.")
+            raise ValueError(
+                f"{self.condition_id} needs a run: call with_seed(base_seed + run) before "
+                "answering."
+            )
         workspace = self._workspace(question.series_id, self.run)
         self._require_capabilities()
         report = run_query(

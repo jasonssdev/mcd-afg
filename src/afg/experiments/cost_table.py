@@ -229,6 +229,46 @@ def screen_rule(quality: pd.DataFrame, *, baseline: str) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def compare_to_baseline(quality: pd.DataFrame, *, baseline: str, candidate: str) -> pd.DataFrame:
+    """One candidate model against the baseline on every series, from :func:`screen_quality`.
+
+    One row per series that both models have, with the F1 and recall differences
+    (candidate minus baseline), the mean seconds per run of each and their ratio
+    (``time_ratio``, the candidate's over the baseline's), and the failed meeting-runs of
+    each. It is the same arithmetic as :func:`screen_rule` and :func:`screen_costs`, laid out
+    side by side so a notebook can show it without redoing the subtraction.
+
+    Raises:
+        ValueError: if ``baseline`` or ``candidate`` is not in ``quality``.
+    """
+    models = set(quality["model"])
+    for name in (baseline, candidate):
+        if name not in models:
+            raise ValueError(f"{name!r} is not in the quality frame (models: {sorted(models)}).")
+    base = quality[quality["model"] == baseline].set_index("series")
+    cand = quality[quality["model"] == candidate].set_index("series")
+    series = [s for s in base.index if s in cand.index]
+    rows = []
+    for name in series:
+        b, c = base.loc[name], cand.loc[name]
+        rows.append(
+            {
+                "series": name,
+                "f1_baseline": b["f1"],
+                "f1_candidate": c["f1"],
+                "d_f1": c["f1"] - b["f1"],
+                "d_recall": c["recall"] - b["recall"],
+                "seconds_baseline": b["seconds_per_run"],
+                "seconds_candidate": c["seconds_per_run"],
+                "time_ratio": c["seconds_per_run"] / b["seconds_per_run"],
+                "failed_baseline": int(b["failed_meeting_runs"]),
+                "failed_candidate": int(c["failed_meeting_runs"]),
+                "meeting_runs": int(b["meeting_runs"]),
+            }
+        )
+    return pd.DataFrame(rows).set_index("series")
+
+
 def screen_winner(rule: pd.DataFrame) -> str | None:
     """The candidate that passes on every series with the largest mean F1 gain, else ``None``."""
     if rule.empty:
@@ -277,7 +317,8 @@ def extraction_manifest_cost(
 ) -> CostRow:
     """The full OpenKOS extraction of one series, from a run manifest's timestamps.
 
-    The duration spans every run of the folder, so ``mean_seconds`` divides it by ``runs``.
+    The duration spans every run of the folder, so ``mean_seconds`` divides it by the number of
+    series-runs: ``runs``, times the series of an ``a-batch`` manifest (``series_ids``).
 
     Raises:
         ValueError: if the manifest has no ``created_at``/``updated_at`` pair.
@@ -287,7 +328,7 @@ def extraction_manifest_cost(
     start = datetime.fromisoformat(str(manifest["created_at"]))
     end = datetime.fromisoformat(str(manifest["updated_at"]))
     total = (end - start).total_seconds()
-    runs = int(manifest.get("runs") or 1)
+    runs = int(manifest.get("runs") or 1) * max(1, len(manifest.get("series_ids") or ()))
     openkos = manifest.get("openkos") or {}
     versions = ", ".join(str(v) for v in openkos.get("versions", []))
     return CostRow(

@@ -1,0 +1,312 @@
+{
+  "models": {
+    "qwen3:8b": {
+      "c6000": {
+        "digest": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41",
+        "load_s": 3.828655624995008,
+        "windows": [
+          [
+            "ES2015b",
+            0,
+            5949
+          ],
+          [
+            "IS1004c",
+            2,
+            5999
+          ],
+          [
+            "TS3009b",
+            4,
+            5952
+          ]
+        ],
+        "window_s": [
+          47.20212908403482,
+          52.862399749981705,
+          56.60214299999643
+        ],
+        "outcomes": [
+          "ok",
+          "ok",
+          "ok"
+        ],
+        "tokens": [
+          [
+            3211,
+            1410,
+            "stop"
+          ],
+          [
+            3361,
+            1739,
+            "stop"
+          ],
+          [
+            3426,
+            1854,
+            "stop"
+          ]
+        ],
+        "median_window_s": 52.862399749981705,
+        "timeout_s": 211.44959899992682,
+        "whole_source_timeout_s": 634.3487969997805,
+        "max_prompt_tokens": 3426,
+        "num_ctx": 12288,
+        "feasible": true,
+        "ollama_ps": "NAME        ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b    500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \n"
+      },
+      "c8000": {
+        "digest": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41",
+        "load_s": 3.828655624995008,
+        "windows": [
+          [
+            "ES2015b",
+            0,
+            7950
+          ],
+          [
+            "IS1004c",
+            2,
+            7998
+          ],
+          [
+            "TS3009b",
+            3,
+            7954
+          ]
+        ],
+        "window_s": [
+          7.462335957970936,
+          72.37589575001039,
+          72.58404458302539
+        ],
+        "outcomes": [
+          "ok",
+          "ok",
+          "ok"
+        ],
+        "tokens": [
+          [
+            3698,
+            211,
+            "stop"
+          ],
+          [
+            3872,
+            2325,
+            "stop"
+          ],
+          [
+            3985,
+            2470,
+            "stop"
+          ]
+        ],
+        "median_window_s": 72.37589575001039,
+        "timeout_s": 289.50358300004154,
+        "whole_source_timeout_s": 868.5107490001246,
+        "max_prompt_tokens": 3985,
+        "num_ctx": 12288,
+        "feasible": true,
+        "ollama_ps": "NAME        ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b    500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \n"
+      },
+      "c12000": {
+        "digest": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41",
+        "load_s": 3.828655624995008,
+        "windows": [
+          [
+            "ES2015b",
+            0,
+            11884
+          ],
+          [
+            "IS1004c",
+            1,
+            11985
+          ],
+          [
+            "TS3009b",
+            2,
+            11956
+          ]
+        ],
+        "window_s": [
+          82.23644679097924,
+          77.43231208302313,
+          9.789806417014915
+        ],
+        "outcomes": [
+          "ok",
+          "ok",
+          "ok"
+        ],
+        "tokens": [
+          [
+            4628,
+            2713,
+            "stop"
+          ],
+          [
+            4893,
+            2477,
+            "stop"
+          ],
+          [
+            5083,
+            2,
+            "stop"
+          ]
+        ],
+        "median_window_s": 77.43231208302313,
+        "timeout_s": 309.72924833209254,
+        "whole_source_timeout_s": 929.1877449962776,
+        "max_prompt_tokens": 5083,
+        "num_ctx": 16384,
+        "feasible": true,
+        "ollama_ps": "NAME        ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b    500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \n"
+      }
+    },
+    "qwen3.6:27b": {
+      "c6000": {
+        "digest": "bcbdbd4bcf86f2c4a56cd1698fb31f9434f7dd99752f71b636c750aaa67a49a5",
+        "load_s": 15.737656707991846,
+        "windows": [
+          [
+            "ES2015b",
+            0,
+            5949
+          ],
+          [
+            "IS1004c",
+            2,
+            5999
+          ],
+          [
+            "TS3009b",
+            4,
+            5952
+          ]
+        ],
+        "window_s": [
+          106.69455666601425,
+          93.58475525001995,
+          63.28936899994733
+        ],
+        "outcomes": [
+          "ok",
+          "ok",
+          "ok"
+        ],
+        "tokens": [
+          [
+            3266,
+            661,
+            "stop"
+          ],
+          [
+            3445,
+            569,
+            "stop"
+          ],
+          [
+            3524,
+            250,
+            "stop"
+          ]
+        ],
+        "median_window_s": 93.58475525001995,
+        "timeout_s": 374.3390210000798,
+        "whole_source_timeout_s": 1123.0170630002394,
+        "max_prompt_tokens": 3524,
+        "num_ctx": 12288,
+        "feasible": true,
+        "ollama_ps": "NAME             ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3.6:27b      bcbdbd4bcf86    18 GB     100% GPU     12288      4 minutes from now    \nbge-m3:latest    790764642607    664 MB    100% GPU     8192       5 seconds from now    \n"
+      },
+      "c8000": {
+        "digest": "bcbdbd4bcf86f2c4a56cd1698fb31f9434f7dd99752f71b636c750aaa67a49a5",
+        "load_s": 15.737656707991846,
+        "windows": [
+          [
+            "ES2015b",
+            0,
+            7950
+          ],
+          [
+            "IS1004c",
+            2,
+            7998
+          ],
+          [
+            "TS3009b",
+            3,
+            7954
+          ]
+        ],
+        "window_s": [
+          49.23370662500383,
+          109.08489658404142,
+          83.83994137501577
+        ],
+        "outcomes": [
+          "ok",
+          "ok",
+          "ok"
+        ],
+        "tokens": [
+          [
+            3782,
+            276,
+            "stop"
+          ],
+          [
+            3989,
+            581,
+            "stop"
+          ],
+          [
+            4113,
+            529,
+            "stop"
+          ]
+        ],
+        "median_window_s": 83.83994137501577,
+        "timeout_s": 335.3597655000631,
+        "whole_source_timeout_s": 1006.0792965001892,
+        "max_prompt_tokens": 4113,
+        "num_ctx": 12288,
+        "feasible": true,
+        "ollama_ps": "NAME           ID              SIZE     PROCESSOR    CONTEXT    UNTIL              \nqwen3.6:27b    bcbdbd4bcf86    18 GB    100% GPU     12288      4 minutes from now    \n"
+      }
+    }
+  },
+  "stamp": {
+    "stamp_version": 1,
+    "harness": {
+      "commit": "7f0a768969ced70df9c4c05faa28f6af51665620",
+      "dirty": false
+    },
+    "model": {
+      "name": "qwen3.6:27b",
+      "digest": "bcbdbd4bcf86f2c4a56cd1698fb31f9434f7dd99752f71b636c750aaa67a49a5"
+    },
+    "prompts": [
+      {
+        "id": "extraction/system",
+        "sha256_16": "6514c14bc12ec1d8"
+      },
+      {
+        "id": "extraction/reask",
+        "sha256_16": "abd2691d6f73732b"
+      },
+      {
+        "id": "extraction/participant_capture",
+        "sha256_16": "be7e5009a40ede2d"
+      },
+      {
+        "id": "extraction/judge",
+        "sha256_16": "6bb30c750944f78e"
+      }
+    ]
+  }
+}

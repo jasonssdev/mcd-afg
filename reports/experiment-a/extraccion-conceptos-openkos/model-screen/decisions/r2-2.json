@@ -1,0 +1,17 @@
+{
+  "round": "2",
+  "winner": null,
+  "top_two": [
+    "qwen3:8b"
+  ],
+  "trace": [
+    {
+      "model": "qwen3.6:27b",
+      "passed": false,
+      "reasons": [
+        "dlift lower bound -0.0423 <= 0",
+        "G1 dprecision lower bound -0.1739 < -0.05"
+      ]
+    }
+  ]
+}

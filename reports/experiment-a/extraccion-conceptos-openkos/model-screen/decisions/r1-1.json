@@ -1,0 +1,38 @@
+{
+  "round": "1",
+  "survivors": [
+    "qwen3.6:27b"
+  ],
+  "trace": [
+    {
+      "model": "qwen3.6:35b-a3b",
+      "passed": false,
+      "reasons": [
+        "V3 wrong-language titles 2 of 13 (0.154) > baseline 0.000 + 0.02"
+      ]
+    },
+    {
+      "model": "gemma4:26b-a4b",
+      "passed": false,
+      "reasons": [
+        "V4 volume 11.40 outside [2.70, 8.10]"
+      ]
+    },
+    {
+      "model": "qwen3:14b",
+      "passed": false,
+      "reasons": [
+        "V1 failures 2 of 41 (0.049) > baseline 0.024 + 0.02",
+        "V3 wrong-language titles 1 of 29 (0.034) > baseline 0.000 + 0.02",
+        "V4 volume 14.00 outside [2.70, 8.10]"
+      ]
+    },
+    {
+      "model": "qwen3.6:27b",
+      "passed": true,
+      "reasons": [
+        "rank 1 by point dlift; kept"
+      ]
+    }
+  ]
+}

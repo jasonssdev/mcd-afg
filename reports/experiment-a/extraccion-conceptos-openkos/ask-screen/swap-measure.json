@@ -1,0 +1,266 @@
+[
+ {
+  "arm": "a",
+  "seq": 1,
+  "before": "NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL \n",
+  "times": [
+   {
+    "q": 0,
+    "seconds": 22.78,
+    "rc": 0,
+    "ps": "NAME             ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b         500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \nbge-m3:latest    790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 1,
+    "seconds": 16.73,
+    "rc": 0,
+    "ps": "NAME             ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b         500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \nbge-m3:latest    790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 2,
+    "seconds": 16.33,
+    "rc": 0,
+    "ps": "NAME             ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b         500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \nbge-m3:latest    790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 3,
+    "seconds": 13.31,
+    "rc": 0,
+    "ps": "NAME             ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b         500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \nbge-m3:latest    790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 4,
+    "seconds": 13.65,
+    "rc": 0,
+    "ps": "NAME             ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b         500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \nbge-m3:latest    790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 5,
+    "seconds": 9.9,
+    "rc": 0,
+    "ps": "NAME             ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b         500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \nbge-m3:latest    790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   }
+  ],
+  "after": "NAME             ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b         500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \nbge-m3:latest    790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+ },
+ {
+  "arm": "b",
+  "seq": 1,
+  "before": "NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL \n",
+  "times": [
+   {
+    "q": 0,
+    "seconds": 22.9,
+    "rc": 0,
+    "ps": "NAME              ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b          500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \ngemma4:26b-a4b    001e5dafc3c7    985 MB    100% GPU     12288      4 minutes from now    \nbge-m3:latest     790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 1,
+    "seconds": 12.71,
+    "rc": 0,
+    "ps": "NAME              ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b          500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \ngemma4:26b-a4b    001e5dafc3c7    985 MB    100% GPU     12288      4 minutes from now    \nbge-m3:latest     790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 2,
+    "seconds": 13.63,
+    "rc": 0,
+    "ps": "NAME              ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b          500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \ngemma4:26b-a4b    001e5dafc3c7    985 MB    100% GPU     12288      4 minutes from now    \nbge-m3:latest     790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 3,
+    "seconds": 11.1,
+    "rc": 0,
+    "ps": "NAME              ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b          500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \ngemma4:26b-a4b    001e5dafc3c7    985 MB    100% GPU     12288      4 minutes from now    \nbge-m3:latest     790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 4,
+    "seconds": 11.81,
+    "rc": 0,
+    "ps": "NAME              ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b          500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \ngemma4:26b-a4b    001e5dafc3c7    985 MB    100% GPU     12288      4 minutes from now    \nbge-m3:latest     790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 5,
+    "seconds": 9.59,
+    "rc": 0,
+    "ps": "NAME              ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b          500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \ngemma4:26b-a4b    001e5dafc3c7    985 MB    100% GPU     12288      4 minutes from now    \nbge-m3:latest     790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   }
+  ],
+  "after": "NAME              ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b          500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \ngemma4:26b-a4b    001e5dafc3c7    985 MB    100% GPU     12288      4 minutes from now    \nbge-m3:latest     790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+ },
+ {
+  "arm": "a",
+  "seq": 2,
+  "before": "NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL \n",
+  "times": [
+   {
+    "q": 0,
+    "seconds": 23.15,
+    "rc": 0,
+    "ps": "NAME             ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b         500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \nbge-m3:latest    790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 1,
+    "seconds": 15.71,
+    "rc": 0,
+    "ps": "NAME             ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b         500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \nbge-m3:latest    790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 2,
+    "seconds": 19.82,
+    "rc": 0,
+    "ps": "NAME             ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b         500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \nbge-m3:latest    790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 3,
+    "seconds": 14.24,
+    "rc": 0,
+    "ps": "NAME             ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b         500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \nbge-m3:latest    790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 4,
+    "seconds": 14.72,
+    "rc": 0,
+    "ps": "NAME             ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b         500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \nbge-m3:latest    790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 5,
+    "seconds": 10.54,
+    "rc": 0,
+    "ps": "NAME             ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b         500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \nbge-m3:latest    790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   }
+  ],
+  "after": "NAME             ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b         500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \nbge-m3:latest    790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+ },
+ {
+  "arm": "b",
+  "seq": 2,
+  "before": "NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL \n",
+  "times": [
+   {
+    "q": 0,
+    "seconds": 22.86,
+    "rc": 0,
+    "ps": "NAME              ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b          500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \ngemma4:26b-a4b    001e5dafc3c7    985 MB    100% GPU     12288      4 minutes from now    \nbge-m3:latest     790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 1,
+    "seconds": 12.21,
+    "rc": 0,
+    "ps": "NAME              ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b          500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \ngemma4:26b-a4b    001e5dafc3c7    985 MB    100% GPU     12288      4 minutes from now    \nbge-m3:latest     790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 2,
+    "seconds": 13.53,
+    "rc": 0,
+    "ps": "NAME              ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b          500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \ngemma4:26b-a4b    001e5dafc3c7    985 MB    100% GPU     12288      4 minutes from now    \nbge-m3:latest     790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 3,
+    "seconds": 11.04,
+    "rc": 0,
+    "ps": "NAME              ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b          500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \ngemma4:26b-a4b    001e5dafc3c7    985 MB    100% GPU     12288      4 minutes from now    \nbge-m3:latest     790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 4,
+    "seconds": 12.0,
+    "rc": 0,
+    "ps": "NAME              ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b          500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \ngemma4:26b-a4b    001e5dafc3c7    985 MB    100% GPU     12288      4 minutes from now    \nbge-m3:latest     790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 5,
+    "seconds": 10.44,
+    "rc": 0,
+    "ps": "NAME              ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b          500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \ngemma4:26b-a4b    001e5dafc3c7    985 MB    100% GPU     12288      4 minutes from now    \nbge-m3:latest     790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   }
+  ],
+  "after": "NAME              ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b          500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \ngemma4:26b-a4b    001e5dafc3c7    985 MB    100% GPU     12288      4 minutes from now    \nbge-m3:latest     790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+ },
+ {
+  "arm": "a",
+  "seq": 3,
+  "before": "NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL \n",
+  "times": [
+   {
+    "q": 0,
+    "seconds": 22.97,
+    "rc": 0,
+    "ps": "NAME             ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b         500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \nbge-m3:latest    790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 1,
+    "seconds": 17.21,
+    "rc": 0,
+    "ps": "NAME             ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b         500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \nbge-m3:latest    790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 2,
+    "seconds": 19.71,
+    "rc": 0,
+    "ps": "NAME             ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b         500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \nbge-m3:latest    790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 3,
+    "seconds": 14.2,
+    "rc": 0,
+    "ps": "NAME             ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b         500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \nbge-m3:latest    790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 4,
+    "seconds": 14.11,
+    "rc": 0,
+    "ps": "NAME             ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b         500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \nbge-m3:latest    790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 5,
+    "seconds": 9.9,
+    "rc": 0,
+    "ps": "NAME             ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b         500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \nbge-m3:latest    790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   }
+  ],
+  "after": "NAME             ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b         500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \nbge-m3:latest    790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+ },
+ {
+  "arm": "b",
+  "seq": 3,
+  "before": "NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL \n",
+  "times": [
+   {
+    "q": 0,
+    "seconds": 22.57,
+    "rc": 0,
+    "ps": "NAME              ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b          500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \ngemma4:26b-a4b    001e5dafc3c7    985 MB    100% GPU     12288      4 minutes from now    \nbge-m3:latest     790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 1,
+    "seconds": 12.24,
+    "rc": 0,
+    "ps": "NAME              ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b          500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \ngemma4:26b-a4b    001e5dafc3c7    985 MB    100% GPU     12288      4 minutes from now    \nbge-m3:latest     790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 2,
+    "seconds": 16.25,
+    "rc": 0,
+    "ps": "NAME              ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b          500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \ngemma4:26b-a4b    001e5dafc3c7    985 MB    100% GPU     12288      4 minutes from now    \nbge-m3:latest     790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 3,
+    "seconds": 11.15,
+    "rc": 0,
+    "ps": "NAME              ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b          500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \ngemma4:26b-a4b    001e5dafc3c7    985 MB    100% GPU     12288      4 minutes from now    \nbge-m3:latest     790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 4,
+    "seconds": 12.61,
+    "rc": 0,
+    "ps": "NAME              ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b          500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \ngemma4:26b-a4b    001e5dafc3c7    985 MB    100% GPU     12288      4 minutes from now    \nbge-m3:latest     790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   },
+   {
+    "q": 5,
+    "seconds": 10.29,
+    "rc": 0,
+    "ps": "NAME              ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b          500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \ngemma4:26b-a4b    001e5dafc3c7    985 MB    100% GPU     12288      4 minutes from now    \nbge-m3:latest     790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+   }
+  ],
+  "after": "NAME              ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen3:8b          500a1f067a9f    6.4 GB    100% GPU     12288      4 minutes from now    \ngemma4:26b-a4b    001e5dafc3c7    985 MB    100% GPU     12288      4 minutes from now    \nbge-m3:latest     790764642607    664 MB    100% GPU     8192       4 minutes from now    \n"
+ }
+]

@@ -66,6 +66,7 @@ from afg.conditions.c1_tuning import (
     series_meetings,
 )
 from afg.conditions.c2_compiled_auto import CompiledAutoCondition
+from afg.conditions.c3_compiled_gold import CompiledGoldCondition
 from afg.corpus.download import DownloadError, download_annotations
 from afg.corpus.inventory import (
     CorpusNotDownloadedError,
@@ -143,6 +144,8 @@ from afg.evaluation.judge_calibration_worksheet import (
     worksheet_questions,
     write_worksheet,
 )
+from afg.evaluation.reference import NotAdjudicatedError, load_series_reference
+from afg.evaluation.translation import TranslationError
 from afg.experiments.provenance import LiveProbe, ProvenanceProbe, collect_provenance
 from afg.experiments.question_bank import (
     QuestionBankIssue,
@@ -161,6 +164,11 @@ from afg.experiments.runner import (
     run_experiment_b,
 )
 from afg.extraction.openkos.commands import OpenKosError, SubprocessRunner
+from afg.extraction.openkos.gold_bundle import (
+    GoldWorkspaceExistsError,
+    build_gold_workspace,
+    load_gold_relations,
+)
 from afg.extraction.openkos.settings import openkos_run_settings
 from afg.extraction.openkos_adapter import OpenKosAdapter
 from afg.shared.config import Settings, get_settings, load_corpus_config, load_experiments_config
@@ -171,6 +179,7 @@ from afg.shared.paths import (
     EXPERIMENT_B_DIR,
     GOLD_DECISIONS_DIR,
     GOLD_RELATIONS_DIR,
+    OPENKOS_C3_WORKSPACES_DIR,
     OPENKOS_WORKSPACES_DIR,
     PROJECT_ROOT,
     QUESTIONS_DIR,
@@ -213,6 +222,10 @@ judge_app = typer.Typer(
     help="Selección del modelo juez: preguntas, respuestas y calibración (issue #82)."
 )
 c1_app = typer.Typer(help="C1 (RAG sobre documentos): ajuste de la segmentación y de K (ADR 0005).")
+c3_app = typer.Typer(
+    help="C3 (base compilada desde la anotación de oro): construcción de sus espacios de trabajo "
+    "(ADR 0013)."
+)
 experiment_app = typer.Typer(
     help="OE2/OE3: corre el Experimento A y el Experimento B (tesis, sección 3)."
 )
@@ -223,6 +236,7 @@ app.add_typer(corpus_app, name="corpus", rich_help_panel=_PANEL_MAINTENANCE)
 app.add_typer(biblio_app, name="biblio", rich_help_panel=_PANEL_MAINTENANCE)
 app.add_typer(judge_app, name="judge", rich_help_panel=_PANEL_MAINTENANCE)
 app.add_typer(c1_app, name="c1", rich_help_panel=_PANEL_MAINTENANCE)
+app.add_typer(c3_app, name="c3", rich_help_panel=_PANEL_MAINTENANCE)
 app.add_typer(experiment_app, name="experiment", rich_help_panel=_PANEL_MAINTENANCE)
 app.add_typer(skills_app, name="skills", rich_help_panel=_PANEL_MAINTENANCE)
 
@@ -631,15 +645,40 @@ def gold_link() -> None:
     raise typer.Exit(code=2)
 
 
+def _print_pooled_agreement() -> None:
+    from afg.annotation import pooled
+
+    report = pooled.pooled_agreement_report(_plan_or_exit())
+    if not report:
+        console.print("[bold red]Ninguna serie tiene la adjudicación completa.[/bold red]")
+        raise typer.Exit(code=1)
+    for group in report:
+        console.print(f"[bold]Kappa agrupado ({group.scope})[/bold]: {', '.join(group.series)}")
+        for item in group.axes:
+            console.print(
+                f"  {item.axis:<10} n={item.n_items:<3} desacuerdos={item.n_disagreements:<3} "
+                f"kappa={item.kappa:.3f}  acuerdo crudo={item.percent_agreement:.1%}"
+            )
+    out_path = pooled.write_pooled_csv(report, TABLES_DIR / "agreement-pooled.csv")
+    console.print(f"Escrito: {out_path}")
+
+
 @gold_app.command("agreement", rich_help_panel=_PANEL_MAINTENANCE)
 def gold_agreement(
-    series: str = typer.Option(..., "--series", help="Serie de AMI, p. ej. IS1004."),
+    series: str | None = typer.Option(None, "--series", help="Serie de AMI, p. ej. IS1004."),
+    pooled: bool = typer.Option(
+        False,
+        "--pooled",
+        help="Kappa agrupado de todas las series adjudicadas (en total y por fase).",
+    ),
 ) -> None:
     """(Mantenedor) Calcula el kappa de Cohen de existencia, tipo y dirección (manual, sección 6).
 
     Lee cada ``data/processed/relations/<serie>.candidates.<iniciales>.csv``
     (uno por anotador independiente) y escribe
-    ``reports/tables/<serie>.agreement.csv``.
+    ``reports/tables/<serie>.agreement.csv``. Con ``--pooled`` calcula un solo kappa por eje
+    sobre los ítems de todas las series adjudicadas (no el promedio de kappas) y escribe
+    ``reports/tables/agreement-pooled.csv``.
     """
     from afg.annotation.agreement import (
         AgreementInputError,
@@ -647,6 +686,13 @@ def gold_agreement(
         compute_series_agreement,
         write_agreement_csv,
     )
+
+    if pooled:
+        _print_pooled_agreement()
+        return
+    if series is None:
+        console.print("[bold red]Indica --series <serie> o --pooled.[/bold red]")
+        raise typer.Exit(code=2)
 
     pattern = f"{series}.candidates.<initials>.csv"
     paths = annotator_csvs(GOLD_RELATIONS_DIR, series, "candidates")
@@ -2313,6 +2359,66 @@ EXPERIMENT_A_PROVENANCE_KEYS = (
 """The :func:`collect_provenance` fields that apply to Experiment A (it has no judge or C1)."""
 
 
+def _require_development_series(series_ids: Sequence[str]) -> str:
+    """The partition of ``series_ids`` when all are development; otherwise refuse and exit.
+
+    The one place the Experiment A gate lives (``a`` and ``a-batch``): while the OpenKOS
+    version is not pinned, only development series run (ADR 0005 and ADR 0006).
+    """
+    partition_of = configured_partition_of()
+    refused = [(s, partition_of(s)) for s in series_ids if partition_of(s) != "development"]
+    if refused:
+        partitions = ", ".join(sorted({partition for _, partition in refused}))
+        names = ", ".join(series for series, _ in refused)
+        subject = (
+            f"{names} no es una serie de desarrollo"
+            if len(refused) == 1
+            else f"{names} no son series de desarrollo"
+        )
+        console.print(
+            f"[bold red]{subject} (partición: {partitions}). "
+            "El Experimento A solo corre series de desarrollo mientras la versión de OpenKOS "
+            "no esté fijada (ADR 0005 y ADR 0006).[/bold red]"
+        )
+    if refused:
+        raise typer.Exit(code=1)
+    return "development"
+
+
+def _experiment_a_manifest(name: str, series: str, partition: str, n_runs: int) -> dict[str, Any]:
+    """The opening manifest of an Experiment A run directory (settings and provenance)."""
+    from datetime import UTC, datetime
+
+    run_settings = openkos_run_settings()
+    provenance = collect_provenance(
+        make_provenance_probe(),
+        generative_model=run_settings.generative_model,
+        embedding_model=run_settings.embedding_model,
+    )
+    return {
+        "schema_version": 1,
+        "run_name": name,
+        "created_at": datetime.now(UTC).isoformat(),
+        "git_commit": current_git_commit(),
+        "series": series,
+        "partition": partition,
+        "runs": n_runs,
+        "openkos": {
+            "executable": run_settings.executable,
+            "generative_model": run_settings.generative_model,
+            "embedding_model": run_settings.embedding_model,
+            "seed": run_settings.base_seed,
+            "temperature": run_settings.temperature,
+            "versions": [],
+            **{key: provenance[key] for key in EXPERIMENT_A_PROVENANCE_KEYS},
+        },
+        "git_dirty": provenance["git_dirty"],
+        "status": "running",
+        "completed_runs": [],
+        "error": None,
+    }
+
+
 @experiment_app.command("a")
 def experiment_a(
     series: Annotated[
@@ -2344,14 +2450,7 @@ def experiment_a(
     import json
     from datetime import UTC, datetime
 
-    partition = configured_partition_of()(series)
-    if partition != "development":
-        console.print(
-            f"[bold red]{series} no es una serie de desarrollo (partición: {partition}). "
-            "El Experimento A solo corre series de desarrollo mientras la versión de OpenKOS "
-            "no esté fijada (ADR 0005 y ADR 0006).[/bold red]"
-        )
-        raise typer.Exit(code=1)
+    partition = _require_development_series([series])
 
     budget = load_experiments_config()["shared_budget"]
     n_runs = runs if runs is not None else int(budget["runs_per_config"])
@@ -2364,34 +2463,7 @@ def experiment_a(
         )
         raise typer.Exit(code=1)
 
-    run_settings = openkos_run_settings()
-    provenance = collect_provenance(
-        make_provenance_probe(),
-        generative_model=run_settings.generative_model,
-        embedding_model=run_settings.embedding_model,
-    )
-    manifest: dict[str, Any] = {
-        "schema_version": 1,
-        "run_name": name,
-        "created_at": datetime.now(UTC).isoformat(),
-        "git_commit": current_git_commit(),
-        "series": series,
-        "partition": partition,
-        "runs": n_runs,
-        "openkos": {
-            "executable": run_settings.executable,
-            "generative_model": run_settings.generative_model,
-            "embedding_model": run_settings.embedding_model,
-            "seed": run_settings.base_seed,
-            "temperature": run_settings.temperature,
-            "versions": [],
-            **{key: provenance[key] for key in EXPERIMENT_A_PROVENANCE_KEYS},
-        },
-        "git_dirty": provenance["git_dirty"],
-        "status": "running",
-        "completed_runs": [],
-        "error": None,
-    }
+    manifest = _experiment_a_manifest(name, series, partition, n_runs)
     manifest_path = run_dir / "manifest.json"
     records_path = run_dir / "extracciones.jsonl"
 
@@ -2430,6 +2502,201 @@ def experiment_a(
     console.print(f"Listo. Manifiesto en {_short(manifest_path)}.")
 
 
+def _batch_series(series: str | None, partition: str | None) -> list[str]:
+    """The series of an ``a-batch`` request: ``--series`` xor ``--partition``."""
+    if (series is None) == (partition is None):
+        console.print("[bold red]Indica --series o --partition, pero no ambos.[/bold red]")
+        raise typer.Exit(code=2)
+    if series is not None:
+        ids = list(dict.fromkeys(s.strip() for s in series.split(",") if s.strip()))
+        if not ids:
+            console.print("[bold red]--series no tiene ninguna serie.[/bold red]")
+            raise typer.Exit(code=2)
+        return ids
+    if partition not in ("development", "evaluation"):
+        console.print("[bold red]--partition es development o evaluation.[/bold red]")
+        raise typer.Exit(code=2)
+    return list(load_corpus_config()["oe1"][f"{partition}_series"])
+
+
+@experiment_app.command("a-batch")
+def experiment_a_batch(
+    series: Annotated[
+        str | None,
+        typer.Option("--series", help="Series separadas por comas (solo de desarrollo, ADR 0005)."),
+    ] = None,
+    partition: Annotated[
+        str | None,
+        typer.Option(
+            "--partition",
+            help="Todas las series de una partición (development; evaluation se rechaza).",
+        ),
+    ] = None,
+    runs: Annotated[
+        int | None,
+        typer.Option("--runs", min=1, help="Corridas por serie (por defecto runs_per_config)."),
+    ] = None,
+    run_name: Annotated[
+        str | None,
+        typer.Option(
+            "--run-name",
+            help="Carpeta en reports/experiment-a/. Si ya es un lote, se reanuda: se omiten "
+            "las corridas completas y se rehacen las demás.",
+        ),
+    ] = None,
+) -> None:
+    """Experimento A en lote: varias series y corridas sin supervisión, bajo un solo nombre.
+
+    Corre cada par (serie, corrida) como `afg experiment a` y los guarda juntos en
+    `reports/experiment-a/<run-name>/` (cada registro conserva su serie) y en
+    `data/interim/openkos/<run-name>/`, donde C2 los busca. Un par fallido se registra y el
+    lote sigue; el código de salida es distinto de cero si alguno falló. Al final imprime un
+    resumen de integridad, sin puntajes (ADR 0005). Repetir `--run-name` reanuda el lote.
+    Solo series de desarrollo mientras la versión de OpenKOS no esté fijada (ADR 0006).
+    """
+    import time
+    from datetime import UTC, datetime
+
+    from afg.experiments.extraction_batch import (
+        BatchConflictError,
+        batch_summary_lines,
+        run_batch,
+    )
+
+    series_ids = _batch_series(series, partition)
+    batch_partition = _require_development_series(series_ids)
+    budget = load_experiments_config()["shared_budget"]
+    n_runs = runs if runs is not None else int(budget["runs_per_config"])
+    name = run_name or datetime.now(UTC).strftime("a-%Y%m%d-%H%M%S")
+    base_manifest = _experiment_a_manifest(name, ",".join(series_ids), batch_partition, n_runs)
+    base_manifest.pop("completed_runs")
+    base_manifest.pop("error")
+    run_dir = EXPERIMENT_A_DIR / name
+    console.print(f"{', '.join(series_ids)}: {n_runs} corrida(s) por serie -> {_short(run_dir)}")
+    started = time.monotonic()
+    try:
+        manifest = run_batch(
+            make_openkos_adapter(OPENKOS_WORKSPACES_DIR / name),
+            run_dir=run_dir,
+            workspace_root=OPENKOS_WORKSPACES_DIR / name,
+            series_ids=series_ids,
+            runs=n_runs,
+            base_manifest=base_manifest,
+            report=lambda line: console.print(escape(line)),
+        )
+    except BatchConflictError as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    for line in batch_summary_lines(manifest, elapsed_seconds=time.monotonic() - started):
+        console.print(escape(line))
+    console.print(f"Manifiesto en {_short(run_dir / 'manifest.json')}.")
+    if manifest["status"] != "ok":
+        raise typer.Exit(code=1)
+
+
+@c3_app.command("build")
+def c3_build(
+    c2_extraction: Annotated[
+        str,
+        typer.Option(
+            "--c2-extraction",
+            help="`--run-name` de la corrida de `afg experiment a` de la que deriva la base: se "
+            "copia el espacio `run-r` de cada serie y solo cambian las decisiones.",
+        ),
+    ],
+    series: Annotated[
+        str,
+        typer.Option("--series", help="Series separadas por comas (solo de desarrollo, ADR 0005)."),
+    ],
+    runs: Annotated[
+        int | None,
+        typer.Option("--runs", min=1, help="Corridas por serie (por defecto runs_per_config)."),
+    ] = None,
+    overwrite: Annotated[
+        bool,
+        typer.Option("--overwrite", help="Reemplaza los espacios C3 que ya existan."),
+    ] = False,
+) -> None:
+    """Construye las bases de C3: la corrida de C2 con las decisiones de la anotación de oro.
+
+    Por cada par (serie, corrida r) copia el espacio de trabajo `run-r` de la corrida de
+    `afg experiment a` sin sus decisiones ni sus índices, escribe en `bundle/decisions/` las
+    decisiones de la referencia adjudicada (en inglés, con las relaciones aceptadas como enlaces)
+    y reindexa con `openkos reindex`. El resultado queda en
+    `data/interim/openkos-c3/<corrida>/<serie>/run-<r>/`, con un `c3-manifest.json` que lista las
+    decisiones escritas y las descartadas por no tener evidencia localizable (ADR 0013). No
+    corre ningún modelo de extracción. Solo series de desarrollo.
+    """
+    series_ids = _batch_series(series, None)
+    _require_development_series(series_ids)
+    budget = load_experiments_config()["shared_budget"]
+    n_runs = runs if runs is not None else int(budget["runs_per_config"])
+
+    pairs = [(s, r) for s in series_ids for r in range(n_runs)]
+    for series_id, run in pairs:
+        c2_workspace = OPENKOS_WORKSPACES_DIR / c2_extraction / series_id / f"run-{run}"
+        if not (c2_workspace / "bundle").is_dir():
+            console.print(
+                f"[bold red]No hay espacio de trabajo de C2 para {series_id} run-{run} en "
+                f"{_short(c2_workspace)}. Corre antes `afg experiment a-batch --run-name "
+                f"{c2_extraction}` con al menos {n_runs} corrida(s).[/bold red]"
+            )
+            raise typer.Exit(code=1)
+        target = OPENKOS_C3_WORKSPACES_DIR / c2_extraction / series_id / f"run-{run}"
+        if target.exists() and not overwrite:
+            console.print(
+                f"[bold red]Ya existe {_short(target)}. Usa `--overwrite` para reemplazarlo."
+                "[/bold red]"
+            )
+            raise typer.Exit(code=1)
+
+    runner = SubprocessRunner()
+    executable = openkos_run_settings().executable
+    failed = False
+    for series_id in series_ids:
+        try:
+            reference = load_series_reference(series_id, language="en")
+        except (FileNotFoundError, NotAdjudicatedError, TranslationError) as exc:
+            console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+            raise typer.Exit(code=1) from exc
+        relations = load_gold_relations(series_id)
+        for run in range(n_runs):
+            try:
+                result = build_gold_workspace(
+                    series_id=series_id,
+                    c2_run=c2_extraction,
+                    run=run,
+                    c2_workspace=OPENKOS_WORKSPACES_DIR / c2_extraction / series_id / f"run-{run}",
+                    target=OPENKOS_C3_WORKSPACES_DIR / c2_extraction / series_id / f"run-{run}",
+                    reference=reference,
+                    relations=relations,
+                    runner=runner,
+                    executable=executable,
+                    transcripts_dir=TRANSCRIPTS_DIR,
+                    overwrite=overwrite,
+                )
+            except (GoldWorkspaceExistsError, OpenKosError, FileNotFoundError, OSError) as exc:
+                console.print(f"[bold red]{series_id} run-{run}: {escape(str(exc))}[/bold red]")
+                failed = True
+                continue
+            noun = "decisión" if result.decisions_written == 1 else "decisiones"
+            console.print(
+                f"{series_id} run-{run}: {result.decisions_written} {noun} de oro, "
+                f"{result.relations_written} relación(es) -> {_short(result.workspace)}"
+            )
+            for dropped in result.dropped:
+                console.print(
+                    f"  descartada {dropped.decision_id}: {dropped.reason} (ver manifiesto)"
+                )
+            if result.evidence_partial:
+                console.print(
+                    f"  evidencia parcial en {len(result.evidence_partial)} decisión(es): "
+                    f"{', '.join(result.evidence_partial)}"
+                )
+    if failed:
+        raise typer.Exit(code=1)
+
+
 def make_provenance_probe() -> ProvenanceProbe:
     """The probe that reads model digests and versions from the local machine."""
     return LiveProbe(openkos_executable=get_settings().openkos_executable)
@@ -2440,8 +2707,9 @@ JUDGE_TEMPERATURE = 0.0
 """The judge configuration of the calibration's primary run (reference first, temperature 0)."""
 
 C2_EXTRACTION_REQUIRED = (
-    "La condición C2 necesita `--c2-extraction <nombre>`: el `--run-name` de la corrida de "
-    "`afg experiment a` cuyos espacios de trabajo de OpenKOS consulta."
+    "Las condiciones C2 y C3 necesitan `--c2-extraction <nombre>`: el `--run-name` de la corrida "
+    "de `afg experiment a` cuyos espacios de trabajo de OpenKOS consultan (C3, los que derivó "
+    "`afg c3 build`)."
 )
 
 EXPERIMENT_B_CONDITIONS: tuple[str, ...] = ("c1", "c2", "c3")
@@ -2490,12 +2758,35 @@ def make_c2_condition(extraction_run: str) -> CompiledAutoCondition:
     )
 
 
+def make_c3_condition(extraction_run: str) -> CompiledGoldCondition:
+    """C3 wired to the workspaces ``afg c3 build`` derived from the run ``extraction_run``.
+
+    Raises:
+        ValueError: that run has no C3 workspaces under ``data/interim/openkos-c3/``.
+    """
+    base_dir = OPENKOS_C3_WORKSPACES_DIR
+    if not (base_dir / extraction_run).is_dir():
+        raise ValueError(
+            f"No hay espacios de trabajo de C3 derivados de la corrida {extraction_run!r} en "
+            f"{_short(base_dir)}. Constrúyelos antes con `afg c3 build --c2-extraction "
+            f"{extraction_run} --series <SERIE>`."
+        )
+    return CompiledGoldCondition(
+        runner=SubprocessRunner(),
+        settings=openkos_run_settings(),
+        extraction_run=extraction_run,
+        base_dir=base_dir,
+        transcripts_dir=TRANSCRIPTS_DIR,
+    )
+
+
 def make_experiment_b_condition(
     condition_id: str, *, c2_extraction: str | None = None
 ) -> Condition:
-    """The condition ``condition_id`` wired from the config (C1 and C2; C3 does not exist yet).
+    """The condition ``condition_id`` wired from the config (C1, C2 and C3).
 
-    ``c2_extraction`` is the ``--run-name`` of the ``afg experiment a`` run C2 queries.
+    ``c2_extraction`` is the ``--run-name`` of the ``afg experiment a`` run C2 queries and the
+    one the C3 workspaces derive from.
     """
     if condition_id == "c1":
         return make_c1_condition()
@@ -2503,10 +2794,11 @@ def make_experiment_b_condition(
         if c2_extraction is None:
             raise ValueError(C2_EXTRACTION_REQUIRED)
         return make_c2_condition(c2_extraction)
-    raise ValueError(
-        f"La condición {condition_id.upper()} no está disponible todavía: C3 depende de la "
-        "anotación de oro (tesis, sección 5.3)."
-    )
+    if condition_id == "c3":
+        if c2_extraction is None:
+            raise ValueError(C2_EXTRACTION_REQUIRED)
+        return make_c3_condition(c2_extraction)
+    raise ValueError(f"La condición {condition_id.upper()} no está disponible.")
 
 
 @experiment_app.command("b")
@@ -2523,14 +2815,19 @@ def experiment_b(
     ],
     conditions: Annotated[
         str,
-        typer.Option("--conditions", help="Condiciones separadas por coma: `c1` y `c2` (C3 no)."),
+        typer.Option(
+            "--conditions",
+            help="Condiciones separadas por coma: `c1`, `c2` y `c3` (C3 consulta las bases que "
+            "construye `afg c3 build`).",
+        ),
     ] = "c1",
     c2_extraction: Annotated[
         str | None,
         typer.Option(
             "--c2-extraction",
-            help="Obligatorio con `c2`: `--run-name` de la corrida de `afg experiment a` cuyos "
-            "espacios de trabajo consulta C2. La corrida r usa `run-r` de cada serie.",
+            help="Obligatorio con `c2` y `c3`: `--run-name` de la corrida de `afg experiment a` "
+            "cuyos espacios de trabajo consulta C2 y de la que derivan los de C3. La corrida r "
+            "usa `run-r` de cada serie.",
         ),
     ] = None,
     runs: Annotated[
@@ -2555,7 +2852,8 @@ def experiment_b(
     repetir el comando con el mismo `--run-name` continúa donde quedó; los registros con error
     se reintentan. La semilla de generación de la corrida r es `seed + r`. C2 responde con
     `openkos query` sobre el espacio de trabajo `run-r` que `afg experiment a` compiló para la
-    serie de la pregunta y rechaza el espacio cuya semilla no sea `seed + r`.
+    serie de la pregunta y rechaza el espacio cuya semilla no sea `seed + r`. C3 consulta del
+    mismo modo la base que `afg c3 build` derivó de esa corrida, con las decisiones de oro.
     """
     from datetime import UTC, datetime
 
@@ -2568,10 +2866,10 @@ def experiment_b(
             f"Opciones: {', '.join(EXPERIMENT_B_CONDITIONS)}.[/bold red]"
         )
         raise typer.Exit(code=1)
-    if c2_extraction is not None and "c2" not in wanted:
+    if c2_extraction is not None and not {"c2", "c3"} & set(wanted):
         console.print(
-            "[bold red]`--c2-extraction` solo tiene sentido con la condición c2: agrégala a "
-            "`--conditions` o quita la opción.[/bold red]"
+            "[bold red]`--c2-extraction` solo tiene sentido con las condiciones c2 o c3: "
+            "agrégalas a `--conditions` o quita la opción.[/bold red]"
         )
         raise typer.Exit(code=1)
     try:
@@ -2616,6 +2914,7 @@ def experiment_b(
         c1_params=config["retrieval"]["c1"],
         questions_path=questions,
         c2_extraction=c2_extraction,
+        c3_workspaces=_short(OPENKOS_C3_WORKSPACES_DIR) if "c3" in wanted else None,
     )
 
     def report(done: int, total: int) -> None:

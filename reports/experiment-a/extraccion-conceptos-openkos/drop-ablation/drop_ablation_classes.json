@@ -1,0 +1,884 @@
+[
+ {
+  "rule": "framing",
+  "meeting": "ES2015a",
+  "run": 1,
+  "type": "Event",
+  "window": 0,
+  "model": "qwen3:8b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015a",
+  "run": 2,
+  "type": "Event",
+  "window": 0,
+  "model": "qwen3:8b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004b",
+  "run": 2,
+  "type": "Event",
+  "window": 2,
+  "model": "qwen3:8b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004b",
+  "run": 2,
+  "type": "Event",
+  "window": 8,
+  "model": "qwen3:8b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 1,
+  "type": "Event",
+  "window": 0,
+  "model": "qwen3:8b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 1,
+  "type": "Event",
+  "window": 4,
+  "model": "qwen3:8b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 1,
+  "type": "Event",
+  "window": 6,
+  "model": "qwen3:8b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 1,
+  "type": "Event",
+  "window": 7,
+  "model": "qwen3:8b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 2,
+  "type": "Event",
+  "window": 0,
+  "model": "qwen3:8b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 2,
+  "type": "Event",
+  "window": 1,
+  "model": "qwen3:8b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 2,
+  "type": "Event",
+  "window": 7,
+  "model": "qwen3:8b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 2,
+  "type": "Event",
+  "window": 9,
+  "model": "qwen3:8b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 1,
+  "type": "Event",
+  "window": 0,
+  "model": "qwen3:8b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 1,
+  "type": "Event",
+  "window": 2,
+  "model": "qwen3:8b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 1,
+  "type": "Event",
+  "window": 8,
+  "model": "qwen3:8b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 2,
+  "type": "Event",
+  "window": 0,
+  "model": "qwen3:8b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 2,
+  "type": "Event",
+  "window": 2,
+  "model": "qwen3:8b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 2,
+  "type": "Event",
+  "window": 8,
+  "model": "qwen3:8b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004d",
+  "run": 1,
+  "type": "Event",
+  "window": 0,
+  "model": "qwen3:8b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004d",
+  "run": 2,
+  "type": "Event",
+  "window": 0,
+  "model": "qwen3:8b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004d",
+  "run": 2,
+  "type": "Event",
+  "window": 5,
+  "model": "qwen3:8b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015a",
+  "run": 1,
+  "type": "Event",
+  "window": 0,
+  "model": "qwen3.6:35b-a3b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015a",
+  "run": 1,
+  "type": "Event",
+  "window": 3,
+  "model": "qwen3.6:35b-a3b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004b",
+  "run": 1,
+  "type": "Event",
+  "window": 0,
+  "model": "qwen3.6:35b-a3b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004b",
+  "run": 1,
+  "type": "Event",
+  "window": 8,
+  "model": "qwen3.6:35b-a3b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 1,
+  "type": "Event",
+  "window": 0,
+  "model": "qwen3.6:35b-a3b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 1,
+  "type": "Event",
+  "window": 1,
+  "model": "qwen3.6:35b-a3b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 1,
+  "type": "Event",
+  "window": 3,
+  "model": "qwen3.6:35b-a3b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 1,
+  "type": "Event",
+  "window": 5,
+  "model": "qwen3.6:35b-a3b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 1,
+  "type": "Event",
+  "window": 7,
+  "model": "qwen3.6:35b-a3b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 1,
+  "type": "Event",
+  "window": 8,
+  "model": "qwen3.6:35b-a3b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 1,
+  "type": "Event",
+  "window": 10,
+  "model": "qwen3.6:35b-a3b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 1,
+  "type": "Event",
+  "window": 0,
+  "model": "qwen3.6:35b-a3b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 1,
+  "type": "Event",
+  "window": 3,
+  "model": "qwen3.6:35b-a3b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 1,
+  "type": "Event",
+  "window": 4,
+  "model": "qwen3.6:35b-a3b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 1,
+  "type": "Event",
+  "window": 6,
+  "model": "qwen3.6:35b-a3b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 1,
+  "type": "Event",
+  "window": 7,
+  "model": "qwen3.6:35b-a3b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 1,
+  "type": "Event",
+  "window": 8,
+  "model": "qwen3.6:35b-a3b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004d",
+  "run": 1,
+  "type": "Event",
+  "window": 1,
+  "model": "qwen3.6:35b-a3b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004d",
+  "run": 1,
+  "type": "Event",
+  "window": 2,
+  "model": "qwen3.6:35b-a3b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004d",
+  "run": 1,
+  "type": "Event",
+  "window": 3,
+  "model": "qwen3.6:35b-a3b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004d",
+  "run": 1,
+  "type": "Event",
+  "window": 4,
+  "model": "qwen3.6:35b-a3b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015a",
+  "run": 1,
+  "type": "Event",
+  "window": 0,
+  "model": "gemma4:26b-a4b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015a",
+  "run": 1,
+  "type": "Event",
+  "window": 3,
+  "model": "gemma4:26b-a4b",
+  "class": "target"
+ },
+ {
+  "rule": "dedup",
+  "meeting": "IS1004b",
+  "run": 1,
+  "type": "Project",
+  "window": 8,
+  "model": "gemma4:26b-a4b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004b",
+  "run": 1,
+  "type": "Event",
+  "window": 0,
+  "model": "gemma4:26b-a4b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004b",
+  "run": 1,
+  "type": "Event",
+  "window": 8,
+  "model": "gemma4:26b-a4b",
+  "class": "target"
+ },
+ {
+  "rule": "dedup",
+  "meeting": "TS3009c",
+  "run": 1,
+  "type": "Project",
+  "window": 9,
+  "model": "gemma4:26b-a4b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 1,
+  "type": "Event",
+  "window": 0,
+  "model": "gemma4:26b-a4b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 1,
+  "type": "Event",
+  "window": 1,
+  "model": "gemma4:26b-a4b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 1,
+  "type": "Event",
+  "window": 3,
+  "model": "gemma4:26b-a4b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 1,
+  "type": "Event",
+  "window": 4,
+  "model": "gemma4:26b-a4b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 1,
+  "type": "Event",
+  "window": 7,
+  "model": "gemma4:26b-a4b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 1,
+  "type": "Event",
+  "window": 8,
+  "model": "gemma4:26b-a4b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 1,
+  "type": "Event",
+  "window": 0,
+  "model": "gemma4:26b-a4b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 1,
+  "type": "Event",
+  "window": 1,
+  "model": "gemma4:26b-a4b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 1,
+  "type": "Event",
+  "window": 2,
+  "model": "gemma4:26b-a4b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 1,
+  "type": "Event",
+  "window": 3,
+  "model": "gemma4:26b-a4b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 1,
+  "type": "Event",
+  "window": 5,
+  "model": "gemma4:26b-a4b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 1,
+  "type": "Event",
+  "window": 6,
+  "model": "gemma4:26b-a4b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 1,
+  "type": "Event",
+  "window": 7,
+  "model": "gemma4:26b-a4b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 1,
+  "type": "Event",
+  "window": 8,
+  "model": "gemma4:26b-a4b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004d",
+  "run": 1,
+  "type": "Event",
+  "window": 0,
+  "model": "gemma4:26b-a4b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004d",
+  "run": 1,
+  "type": "Event",
+  "window": 2,
+  "model": "gemma4:26b-a4b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015a",
+  "run": 1,
+  "type": "Project",
+  "window": 0,
+  "model": "qwen3:14b",
+  "class": "target"
+ },
+ {
+  "rule": "dedup",
+  "meeting": "IS1004b",
+  "run": 1,
+  "type": "Concept",
+  "window": 6,
+  "model": "qwen3:14b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004b",
+  "run": 1,
+  "type": "Event",
+  "window": 0,
+  "model": "qwen3:14b",
+  "class": "target"
+ },
+ {
+  "rule": "dedup",
+  "meeting": "TS3009c",
+  "run": 1,
+  "type": "Concept",
+  "window": 7,
+  "model": "qwen3:14b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 1,
+  "type": "Event",
+  "window": 7,
+  "model": "qwen3:14b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 1,
+  "type": "Event",
+  "window": 10,
+  "model": "qwen3:14b",
+  "class": "target"
+ },
+ {
+  "rule": "dedup",
+  "meeting": "ES2015d",
+  "run": 1,
+  "type": "Project",
+  "window": 2,
+  "model": "qwen3:14b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 1,
+  "type": "Event",
+  "window": 0,
+  "model": "qwen3:14b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 1,
+  "type": "Event",
+  "window": 2,
+  "model": "qwen3:14b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 1,
+  "type": "Event",
+  "window": 7,
+  "model": "qwen3:14b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 1,
+  "type": "Event",
+  "window": 8,
+  "model": "qwen3:14b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004d",
+  "run": 1,
+  "type": "Event",
+  "window": 0,
+  "model": "qwen3:14b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015a",
+  "run": 1,
+  "type": "Event",
+  "window": 0,
+  "model": "qwen3.6:27b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015a",
+  "run": 1,
+  "type": "Event",
+  "window": 3,
+  "model": "qwen3.6:27b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015a",
+  "run": 2,
+  "type": "Event",
+  "window": 3,
+  "model": "qwen3.6:27b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004b",
+  "run": 1,
+  "type": "Decision",
+  "window": 8,
+  "model": "qwen3.6:27b",
+  "class": "false_positive"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004b",
+  "run": 2,
+  "type": "Event",
+  "window": 2,
+  "model": "qwen3.6:27b",
+  "class": "target"
+ },
+ {
+  "rule": "dedup",
+  "meeting": "TS3009c",
+  "run": 1,
+  "type": "Project",
+  "window": 9,
+  "model": "qwen3.6:27b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 1,
+  "type": "Event",
+  "window": 3,
+  "model": "qwen3.6:27b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 1,
+  "type": "Event",
+  "window": 5,
+  "model": "qwen3.6:27b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 1,
+  "type": "Event",
+  "window": 6,
+  "model": "qwen3.6:27b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 2,
+  "type": "Event",
+  "window": 3,
+  "model": "qwen3.6:27b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 2,
+  "type": "Event",
+  "window": 8,
+  "model": "qwen3.6:27b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "TS3009c",
+  "run": 2,
+  "type": "Event",
+  "window": 10,
+  "model": "qwen3.6:27b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 1,
+  "type": "Event",
+  "window": 6,
+  "model": "qwen3.6:27b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 2,
+  "type": "Event",
+  "window": 0,
+  "model": "qwen3.6:27b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "ES2015d",
+  "run": 2,
+  "type": "Event",
+  "window": 2,
+  "model": "qwen3.6:27b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004d",
+  "run": 1,
+  "type": "Event",
+  "window": 1,
+  "model": "qwen3.6:27b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004d",
+  "run": 1,
+  "type": "Event",
+  "window": 4,
+  "model": "qwen3.6:27b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004d",
+  "run": 1,
+  "type": "Event",
+  "window": 5,
+  "model": "qwen3.6:27b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004d",
+  "run": 2,
+  "type": "Event",
+  "window": 0,
+  "model": "qwen3.6:27b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004d",
+  "run": 2,
+  "type": "Event",
+  "window": 2,
+  "model": "qwen3.6:27b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004d",
+  "run": 2,
+  "type": "Event",
+  "window": 5,
+  "model": "qwen3.6:27b",
+  "class": "target"
+ },
+ {
+  "rule": "framing",
+  "meeting": "IS1004d",
+  "run": 2,
+  "type": "Event",
+  "window": 6,
+  "model": "qwen3.6:27b",
+  "class": "target"
+ }
+]

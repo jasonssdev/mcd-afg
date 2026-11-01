@@ -1,0 +1,1454 @@
+{
+  "model": "qwen3:8b",
+  "runs": [
+    1,
+    2,
+    3
+  ],
+  "prose_runs": [
+    1,
+    2,
+    3
+  ],
+  "arms": {
+    "c4000": {
+      "failures": {
+        "num": 3,
+        "den": 123
+      },
+      "failure_causes": {
+        "unparseable": 3
+      },
+      "objects_per_meeting": 4.6,
+      "objects_total": 69,
+      "meeting_runs": 15,
+      "verbatim": {
+        "num": 0,
+        "den": 69
+      },
+      "title_language": {
+        "en": 32,
+        "es": 0,
+        "neither": 37
+      },
+      "median_window_s": 34.28279958298663,
+      "window_calls_timed": 123,
+      "mean_s_per_meeting_run": 307.01640444997463,
+      "total_s": 4605.24606674962,
+      "window_lift_mean": 0.03002755634168325,
+      "meeting_lift_mean": 0.009781490455352721,
+      "stage_table": {
+        "raw": {
+          "meeting_runs": 15,
+          "units": 118,
+          "own": 0.5603043734961209,
+          "foreign": 0.5467311039742048,
+          "lift": 0.013573269521916028,
+          "own_sum": 162.99579552187538,
+          "own_covered_tau": 12,
+          "foreign_covered_tau": 11,
+          "gold_n": 291,
+          "foreign_n": 312
+        },
+        "dedup": {
+          "meeting_runs": 15,
+          "units": 116,
+          "own": 0.5600118828633146,
+          "foreign": 0.5459804536474668,
+          "lift": 0.014031429215847813,
+          "own_sum": 162.87733681558888,
+          "own_covered_tau": 12,
+          "foreign_covered_tau": 11,
+          "gold_n": 291,
+          "foreign_n": 312
+        },
+        "drops": {
+          "meeting_runs": 15,
+          "units": 82,
+          "own": 0.5447200681210351,
+          "foreign": 0.5332970119945503,
+          "lift": 0.011423056126484829,
+          "own_sum": 158.76233791594453,
+          "own_covered_tau": 8,
+          "foreign_covered_tau": 7,
+          "gold_n": 291,
+          "foreign_n": 312
+        },
+        "pre_ceiling": {
+          "meeting_runs": 15,
+          "units": 91,
+          "own": 0.5464325870995599,
+          "foreign": 0.5347129575788951,
+          "lift": 0.011719629520664727,
+          "own_sum": 159.070591332079,
+          "own_covered_tau": 8,
+          "foreign_covered_tau": 7,
+          "gold_n": 291,
+          "foreign_n": 312
+        },
+        "ceiling": {
+          "meeting_runs": 15,
+          "units": 91,
+          "own": 0.5464325870995599,
+          "foreign": 0.5347129575788951,
+          "lift": 0.011719629520664727,
+          "own_sum": 159.070591332079,
+          "own_covered_tau": 8,
+          "foreign_covered_tau": 7,
+          "gold_n": 291,
+          "foreign_n": 312
+        },
+        "judge": {
+          "meeting_runs": 15,
+          "units": 69,
+          "own": 0.5350032238761485,
+          "foreign": 0.5252217334207957,
+          "lift": 0.009781490455352723,
+          "own_sum": 155.21159562564998,
+          "own_covered_tau": 6,
+          "foreign_covered_tau": 5,
+          "gold_n": 291,
+          "foreign_n": 312
+        },
+        "final": {
+          "meeting_runs": 15,
+          "units": 69,
+          "own": 0.5350032238761485,
+          "foreign": 0.5252217334207957,
+          "lift": 0.009781490455352723,
+          "own_sum": 155.21159562564998,
+          "own_covered_tau": 6,
+          "foreign_covered_tau": 5,
+          "gold_n": 291,
+          "foreign_n": 312
+        }
+      },
+      "stage_window_lift": {
+        "raw": 0.04327417997289993,
+        "dedup": 0.04406316771270716,
+        "drops": 0.03257759131357647,
+        "pre_ceiling": 0.03257759131357647,
+        "ceiling": 0.03257759131357647,
+        "judge": 0.03002755634168325,
+        "final": 0.03002755634168325
+      },
+      "counters": {
+        "skipped_chunks": 0,
+        "wrong_language_dropped": 0,
+        "recombined_dropped": 0,
+        "pre_judge_dropped": 0,
+        "judged_out": 22,
+        "backstop_discarded": 0,
+        "reask_added": 0,
+        "participant_added": 9,
+        "judge_status": {
+          "ok": 15,
+          "failed": 0,
+          "empty": 0,
+          "skipped": 0
+        },
+        "optional_call_failures": 1
+      },
+      "curves": {
+        "own": [
+          0.6420875420875422,
+          0.4185185185185185,
+          0.2222783389450056,
+          0.10151515151515152,
+          0.028956228956228958,
+          0.0030303030303030303,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "foreign": [
+          0.6028846820608834,
+          0.38471750302413915,
+          0.16378506653106195,
+          0.07405635300372143,
+          0.018323586744639374,
+          0.007407407407407407,
+          0.0037037037037037034,
+          0.0,
+          0.0
+        ]
+      },
+      "sections": {
+        "abstract": 0.5659331871544834,
+        "decisions": 0.5132718756719951,
+        "problems": 0.4578156593171039
+      },
+      "prose": {
+        "wrong_language": {
+          "num": 0,
+          "den": 24
+        },
+        "wrong_language_dropped": 6,
+        "subject_recall_exact": {
+          "num": 22,
+          "den": 33
+        },
+        "subject_recall_embedding": {
+          "num": 22,
+          "den": 33
+        },
+        "whole_source_failures": 0,
+        "per_fixture": {
+          "large-03-skills-vs-tools": {
+            "exact": 0,
+            "embedding": 0,
+            "of": 0
+          },
+          "medium-08-sdk-skills": {
+            "exact": 0,
+            "embedding": 0,
+            "of": 0
+          },
+          "medium-09-sdk-skills-notes": {
+            "exact": 0,
+            "embedding": 0,
+            "of": 0
+          },
+          "medium-10-reunion-plataforma": {
+            "exact": 22,
+            "embedding": 22,
+            "of": 33
+          },
+          "small-04-pre-build-skills": {
+            "exact": 0,
+            "embedding": 0,
+            "of": 0
+          }
+        }
+      },
+      "lift_ci": {
+        "point": 0.03002755634168325,
+        "low": 0.011692200279412401,
+        "high": 0.05650787572896491
+      },
+      "per_meeting": {
+        "ES2015a": [
+          0.0012973944557383987,
+          -0.005815175535397232,
+          0.02419382690471894
+        ],
+        "IS1004b": [
+          -0.003453161888643863,
+          0.01906429813674959,
+          0.004813218149698595
+        ],
+        "TS3009c": [
+          0.010345049262304062,
+          -0.021306638427808444,
+          0.004093665872650698
+        ],
+        "ES2015d": [
+          0.013195376103340595,
+          0.01829070745836886,
+          0.01792517428068635
+        ],
+        "IS1004d": [
+          0.001263536513408714,
+          0.043906816666938075,
+          0.018908268877537493
+        ]
+      },
+      "failed_chars": {
+        "num": 9714,
+        "den": 451260
+      },
+      "redundant_final": {
+        "num": 9,
+        "den": 69
+      },
+      "redundant_raw": {
+        "num": 27,
+        "den": 118
+      },
+      "medium10_699": [
+        {
+          "run": 1,
+          "windows": 4,
+          "raw_repeats": 0,
+          "final_repeats": 0,
+          "final_objects": 7
+        },
+        {
+          "run": 2,
+          "windows": 4,
+          "raw_repeats": 0,
+          "final_repeats": 0,
+          "final_objects": 7
+        },
+        {
+          "run": 3,
+          "windows": 4,
+          "raw_repeats": 0,
+          "final_repeats": 0,
+          "final_objects": 10
+        }
+      ],
+      "feasibility": {
+        "calls": 171,
+        "with_counters": 171,
+        "over_num_ctx": 2,
+        "max_prompt": 7467,
+        "max_total": 14071,
+        "done_reasons": {
+          "stop": 170,
+          "length": 1
+        }
+      },
+      "judged": {
+        "g1": {
+          "ES2015a": [
+            10,
+            10
+          ],
+          "IS1004b": [
+            12,
+            15
+          ],
+          "TS3009c": [
+            9,
+            9
+          ],
+          "ES2015d": [
+            9,
+            9
+          ],
+          "IS1004d": [
+            16,
+            17
+          ]
+        },
+        "precision": {
+          "num": 56,
+          "den": 60
+        },
+        "coverage": {
+          "ES2015a": [
+            0.2916666666666667,
+            0.2916666666666667,
+            0.375
+          ],
+          "IS1004b": [
+            0.4444444444444444,
+            0.25,
+            0.2222222222222222
+          ],
+          "TS3009c": [
+            0.2222222222222222,
+            0.18518518518518517,
+            0.2777777777777778
+          ],
+          "ES2015d": [
+            0.1388888888888889,
+            0.16666666666666666,
+            0.16666666666666666
+          ],
+          "IS1004d": [
+            0.3409090909090909,
+            0.3181818181818182,
+            0.13636363636363635
+          ]
+        },
+        "coverage_mean": 0.2551907968574635,
+        "unparsed_g1_windows": 0,
+        "unparsed_coverage": 0
+      }
+    },
+    "c6000": {
+      "failures": {
+        "num": 3,
+        "den": 81
+      },
+      "failure_causes": {
+        "unparseable": 3
+      },
+      "objects_per_meeting": 2.933333333333333,
+      "objects_total": 44,
+      "meeting_runs": 15,
+      "verbatim": {
+        "num": 0,
+        "den": 44
+      },
+      "title_language": {
+        "en": 9,
+        "es": 0,
+        "neither": 35
+      },
+      "median_window_s": 47.97262812498957,
+      "window_calls_timed": 81,
+      "mean_s_per_meeting_run": 272.7682586223314,
+      "total_s": 4091.523879334971,
+      "window_lift_mean": 0.01660981745980727,
+      "meeting_lift_mean": 0.005357067850657856,
+      "stage_table": {
+        "raw": {
+          "meeting_runs": 15,
+          "units": 83,
+          "own": 0.5490102628839749,
+          "foreign": 0.5351987547420386,
+          "lift": 0.01381150814193635,
+          "own_sum": 159.00597119033856,
+          "own_covered_tau": 12,
+          "foreign_covered_tau": 14,
+          "gold_n": 291,
+          "foreign_n": 312
+        },
+        "dedup": {
+          "meeting_runs": 15,
+          "units": 80,
+          "own": 0.54864539291463,
+          "foreign": 0.5350601252701649,
+          "lift": 0.013585267644465179,
+          "own_sum": 158.9022335566777,
+          "own_covered_tau": 12,
+          "foreign_covered_tau": 13,
+          "gold_n": 291,
+          "foreign_n": 312
+        },
+        "drops": {
+          "meeting_runs": 15,
+          "units": 43,
+          "own": 0.49035108328045734,
+          "foreign": 0.4754632518620762,
+          "lift": 0.014887831418381148,
+          "own_sum": 145.63616038223097,
+          "own_covered_tau": 3,
+          "foreign_covered_tau": 3,
+          "gold_n": 291,
+          "foreign_n": 312
+        },
+        "pre_ceiling": {
+          "meeting_runs": 15,
+          "units": 59,
+          "own": 0.5208350889422081,
+          "foreign": 0.5101614312098648,
+          "lift": 0.010673657732343345,
+          "own_sum": 151.34025927380512,
+          "own_covered_tau": 3,
+          "foreign_covered_tau": 8,
+          "gold_n": 291,
+          "foreign_n": 312
+        },
+        "ceiling": {
+          "meeting_runs": 15,
+          "units": 59,
+          "own": 0.5208350889422081,
+          "foreign": 0.5101614312098648,
+          "lift": 0.010673657732343345,
+          "own_sum": 151.34025927380512,
+          "own_covered_tau": 3,
+          "foreign_covered_tau": 8,
+          "gold_n": 291,
+          "foreign_n": 312
+        },
+        "judge": {
+          "meeting_runs": 15,
+          "units": 44,
+          "own": 0.5092019064194708,
+          "foreign": 0.5038448385688129,
+          "lift": 0.005357067850657856,
+          "own_sum": 147.87425216013864,
+          "own_covered_tau": 2,
+          "foreign_covered_tau": 8,
+          "gold_n": 291,
+          "foreign_n": 312
+        },
+        "final": {
+          "meeting_runs": 15,
+          "units": 44,
+          "own": 0.5092019064194708,
+          "foreign": 0.5038448385688129,
+          "lift": 0.005357067850657856,
+          "own_sum": 147.87425216013864,
+          "own_covered_tau": 2,
+          "foreign_covered_tau": 8,
+          "gold_n": 291,
+          "foreign_n": 312
+        }
+      },
+      "stage_window_lift": {
+        "raw": 0.027516154576189576,
+        "dedup": 0.02610584801741291,
+        "drops": 0.022460339629305933,
+        "pre_ceiling": 0.022460339629305933,
+        "ceiling": 0.022460339629305933,
+        "judge": 0.01660981745980727,
+        "final": 0.01660981745980727
+      },
+      "counters": {
+        "skipped_chunks": 0,
+        "wrong_language_dropped": 0,
+        "recombined_dropped": 0,
+        "pre_judge_dropped": 0,
+        "judged_out": 15,
+        "backstop_discarded": 0,
+        "reask_added": 2,
+        "participant_added": 14,
+        "judge_status": {
+          "ok": 14,
+          "failed": 0,
+          "empty": 1,
+          "skipped": 0
+        },
+        "optional_call_failures": 2
+      },
+      "curves": {
+        "own": [
+          0.5038159371492704,
+          0.3154320987654321,
+          0.1467452300785634,
+          0.03265993265993266,
+          0.007407407407407407,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "foreign": [
+          0.4810407661666243,
+          0.29249551194631285,
+          0.1212876283814499,
+          0.0505404926457558,
+          0.02789296473507,
+          0.007407407407407407,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "sections": {
+        "abstract": 0.5352731073290241,
+        "decisions": 0.49240545910989003,
+        "problems": 0.442896533112706
+      },
+      "prose": {
+        "wrong_language": {
+          "num": 0,
+          "den": 25
+        },
+        "wrong_language_dropped": 2,
+        "subject_recall_exact": {
+          "num": 24,
+          "den": 33
+        },
+        "subject_recall_embedding": {
+          "num": 22,
+          "den": 33
+        },
+        "whole_source_failures": 0,
+        "per_fixture": {
+          "large-03-skills-vs-tools": {
+            "exact": 0,
+            "embedding": 0,
+            "of": 0
+          },
+          "medium-08-sdk-skills": {
+            "exact": 0,
+            "embedding": 0,
+            "of": 0
+          },
+          "medium-09-sdk-skills-notes": {
+            "exact": 0,
+            "embedding": 0,
+            "of": 0
+          },
+          "medium-10-reunion-plataforma": {
+            "exact": 24,
+            "embedding": 22,
+            "of": 33
+          },
+          "small-04-pre-build-skills": {
+            "exact": 0,
+            "embedding": 0,
+            "of": 0
+          }
+        }
+      },
+      "lift_ci": {
+        "point": 0.01660981745980727,
+        "low": 0.004193515472996443,
+        "high": 0.029506323656829554
+      },
+      "per_meeting": {
+        "ES2015a": [
+          0.010243491740487831,
+          -0.014789311667906091,
+          -0.014789311667906091
+        ],
+        "IS1004b": [
+          -0.011394164469700763,
+          0.030894946642982424,
+          0.006838323394418588
+        ],
+        "TS3009c": [
+          -0.023283236663754647,
+          -0.01559462326746508,
+          0.02314001162550028
+        ],
+        "ES2015d": [
+          0.010994309694066062,
+          0.03972954999955153,
+          0.023982278717986805
+        ],
+        "IS1004d": [
+          -0.022530670814942033,
+          0.022097024175225577,
+          0.014817400321323448
+        ]
+      },
+      "failed_chars": {
+        "num": 6042,
+        "den": 451302
+      },
+      "redundant_final": {
+        "num": 2,
+        "den": 44
+      },
+      "redundant_raw": {
+        "num": 18,
+        "den": 83
+      },
+      "medium10_699": [
+        {
+          "run": 1,
+          "windows": 3,
+          "raw_repeats": 0,
+          "final_repeats": 0,
+          "final_objects": 10
+        },
+        {
+          "run": 2,
+          "windows": 3,
+          "raw_repeats": 0,
+          "final_repeats": 0,
+          "final_objects": 7
+        },
+        {
+          "run": 3,
+          "windows": 3,
+          "raw_repeats": 0,
+          "final_repeats": 0,
+          "final_objects": 8
+        }
+      ],
+      "feasibility": {
+        "calls": 130,
+        "with_counters": 130,
+        "over_num_ctx": 2,
+        "max_prompt": 7747,
+        "max_total": 14051,
+        "done_reasons": {
+          "stop": 128,
+          "length": 2
+        }
+      },
+      "judged": {
+        "g1": {
+          "ES2015a": [
+            0,
+            0
+          ],
+          "IS1004b": [
+            10,
+            11
+          ],
+          "TS3009c": [
+            6,
+            6
+          ],
+          "ES2015d": [
+            4,
+            6
+          ],
+          "IS1004d": [
+            5,
+            5
+          ]
+        },
+        "precision": {
+          "num": 25,
+          "den": 28
+        },
+        "coverage": {
+          "ES2015a": [
+            0.20833333333333334,
+            0.125,
+            0.125
+          ],
+          "IS1004b": [
+            0.25,
+            0.3611111111111111,
+            0.3888888888888889
+          ],
+          "TS3009c": [
+            0.24074074074074073,
+            0.4074074074074074,
+            0.18518518518518517
+          ],
+          "ES2015d": [
+            0.25,
+            0.0,
+            0.1388888888888889
+          ],
+          "IS1004d": [
+            0.06818181818181818,
+            0.11363636363636363,
+            0.45454545454545453
+          ]
+        },
+        "coverage_mean": 0.22112794612794612,
+        "unparsed_g1_windows": 0,
+        "unparsed_coverage": 0
+      },
+      "dlift_meeting": {
+        "point": -0.004424422604694866,
+        "low": -0.012418801107079283,
+        "high": 0.003569955897689551
+      },
+      "dprecision": {
+        "point": -0.04047619047619044,
+        "low": -0.24235104669887286,
+        "high": 0.059941520467836185
+      },
+      "dcoverage_meeting": {
+        "point": -0.034062850729517404,
+        "low": -0.10505050505050506,
+        "high": 0.025308641975308632
+      }
+    },
+    "c8000": {
+      "failures": {
+        "num": 0,
+        "den": 66
+      },
+      "failure_causes": {},
+      "objects_per_meeting": 2.4,
+      "objects_total": 36,
+      "meeting_runs": 15,
+      "verbatim": {
+        "num": 0,
+        "den": 36
+      },
+      "title_language": {
+        "en": 11,
+        "es": 0,
+        "neither": 25
+      },
+      "median_window_s": 65.28432987548877,
+      "window_calls_timed": 66,
+      "mean_s_per_meeting_run": 263.73885828340036,
+      "total_s": 3956.0828742510057,
+      "window_lift_mean": -0.0010180002765444514,
+      "meeting_lift_mean": -0.0045373461080754785,
+      "stage_table": {
+        "raw": {
+          "meeting_runs": 15,
+          "units": 68,
+          "own": 0.5353738580659407,
+          "foreign": 0.5277721638415593,
+          "lift": 0.007601694224381354,
+          "own_sum": 155.02112617508374,
+          "own_covered_tau": 8,
+          "foreign_covered_tau": 11,
+          "gold_n": 291,
+          "foreign_n": 312
+        },
+        "dedup": {
+          "meeting_runs": 15,
+          "units": 63,
+          "own": 0.5314495812688749,
+          "foreign": 0.5253871188650674,
+          "lift": 0.006062462403807489,
+          "own_sum": 153.90896030837436,
+          "own_covered_tau": 8,
+          "foreign_covered_tau": 11,
+          "gold_n": 291,
+          "foreign_n": 312
+        },
+        "drops": {
+          "meeting_runs": 15,
+          "units": 29,
+          "own": 0.41136264523285687,
+          "foreign": 0.4156100925921506,
+          "lift": -0.004247447359293713,
+          "own_sum": 124.43077694696184,
+          "own_covered_tau": 3,
+          "foreign_covered_tau": 5,
+          "gold_n": 291,
+          "foreign_n": 312
+        },
+        "pre_ceiling": {
+          "meeting_runs": 15,
+          "units": 39,
+          "own": 0.4470370506676003,
+          "foreign": 0.45110130015584393,
+          "lift": -0.004064249488243728,
+          "own_sum": 130.85216992521566,
+          "own_covered_tau": 3,
+          "foreign_covered_tau": 7,
+          "gold_n": 291,
+          "foreign_n": 312
+        },
+        "ceiling": {
+          "meeting_runs": 15,
+          "units": 39,
+          "own": 0.4470370506676003,
+          "foreign": 0.45110130015584393,
+          "lift": -0.004064249488243728,
+          "own_sum": 130.85216992521566,
+          "own_covered_tau": 3,
+          "foreign_covered_tau": 7,
+          "gold_n": 291,
+          "foreign_n": 312
+        },
+        "judge": {
+          "meeting_runs": 15,
+          "units": 36,
+          "own": 0.4435166332177548,
+          "foreign": 0.4480539793258303,
+          "lift": -0.004537346108075479,
+          "own_sum": 129.61424099815588,
+          "own_covered_tau": 3,
+          "foreign_covered_tau": 6,
+          "gold_n": 291,
+          "foreign_n": 312
+        },
+        "final": {
+          "meeting_runs": 15,
+          "units": 36,
+          "own": 0.4435166332177548,
+          "foreign": 0.4480539793258303,
+          "lift": -0.004537346108075479,
+          "own_sum": 129.61424099815588,
+          "own_covered_tau": 3,
+          "foreign_covered_tau": 6,
+          "gold_n": 291,
+          "foreign_n": 312
+        }
+      },
+      "stage_window_lift": {
+        "raw": 0.03263653430471334,
+        "dedup": 0.031794530138735996,
+        "drops": -0.00015020864050365818,
+        "pre_ceiling": -0.00015020864050365818,
+        "ceiling": -0.00015020864050365818,
+        "judge": -0.0010180002765444514,
+        "final": -0.0010180002765444514
+      },
+      "counters": {
+        "skipped_chunks": 0,
+        "wrong_language_dropped": 0,
+        "recombined_dropped": 0,
+        "pre_judge_dropped": 0,
+        "judged_out": 3,
+        "backstop_discarded": 0,
+        "reask_added": 1,
+        "participant_added": 9,
+        "judge_status": {
+          "ok": 13,
+          "failed": 0,
+          "empty": 0,
+          "skipped": 2
+        },
+        "optional_call_failures": 1
+      },
+      "curves": {
+        "own": [
+          0.4522446689113356,
+          0.21352413019079686,
+          0.12676767676767678,
+          0.04865319865319865,
+          0.01414141414141414,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "foreign": [
+          0.4857314564408386,
+          0.27439690574702014,
+          0.12352818805908052,
+          0.06126174020910862,
+          0.021832358674463936,
+          0.01111111111111111,
+          0.0037037037037037034,
+          0.0,
+          0.0
+        ]
+      },
+      "sections": {
+        "abstract": 0.46805395658238336,
+        "decisions": 0.42888780530676984,
+        "problems": 0.3840264791567938
+      },
+      "prose": {
+        "wrong_language": {
+          "num": 0,
+          "den": 26
+        },
+        "wrong_language_dropped": 1,
+        "subject_recall_exact": {
+          "num": 19,
+          "den": 33
+        },
+        "subject_recall_embedding": {
+          "num": 19,
+          "den": 33
+        },
+        "whole_source_failures": 0,
+        "per_fixture": {
+          "large-03-skills-vs-tools": {
+            "exact": 0,
+            "embedding": 0,
+            "of": 0
+          },
+          "medium-08-sdk-skills": {
+            "exact": 0,
+            "embedding": 0,
+            "of": 0
+          },
+          "medium-09-sdk-skills-notes": {
+            "exact": 0,
+            "embedding": 0,
+            "of": 0
+          },
+          "medium-10-reunion-plataforma": {
+            "exact": 19,
+            "embedding": 19,
+            "of": 33
+          },
+          "small-04-pre-build-skills": {
+            "exact": 0,
+            "embedding": 0,
+            "of": 0
+          }
+        }
+      },
+      "lift_ci": {
+        "point": -0.0010180002765444514,
+        "low": -0.014912717239624274,
+        "high": 0.011272725873931829
+      },
+      "per_meeting": {
+        "ES2015a": [
+          0.010243491740487831,
+          -0.006232876068917537,
+          0.005453551224437692
+        ],
+        "IS1004b": [
+          -0.013908836240406619,
+          -0.013319399857188219,
+          -0.007475923520248284
+        ],
+        "TS3009c": [
+          -0.03948078921869308,
+          -0.036647159786503736,
+          -0.025982283030626663
+        ],
+        "ES2015d": [
+          0.016644143905420627,
+          0.0,
+          0.0
+        ],
+        "IS1004d": [
+          -0.004663692284011978,
+          0.01934063290372323,
+          0.02796894861139454
+        ]
+      },
+      "failed_chars": {
+        "num": 0,
+        "den": 451317
+      },
+      "redundant_final": {
+        "num": 3,
+        "den": 36
+      },
+      "redundant_raw": {
+        "num": 16,
+        "den": 68
+      },
+      "medium10_699": [
+        {
+          "run": 1,
+          "windows": 2,
+          "raw_repeats": 0,
+          "final_repeats": 0,
+          "final_objects": 4
+        },
+        {
+          "run": 2,
+          "windows": 2,
+          "raw_repeats": 1,
+          "final_repeats": 1,
+          "final_objects": 11
+        },
+        {
+          "run": 3,
+          "windows": 2,
+          "raw_repeats": 0,
+          "final_repeats": 0,
+          "final_objects": 11
+        }
+      ],
+      "feasibility": {
+        "calls": 107,
+        "with_counters": 107,
+        "over_num_ctx": 1,
+        "max_prompt": 7152,
+        "max_total": 13201,
+        "done_reasons": {
+          "stop": 106,
+          "length": 1
+        }
+      },
+      "judged": {
+        "g1": {
+          "ES2015a": [
+            4,
+            4
+          ],
+          "IS1004b": [
+            5,
+            7
+          ],
+          "TS3009c": [
+            8,
+            8
+          ],
+          "ES2015d": [
+            2,
+            2
+          ],
+          "IS1004d": [
+            5,
+            5
+          ]
+        },
+        "precision": {
+          "num": 24,
+          "den": 26
+        },
+        "coverage": {
+          "ES2015a": [
+            0.20833333333333334,
+            0.125,
+            0.20833333333333334
+          ],
+          "IS1004b": [
+            0.3333333333333333,
+            0.2222222222222222,
+            0.08333333333333333
+          ],
+          "TS3009c": [
+            0.3333333333333333,
+            0.5,
+            0.09259259259259259
+          ],
+          "ES2015d": [
+            0.3055555555555556,
+            0.0,
+            0.0
+          ],
+          "IS1004d": [
+            0.45454545454545453,
+            0.09090909090909091,
+            0.11363636363636363
+          ]
+        },
+        "coverage_mean": 0.2047418630751964,
+        "unparsed_g1_windows": 0,
+        "unparsed_coverage": 0
+      },
+      "dlift_meeting": {
+        "point": -0.0143188365634282,
+        "low": -0.023724677302192125,
+        "high": -0.0064037558299090925
+      },
+      "dprecision": {
+        "point": -0.01025641025641022,
+        "low": -0.07836990595611282,
+        "high": 0.042857142857142816
+      },
+      "dcoverage_meeting": {
+        "point": -0.050448933782267114,
+        "low": -0.11094276094276094,
+        "high": 0.018518518518518517
+      }
+    },
+    "c12000": {
+      "failures": {
+        "num": 2,
+        "den": 45
+      },
+      "failure_causes": {
+        "unparseable": 1,
+        "capped": 1
+      },
+      "objects_per_meeting": 2.2,
+      "objects_total": 33,
+      "meeting_runs": 15,
+      "verbatim": {
+        "num": 0,
+        "den": 33
+      },
+      "title_language": {
+        "en": 9,
+        "es": 0,
+        "neither": 24
+      },
+      "median_window_s": 90.24619924998842,
+      "window_calls_timed": 45,
+      "mean_s_per_meeting_run": 331.9912591776694,
+      "total_s": 4979.868887665041,
+      "window_lift_mean": 0.009691874880365933,
+      "meeting_lift_mean": 0.006201598507989426,
+      "stage_table": {
+        "raw": {
+          "meeting_runs": 15,
+          "units": 47,
+          "own": 0.5271218348761466,
+          "foreign": 0.523498644148946,
+          "lift": 0.003623190727200713,
+          "own_sum": 152.8203611968357,
+          "own_covered_tau": 5,
+          "foreign_covered_tau": 11,
+          "gold_n": 291,
+          "foreign_n": 312
+        },
+        "dedup": {
+          "meeting_runs": 15,
+          "units": 46,
+          "own": 0.5268302728594015,
+          "foreign": 0.523390071736467,
+          "lift": 0.003440201122934476,
+          "own_sum": 152.70227858005396,
+          "own_covered_tau": 5,
+          "foreign_covered_tau": 11,
+          "gold_n": 291,
+          "foreign_n": 312
+        },
+        "drops": {
+          "meeting_runs": 15,
+          "units": 20,
+          "own": 0.3883621195928593,
+          "foreign": 0.38376203695281264,
+          "lift": 0.004600082640046728,
+          "own_sum": 110.19071451401754,
+          "own_covered_tau": 0,
+          "foreign_covered_tau": 0,
+          "gold_n": 291,
+          "foreign_n": 312
+        },
+        "pre_ceiling": {
+          "meeting_runs": 15,
+          "units": 37,
+          "own": 0.43828236969966644,
+          "foreign": 0.4308426333739268,
+          "lift": 0.00743973632573965,
+          "own_sum": 119.25851727353435,
+          "own_covered_tau": 2,
+          "foreign_covered_tau": 4,
+          "gold_n": 291,
+          "foreign_n": 312
+        },
+        "ceiling": {
+          "meeting_runs": 15,
+          "units": 37,
+          "own": 0.43828236969966644,
+          "foreign": 0.4308426333739268,
+          "lift": 0.00743973632573965,
+          "own_sum": 119.25851727353435,
+          "own_covered_tau": 2,
+          "foreign_covered_tau": 4,
+          "gold_n": 291,
+          "foreign_n": 312
+        },
+        "judge": {
+          "meeting_runs": 15,
+          "units": 33,
+          "own": 0.43569354668670857,
+          "foreign": 0.4294919481787191,
+          "lift": 0.006201598507989426,
+          "own_sum": 118.76407721538715,
+          "own_covered_tau": 1,
+          "foreign_covered_tau": 4,
+          "gold_n": 291,
+          "foreign_n": 312
+        },
+        "final": {
+          "meeting_runs": 15,
+          "units": 33,
+          "own": 0.43569354668670857,
+          "foreign": 0.4294919481787191,
+          "lift": 0.006201598507989426,
+          "own_sum": 118.76407721538715,
+          "own_covered_tau": 1,
+          "foreign_covered_tau": 4,
+          "gold_n": 291,
+          "foreign_n": 312
+        }
+      },
+      "stage_window_lift": {
+        "raw": 0.01955477183555826,
+        "dedup": 0.0207263229672916,
+        "drops": 0.01011009966746581,
+        "pre_ceiling": 0.01011009966746581,
+        "ceiling": 0.01011009966746581,
+        "judge": 0.009691874880365933,
+        "final": 0.009691874880365933
+      },
+      "counters": {
+        "skipped_chunks": 1,
+        "wrong_language_dropped": 0,
+        "recombined_dropped": 0,
+        "pre_judge_dropped": 0,
+        "judged_out": 4,
+        "backstop_discarded": 0,
+        "reask_added": 3,
+        "participant_added": 14,
+        "judge_status": {
+          "ok": 6,
+          "failed": 0,
+          "empty": 0,
+          "skipped": 9
+        },
+        "optional_call_failures": 0
+      },
+      "curves": {
+        "own": [
+          0.4057239057239057,
+          0.2557239057239057,
+          0.11896745230078562,
+          0.03260381593714927,
+          0.005555555555555555,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "foreign": [
+          0.3499264190339705,
+          0.24670965952430482,
+          0.09045065452388107,
+          0.027414495835548464,
+          0.014814814814814814,
+          0.01111111111111111,
+          0.0037037037037037034,
+          0.0,
+          0.0
+        ]
+      },
+      "sections": {
+        "abstract": 0.4495725456754963,
+        "decisions": 0.4291927858872437,
+        "problems": 0.37276300003661056
+      },
+      "prose": {
+        "wrong_language": {
+          "num": 0,
+          "den": 12
+        },
+        "wrong_language_dropped": 2,
+        "subject_recall_exact": {
+          "num": 12,
+          "den": 33
+        },
+        "subject_recall_embedding": {
+          "num": 12,
+          "den": 33
+        },
+        "whole_source_failures": 0,
+        "per_fixture": {
+          "large-03-skills-vs-tools": {
+            "exact": 0,
+            "embedding": 0,
+            "of": 0
+          },
+          "medium-08-sdk-skills": {
+            "exact": 0,
+            "embedding": 0,
+            "of": 0
+          },
+          "medium-09-sdk-skills-notes": {
+            "exact": 0,
+            "embedding": 0,
+            "of": 0
+          },
+          "medium-10-reunion-plataforma": {
+            "exact": 12,
+            "embedding": 12,
+            "of": 33
+          },
+          "small-04-pre-build-skills": {
+            "exact": 0,
+            "embedding": 0,
+            "of": 0
+          }
+        }
+      },
+      "lift_ci": {
+        "point": 0.009691874880365933,
+        "low": -0.0020408983823275977,
+        "high": 0.03152907766536444
+      },
+      "per_meeting": {
+        "ES2015a": [
+          0.010243491740487831,
+          -0.014789311621480006,
+          -0.01430595429062631
+        ],
+        "IS1004b": [
+          -0.0010811480177400634,
+          0.009097031651464471,
+          -0.002884221583276725
+        ],
+        "TS3009c": [
+          0.024243899889312748,
+          0.0,
+          0.0
+        ],
+        "ES2015d": [
+          0.008447575768940063,
+          0.0013805583336672922,
+          0.028197358747213352
+        ],
+        "IS1004d": [
+          0.030996328391423245,
+          0.011003124790930352,
+          0.0024752438195251303
+        ]
+      },
+      "failed_chars": {
+        "num": 21059,
+        "den": 451338
+      },
+      "redundant_final": {
+        "num": 2,
+        "den": 33
+      },
+      "redundant_raw": {
+        "num": 6,
+        "den": 47
+      },
+      "medium10_699": [
+        {
+          "run": 1,
+          "windows": 2,
+          "raw_repeats": 0,
+          "final_repeats": 0,
+          "final_objects": 4
+        },
+        {
+          "run": 2,
+          "windows": 2,
+          "raw_repeats": 0,
+          "final_repeats": 0,
+          "final_objects": 4
+        },
+        {
+          "run": 3,
+          "windows": 2,
+          "raw_repeats": 0,
+          "final_repeats": 0,
+          "final_objects": 4
+        }
+      ],
+      "feasibility": {
+        "calls": 90,
+        "with_counters": 90,
+        "over_num_ctx": 0,
+        "max_prompt": 6110,
+        "max_total": 13661,
+        "done_reasons": {
+          "stop": 86,
+          "length": 4
+        }
+      },
+      "judged": {
+        "g1": {
+          "ES2015a": [
+            1,
+            1
+          ],
+          "IS1004b": [
+            8,
+            9
+          ],
+          "TS3009c": [
+            1,
+            1
+          ],
+          "ES2015d": [
+            3,
+            3
+          ],
+          "IS1004d": [
+            3,
+            3
+          ]
+        },
+        "precision": {
+          "num": 16,
+          "den": 17
+        },
+        "coverage": {
+          "ES2015a": [
+            0.20833333333333334,
+            0.125,
+            0.08333333333333333
+          ],
+          "IS1004b": [
+            0.25,
+            0.2222222222222222,
+            0.2777777777777778
+          ],
+          "TS3009c": [
+            0.12962962962962962,
+            0.0,
+            0.0
+          ],
+          "ES2015d": [
+            0.19444444444444445,
+            0.0,
+            0.1388888888888889
+          ],
+          "IS1004d": [
+            0.11363636363636363,
+            0.09090909090909091
+          ]
+        },
+        "coverage_mean": 0.12909652076318742,
+        "unparsed_g1_windows": 0,
+        "unparsed_coverage": 1
+      },
+      "dlift_meeting": {
+        "point": -0.0035798919473632963,
+        "low": -0.009484127821997835,
+        "high": 0.0038959234762091406
+      },
+      "dprecision": {
+        "point": 0.007843137254901933,
+        "low": -0.018099547511312153,
+        "high": 0.04833141542002295
+      },
+      "dcoverage_meeting": {
+        "point": -0.1260942760942761,
+        "low": -0.17887205387205388,
+        "high": -0.07331649831649831
+      }
+    }
+  },
+  "validity": {
+    "base_meeting_lift": {
+      "point": 0.009781490455352721,
+      "low": 0.0030693732974811446,
+      "high": 0.017421544656073918
+    },
+    "primary": "meeting coverage lift"
+  }
+}

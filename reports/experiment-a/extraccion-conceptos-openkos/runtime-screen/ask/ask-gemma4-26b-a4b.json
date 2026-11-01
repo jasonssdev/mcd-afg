@@ -1,0 +1,149 @@
+{
+ "baseline": "gemma4:26b-a4b",
+ "guardrails": {
+  "gemma4:26b-a4b": {
+   "suff_failure": 0.0,
+   "ans_failure": 0.0,
+   "suff_median_s": 1.8769999999999998,
+   "ans_median_s": null,
+   "grounded_refused": 0.12121212121212122,
+   "adjacent_missed": 0.0,
+   "spanish_answers": 0.0,
+   "compliance": 0.0
+  },
+  "gemma4:26b-a4b@llama.cpp": {
+   "suff_failure": 0.0,
+   "ans_failure": 0.0,
+   "suff_median_s": 1.548,
+   "ans_median_s": null,
+   "grounded_refused": 0.12121212121212122,
+   "adjacent_missed": 0.0,
+   "spanish_answers": 0.0,
+   "compliance": 0.0
+  },
+  "gemma4:26b-a4b@mlx": {
+   "suff_failure": 0.0,
+   "ans_failure": 0.0,
+   "suff_median_s": 1.231,
+   "ans_median_s": null,
+   "grounded_refused": 0.1484848484848485,
+   "adjacent_missed": 0.0,
+   "spanish_answers": 0.0,
+   "compliance": 0.0
+  }
+ },
+ "roles": {
+  "sufficiency": {
+   "baseline_mean": 0.9166666666666666,
+   "candidates": {
+    "gemma4:26b-a4b@llama.cpp": {
+     "delta": {
+      "n": 96,
+      "mean": 0.0,
+      "lo": 0.0,
+      "hi": 0.0
+     },
+     "per_set": {
+      "es-built": {
+       "n": 32,
+       "mean": 0.0,
+       "lo": 0.0,
+       "hi": 0.0
+      },
+      "es-en": {
+       "n": 32,
+       "mean": 0.0,
+       "lo": 0.0,
+       "hi": 0.0
+      },
+      "es-es": {
+       "n": 32,
+       "mean": 0.0,
+       "lo": 0.0,
+       "hi": 0.0
+      }
+     },
+     "vetoes": []
+    },
+    "gemma4:26b-a4b@mlx": {
+     "delta": {
+      "n": 96,
+      "mean": -0.01875,
+      "lo": -0.043750000000000004,
+      "hi": -0.002083333333333333
+     },
+     "per_set": {
+      "es-built": {
+       "n": 32,
+       "mean": -0.01875,
+       "lo": -0.05,
+       "hi": 0.0
+      },
+      "es-en": {
+       "n": 32,
+       "mean": -0.006249999999999999,
+       "lo": -0.018749999999999996,
+       "hi": 0.0
+      },
+      "es-es": {
+       "n": 32,
+       "mean": -0.03125,
+       "lo": -0.09375,
+       "hi": 0.0
+      }
+     },
+     "vetoes": [
+      "S1 grounded refusals above baseline"
+     ]
+    }
+   },
+   "kept": [
+    "gemma4:26b-a4b@llama.cpp"
+   ],
+   "dropped": {
+    "gemma4:26b-a4b@mlx": "veto: S1 grounded refusals above baseline"
+   },
+   "selected": null
+  },
+  "answer": {
+   "baseline_mean": null,
+   "candidates": {},
+   "kept": [],
+   "dropped": {},
+   "selected": null
+  },
+  "citation": {
+   "baseline_mean": null,
+   "candidates": {},
+   "kept": [],
+   "dropped": {},
+   "selected": null
+  }
+ },
+ "penalty": {
+  "gemma4:26b-a4b": {
+   "sufficiency": {
+    "n": 32,
+    "mean": 0.0,
+    "lo": 0.0,
+    "hi": 0.0
+   }
+  },
+  "gemma4:26b-a4b@llama.cpp": {
+   "sufficiency": {
+    "n": 32,
+    "mean": 0.0,
+    "lo": 0.0,
+    "hi": 0.0
+   }
+  },
+  "gemma4:26b-a4b@mlx": {
+   "sufficiency": {
+    "n": 32,
+    "mean": 0.025,
+    "lo": 0.0,
+    "hi": 0.07500000000000001
+   }
+  }
+ }
+}
