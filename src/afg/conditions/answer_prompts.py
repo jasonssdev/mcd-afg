@@ -4,7 +4,7 @@ C2 and C3 answer through ``openkos query``, which makes two model calls: a suffi
 check (``answer/sufficiency``) and the answer synthesis (``answer/system``). C1 answers
 with the same two prompts so that the conditions differ only in what they retrieve
 (thesis section 5.3). The files under ``prompts/answer/`` are copies of
-``src/openkos/prompts/answer/`` at openkos commit ``473b3fbb`` and are never edited: their
+``src/openkos/prompts/answer/`` at openkos release ``v0.7.0`` and are never edited: their
 wording speaks of "concepts" and a "compiled bundle", and that mismatch with transcript
 chunks is a declared limitation, not something to fix here.
 
@@ -21,7 +21,7 @@ import re
 from importlib import resources
 
 PINNED_RAW_SHA256 = {
-    "system": "9cbf11e8ac9f8220253b233f1475b5cea9716b86b5868ce78ae31b235917119c",
+    "system": "ec8a87ca28585d9e51030984d0797f8aedc09ec9168aaf8e1b382f9c6e8d5cee",
     "sufficiency": "afc4644b27500c2cd69ea6c28919275d5447baaf7ce8ff938e9de7add7936f56",
 }
 

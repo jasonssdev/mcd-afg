@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 09 — Modelos y su justificación |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 4.2 |
-| **Fecha** | 2026-10-28 |
+| **Versión** | 5.0 |
+| **Fecha** | 2026-11-01 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -21,6 +21,7 @@
 | 4.0 | 2026-10-26 | Se incorporan las etiquetas de atribución del error (OE4) de las fallas de C2 en E1: de nueve fallas, 4 son de recuperación, 3 de extracción y 2 de síntesis (sección 8.4). Se actualizan la dificultad 8, la decisión pendiente sobre fuentes en bruto (#146) y las limitaciones del juez, que además de indulgente con lo genérico es estricto con lo parcial. Son datos de desarrollo, de una sola serie y de una sola persona: una dirección, no un resultado. | Las etiquetas las puso jss al revisar las ocho fallas que la regla no podía atribuir (PR #177); el documento decía que no había ninguna cifra de OE4. Las cifras salen del [notebook 16](../../notebooks/16-jss-c2-fuentes-e1.ipynb) y del [notebook 19](../../notebooks/19-jss-modelos.ipynb). |
 | 4.1 | 2026-10-27 | Se agregan a las decisiones abiertas (sección 11.1) los cuatro controles de comparabilidad que el notebook 19 (sección 5.6) deja por revisar antes de la corrida formal: huella del generador por corrida, versión y huella de los *embeddings*, texto efectivo entregado al modelo y revisión de las instrucciones copiadas de OpenKOS. En la sección 8.4 se enlaza la figura de las etapas de las fallas de C2 y se remite al [notebook 20](../../notebooks/20-gm-mejoras-modelado.ipynb) como complemento. No cambia ninguna cifra ni decisión. | El PR #187 integró la revisión del modelado hecha por otro integrante del equipo (notebook 20) en el notebook 19; este documento, que es su guion, debía reflejar los controles pendientes. No cambia ninguna figura del documento. |
 | 4.2 | 2026-10-28 | Se precisan los controles C1/C2/C3, la referencia humana C3 y el alcance de C0, sin cambiar cifras ni decisiones. | Alinear el avance con las correcciones del notebook 19. |
+| 5.0 | 2026-11-01 | La versión de OpenKOS queda fijada en `==0.7.0` y el proyecto pasa a Python 3.14 (dificultad 4, decisión pendiente 2, estado del congelamiento y sección 6.5). Las corridas hechas con la 0.5.5 pasan a ser registros de esa versión y se rehacen con la 0.7.0 antes de las decisiones que dependen de ellas. La copia del *prompt* de síntesis de C1 se actualiza a la de la 0.7.0, que escribe la negativa en el idioma de la pregunta. | [ADR 0006](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) (enmienda del 2026-11-01) y [ADR 0002](../decisions/0002-adr-uv-and-src-layout.md) (enmienda del 2026-11-01): con Python 3.14 el *lock* cambia solo `openkos`, las pruebas pasan, el notebook 18 se ejecuta y el adaptador acepta la 0.7.0. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -491,11 +492,12 @@ no se reprodujeron aquí. Se citan porque explican qué modelo interviene en cad
 
 C1 hace la verificación de suficiencia (¿alcanza el contexto para responder?) con el mismo
 `qwen3:8b` que redacta. Si C2 y C3 se ejecutaran con una versión de OpenKOS que ya empaqueta
-`gemma4:26b-a4b` para esa verificación (la rama principal hoy, no la 0.6.0), **C2 y C3 decidirían
+`gemma4:26b-a4b` para esa verificación (es el caso de la 0.7.0, la versión fijada; no el de la 0.6.0), **C2 y C3 decidirían
 con otro modelo si el contexto alcanza** y las condiciones dejarían de ser iguales salvo en la
 representación: la abstención de C2 dependería de otro modelo. Hay dos salidas, que el equipo
-decide al fijar la versión (#94): fijar una versión sin esa verificación (la 0.6.0), o fijar
-`models: {sufficiency: qwen3:8b}` en el espacio de trabajo de C2 y C3. Importa especialmente
+decide ahora que la versión está fijada (#94, 0.7.0, que ya empaqueta esa verificación): fijar
+`models: {sufficiency: qwen3:8b}` en el espacio de trabajo de C2 y C3, o aceptar la diferencia y
+declararla. Importa especialmente
 porque, en las corridas de desarrollo, las 8 abstenciones de C1 y las 10 de C2 las decidió esa
 verificación y no la redacción (sección 8.2).
 
@@ -773,7 +775,7 @@ distinta máquina).
 | 1 | El recorte de contexto de OpenKOS invalidó una medición propia | El primer ajuste de C1 eligió 1600 / 0 / 8 (recall 0,642); al modelo le llegaba 0,446. Se repitió contando el texto entregado y el ganador pasó a 1200 / 1 / 5 | Corregido y documentado como enmienda del ADR 0007, sin borrar el registro original |
 | 2 | La marca de atribución `USED:` se pierde a veces | En 2 de 21 respuestas de C1 el modelo escribió `USED:` al final de la frase y OpenKOS solo la reconoce al inicio de línea; se citaron todos los fragmentos y bajó la precision de la citación. Afecta a la citación, no a la corrección | Pendiente: portar la corrección de OpenKOS a C1 cuando se publique y repetir la corrida de humo (#87) |
 | 3 | La regla de citación tuvo que revisarse | La primera versión exigía que todas las citas respaldaran la respuesta y rechazaba 8 de 13 respuestas, 7 de ellas correctas. Se cambió a «al menos una» y la precision se informa aparte | Resuelto (ADR 0009). Abierto: si el tamaño distinto de las citas de C1 y C2 sesga la comparación (#97) |
-| 4 | La versión de OpenKOS no está fijada | Las corridas de extracción usaron la 0.5.5; el *screen* usó el arnés de la 0.6.0; la rama principal ya cambia el modelo de la verificación de suficiencia. `pyproject.toml` pide `openkos>=0.5.5` (un piso, no una versión) | Pendiente (#94): fijar versión exacta y enmendar el ADR 0006 antes de cualquier corrida de evaluación |
+| 4 | La versión de OpenKOS estaba sin fijar | Las corridas de extracción usaron la 0.5.5; el *screen* usó el arnés de la 0.6.0; la 0.7.0 cambia el modelo de la verificación de suficiencia. `pyproject.toml` pedía `openkos>=0.5.5` (un piso, no una versión) | Resuelto (#94, ADR 0006): `openkos==0.7.0` exacta, con Python 3.14 (ADR 0002). Las corridas hechas con la 0.5.5 son registros de esa versión y se rehacen con la 0.7.0 antes de las decisiones que dependen de ellas (#146, #143) |
 | 5 | Cruce de idiomas | La extracción sale en inglés y la ground truth está en español; ni la oración inglesa de origen alcanza una similitud alta contra su propia referencia en español. La cobertura colapsa con τ alto por el idioma, no por los modelos | Mitigado: la ground truth se traduce al inglés para comparar (la traducción nunca es una etiqueta) y τ se calibra después de traducir |
 | 6 | El control nulo del umbral τ tiene un defecto | Al cruzar dos equipos con el mismo encargo, parte del «azar» es la misma decisión de verdad; la regla daba τ = 0,80 y casi no dejaba cobertura real | Desvío declarado: τ principal 0,70 con 0,75 y 0,80 de sensibilidad (ADR 0012). Pendiente: concordancia del juez con una persona sobre 50 pares |
 | 7 | El modelo base es menos fiable de lo que el *screen* mostraba | Con 5 corridas `qwen3:8b` no falló ninguna reunión en TS3009 (0 de 20); con 15 corridas nuevas fallaron 6 de 60 por tope de generación | Aprendizaje: la confirmatoria con corridas nuevas no es un trámite. Alimenta la decisión del extractor (#143) |
@@ -797,7 +799,7 @@ El equivalente a «usar el conjunto de prueba una sola vez» es **congelar todo 
 | # | Decisión | Estado y opciones | Qué cambia |
 |---|---|---|---|
 | 1 | Modelo extractor de C2 y alcance de la regla del «mismo modelo» (#143) | `qwen3.6:27b` gana en F1 pero tarda 1,8 a 3,6 veces más; `qwen3:8b` es el más rápido pero falló reuniones en la confirmatoria; `qwen3.6:35b-a3b` es más rápido que el 27b pero no pasa la regla de OpenKOS con 15 corridas. ¿La regla de la propuesta (§5.3) obliga al extractor a ser el mismo modelo que responde, o solo al que responde? | El costo del Experimento A y el sentido de comparar C2 con C1 y C3 |
-| 2 | Fijar la versión de OpenKOS (#94) | Hoy hay un piso (`>=0.5.5`), no una versión; la 0.6.0 ya existe y la rama principal cambia la verificación de suficiencia | Ninguna evaluación se corre sin versión fijada; hay que enmendar el ADR 0006 |
+| 2 | Fijar la versión de OpenKOS (#94) | **Resuelta el 2026-11-01:** `openkos==0.7.0` exacta, enmienda del ADR 0006. Queda rehacer con la 0.7.0 las corridas de desarrollo hechas con la 0.5.5 | Ninguna evaluación se corre con otra versión; un cambio de versión exige otra enmienda |
 | 3 | Verificación de suficiencia de C2 y C3 (6.5) | Versión sin esa verificación, o `models: {sufficiency: qwen3:8b}` en el espacio de trabajo | Sin esto, C1 y C2 abstendrían con modelos distintos |
 | 4 | Fuentes en bruto en C2 (#146) | C2 recupera la transcripción en bruto (`sources/`), que no es resultado de la extracción; hay que decidir si cuenta como parte de C2. Ya hay evidencia de OE4 (8.4): recuperación 4, extracción 3, síntesis 2 de 9 fallas, en desarrollo y con una serie | Qué mide la comparación en E1 |
 | 5 | Concordancia del juez de τ con una persona | 50 pares de la muestra juzgada; sin anotador asignado (ADR 0012) | Si es baja, el ADR 0012 se reemplaza con otro |
@@ -816,7 +818,7 @@ Los controles 6 a 9 son los que el notebook 19 (sección 5.6) lista antes de la 
 | Banco de preguntas (al menos 25 por estrato) validado | 0 de 115 filas escritas | Pendiente |
 | C3 ejecutable | Depende de la ground truth; hoy lanza «sin implementar» | Pendiente |
 | Modelos y huellas (generador, *embeddings*, extractor, juez) | Juez, generador y *embeddings* definidos; extractor por decidir | Parcial |
-| Versión de OpenKOS | Sin fijar (#94) | Pendiente |
+| Versión de OpenKOS | `==0.7.0` (#94, ADR 0006) | Congelado |
 | Parámetros de C1 | 1200 / 1 / 5 en `config/experiments.toml`; una prueba verifica que coinciden con el ganador guardado | Congelado |
 | Umbral τ | 0,70 principal; 0,75 y 0,80 de sensibilidad (ADR 0012) | Congelado, con concordancia del juez pendiente |
 | *Prompts* de respuesta | Copia byte a byte con huella SHA-256 verificada por prueba (ADR 0006) | Congelado |

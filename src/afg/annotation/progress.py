@@ -153,7 +153,7 @@ def is_delivered(paths: Iterable[Path], ref: str = "main") -> bool:
             )
             if same.returncode != 0:
                 return False
-    except (OSError, ValueError):
+    except OSError, ValueError:
         return False
     return True
 

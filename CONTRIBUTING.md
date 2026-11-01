@@ -112,7 +112,7 @@ responsable de su contenido.
 Después de clonar el repositorio:
 
 ```bash
-uv sync --group dev --group notebooks   # instala Python 3.13 si falta y todas las dependencias
+uv sync --group dev --group notebooks   # instala Python 3.14 si falta y todas las dependencias
 uv run afg --help                       # verifica el CLI
 uv run pytest -q                        # verifica los tests
 ```

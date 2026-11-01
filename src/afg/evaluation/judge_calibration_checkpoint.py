@@ -110,5 +110,5 @@ class CandidateCheckpoints:
                 calls=int(data["calls"]),
                 failures=int(data["failures"]),
             )
-        except (OSError, ValueError, KeyError, TypeError):
+        except OSError, ValueError, KeyError, TypeError:
             return None

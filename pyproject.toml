@@ -3,7 +3,7 @@ name = "mcd-afg"
 version = "0.1.0"
 description = "Evaluation harness comparing document RAG against a persistent structured representation of organizational decisions and their cross-meeting evolution (AMI Meeting Corpus)."
 readme = "README.md"
-requires-python = ">=3.13,<3.14"
+requires-python = ">=3.14,<3.15"
 license = "MIT"
 authors = [
   { name = "Jason Sepúlveda", email = "jasonssdev@gmail.com" },
@@ -33,7 +33,7 @@ dependencies = [
 # the corpus and an instrument backend are actually wired up; keeping them optional means
 # the default install never pays for weights or backends nobody asked for.
 [project.optional-dependencies]
-instrument = ["openkos>=0.5.5"]       # the engine under evaluation (thesis §5.9); interim floor, ADR 0006 pin pending (#94)
+instrument = ["openkos==0.7.0"]       # the engine under evaluation (thesis §5.9); exact pin, ADR 0006 (#94)
 llm = ["ollama>=0.4"]                 # local generative models (§5.8)
 embeddings = ["sentence-transformers>=3.3"]  # heavy; only needed for the alignment protocol
 
@@ -54,7 +54,7 @@ packages = ["src/afg"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py313"
+target-version = "py314"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "SIM", "RUF"]
@@ -69,7 +69,7 @@ markers = [
 ]
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.14"
 warn_unused_ignores = true
 disallow_untyped_defs = true
 ignore_missing_imports = true

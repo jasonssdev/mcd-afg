@@ -90,7 +90,7 @@ dos listas que puedan desincronizarse.
 | **Cuenta de GitHub** | Pull requests | [github.com](https://github.com) |
 
 **No hace falta instalar Python a mano.** `uv` descarga e instala la versión exacta que pide
-el proyecto (3.13, fijada en `.python-version`) la primera vez que se ejecuta `uv sync`.
+el proyecto (3.14, fijada en `.python-version`) la primera vez que se ejecuta `uv sync`.
 Tampoco hace falta instalar Jupyter aparte: viene en el grupo `notebooks`.
 
 Comprueba que las dos herramientas responden:
@@ -119,7 +119,7 @@ Si no tienes llaves SSH configuradas, usa HTTPS:
 Tu único remoto es `origin`, y apunta al repositorio del equipo. No hace falta agregar un
 segundo remoto para traer los cambios que ya se fusionaron: con `git pull` alcanza (ver §3.6).
 
-**2. Instala el entorno.** Un solo comando crea `.venv/`, instala Python 3.13 si falta, y
+**2. Instala el entorno.** Un solo comando crea `.venv/`, instala Python 3.14 si falta, y
 deja todas las dependencias de desarrollo y de notebooks:
 
 ```bash
@@ -443,7 +443,7 @@ Falta la anotación humana, y con ella todo lo demás.
 Existe además el andamiaje del Experimento B: el motor de corrida (`afg experiment b`), la
 línea base C1 con su ajuste (`afg c1 tune`, `afg c1 ask`) y una corrida de humo de desarrollo
 sobre ES2015, cuyas cifras no entran en resultados (ADR 0005). Las corridas reales están en
-pausa hasta fijar la versión de OpenKOS (#94), contar con su lector del bundle y la corrida de
+pausa (OpenKOS ya está fijado en la 0.7.0, #94) hasta contar con su lector del bundle y la corrida de
 extracción (#95), terminar el banco de preguntas y la sesión de adjudicación.
 
 | | Objetivo | Estado | Curso |

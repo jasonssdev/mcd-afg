@@ -2,7 +2,7 @@
 
 ## Estado
 
-Aceptada (2026-10-07). Enmendada (2026-10-15): la versión de OpenKOS a fijar queda abierta (#94); ver la sección Enmienda.
+Aceptada (2026-10-07). Enmendada (2026-10-15): la versión de OpenKOS a fijar queda abierta (#94). Enmendada (2026-11-01): OpenKOS fijado a `==0.7.0` (resuelve #94); ver las secciones Enmienda.
 
 ## Contexto
 
@@ -111,3 +111,42 @@ reescribe: queda como registro de lo que se decidió con la información de ento
   incompletos.
 - El seguimiento está en el issue #94 (fijar la versión en este ADR, en `pyproject.toml` y en
   `uv.lock`).
+
+## Enmienda (2026-11-01)
+
+Esta sección resuelve el pendiente de la [enmienda del 2026-10-15](#enmienda-2026-10-15). El
+texto anterior no se reescribe: queda como registro de lo que se decidió con la información de
+entonces.
+
+- **OpenKOS queda fijado a `openkos==0.7.0`**, versión exacta, en `pyproject.toml` (extra
+  `instrument`) y en `uv.lock` (#94). Python pasa a 3.14 por esta causa
+  ([ADR 0002](0002-adr-uv-and-src-layout.md), enmienda del 2026-11-01).
+- **Por qué la 0.7.0.** Incluye la corrección de la marca de atribución `USED:` (#1384, que la
+  enmienda anterior exigía) y los cambios que pedía el proyecto: el orden de reuniones del mismo
+  día con hora en `event_date` (#1349) y el paso de decisiones por reunión (#1348), ambos
+  publicados desde la 0.5.5. El issue #1350 (aplicación no asistida de revisiones) se cerró sin
+  construirse, porque su medición previa falló; la 0.7.0 no lo incluye y las revisiones
+  siguen con consentimiento por elemento. Además trae la
+  verificación de suficiencia con `gemma4:26b-a4b` (#1560, unos 24 GiB con los dos modelos
+  cargados), los extractos de la recuperación según la pregunta (ADR-0082 de OpenKOS), la
+  extracción sin juez selector por defecto (ADR-0080) y las negativas en el idioma de la
+  pregunta (#1583).
+- **Las corridas de desarrollo hechas con la 0.5.5 son registros de esa versión.** Las
+  corridas de humo de `reports/experiment-b/` y los espacios de trabajo de C2 construidos con
+  `afg experiment a` se rehacen con la 0.7.0 antes de las decisiones que dependen de ellos
+  (#146, #143).
+- **La copia de los prompts de respuesta de C1 se actualiza a la 0.7.0.** El prompt de
+  síntesis (`answer/system.md`) cambió en esta versión: la negativa ahora se escribe en el
+  idioma de la pregunta (#1583). La copia de C1 se reemplaza por la de la 0.7.0 y su SHA-256
+  fijado cambia; el de suficiencia no cambió. La prueba anterior comparaba la copia solo con
+  un hash fijado y no podía detectar el cambio; ahora además se compara con los archivos de la
+  versión de OpenKOS instalada, de modo que un cambio de versión que altere los prompts hace
+  fallar la suite. Los parámetros compartidos (ventana de 12.288 tokens, 8.192 de generación,
+  k = 60 de la fusión) no cambiaron.
+- **La verificación de suficiencia cambia de modelo** con esta versión (`gemma4:26b-a4b` en
+  lugar del modelo de respuesta). Si C2 y C3 la usan tal cual, deciden con otro modelo que C1
+  si el contexto alcanza; esa igualdad entre condiciones sigue por decidir (documento 09,
+  sección 6.5).
+- **Los parámetros pueden cambiar en las series de desarrollo** y se congelan antes de
+  cualquier serie de evaluación ([ADR 0005](0005-adr-development-evaluation-split.md)). Un
+  cambio posterior de versión exige otra enmienda.
