@@ -109,7 +109,7 @@ def test_evaluation_series_are_refused(env: dict[str, Any]) -> None:
     result = _run("--c2-extraction", RUN, "--series", "ES2002")
 
     assert result.exit_code == 1
-    assert "no es una serie de desarrollo" in result.output
+    assert "congelamiento" in " ".join(result.output.split())
 
 
 def test_missing_workspace_run_is_reported(env: dict[str, Any]) -> None:

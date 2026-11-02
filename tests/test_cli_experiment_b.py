@@ -310,8 +310,57 @@ def _bank(env: dict[str, Any], *rows: str) -> None:
     env["questions"].write_text(_BANK_HEADER + "".join(rows), encoding="utf-8")
 
 
-def test_bank_runs_only_validated_rows_and_reports_pending(env: dict[str, Any]) -> None:
+def _freeze_bank(env: dict[str, Any], tmp_path: Path) -> None:
+    """Record whose frozen bank is the file under test, wired into the CLI."""
+    from afg.experiments.freeze import FreezeSources, write_freeze_record
+    from tests.freeze_fixtures import COMMIT, make_sources
+
+    base = make_sources(tmp_path / "frozen", series=("ES2016",))
+    sources = FreezeSources(
+        root=base.root,
+        config_path=base.config_path,
+        decisions_dir=base.decisions_dir,
+        relations_dir=base.relations_dir,
+        question_bank_path=env["questions"],
+    )
+    record = tmp_path / "freeze.json"
+    write_freeze_record(record, sources, series=["ES2016"], adr="0017", commit=COMMIT)
+    mp = env["monkeypatch"]
+    mp.setattr(afg_cli, "FREEZE_PATH", record)
+    mp.setattr(afg_cli, "FreezeSources", lambda: sources)
+    mp.setattr("afg.experiments.freeze.code_changes_since", lambda commit, root=None: [])
+
+
+def test_bank_with_evaluation_series_is_refused_without_a_freeze_record(
+    env: dict[str, Any],
+) -> None:
+    _bank(env, _BANK_OK)
+    env["monkeypatch"].setattr(
+        afg_cli, "list_installed_models", lambda: pytest.fail("Ollama queried before the gate")
+    )
+    result = _invoke(env, "--run-name", "nofreeze")
+    assert result.exit_code == 1
+    assert "congelamiento" in _out(result) and "ES2016" in _out(result)
+    assert not env["out"].exists()
+
+
+def test_bank_with_evaluation_series_is_refused_when_it_differs_from_the_frozen_one(
+    env: dict[str, Any], tmp_path: Path
+) -> None:
+    _bank(env, _BANK_OK)
+    _freeze_bank(env, tmp_path)
+    _bank(env, _BANK_OK, _BANK_PENDING)  # edited after the freeze
+    result = _invoke(env, "--run-name", "edited")
+    assert result.exit_code == 1
+    assert "question_bank" in _out(result) and "huella" in _out(result)
+    assert not env["out"].exists()
+
+
+def test_bank_runs_only_validated_rows_and_reports_pending(
+    env: dict[str, Any], tmp_path: Path
+) -> None:
     _bank(env, _BANK_OK, _BANK_PENDING)
+    _freeze_bank(env, tmp_path)
     result = _invoke(env, "--runs", "1", "--run-name", "bank")
     assert result.exit_code == 0, result.output
     lines = (env["out"] / "bank" / "respuestas.jsonl").read_text(encoding="utf-8").splitlines()

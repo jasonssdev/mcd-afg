@@ -95,7 +95,8 @@ def test_non_development_series_are_refused_before_any_work(
     result = _run(*args, "--run-name", "no")
 
     assert result.exit_code == 1
-    assert "desarrollo" in result.output
+    out = " ".join(result.output.split())
+    assert "congelamiento" in out or "no pertenece" in out
     assert fake.calls == []
     assert not (tmp_path / "out").exists()
     assert not (tmp_path / "ws").exists()

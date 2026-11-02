@@ -170,7 +170,8 @@ def test_evaluation_and_unknown_series_are_refused_before_any_work(
     result = _run("--series", series, "--run-name", "no")
 
     assert result.exit_code == 1
-    assert "desarrollo" in result.output
+    out = " ".join(result.output.split())
+    assert "congelamiento" in out or "no pertenece" in out
     assert fake.calls == []
     assert not (tmp_path / "out").exists()
 

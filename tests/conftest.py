@@ -39,3 +39,18 @@ def _pinned_environment_passes(monkeypatch: pytest.MonkeyPatch) -> None:
     from tests.pinned_guard import passing_guard
 
     monkeypatch.setattr(afg_cli, "require_pinned_environment", passing_guard, raising=False)
+
+
+@pytest.fixture(autouse=True)
+def _no_freeze_record(
+    monkeypatch: pytest.MonkeyPatch, tmp_path_factory: pytest.TempPathFactory
+) -> None:
+    """No test sees the real ``config/freeze.json`` (it exists once the freeze ADR is merged).
+
+    The freeze gate is tested in ``test_freeze.py`` and ``test_cli_freeze_gate.py`` with records
+    written under ``tmp_path``; the other CLI tests run as if nothing were frozen.
+    """
+    import afg.cli as afg_cli
+
+    absent = tmp_path_factory.mktemp("freeze") / "freeze.json"
+    monkeypatch.setattr(afg_cli, "FREEZE_PATH", absent, raising=False)
