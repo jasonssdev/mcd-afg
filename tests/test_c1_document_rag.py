@@ -10,23 +10,23 @@ from typing import Any
 
 import pytest
 
-from afg.conditions.answer_prompts import (
-    sent_prompt_sha256,
-    sufficiency_prompt,
-    system_prompt,
-)
 from afg.conditions.base import Condition
+from afg.conditions.c1_answer_prompt import (
+    ABSTENTION_SENTENCE,
+    answer_prompt,
+    sent_prompt_sha256,
+)
 from afg.conditions.c1_chunking import chunk_meetings
 from afg.conditions.c1_document_rag import (
-    NO_ANSWER_IN_CONTEXT,
     NO_MATCH,
+    AnswerTrace,
     ChatError,
     ChatUnavailableError,
     DocumentRagCondition,
     GenerationSettings,
     OllamaChatBackend,
     assemble_context,
-    split_attribution,
+    parse_citations,
     strip_concept_id_scaffolding,
 )
 from afg.conditions.c1_tuning import PinnedC1Params
@@ -129,6 +129,11 @@ def _condition(
     )
 
 
+def _user_message(chat: ScriptedChat) -> str:
+    (call,) = chat.calls
+    return str(call["messages"][1]["content"])
+
+
 # --- settings --------------------------------------------------------------------------
 
 
@@ -164,58 +169,58 @@ def test_condition_satisfies_the_condition_protocol(transcripts: Path) -> None:
     assert isinstance(_condition(transcripts, ScriptedChat()), Condition)
 
 
-# --- the two-call flow -----------------------------------------------------------------
+# --- the one-call flow ------------------------------------------------------------------
 
 
-def test_answer_runs_sufficiency_then_synthesis_with_the_shared_user_message(
+def test_answer_makes_one_call_with_the_generic_prompt_and_the_shared_user_message(
     transcripts: Path,
 ) -> None:
-    chat = ScriptedChat("the remote control costs twenty five euros", "Twenty five euros.\nUSED: 1")
+    chat = ScriptedChat("Twenty five euros [1].")
     answer, trace = _condition(transcripts, chat).answer_with_trace(_question())
 
-    assert len(chat.calls) == 2
-    sufficiency, synthesis = chat.calls
-    assert [m["role"] for m in sufficiency["messages"]] == ["system", "user"]
-    assert sufficiency["messages"][0]["content"] == sufficiency_prompt()
-    assert synthesis["messages"][0]["content"] == system_prompt()
-    user = synthesis["messages"][1]["content"]
-    assert sufficiency["messages"][1]["content"] == user
+    (call,) = chat.calls
+    assert [m["role"] for m in call["messages"]] == ["system", "user"]
+    assert call["messages"][0]["content"] == answer_prompt()
+    user = call["messages"][1]["content"]
     assert user.startswith("CONTEXT:\n\n[1] [concept_id: ")
     assert "\n\n[2] [concept_id: " in user
     assert user.endswith("\n\nQUESTION:\nwhat does the remote control cost?")
+    assert call["model"] == "qwen3:8b"
     assert answer.condition == "C1"
     assert answer.question_id == "q1"
-    assert answer.text == "Twenty five euros."
+    assert answer.text == "Twenty five euros [1]."
     assert answer.abstained is False
     assert trace.outcome == "answered"
 
 
-def test_every_call_sends_the_model_and_the_fixed_options(transcripts: Path) -> None:
-    chat = ScriptedChat("quote", "answer\nUSED: 1")
+def test_every_call_sends_the_fixed_options(transcripts: Path) -> None:
+    chat = ScriptedChat("answer [1]")
     _condition(transcripts, chat).answer(_question())
-    for call in chat.calls:
-        assert call["model"] == "qwen3:8b"
-        assert call["options"] == SETTINGS.options
+    assert chat.calls[0]["options"] == SETTINGS.options
+
+
+def test_there_is_no_sufficiency_call_or_trace_field() -> None:
+    names = {f.name for f in dataclasses.fields(AnswerTrace)}
+    assert not {n for n in names if "sufficiency" in n}
+    assert "sufficiency_check" not in {f.name for f in dataclasses.fields(DocumentRagCondition)}
+    assert not hasattr(GenerationSettings, "sufficiency_model")
 
 
 def test_trace_hashes_are_those_of_the_prompts_as_sent(transcripts: Path) -> None:
-    chat = ScriptedChat("quote", "answer\nUSED: 1")
+    chat = ScriptedChat("answer [1]")
     _, trace = _condition(transcripts, chat).answer_with_trace(_question())
-    user = chat.calls[1]["messages"][1]["content"]
-    assert trace.system_sha256 == sent_prompt_sha256(system_prompt())
-    assert trace.sufficiency_sha256 == sent_prompt_sha256(sufficiency_prompt())
-    assert trace.user_sha256 == sent_prompt_sha256(user)
-    assert trace.sufficiency_invoked is True
-    assert trace.sufficiency_raw_reply == "quote"
+    assert trace.system_sha256 == sent_prompt_sha256(answer_prompt())
+    assert trace.user_sha256 == sent_prompt_sha256(_user_message(chat))
+    assert trace.raw_reply == "answer [1]"
     assert trace.model == "qwen3:8b"
     assert (trace.temperature, trace.seed) == (0.1, 42)
     assert (trace.context_window, trace.max_generation_tokens) == (12288, 8192)
 
 
 def test_trace_blocks_are_exactly_the_numbered_text_sent(transcripts: Path) -> None:
-    chat = ScriptedChat("quote", "answer\nUSED: 1")
+    chat = ScriptedChat("answer [1]")
     _, trace = _condition(transcripts, chat).answer_with_trace(_question())
-    user = chat.calls[1]["messages"][1]["content"]
+    user = _user_message(chat)
     assert [b.index for b in trace.context_blocks] == [1, 2]
     for block in trace.context_blocks:
         assert f"[{block.index}] {block.text}" in user
@@ -226,16 +231,16 @@ def test_trace_blocks_are_exactly_the_numbered_text_sent(transcripts: Path) -> N
 
 
 def test_trace_is_json_serialisable(transcripts: Path) -> None:
-    chat = ScriptedChat("quote", "answer\nUSED: 1")
+    chat = ScriptedChat("answer [1]")
     _, trace = _condition(transcripts, chat).answer_with_trace(_question())
     json.dumps(dataclasses.asdict(trace))
 
 
-# --- USED: handling --------------------------------------------------------------------
+# --- inline [n] citations --------------------------------------------------------------
 
 
-def test_citations_are_the_acts_of_the_blocks_named_in_used(transcripts: Path) -> None:
-    chat = ScriptedChat("quote", "answer\nUSED: 2")
+def test_citations_are_the_acts_of_the_blocks_cited_inline(transcripts: Path) -> None:
+    chat = ScriptedChat("It costs twenty five euros [2].")
     answer, trace = _condition(transcripts, chat).answer_with_trace(_question())
     cited = trace.context_blocks[1]
     assert trace.used_indices == (2,)
@@ -244,49 +249,41 @@ def test_citations_are_the_acts_of_the_blocks_named_in_used(transcripts: Path) -
     assert answer.cited_evidence
     cited_acts = {a for span in answer.cited_evidence for a in span.dialogue_act_ids}
     assert cited_acts == set(trace.cited_acts[cited.chunk_id])
-    assert "USED" not in answer.text
 
 
-def test_missing_used_line_cites_every_block_sent(transcripts: Path) -> None:
-    chat = ScriptedChat("quote", "answer without attribution")
+def test_a_reply_without_markers_cites_nothing(transcripts: Path) -> None:
+    chat = ScriptedChat("answer without citations")
     answer, trace = _condition(transcripts, chat).answer_with_trace(_question())
     assert trace.attribution == "absent"
     assert trace.used_indices == ()
-    assert len(trace.cited_chunk_ids) == 2
-    assert answer.text == "answer without attribution"
-
-
-def test_unusable_used_line_cites_every_block_and_is_still_stripped(transcripts: Path) -> None:
-    chat = ScriptedChat("quote", "answer\nUSED: 99")
-    answer, trace = _condition(transcripts, chat).answer_with_trace(_question())
-    assert trace.attribution == "unparsed"
-    assert len(trace.cited_chunk_ids) == 2
-    assert answer.text == "answer"
-
-
-def test_used_none_cites_nothing_but_is_not_an_abstention(transcripts: Path) -> None:
-    chat = ScriptedChat("quote", "I do not know.\nUSED: none")
-    answer, trace = _condition(transcripts, chat).answer_with_trace(_question())
-    assert trace.attribution == "reported"
     assert trace.cited_chunk_ids == ()
     assert answer.cited_evidence == ()
     assert answer.abstained is False
-    assert trace.outcome == "answered"
+    assert answer.text == "answer without citations"
+
+
+def test_out_of_range_markers_are_ignored(transcripts: Path) -> None:
+    chat = ScriptedChat("answer [99] [0]")
+    answer, trace = _condition(transcripts, chat).answer_with_trace(_question())
+    assert trace.attribution == "absent"
+    assert trace.cited_chunk_ids == ()
+    assert answer.cited_evidence == ()
+
+
+def test_parse_citations_dedups_orders_and_bounds() -> None:
+    assert parse_citations("a [2] b [1][2] c [1, 3]", 3) == (1, 2, 3)
+    assert parse_citations("a [3] b [4] [0]", 3) == (3,)
+    assert parse_citations("no markers, a list [x] and (2)", 3) == ()
 
 
 def test_citations_group_dialogue_acts_by_meeting(transcripts: Path) -> None:
-    chat = ScriptedChat("quote", "answer")
+    chat = ScriptedChat("answer [1][2][3][4][5][6][7][8]")
     answer, _ = _condition(transcripts, chat, params=PinnedC1Params(120, 0, 8)).answer_with_trace(
         _question()
     )
     meetings = [span.meeting_id for span in answer.cited_evidence]
     assert meetings == sorted(set(meetings)) == ["ES2015a", "ES2015b"]
     assert all(isinstance(span, EvidenceSpan) for span in answer.cited_evidence)
-
-
-def test_split_attribution_last_marker_wins_and_is_stripped() -> None:
-    prose, used, status = split_attribution("a\nUSED: 1\nb\nUSED: 2, 3", 3)
-    assert (prose, used, status) == ("a\nUSED: 1\nb", frozenset({2, 3}), "reported")
 
 
 def test_strip_concept_id_scaffolding_removes_leaked_labels() -> None:
@@ -298,24 +295,27 @@ def test_strip_concept_id_scaffolding_removes_leaked_labels() -> None:
 # --- abstention ------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("reply", ["NONE", "none.", '  "None" ', "**NONE**"])
-def test_sufficiency_none_abstains_without_synthesis(transcripts: Path, reply: str) -> None:
+@pytest.mark.parametrize("reply", [ABSTENTION_SENTENCE, "i don't know", ' "I don\'t know!" '])
+def test_the_fixed_sentence_is_an_abstention(transcripts: Path, reply: str) -> None:
     chat = ScriptedChat(reply)
     answer, trace = _condition(transcripts, chat).answer_with_trace(_question("who won?"))
     assert len(chat.calls) == 1
     assert answer.abstained is True
-    assert answer.text == NO_ANSWER_IN_CONTEXT
+    assert answer.text == reply.strip()
     assert answer.cited_evidence == ()
     assert trace.outcome == "no_answer_in_context"
-    assert trace.system_sha256 is None
-    assert trace.user_sha256 is not None
+    assert trace.raw_reply == reply
+    assert trace.system_sha256 == sent_prompt_sha256(answer_prompt())
+    assert trace.cited_chunk_ids == ()
     assert trace.context_blocks
 
 
-def test_a_reply_that_merely_contains_none_is_not_a_refusal(transcripts: Path) -> None:
-    chat = ScriptedChat("There is none left, said the PM.", "answer\nUSED: 1")
-    answer, _ = _condition(transcripts, chat).answer_with_trace(_question())
+def test_a_reply_that_merely_contains_the_sentence_is_an_answer(transcripts: Path) -> None:
+    chat = ScriptedChat("I don't know exactly, but about 25 euros [1].")
+    answer, trace = _condition(transcripts, chat).answer_with_trace(_question())
     assert answer.abstained is False
+    assert trace.outcome == "answered"
+    assert trace.cited_chunk_ids
 
 
 def test_a_blank_question_is_a_no_match_without_any_call(transcripts: Path) -> None:
@@ -329,22 +329,14 @@ def test_a_blank_question_is_a_no_match_without_any_call(transcripts: Path) -> N
     assert trace.outcome == "no_match"
 
 
-def test_transient_sufficiency_failure_fails_open(transcripts: Path) -> None:
-    chat = ScriptedChat(ChatError("boom"), "answer\nUSED: 1")
-    answer, trace = _condition(transcripts, chat).answer_with_trace(_question())
-    assert trace.sufficiency_degraded is True
-    assert trace.sufficiency_raw_reply is None
-    assert answer.abstained is False
-
-
 def test_fatal_backend_failure_propagates(transcripts: Path) -> None:
     chat = ScriptedChat(ChatUnavailableError("ollama is down"))
     with pytest.raises(ChatUnavailableError):
         _condition(transcripts, chat).answer(_question())
 
 
-def test_synthesis_failure_propagates(transcripts: Path) -> None:
-    chat = ScriptedChat("quote", ChatError("capped"))
+def test_generation_failure_propagates(transcripts: Path) -> None:
+    chat = ScriptedChat(ChatError("capped"))
     with pytest.raises(ChatError):
         _condition(transcripts, chat).answer(_question())
 
@@ -353,7 +345,7 @@ def test_synthesis_failure_propagates(transcripts: Path) -> None:
 
 
 def test_index_covers_the_whole_series_and_nothing_else(transcripts: Path) -> None:
-    chat = ScriptedChat("quote", "a\nUSED: 1", "quote", "b\nUSED: 1")
+    chat = ScriptedChat("a [1]", "b [1]")
     _, trace = _condition(transcripts, chat, params=PinnedC1Params(120, 0, 8)).answer_with_trace(
         _question()
     )
@@ -362,7 +354,7 @@ def test_index_covers_the_whole_series_and_nothing_else(transcripts: Path) -> No
 
 
 def test_index_is_built_once_per_series(transcripts: Path) -> None:
-    chat = ScriptedChat("q", "a\nUSED: 1", "q", "b\nUSED: 1", "q", "c\nUSED: 1")
+    chat = ScriptedChat("a [1]", "b [1]", "c [1]")
     embedder = CountingEmbedder()
     condition = _condition(transcripts, chat, embedder)
     condition.answer(_question("first?"))
@@ -384,14 +376,14 @@ def test_missing_series_transcripts_raise(transcripts: Path) -> None:
 def test_blocks_that_do_not_fit_the_window_are_excerpted(tmp_path: Path) -> None:
     long_turns = [f"word{i} " * 600 for i in range(2)]  # ~3,600 chars each
     _write_meeting(tmp_path, "ES2015a", long_turns)
-    chat = ScriptedChat("quote", "answer\nUSED: 1")
+    chat = ScriptedChat("answer [1]")
     tight = dataclasses.replace(SETTINGS, context_window=8192 + 1600)
     _, trace = _condition(
         tmp_path, chat, settings=tight, params=PinnedC1Params(120, 0, 2)
     ).answer_with_trace(_question("word1?"))
     assert trace.context_blocks
     assert all(b.excerpted for b in trace.context_blocks)
-    sent = chat.calls[1]["messages"][1]["content"]
+    sent = _user_message(chat)
     assert len(sent) < sum(len(t) for t in long_turns)
 
 
@@ -414,7 +406,7 @@ def test_blocks_with_no_room_are_omitted_and_never_cited(tmp_path: Path) -> None
 def test_assemble_context_is_what_the_condition_sends(tmp_path: Path) -> None:
     long_turns = [f"word{i} " * 600 for i in range(2)]
     _write_meeting(tmp_path, "ES2015a", long_turns)
-    chat = ScriptedChat("quote", "answer\nUSED: 1")
+    chat = ScriptedChat("answer [1]")
     tight = dataclasses.replace(SETTINGS, context_window=8192 + 1600)
     _, trace = _condition(
         tmp_path, chat, settings=tight, params=PinnedC1Params(120, 0, 2)
@@ -467,7 +459,7 @@ def test_ollama_backend_raises_when_generation_is_capped() -> None:
 
 
 def test_with_seed_changes_only_the_seed_and_shares_the_index(transcripts: Path) -> None:
-    chat = ScriptedChat("quote", "answer\nUSED: 1", "quote", "answer\nUSED: 1")
+    chat = ScriptedChat("answer [1]", "answer [1]")
     embedder = CountingEmbedder()
     base = _condition(transcripts, chat, embedder)
     base.answer(_question())

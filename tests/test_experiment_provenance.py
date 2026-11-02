@@ -48,6 +48,7 @@ def _collect(probe: FakeProbe, questions: Path | None = None, **over: Any) -> di
     kwargs: dict[str, Any] = {
         "generative_model": "qwen3:8b",
         "judge_model": "gpt-oss:20b",
+        "sufficiency_model": "gemma4:26b-a4b",
         "embedding_model": "bge-m3",
         "c1_params": _C1,
         "questions_path": questions,
@@ -60,11 +61,19 @@ def test_digests_versions_and_params_are_recorded(tmp_path: Path) -> None:
     questions = tmp_path / "q.csv"
     questions.write_bytes(b"id,text\nq1,hola\n")
     probe = FakeProbe(
-        digests={"qwen3:8b": "aaa", "gpt-oss:20b": "bbb", "bge-m3:latest": "ccc"}, dirty=True
+        digests={
+            "qwen3:8b": "aaa",
+            "gpt-oss:20b": "bbb",
+            "bge-m3:latest": "ccc",
+            "gemma4:26b-a4b": "ddd",
+        },
+        dirty=True,
     )
     out = _collect(probe, questions)
     assert out["generative_model_digest"] == "aaa"
     assert out["judge_model_digest"] == "bbb"
+    assert out["sufficiency_model"] == "gemma4:26b-a4b"
+    assert out["sufficiency_model_digest"] == "ddd"
     assert out["embedding_model_digest"] == "ccc"  # untagged name resolves to :latest
     assert out["model_digest_source"] == "ollama /api/tags"
     assert out["ollama_version"] == "0.9.9"
@@ -78,6 +87,7 @@ def test_unreachable_ollama_gives_null_digests_with_a_source_note() -> None:
     out = _collect(FakeProbe(digests=None, ollama=None, openkos=None, dirty=None))
     assert out["generative_model_digest"] is None
     assert out["judge_model_digest"] is None
+    assert out["sufficiency_model_digest"] is None
     assert out["embedding_model_digest"] is None
     assert out["model_digest_source"].startswith("unavailable")
     assert out["ollama_version"] is None

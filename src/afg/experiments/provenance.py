@@ -129,6 +129,7 @@ def collect_provenance(
     *,
     generative_model: str,
     judge_model: str | None = None,
+    sufficiency_model: str | None = None,
     embedding_model: str,
     c1_params: Mapping[str, Any] | None = None,
     questions_path: Path | None = None,
@@ -140,6 +141,10 @@ def collect_provenance(
     return {
         "generative_model_digest": _digest_of(generative_model, digests),
         "judge_model_digest": _digest_of(judge_model, digests) if judge_model else None,
+        "sufficiency_model": sufficiency_model,
+        "sufficiency_model_digest": (
+            _digest_of(sufficiency_model, digests) if sufficiency_model else None
+        ),
         "embedding_model_digest": _digest_of(embedding_model, digests),
         "model_digest_source": (
             DIGEST_SOURCE if digests is not None else "unavailable: Ollama not reachable"

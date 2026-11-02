@@ -25,6 +25,6 @@
 *.pptx binary
 *.docx binary
 
-# Prompts copiados byte a byte desde OpenKOS (ADR 0006): se comparan por SHA-256, asi que
+# Prompts congelados de C1 (ADR 0006): se comparan por SHA-256, asi que
 # git nunca debe reescribir sus finales de linea. Va al final para ganarle a *.md.
 src/afg/conditions/prompts/** -text
