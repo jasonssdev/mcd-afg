@@ -20,6 +20,7 @@ if TYPE_CHECKING:
 
     from afg.annotation.workspace import AnnotationPlan, WorkspacePaths
     from afg.conditions.c1_chunking import FrozenTurn
+    from afg.evaluation.scoring import SimilarityFn
 
 from afg.annotation.blocking import (
     BLOCKER_VERSION,
@@ -145,6 +146,7 @@ from afg.evaluation.judge_calibration_worksheet import (
     write_worksheet,
 )
 from afg.evaluation.reference import NotAdjudicatedError, load_series_reference
+from afg.evaluation.relations import load_gold_pairs
 from afg.evaluation.translation import TranslationError
 from afg.experiments.provenance import LiveProbe, ProvenanceProbe, collect_provenance
 from afg.experiments.question_bank import (
@@ -199,6 +201,9 @@ typer_rich_utils.OPTIONS_PANEL_TITLE = "Opciones"
 typer_rich_utils.ARGUMENTS_PANEL_TITLE = "Argumentos"
 
 _PANEL_ANNOTATORS = "Para anotadores"
+TAU_PRINCIPAL = 0.70
+"""The principal alignment threshold of Experiment A (ADR 0012)."""
+
 _PANEL_MAINTENANCE = "Para mantenimiento (mantenedor)"
 
 app = typer.Typer(
@@ -628,21 +633,6 @@ def gold_build(
         console.print("  (ninguna)")
 
     console.print(f"Escrito: {out_path}")
-
-
-@gold_app.command("link", rich_help_panel=_PANEL_MAINTENANCE)
-def gold_link() -> None:
-    """(Mantenedor) Sin implementar: espera OpenKOS ~0.6.0 (sale con código 2).
-
-    Candidatos de relación entre reuniones (tesis, secciones 3 y 5.1). Hasta entonces,
-    `afg gold candidates` genera los candidatos de una serie.
-    """
-    console.print(
-        "[yellow]Sin implementar: espera OpenKOS ~0.6.0. Necesita el conjunto de decisiones "
-        "de referencia (`afg gold build`). Mientras tanto, `afg gold candidates` genera los "
-        "pares candidatos de una serie.[/yellow]"
-    )
-    raise typer.Exit(code=2)
 
 
 def _print_pooled_agreement() -> None:
@@ -2591,6 +2581,145 @@ def experiment_a_batch(
         console.print(escape(line))
     console.print(f"Manifiesto en {_short(run_dir / 'manifest.json')}.")
     if manifest["status"] != "ok":
+        raise typer.Exit(code=1)
+
+
+def make_alignment_similarity() -> SimilarityFn:
+    """Cosine similarity over the alignment embeddings (model from the config, cached per text)."""
+    from afg.evaluation.alignment_analysis import embedding_similarity
+
+    embedder = OllamaEmbedder.from_config()
+    cache: dict[str, list[float]] = {}
+
+    def embed(texts: Sequence[str]) -> list[list[float]]:
+        missing = [t for t in dict.fromkeys(texts) if t not in cache]
+        if missing:
+            cache.update(zip(missing, embedder.embed(missing), strict=True))
+        return [cache[t] for t in texts]
+
+    return embedding_similarity(embed)
+
+
+def _relations_series(run_root: Path, series: str | None) -> list[str]:
+    """``--series`` as a list, or every series folder of the extraction run."""
+    if series is not None:
+        return list(dict.fromkeys(s.strip() for s in series.split(",") if s.strip()))
+    return sorted(path.name for path in run_root.iterdir() if path.is_dir())
+
+
+def _relations_summary_lines(report: dict[str, Any]) -> list[str]:
+    def rate(proportion: dict[str, Any]) -> str:
+        value = proportion["rate"]
+        text = "n/d" if value is None else f"{value:.2f}"
+        return f"{text} ({proportion['successes']}/{proportion['trials']})"
+
+    pooled = report["pooled"]
+    lines = [
+        f"Series: {', '.join(report['series'])}; espacios puntuados: "
+        f"{len(report['entries']) - report['n_errors']} de {len(report['entries'])}.",
+        f"Relaciones de oro: {pooled['n_gold_links']} "
+        f"(alineadas: {pooled['n_gold_links_aligned']}); "
+        f"relaciones de la máquina: {pooled['n_machine_links']}.",
+    ]
+    for scope in ("end_to_end", "conditional"):
+        existence = pooled[f"existence_{scope}"]
+        label = "extremo a extremo" if scope == "end_to_end" else "condicionado a la alineación"
+        lines.append(
+            f"  Existencia ({label}): precisión {rate(existence['precision'])}, "
+            f"recall {rate(existence['recall'])}."
+        )
+    lines.append(
+        f"  Tipo (principal, extremo a extremo): {rate(pooled['type_principal']['end_to_end'])}; "
+        f"dirección (principal, extremo a extremo): "
+        f"{rate(pooled['direction_principal']['end_to_end'])}; "
+        f"dirección desconocida: {rate(pooled['unknown_direction'])}."
+    )
+    return lines
+
+
+@experiment_app.command("a-relations")
+def experiment_a_relations(
+    c2_extraction: Annotated[
+        str,
+        typer.Option(
+            "--c2-extraction",
+            help="`--run-name` de la corrida de `afg experiment a-batch` cuyos espacios de "
+            "trabajo se puntúan (`data/interim/openkos/<corrida>/<SERIE>/run-<r>`).",
+        ),
+    ],
+    series: Annotated[
+        str | None,
+        typer.Option(
+            "--series",
+            help="Series separadas por comas (solo de desarrollo, ADR 0005); por defecto, "
+            "todas las de la corrida.",
+        ),
+    ] = None,
+    run_revisions: Annotated[
+        bool,
+        typer.Option(
+            "--run-revisions",
+            help="Corre `openkos revisions --auto --all` en cada espacio antes de leerlo "
+            "(gasta llamadas al modelo); sin esta opción solo lee lo ya calculado.",
+        ),
+    ] = False,
+    tau: Annotated[
+        float,
+        typer.Option("--tau", min=0.0, max=1.0, help="Umbral de la alineación (ADR 0012)."),
+    ] = TAU_PRINCIPAL,
+) -> None:
+    """Puntúa las relaciones temporales de OpenKOS contra las de oro (OE2, H2 y H3; ADR 0016).
+
+    Por cada espacio de trabajo `run-r` lee las decisiones, las alinea con las de oro, lee los
+    hallazgos de `openkos revisions` (`.openkos/findings.db`, solo lectura) y puntúa existencia,
+    tipo y dirección en las variantes principal y de sensibilidad. Escribe
+    `reports/experiment-a/<corrida>/relaciones.json`. Solo series de desarrollo.
+    """
+    import json
+
+    from afg.experiments.relations_report import score_workspaces
+
+    run_root = OPENKOS_WORKSPACES_DIR / c2_extraction
+    if not run_root.is_dir():
+        console.print(
+            f"[bold red]No hay espacios de trabajo en {_short(run_root)}. Corre antes "
+            f"`afg experiment a-batch --run-name {escape(c2_extraction)}`.[/bold red]"
+        )
+        raise typer.Exit(code=1)
+    series_ids = _relations_series(run_root, series)
+    partition = _require_development_series(series_ids)
+    try:
+        report = score_workspaces(
+            run_name=c2_extraction,
+            workspace_root=run_root,
+            series_ids=series_ids,
+            reference_of=lambda s: load_series_reference(s, language="en").decisions,
+            gold_of=load_gold_pairs,
+            similarity=make_alignment_similarity(),
+            tau=tau,
+            transcripts_dir=TRANSCRIPTS_DIR,
+            runner=SubprocessRunner(),
+            executable=openkos_run_settings().executable,
+            run_revisions_first=run_revisions,
+            report=lambda line: console.print(escape(line)),
+            partition=partition,
+        )
+    except (FileNotFoundError, NotAdjudicatedError, TranslationError) as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    out_path = EXPERIMENT_A_DIR / c2_extraction / "relaciones.json"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    for entry in report["entries"]:
+        if "error" in entry:
+            console.print(
+                f"[bold red]{entry['series']} run-{entry['run']}: "
+                f"{escape(entry['error'])}[/bold red]"
+            )
+    for line in _relations_summary_lines(report):
+        console.print(escape(line))
+    console.print(f"Escrito: {_short(out_path)}.")
+    if report["n_errors"]:
         raise typer.Exit(code=1)
 
 

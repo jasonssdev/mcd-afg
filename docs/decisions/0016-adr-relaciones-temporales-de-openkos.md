@@ -1,0 +1,41 @@
+# 0016. Las relaciones temporales de C2 se leen de `openkos revisions` y se puntúan con existencia, tipo y dirección, en un valor principal y uno de sensibilidad
+
+## Estado
+
+Aceptada (2026-11-01). Resuelve el [issue #96](https://github.com/jasonssdev/mcd-afg/issues/96): hasta ahora el Experimento A solo puntuaba decisiones, así que OE2 no cubría las relaciones temporales. Retira el comando `afg gold link`. No cambia el umbral τ ([ADR 0012](0012-adr-umbral-tau-del-experimento-a.md)) ni la alineación de decisiones ([ADR 0011](0011-adr-alineacion-rol-e-intervalos-del-experimento-a.md)).
+
+## Contexto
+
+OE2 mide qué tan bien el sistema compilado extrae decisiones **y** las relaciones entre ellas (reafirma, refina, revierte, reemplaza). Las hipótesis H2 (la brecha C3 − C2 es mayor en las relaciones temporales que en la identificación de decisiones) y H3 (la dirección es un modo de falla dominante) se refieren a esas relaciones, y la única métrica disponible era `relation_direction_accuracy` ([`src/afg/evaluation/metrics.py`](../../src/afg/evaluation/metrics.py)), sin una forma de obtener las relaciones de la máquina.
+
+OpenKOS 0.7.0 ([ADR 0006](0006-adr-c1-rag-separado-con-respuesta-de-openkos.md), versión exacta) trae el comando experimental `openkos revisions` (opciones `--auto`, `--all`, `--fresh`, `--wait`, `--include-confidential`; no tiene `--json`). Juzga los pares candidatos de conceptos `Decision` y guarda cada veredicto en `.openkos/findings.db`, tabla `revision_findings`: `pair_id_0` y `pair_id_1` (ordenados), `verdict` (`reverses`, `refines`, `reaffirms`, `unrelated`), `confidence`, `rationale`, las citas y las fechas de cada lado con su estado (`date_0`, `date_1`, `date_state_0`, `date_state_1`) y `prompt_version`. **La dirección no se guarda**: OpenKOS la recalcula a partir de las fechas (`resolution/decision_revision.py`, `pair_direction`), de modo que ningún texto del modelo decide cuál decisión es la posterior.
+
+La referencia humana es la tarea B: `data/processed/relations/<SERIE>.candidates.adjudicated.csv` (`final_relation`, `final_direction_ok`) en las series anotadas por dos personas y `<SERIE>.candidates.gv.csv` (`relation`, `direction_ok`) en las de un solo anotador (IS1004). En desarrollo hay **9 relaciones**: ES2015 3 (2 reafirma, 1 refina), TS3009 3 (2 refina, 1 reemplaza) e IS1004 3 (3 refina). Solo se usan series de desarrollo ([ADR 0005](0005-adr-development-evaluation-split.md)).
+
+## Decisión
+
+1. **Se lee `.openkos/findings.db` en solo lectura** (SQLite en modo `ro`), con una guarda de esquema: si la tabla `revision_findings` no tiene exactamente las columnas de OpenKOS 0.7.0, o hay un veredicto desconocido, la lectura falla con un error que nombra las columnas faltantes y las sobrantes. Es aceptable porque OpenKOS está fijado exactamente en 0.7.0 y una prueba construye la base con la lista de columnas de esa versión. Solo se consideran pares cuyos dos identificadores son decisiones (`decisions/…`). El código es `src/afg/extraction/openkos/revisions.py`.
+2. **Tipo.** `reverses` cubre `revierte` y `reemplaza`: el valor **principal** une las dos clases (en la máquina y en el oro) y el **estricto** (`reverses` = `revierte` solamente) se informa como sensibilidad. `refines` → `refina`, `reaffirms` → `reafirma`, `unrelated` → `no_relacionada`.
+3. **Dirección.** Se deriva de las fechas de evento de las fuentes (`date_0`, `date_1`; [ADR 0008](0008-adr-fechas-de-reunion-para-openkos.md)), nunca del modelo, con la misma regla que `pair_direction` de OpenKOS: la fecha posterior marca la decisión posterior; fechas iguales, ausentes o múltiples dejan la dirección **desconocida**. Dos fechas con hora se comparan con hora, y si una sola es solo fecha se comparan por día. En el valor **principal**, una dirección desconocida cuenta como error; en la **sensibilidad**, esos pares se excluyen del denominador. La proporción de direcciones desconocidas se informa aparte.
+4. **`introduce`** (la decisión posterior introduce un objeto nuevo) **no es un enlace**, igual que `no_relacionada`. Un enlace es cualquier otro tipo; el veredicto `unrelated` de la máquina tampoco lo es.
+5. **Relaciones de oro con decisiones no alineadas.** Las decisiones de la máquina se asignan a las de oro con la alineación del Experimento A (τ = 0,70, ámbito de la reunión de origen). El valor **principal es de extremo a extremo**: una relación de oro cuyas decisiones no se alinearon cuenta como omitida. Como segunda cifra se informa la **condicionada a la alineación**, solo sobre las relaciones de oro con ambas decisiones alineadas, que es la que mide la extracción de relaciones separada de la de decisiones (H2). Para tipo y dirección se agrega una tercera cifra, entre los enlaces detectados.
+
+Las métricas son: existencia del enlace (precisión, *recall* y F1), exactitud de tipo y exactitud de dirección, cada una con intervalo de Wilson donde es una proporción. Un enlace de la máquina es acierto si sus dos decisiones se alinean y el par asignado es un enlace de oro; es falso positivo en cualquier otro caso (par de oro sin enlace, par que el bloqueador no propuso o decisión sin alinear; se desglosan). Los pares candidatos del oro salen del bloqueador léxico, así que un par que no propuso se trata como sin enlace; el *recall* del bloqueador se mide aparte (tarea C). El código es `src/afg/evaluation/relations.py`; el comando de mantenimiento `afg experiment a-relations --c2-extraction <corrida>` (opción `--run-revisions` para correr antes `openkos revisions --auto --all`) escribe `reports/experiment-a/<corrida>/relaciones.json`.
+
+Se retira `afg gold link`, un comando sin implementar que esperaba OpenKOS ~0.6.0: los candidatos de la tarea B ya salen de `afg gold candidates`.
+
+## Alternativas descartadas
+
+- **Esperar un `--json` estable de OpenKOS.** Sería lo más limpio, pero no hay fecha, bloquearía OE2 y cambiaría la versión fijada. Se prefiere leer el almacén de la versión fijada con una guarda de esquema.
+- **`openkos curate` o una conciliación (*reconcile*) de relaciones.** Se descartó porque es interactiva y no puede escribir `reaffirms`, una de las tres clases de enlace que el oro de desarrollo contiene (2 de las 9 relaciones son `reafirma`).
+- **Puntuar solo en modo estricto** (`reverses` = `revierte`, dirección desconocida excluida). Haría desaparecer el único caso `reemplaza` del oro de TS3009 como acierto posible y ocultaría las direcciones que OpenKOS no logra ordenar. Por eso el principal es el conservador y el estricto queda de sensibilidad.
+- **Puntuar solo condicionado a la alineación.** Sobrestima la extracción: las relaciones cuyas decisiones no se extrajeron no cuentan. Se informa como segunda cifra, no como principal.
+
+## Consecuencias
+
+- **El oro de desarrollo es diminuto** (9 relaciones; 3 por serie). Los intervalos de Wilson serán anchos y las cifras de desarrollo son descriptivas: sirven para ver que la medición funciona y para detectar fallas, no para comparar variantes.
+- **El detector de OpenKOS es experimental** (`openkos revisions` se declara `[EXPERIMENTAL]`) y **no está medido en paquetes reales**: no hay una cifra previa de su precisión sobre transcripciones de reuniones. Toda descripción de C2 que incluya relaciones debe decirlo.
+- **Acoplamiento con el formato interno de OpenKOS.** La guarda de esquema convierte un cambio de formato en un error explícito en lugar de una lectura errónea; al subir la versión de OpenKOS hay que revisar la lista de columnas y la regla de dirección.
+- **Costo.** `openkos revisions` gasta llamadas al modelo por cada par candidato; por eso el comando no lo corre salvo con `--run-revisions`.
+- **Limitación de la dirección.** Las fechas de evento de las reuniones de una serie son estrictamente crecientes de la a a la d por construcción (ADR 0008), pero dos decisiones de la misma reunión tienen fecha igual y su dirección queda desconocida; en el valor principal eso cuenta como error.
+- No se corrió `openkos revisions` sobre espacios reales al escribir este ADR; las cifras de desarrollo irán en el notebook correspondiente.
