@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from afg.conditions.c1_chunking import FrozenTurn
+from afg.corpus.frozen import FrozenTurn
 from afg.extraction.openkos.evidence import (
     EvidenceMatch,
     EvidenceMiss,

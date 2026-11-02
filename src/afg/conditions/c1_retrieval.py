@@ -1,6 +1,6 @@
 """Hybrid retrieval for C1 (plain document-RAG baseline, thesis section 5.3).
 
-C1 retrieves turn-aligned transcript chunks (see ``c1_chunking``) with two channels, a
+C1 retrieves transcript chunks (see ``c1_chunking``) with two channels, a
 lexical one (BM25 Okapi) and a dense one (cosine over ``bge-m3`` embeddings), fused with
 reciprocal rank fusion (RRF). It is C1's own retrieval, separate from OpenKOS (ADR 0006),
 but it deliberately mirrors OpenKOS wherever the comparison with C2/C3 could otherwise be

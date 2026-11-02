@@ -26,6 +26,7 @@ dependencies = [
   "tqdm>=4.67",
   "pyyaml>=6.0",  # reads the frontmatter of the OpenKOS bundle files (afg.extraction.openkos)
   "matplotlib>=3.9",
+  "langchain-text-splitters==1.1.3",  # generic chunker of C1 (ADR 0014); exact pin keeps chunk boundaries reproducible
 ]
 
 # Extras are split so that `uv sync` (no extras) stays fast for day-to-day work on the

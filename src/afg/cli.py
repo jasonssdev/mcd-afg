@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from collections.abc import Collection, Sequence
 
     from afg.annotation.workspace import AnnotationPlan, WorkspacePaths
-    from afg.conditions.c1_chunking import FrozenTurn
+    from afg.corpus.frozen import FrozenTurn
     from afg.evaluation.scoring import SimilarityFn
 
 from afg.annotation.blocking import (
@@ -2228,11 +2228,14 @@ def _c1_development_inputs() -> tuple[TuningConfig, list[TuningQuestion], list[s
 def c1_tune() -> None:
     """Mide el recall de evidencia de C1 sobre desarrollo y elige segmentación y K.
 
-    Solo recuperación (sin modelo generativo): para cada combinación de `max_chars`,
-    `overlap_turns` y K de `[retrieval.tuning]`, mide qué fracción de los actos de diálogo de
-    referencia llegan completos al modelo, es decir, sobrevivientes al recorte del presupuesto
-    de contexto de OpenKOS (recall entregado, el que decide), y los compara con los que caen
-    en los K fragmentos recuperados sin recortar (recall de fragmentos completos). Indexa la
+    Solo recuperación (sin modelo generativo): C1 segmenta el cuerpo Markdown de la
+    transcripción con un divisor de texto genérico. Para cada combinación de `chunk_size` y
+    `chunk_overlap` (en caracteres) y K de `[retrieval.tuning]`, mide qué fracción de los
+    actos de diálogo de referencia llegan completos al modelo, es decir, sobrevivientes al
+    recorte del presupuesto de contexto de OpenKOS (recall entregado, el que decide), y los
+    compara con los que caen en los K fragmentos recuperados sin recortar (recall de
+    fragmentos completos). Los actos de cada fragmento los asigna el evaluador desde el
+    `.jsonl`; C1 no lo lee. Indexa la
     serie completa (D15) y usa las preguntas respondibles (E1-E3) del conjunto de calibración
     del juez. Los resultados quedan en `reports/c1-tuning/resultados.json`.
     """
@@ -2240,14 +2243,14 @@ def c1_tune() -> None:
 
     config, questions, meetings = _c1_development_inputs()
 
-    n_configs = len(config.max_chars) * len(config.overlap_turns)
+    n_configs = len(config.chunk_size) * len(config.chunk_overlap)
     console.print(
         f"{len(questions)} preguntas, {len(meetings)} reuniones ({', '.join(config.series)}), "
         f"{n_configs} segmentaciones x {len(config.k)} valores de K."
     )
 
-    def report(max_chars: int, overlap: int, done: int, total: int) -> None:
-        console.print(f"  [{done}/{total}] max_chars={max_chars}, overlap_turns={overlap}")
+    def report(chunk_size: int, overlap: int, done: int, total: int) -> None:
+        console.print(f"  [{done}/{total}] chunk_size={chunk_size}, chunk_overlap={overlap}")
 
     try:
         results = evaluate_grid(
@@ -2266,7 +2269,7 @@ def c1_tune() -> None:
 
     table = Table(title="Recall de evidencia por configuración")
     for column in (
-        "max_chars",
+        "chunk_size",
         "overlap",
         "K",
         "recall entregado",
@@ -2277,8 +2280,8 @@ def c1_tune() -> None:
         table.add_column(column, justify="right")
     for r in results:
         table.add_row(
-            str(r.max_chars),
-            str(r.overlap_turns),
+            str(r.chunk_size),
+            str(r.chunk_overlap),
             str(r.k),
             f"{r.mean_delivered_recall:.3f}",
             f"{r.mean_recall:.3f}",
@@ -2288,8 +2291,8 @@ def c1_tune() -> None:
     console.print(table)
     win = selection.winner
     console.print(
-        f"[bold green]Ganador:[/bold green] max_chars={win.max_chars}, "
-        f"overlap_turns={win.overlap_turns}, K={win.k} "
+        f"[bold green]Ganador:[/bold green] chunk_size={win.chunk_size}, "
+        f"chunk_overlap={win.chunk_overlap}, K={win.k} "
         f"(recall entregado {win.mean_delivered_recall:.3f}). "
         f"{selection.reason}"
     )
@@ -2319,7 +2322,7 @@ def c1_ablate() -> None:
         raise typer.Exit(code=1) from exc
     console.print(
         f"{len(questions)} preguntas, {len(meetings)} reuniones ({', '.join(config.series)}), "
-        f"max_chars={params.max_chars}, overlap_turns={params.overlap_turns}, K={params.k}."
+        f"chunk_size={params.chunk_size}, chunk_overlap={params.chunk_overlap}, K={params.k}."
     )
     try:
         results = evaluate_modes(

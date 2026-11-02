@@ -33,7 +33,7 @@ from typing import Protocol
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from afg.conditions.c1_chunking import FrozenTurn, load_frozen_turns
+from afg.corpus.frozen import FrozenTurn, load_frozen_turns
 from afg.domain.decision import EvidenceSpan
 from afg.domain.question import (
     QuestionStratum,

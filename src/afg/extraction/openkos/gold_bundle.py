@@ -37,7 +37,7 @@ from pathlib import Path
 
 import yaml
 
-from afg.conditions.c1_chunking import FrozenTurn
+from afg.corpus.frozen import FrozenTurn
 from afg.evaluation.reference import ReferenceDecision, ReferenceSet, resolve_series_file
 from afg.extraction.openkos.bundle_reader import DECISIONS_DIRNAME
 from afg.extraction.openkos.capabilities import parse_version

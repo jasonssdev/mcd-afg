@@ -17,7 +17,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from pathlib import Path
 
-from afg.conditions.c1_chunking import FrozenTurn, load_frozen_turns
+from afg.corpus.frozen import FrozenTurn, load_frozen_turns
 from afg.domain.decision import EvidenceSpan
 from afg.shared.config import load_experiments_config
 from afg.shared.paths import PROJECT_ROOT, TRANSCRIPTS_DIR

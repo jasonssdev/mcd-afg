@@ -48,11 +48,8 @@ def make_chunk(chunk_id: str, text: str) -> Chunk:
         chunk_id=chunk_id,
         meeting_id=chunk_id.split(".")[0],
         series="ES2015",
-        first_turn=0,
-        last_turn=0,
-        start=None,
-        end=None,
-        dialogue_act_ids=(),
+        char_start=0,
+        char_end=len(text),
         text=text,
     )
 

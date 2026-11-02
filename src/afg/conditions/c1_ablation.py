@@ -60,8 +60,8 @@ def evaluate_modes(
         raise ValueError(f"Unknown retrieval mode(s) {unknown}; expected {RETRIEVAL_MODES}.")
     point = replace(
         config,
-        max_chars=(params.max_chars,),
-        overlap_turns=(params.overlap_turns,),
+        chunk_size=(params.chunk_size,),
+        chunk_overlap=(params.chunk_overlap,),
         k=(params.k,),
     )
     return [
@@ -88,8 +88,8 @@ def save_ablation_results(
         "n_questions": n_questions,
         "config": {"series": list(config.series), "char_budget": config.char_budget},
         "params": {
-            "max_chars": params.max_chars,
-            "overlap_turns": params.overlap_turns,
+            "chunk_size": params.chunk_size,
+            "chunk_overlap": params.chunk_overlap,
             "k": params.k,
         },
         "modes": [
@@ -126,8 +126,8 @@ def load_ablation_results(path: Path) -> StoredAblation:
         data = json.loads(path.read_text(encoding="utf-8"))
         raw = data["params"]
         params = PinnedC1Params(
-            max_chars=int(raw["max_chars"]),
-            overlap_turns=int(raw["overlap_turns"]),
+            chunk_size=int(raw["chunk_size"]),
+            chunk_overlap=int(raw["chunk_overlap"]),
             k=int(raw["k"]),
         )
         modes = tuple(

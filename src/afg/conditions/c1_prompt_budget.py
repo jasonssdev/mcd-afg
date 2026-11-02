@@ -5,9 +5,11 @@ retrieved bodies share ``(window - reply reserve) / TOKENS_PER_CHAR - overhead``
 and the ones that do not fit are excerpted (``src/openkos/prompt_budget.py``, issue #882).
 C1 must do the same or it would send the model a different amount of text than C2 and C3
 read. This is a line-for-line port of the pure functions OpenKOS uses (``budget_chars``,
-``chunk_lines``, ``bounded_text``, ``fair_shares``); nothing is imported from OpenKOS and the
-semantics are not changed. OpenKOS's ``nested_shares`` (revision history) is not ported: it
-only runs when ``revision_history`` is on, which is off by default and in the experiment.
+``chunk_lines``, ``bounded_text``, ``fair_shares``) and the semantics are not changed. The one
+input that is OpenKOS's and not C1's is the prompt overhead (``openkos_system_overhead_chars``,
+read from the pinned package), so the body budget equals the one C2 gets. OpenKOS's
+``nested_shares`` (revision history) is not ported: it only runs when ``revision_history`` is
+on, which is off by default and in the experiment.
 """
 
 from __future__ import annotations
@@ -29,6 +31,25 @@ def budget_chars(*, planning: int, generation_reserve_tokens: int, overhead_char
     """Characters available for the bounded text (``prompt_budget.budget_chars``)."""
     budget = int((planning - generation_reserve_tokens) / TOKENS_PER_CHAR) - overhead_chars
     return max(budget, 0)
+
+
+def openkos_system_overhead_chars() -> int:
+    """System-prompt chars OpenKOS charges against the context budget of ``query``.
+
+    ``openkos.retrieval.answer._bound_bodies`` charges the larger of its answer prompt and its
+    sufficiency prompt, because both receive the same user message. C1 charges the same value,
+    read from the pinned ``openkos==0.7.0`` package (no prompt text is copied here), so that
+    C1 and C2 plan the same TEXT budget (ADR 0007, decision 3) even though C1 sends a shorter
+    generic prompt. Needs the ``instrument`` extra; fails clearly when it is missing.
+    """
+    try:
+        from openkos.retrieval.answer import _SUFFICIENCY_PROMPT, _SYSTEM_PROMPT
+    except ImportError as error:  # pragma: no cover - environment without the extra
+        raise RuntimeError(
+            "C1 plans its context budget with OpenKOS's own prompt overhead (ADR 0007): "
+            "install the `instrument` extra (`uv sync --extra instrument`)."
+        ) from error
+    return max(len(_SYSTEM_PROMPT), len(_SUFFICIENCY_PROMPT))
 
 
 def chunk_lines(text: str, target: int) -> list[str]:

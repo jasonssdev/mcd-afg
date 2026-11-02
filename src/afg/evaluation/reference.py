@@ -59,7 +59,7 @@ from pathlib import Path
 from typing import Literal
 
 from afg.annotation.goldset import summlink_dialogue_act_ids
-from afg.conditions.c1_chunking import FrozenTurn
+from afg.corpus.frozen import FrozenTurn
 from afg.domain.decision import AnnotationStatus, Decision, DecisionStatus, EvidenceSpan
 from afg.extraction.openkos.evidence import EvidenceMatch, load_meeting_text, locate_quote
 from afg.shared.csvio import open_csv_reader

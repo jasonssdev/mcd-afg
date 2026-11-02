@@ -28,7 +28,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
 
-from afg.conditions.c1_chunking import load_frozen_turns
+from afg.corpus.frozen import load_frozen_turns
 from afg.domain.decision import EvidenceSpan
 from afg.domain.question import Question, QuestionStratum, parse_reference_evidence
 from afg.shared.config import (

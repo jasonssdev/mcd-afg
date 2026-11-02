@@ -14,6 +14,8 @@ import afg.cli as afg_cli
 from afg.conditions.c1_retrieval import configured_embedding_model
 from afg.conditions.c1_tuning import PinnedC1Params, TuningConfig
 
+from .frozen_fixtures import write_frozen_meeting
+
 _HEADER = (
     "id,series_id,stratum,question,reference_answer,reference_evidence,answer_text,"
     "pasaje_transcripcion,archivos_transcripcion,answer_abstained,correct,evidence_supported,"
@@ -35,8 +37,8 @@ class LetterEmbedder:
 def _config(**overrides: Any) -> TuningConfig:
     values: dict[str, Any] = {
         "series": ("ES2015",),
-        "max_chars": (40, 400),
-        "overlap_turns": (0,),
+        "chunk_size": (40, 400),
+        "chunk_overlap": (0,),
         "k": (1, 2),
         "char_budget": 1000,
         "tie_margin": 0.02,
@@ -50,24 +52,9 @@ def env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict[str, Path]:
     transcripts = tmp_path / "transcripts"
     transcripts.mkdir()
     turns = ["remote control battery", "budget twelve euros", "banana", "logo and colour"]
-    lines = [
-        json.dumps(
-            {
-                "meeting_id": "ES2015a",
-                "turn_index": i,
-                "speaker": "A",
-                "role": "PM",
-                "text": text,
-                "start": None,
-                "end": None,
-                "char_start": i * 100,
-                "char_end": i * 100 + len(text),
-                "dialogue_act_ids": [f"d{i + 1}"],
-            }
-        )
-        for i, text in enumerate(turns)
-    ]
-    (transcripts / "ES2015a.jsonl").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    write_frozen_meeting(
+        transcripts, "ES2015a", [(text, (f"d{i + 1}",)) for i, text in enumerate(turns)]
+    )
     calibration = tmp_path / "calibracion.csv"
     calibration.write_text(_HEADER + "\n".join(_ROWS) + "\n", encoding="utf-8")
     results = tmp_path / "out" / "resultados.json"
@@ -77,7 +64,9 @@ def env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict[str, Path]:
     ablation = tmp_path / "out" / "ablacion.json"
     monkeypatch.setattr(afg_cli, "C1_ABLATION_PATH", ablation)
     monkeypatch.setattr(
-        afg_cli, "load_pinned_c1_params", lambda: PinnedC1Params(max_chars=40, overlap_turns=0, k=1)
+        afg_cli,
+        "load_pinned_c1_params",
+        lambda: PinnedC1Params(chunk_size=40, chunk_overlap=0, k=1),
     )
     monkeypatch.setattr(afg_cli, "load_tuning_config", lambda: _config())
     monkeypatch.setattr(afg_cli, "make_c1_embedder", lambda: LetterEmbedder())
@@ -107,8 +96,8 @@ def test_tune_runs_the_grid_prints_the_winner_and_saves(env: dict[str, Path]) ->
     assert "Ganador" in out
     stored = json.loads(env["results"].read_text(encoding="utf-8"))
     assert stored["n_questions"] == 2
-    assert len(stored["results"]) == 4  # 2 max_chars x 1 overlap x 2 k
-    assert {"max_chars", "overlap_turns", "k"} <= set(stored["decision"])
+    assert len(stored["results"]) == 4  # 2 chunk_size x 1 overlap x 2 k
+    assert {"chunk_size", "chunk_overlap", "k"} <= set(stored["decision"])
 
 
 def test_tune_stops_when_the_embedding_model_is_missing(
@@ -172,7 +161,7 @@ def test_ablate_prints_the_three_modes_and_saves(env: dict[str, Path]) -> None:
     assert "2 preguntas" in out
     stored = json.loads(env["ablation"].read_text(encoding="utf-8"))
     assert [m["mode"] for m in stored["modes"]] == ["bm25", "dense", "hybrid"]
-    assert stored["params"] == {"max_chars": 40, "overlap_turns": 0, "k": 1}
+    assert stored["params"] == {"chunk_size": 40, "chunk_overlap": 0, "k": 1}
     assert "git_commit" in stored
     assert not env["results"].exists()  # the tuning results are never touched
 
@@ -215,6 +204,7 @@ class _AskChat:
 def ask_env(env: dict[str, Path], monkeypatch: pytest.MonkeyPatch) -> Path:
     from afg.conditions.c1_document_rag import DocumentRagCondition, GenerationSettings
     from afg.conditions.c1_tuning import PinnedC1Params
+    from afg.evaluation.chunk_acts import ChunkActMapper
 
     replies: list[str] = ["Twelve euros [1]."]
 
@@ -223,8 +213,9 @@ def ask_env(env: dict[str, Path], monkeypatch: pytest.MonkeyPatch) -> Path:
             chat=_AskChat(*replies),
             embedder=LetterEmbedder(),
             settings=GenerationSettings("qwen3:8b", 0.1, 42, 12288, 8192),
-            params=PinnedC1Params(max_chars=60, overlap_turns=0, k=2),
+            params=PinnedC1Params(chunk_size=60, chunk_overlap=0, k=2),
             transcripts_dir=afg_cli.TRANSCRIPTS_DIR,
+            annotator=ChunkActMapper(afg_cli.TRANSCRIPTS_DIR),
         )
 
     monkeypatch.setattr(afg_cli, "make_c1_condition", make)

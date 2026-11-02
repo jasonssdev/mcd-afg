@@ -48,7 +48,7 @@ from afg.corpus.transcripts import (
 from afg.shared.config import load_corpus_config
 from afg.shared.csvio import open_csv_reader, open_csv_writer
 from afg.shared.logging import get_logger
-from afg.shared.paths import PROJECT_ROOT, TABLES_DIR
+from afg.shared.paths import PROJECT_ROOT, TABLES_DIR, TRANSCRIPTS_DIR
 
 logger = get_logger(__name__)
 
@@ -263,6 +263,23 @@ def parse_front_matter(markdown_text: str) -> tuple[dict[str, object], str]:
         body_start += 1
     body = "\n".join(lines[body_start:])
     return fields, body
+
+
+def read_meeting_body(meeting_id: str, transcripts_dir: Path = TRANSCRIPTS_DIR) -> str:
+    """Body of the frozen ``<meeting_id>.md`` (front matter removed), the text OpenKOS ingests.
+
+    Offsets in ``<meeting_id>.jsonl`` (``char_start``/``char_end``) are relative to this body.
+
+    Raises:
+        FileNotFoundError: if the frozen transcript has not been rendered.
+    """
+    path = transcripts_dir / f"{meeting_id}.md"
+    if not path.is_file():
+        raise FileNotFoundError(
+            f"Frozen transcript not found: {path}. Render the transcripts first "
+            "(`uv run afg gold setup` / `uv run afg corpus transcripts`)."
+        )
+    return parse_front_matter(path.read_text(encoding="utf-8"))[1]
 
 
 @dataclass(frozen=True, slots=True)

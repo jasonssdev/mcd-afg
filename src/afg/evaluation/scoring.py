@@ -77,7 +77,7 @@ from typing import Literal
 
 import numpy as np
 
-from afg.conditions.c1_chunking import FrozenTurn, load_frozen_turns
+from afg.corpus.frozen import FrozenTurn, load_frozen_turns
 from afg.domain.decision import Decision
 from afg.evaluation.alignment import Match, align
 from afg.evaluation.metrics import precision_recall_f1, wilson_interval
