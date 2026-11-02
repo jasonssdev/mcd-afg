@@ -22,8 +22,9 @@ y su fila D, que la deja en su sitio dentro de la secuencia. Cuando eso pasa, **
 canónico** y la fila es su entrada de índice. Son los casos de **D10**
 ([ADR 0005](0005-adr-development-evaluation-split.md)), **D13**
 ([ADR 0006](0006-adr-c1-rag-separado-con-respuesta-de-openkos.md)), **D17**
-([ADR 0010](0010-adr-decisiones-del-analisis-del-experimento-b.md)) y **D18**
-([ADR 0014](0014-adr-c1-como-rag-convencional.md)).
+([ADR 0010](0010-adr-decisiones-del-analisis-del-experimento-b.md)), **D18**
+([ADR 0014](0014-adr-c1-como-rag-convencional.md)) y **D19**
+([ADR 0015](0015-adr-modelo-extractor-de-c2.md)).
 
 ## La regla que impide que esto se pudra: es append-only
 
@@ -55,10 +56,11 @@ estados, ni casillas, ni cifras que un comando produzca. Lo que está pendiente 
 | [0012](0012-adr-umbral-tau-del-experimento-a.md) | **τ principal del Experimento A = 0,70, con 0,75 y 0,80 como sensibilidad y la curva completa siempre al lado.** Desvía de la regla prerregistrada `max(τ_nulo, τ_juez)` = 0,80 porque el control nulo cruza dos equipos con el mismo encargo y sobrestima el piso de azar (no por dar mejores resultados). El juez (`gpt-oss:20b`) complementa la validación manual; la concordancia con una persona sobre 50 pares queda pendiente. Evidencia: notebook 17 (desarrollo). Resuelve la elección de τ de #142 |
 | [0013](0013-adr-composicion-de-la-base-c3.md) | **La base de C3 es la de una corrida de C2 con `bundle/decisions/` sustituido por las decisiones de la anotación de oro (en inglés, con las relaciones adjudicadas como enlaces); conceptos, eventos, personas, proyectos, fuentes y `raw/` se copian de esa misma corrida.** Así C3 → C2 aísla el error de extracción de decisiones; el costo es que C3 queda atada a una corrida de C2 y conserva los conceptos de máquina. Las decisiones sin evidencia localizable se descartan y se informan. Resuelve la base de C3 de #23 |
 | [0014](0014-adr-c1-como-rag-convencional.md) | **C1 es un RAG convencional**: una sola llamada a `qwen3:8b`, un prompt genérico adaptado de `rlm/rag-prompt` que se abstiene con «I don't know.» y cita `[n]`, sin verificación de suficiencia ni copia de OpenKOS; mismo recuperador y ajuste (ADR 0007). C2 y C3 siguen con OpenKOS 0.7.0 tal como se distribuye (`sources/` y suficiencia en `gemma4:26b-a4b`). Los objetivos pasan a medir el sistema compilado frente a un RAG convencional; H4 se mide entre las respondidas. Reemplaza parte del 0006; limitación: la diferencia C1 frente a C2/C3 no se reparte entre representación y etapa de respuesta |
+| [0015](0015-adr-modelo-extractor-de-c2.md) | **El modelo de extracción de C2 y C3 es `qwen3:8b`, el de OpenKOS 0.7.0, con la pasada de decisiones (`transcript_decisions: true`) activada**, que es la única opción de C2 fuera de su valor por defecto y está documentada por OpenKOS para transcripciones de reuniones. La regla del «mismo modelo generativo» (§5.3) se aplica al modelo que responde (`qwen3:8b` en C1, C2 y C3); el juez `gpt-oss:20b` sigue siendo de otra familia. Descarta `qwen3.6:27b` (gana en F1 del pase de decisiones, pero es más lento y no es el de OpenKOS), `qwen3.6:35b-a3b` (no pasó la regla registrada) y apagar la pasada. Evidencia: notebook 15; épica jasonssdev/openkos#1556. Resuelve #143 |
 
 > **El ADR 0005 es el registro canónico del split desarrollo / evaluación**, el ADR 0006 el
-> de C1 separado de OpenKOS (D13), el ADR 0010 el de la enmienda de D16 (D17) y el ADR 0014 el de C1 como RAG convencional (D18, que reemplaza la parte de D13 sobre los prompts de respuesta de C1). Las filas
-> **D10**, **D13**, **D17** y **D18** dicen lo mismo en una línea, y eso es deliberado: son su entrada
+> de C1 separado de OpenKOS (D13), el ADR 0010 el de la enmienda de D16 (D17) y el ADR 0014 el de C1 como RAG convencional (D18, que reemplaza la parte de D13 sobre los prompts de respuesta de C1) y el ADR 0015 el del modelo de extracción de C2 y C3 (D19). Las filas
+> **D10**, **D13**, **D17**, **D18** y **D19** dicen lo mismo en una línea, y eso es deliberado: son su entrada
 > de índice, no una segunda versión. Ante cualquier discrepancia entre la fila y el ADR, manda
 > el ADR, que es el que lleva el contexto, las alternativas rechazadas y las consecuencias.
 >
@@ -88,6 +90,7 @@ estados, ni casillas, ni cifras que un comando produzca. Lo que está pendiente 
 | D16 | **El criterio de éxito principal del proyecto es la corrección de respuesta en el estrato E3, C2 frente a C1:** la hipótesis se sostiene si el intervalo bootstrap del 95 % de C2 queda por encima del de C1 sin solaparse. Intervalos solapados se reportan como no concluyentes, nunca como éxito. El resto de las métricas (precisión, cobertura y F1 de OE2; exactitud de tipo y de dirección; soporte de evidencia; citación; corrección del rechazo; costo amortizado; los estratos E1, E2 y E4; C2 frente a C3) son secundarias y descriptivas | Se fija antes de correr el experimento para que el criterio no pueda ajustarse a los resultados. Los umbrales operativos del documento 06 §1 son umbrales de validez de la medición, no criterios de éxito. Retroalimentación del profesor sobre la metodología |
 | D17 | **Enmienda de D16 (reemplaza su regla de decisión, no su métrica ni su contraste): el intervalo bootstrap del 95 % de la diferencia pareada C2 − C1 en la corrección de respuesta de E3 queda por encima de 0.** La no superposición de los intervalos independientes de C2 y C1 se conserva como cifra de robustez. Canónico: [ADR 0010](0010-adr-decisiones-del-analisis-del-experimento-b.md), que también fija la verificación humana del juez por etiqueta, el kappa indefinido como «no cumple» y la muestra de una corrida por pregunta y condición | Enmienda hecha el 2026-10-15, **antes de cualquier corrida de evaluación** (no existen datos de evaluación). Simulación de potencia con datos sintéticos ([notebook 10](../../notebooks/10-jss-potencia-criterio-d16.ipynb)): con n = 25, mejora verdadera de +0,15 a +0,20 y dificultad compartida moderada, el criterio pareado declara respaldada la hipótesis en 57,5 % a 79,5 % de los experimentos y el de no solapamiento en 10,4 % a 27,8 %, con falsos positivos de a lo más 4,5 % y 0,8 %. Las otras tres decisiones se apoyan en razones de principio (ADR 0010) |
 | D18 | **C1 es un RAG convencional (una llamada, prompt genérico, sin verificación de suficiencia); C2 y C3 son OpenKOS 0.7.0 tal como se distribuye. Reemplaza la parte de D13 sobre los prompts de respuesta de C1** (canónico: [ADR 0014](0014-adr-c1-como-rag-convencional.md)) | La tesis compara un RAG convencional con un sistema compilado, no «OpenKOS sin compilación». H4 se mide entre las respondidas; la diferencia C1 frente a C2/C3 no se reparte entre representación y etapa de respuesta (limitación, tesis sección 7). Código y tests: `src/afg/conditions/c1_answer_prompt.py`, `tests/test_c1_answer_prompt.py` |
+| D19 | **El modelo de extracción de C2 y C3 es `qwen3:8b` (el de OpenKOS 0.7.0), con la pasada de decisiones activada como única opción fuera del valor por defecto; el «mismo modelo generativo» (§5.3) es el que responde** (canónico: [ADR 0015](0015-adr-modelo-extractor-de-c2.md)) | `qwen3.6:27b` gana en F1 del pase de decisiones con n = 15 (+0,181 y +0,172; notebook 15) pero es de 1,8 a 3,6 veces más lento y no es el modelo de OpenKOS; `qwen3.6:35b-a3b` no pasó la regla registrada (jasonssdev/openkos#1561). La épica jasonssdev/openkos#1556 dejó todas las tareas en `qwen3:8b`, salvo jueces y suficiencia. Configuración: `config/experiments.toml`, `[shared_budget]` |
 
 ## Evidencia del piloto
 
@@ -119,7 +122,7 @@ produce `uv run afg corpus inventory` y queda en
 ## Procedencia
 
 Las entradas D1–D11 y las cifras del piloto vienen de `docs/BACKLOG.md`, **retirado el
-2026-09-21**; las entradas D12 a D18 se crearon después de ese retiro y viven solo aquí. Aquel archivo mezclaba seis cosas bajo un nombre que invitaba a seguir
+2026-09-21**; las entradas D12 a D19 se crearon después de ese retiro y viven solo aquí. Aquel archivo mezclaba seis cosas bajo un nombre que invitaba a seguir
 agregándole tareas, y por eso se desincronizaba: repetía cifras que un comando ya calcula y
 listaba como pendiente trabajo que ya estaba cerrado. El trabajo pendiente vive ahora en
 **issues de GitHub**; el plan por curso, en `README.md`; los cuatro N, en
