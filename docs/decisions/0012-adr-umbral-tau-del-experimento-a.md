@@ -2,7 +2,7 @@
 
 ## Estado
 
-Aceptada (2026-10-19). Fija el umbral τ que el [ADR 0011](0011-adr-alineacion-rol-e-intervalos-del-experimento-a.md) dejó abierto y resuelve la elección de τ del [issue #142](https://github.com/jasonssdev/mcd-afg/issues/142). **Desvía de una regla prerregistrada** (`τ = max(τ_nulo, τ_juez)`, que daba 0,80); el desvío se declara abajo. La concordancia entre el juez y una persona queda **pendiente** (sin anotador asignado).
+Aceptada (2026-10-19). Fija el umbral τ que el [ADR 0011](0011-adr-alineacion-rol-e-intervalos-del-experimento-a.md) dejó abierto y resuelve la elección de τ del [issue #142](https://github.com/jasonssdev/mcd-afg/issues/142). **Desvía de una regla prerregistrada** (`τ = max(τ_nulo, τ_juez)`, que daba 0,80); el desvío se declara abajo. La concordancia entre el juez y una persona se midió el 2026-11-02 y **no cambia la decisión** (ver «Concordancia del juez con una persona»).
 
 ## Contexto
 
@@ -21,7 +21,7 @@ Resultado de los criterios: `τ_nulo` = 0,80 y `τ_juez` = 0,70, de modo que la 
 1. **τ principal = 0,70** para la alineación del Experimento A con la referencia en inglés.
 2. **τ = 0,75 y τ = 0,80 se informan siempre como análisis de sensibilidad**, al lado del principal.
 3. **La curva completa sobre `tau_grid`** sigue informándose, tal como exige el paso 4 del protocolo: τ = 0,70 es el punto de lectura, no el reemplazo de la curva.
-4. **El juez complementa la validación manual del protocolo, no la sustituye.** Una comprobación de concordancia entre el juez y una persona sobre 50 pares de la muestra juzgada queda **pendiente**. No existen aún archivos de anotación para ella.
+4. **El juez complementa la validación manual del protocolo, no la sustituye.** La concordancia entre el juez y una persona sobre 50 pares de la muestra juzgada se midió el 2026-11-02: acuerdo de 43 de 50 (86 %) y kappa de 0,716. Se mantiene τ = 0,70 y el juez se conserva como complemento (ver sección dedicada).
 
 ## Desvío de la regla prerregistrada
 
@@ -62,6 +62,25 @@ Por debajo de 0,70 la proporción de «sí» es a lo más 0,32; desde 0,70, al m
 
 Con τ = 0,80 el instrumento casi deja de encontrar decisiones reales, y los pares entre 0,70 y 0,80, que el juez aprueba en 39 de 50 casos, quedarían fuera. Se cita como contexto de la sensibilidad, no como motivo del desvío.
 
+## Concordancia del juez con una persona (2026-11-02)
+
+Se resolvió el punto que esta decisión dejó pendiente. De los 200 pares juzgados se tomaron 50 (6 por cada bin de 0,05 y 2 más al azar, semilla fija antes de anotar), en orden mezclado; `jss` respondió «¿misma decisión? sí / no» sin ver el veredicto del juez ni la similitud. No se fijó un umbral de aprobación antes de anotar: un acuerdo bajo habría obligado a revisar este ADR.
+
+**Resultado** (notebook 17, sección 8; `reports/experiment-a/tau-calibration/concordancia.json`; series de desarrollo):
+
+| Medida | Valor |
+|---|---|
+| Acuerdo observado | 43 de 50 (86 %) |
+| Kappa de Cohen | 0,716 (IC 95 % *bootstrap* de 0,520 a 0,880) |
+| «Sí» del juez / de la persona | 26 / 33 |
+| Desacuerdos | 7, todos con el juez en «no» y la persona en «sí» |
+| «Sí» del juez frente a la persona, por debajo de 0,70 (24 pares) | 21 % frente a 42 % |
+| «Sí» del juez frente a la persona, desde 0,70 (26 pares) | 81 % frente a 88 % |
+
+**Decisión.** Se mantiene **τ = 0,70**, con 0,75 y 0,80 como sensibilidad; no se agrega otra sensibilidad. El acuerdo es sustancial, así que el juez se conserva como complemento de la validación manual (no como sustituto).
+
+**Lectura y limitación.** El juez es **más estricto que una persona**: nunca dijo «sí» donde la persona dijo «no». Como una persona ve la misma decisión en cerca del 42 % de los pares por debajo de 0,70, el emparejamiento con τ = 0,70 probablemente deja fuera coincidencias reales. Por eso las cifras de alineación del Experimento A, y con ellas el *recall* de la máquina, son un **piso conservador**: un sesgo en contra de OpenKOS, no a su favor. La evidencia es limitada: 24 pares por debajo de 0,70, una sola persona (que además adjudica y mantiene el proyecto) y solo las series ES2015 y TS3009; el intervalo del kappa es ancho.
+
 ## Alternativas descartadas
 
 - **τ = 0,80, la regla tal como se prerregistró.** Cumple los dos criterios, pero su criterio A se apoya en un control con un defecto conocido (encargo compartido) y deja una cobertura real de 0,08 a 0,20 en `qwen3.6:27b`. Se conserva como sensibilidad.
@@ -75,7 +94,7 @@ Con τ = 0,80 el instrumento casi deja de encontrar decisiones reales, y los par
 - **Informes.** Todo informe del Experimento A da la cobertura y el F1 con τ = 0,70 como principal, con 0,75 y 0,80 al lado y la curva completa, junto con el piso nulo de cada τ (0,138, 0,053 y 0,015).
 - **Configuración.** `config/experiments.toml` no tiene una clave de τ principal (solo `tau_grid` y `manual_validation_sample_size`), y no se crea una: τ principal vive en este ADR y en el protocolo. El código que puntúa recorre la grilla.
 - **Limitaciones declaradas.** (1) La elección se hizo después de ver los resultados, apartándose de una regla prerregistrada. (2) El piso nulo está sobrestimado por una cantidad no medida. (3) El juez es un solo modelo, con 25 pares por bin sacados de dos series de desarrollo y cuatro modelos `qwen3`; los pares comparten decisiones de referencia entre modelos y corridas. (4) El τ sale de series de desarrollo; se aplica sin cambios a las series de evaluación.
-- **Pendiente.** Concordancia entre `gpt-oss:20b` y una persona sobre 50 pares de la muestra juzgada (anotador por asignar). Si arroja un acuerdo bajo, esta decisión se revisa con un ADR que la reemplace.
+- **Resuelto (2026-11-02).** La concordancia entre `gpt-oss:20b` y una persona sobre 50 pares dio un acuerdo sustancial (kappa 0,716); no obliga a reemplazar esta decisión. Las cifras de alineación son un piso conservador (ver sección dedicada).
 - **Sin cambios.** La regla de citación ([ADR 0009](0009-adr-regla-de-citacion-correcta.md)), el criterio D16 ([ADR 0010](0010-adr-decisiones-del-analisis-del-experimento-b.md)), el ámbito, el rol y los intervalos del ADR 0011 y los demás umbrales.
 
 ## Trazabilidad
@@ -89,4 +108,5 @@ Con τ = 0,80 el instrumento casi deja de encontrar decisiones reales, y los par
 | Encargo compartido por los dos equipos (precio, costo, teletexto) | Lectura del control nulo; no se mide en el notebook (ver Desvío) |
 | ES2015 y TS3009 son series de desarrollo | [ADR 0005](0005-adr-development-evaluation-split.md) |
 | Grilla de τ | `config/experiments.toml`, `[alignment].tau_grid` |
+| Concordancia juez-persona (50 pares): acuerdo, kappa, tasas por región | Notebook 17 §8; `src/afg/experiments/tau_concordance.py` (`score_concordance`, `load_concordance_result`, `concordance_tables`); `tests/test_tau_concordance.py`; `reports/experiment-a/tau-calibration/concordancia.json`; hoja de anotación [`docs/anotacion/concordancia-juez-tau.md`](../anotacion/concordancia-juez-tau.md) |
 | Protocolo 3.0 y metodología 6.0 | [`docs/protocols/alignment.md`](../protocols/alignment.md); [`docs/avances/06-jss-metodologia.md`](../avances/06-jss-metodologia.md) |

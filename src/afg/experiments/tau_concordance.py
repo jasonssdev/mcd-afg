@@ -46,8 +46,10 @@ __all__ = [
     "ConcordanceConfig",
     "ConcordanceError",
     "ConcordanceSheetLabeledError",
+    "concordance_tables",
     "draw_concordance_sample",
     "load_concordance_config",
+    "load_concordance_result",
     "save_concordance_result",
     "score_concordance",
     "write_concordance_files",
@@ -348,3 +350,44 @@ def save_concordance_result(path: Path, result: Mapping[str, Any]) -> None:
     """Store the score so the notebook reads it without recomputing."""
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+_RESULT_KEYS: Final = frozenset(
+    {"n", "n_agree", "observed_agreement", "kappa", "kappa_ci", "confusion", "by_bin"}
+    | {"yes_rate_by_tau_region", "tau_split"}
+)
+
+
+def load_concordance_result(path: Path) -> dict[str, Any]:
+    """Read a stored score (the inverse of :func:`save_concordance_result`).
+
+    Raises:
+        ConcordanceError: the file is not a concordance score.
+    """
+    result = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(result, dict) or not result.keys() >= _RESULT_KEYS:
+        raise ConcordanceError(f"{path} is not a concordance score.")
+    return result
+
+
+def concordance_tables(result: Mapping[str, Any]) -> dict[str, list[dict[str, Any]]]:
+    """Plain rows (confusion matrix, agreement per bin, yes-rates by region) for display."""
+    confusion = result["confusion"]
+    return {
+        "confusion": [
+            {
+                "juez": f"juez {label}",
+                "persona sí": confusion[key]["person_si"],
+                "persona no": confusion[key]["person_no"],
+            }
+            for label, key in (("sí", "judge_si"), ("no", "judge_no"))
+        ],
+        "by_bin": [
+            {"bin": float(b), "n": v["n"], "n_agree": v["n_agree"], "agreement": v["agreement"]}
+            for b, v in sorted(result["by_bin"].items(), key=lambda kv: float(kv[0]))
+        ],
+        "by_region": [
+            {"region": name, **result["yes_rate_by_tau_region"][name]}
+            for name in ("below", "above")
+        ],
+    }

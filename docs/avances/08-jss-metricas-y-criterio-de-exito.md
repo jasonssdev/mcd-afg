@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 08 — Métricas y criterio de éxito |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 5.1 |
+| **Versión** | 5.2 |
 | **Fecha** | 2026-11-02 |
 | **Estado** | Vigente |
 
@@ -22,7 +22,7 @@
 | 4.1 | 2026-11-01 | El intervalo del *recall* del filtro léxico pasa de bootstrap a Wilson al 95 %: con 50 pares por serie es esperable no hallar ningún falso negativo, y en ese caso el bootstrap da [0; 0], una certeza que la muestra no tiene. La función del cálculo está lista (#205) y la cifra preliminar, con tres de las cuatro muestras, está en el notebook 18, §8. | Decisión de jss del 2026-11-01; manual de anotación, §5. |
 | 5.0 | 2026-11-02 | La métrica de relaciones de OE2 pasa de «Accuracy de tipo y de dirección, pendiente» a existencia, tipo y dirección con el diseño del ADR 0016 (principal de extremo a extremo y condicionada; sensibilidades de tipo estricto y de dirección desconocida excluida), con su medición de desarrollo (§4.3). El estado del recall del filtro léxico (§4.2) deja de decir que falta la función (#205). | [ADR 0016](../decisions/0016-adr-relaciones-temporales-de-openkos.md) (issue #96) y [notebook 22](../../notebooks/22-jss-relaciones-temporales-openkos.ipynb). El §4.2 había quedado atrás de la versión 4.1, que ya declaraba lista la función (`annotation/recall.py`). |
 | 5.1 | 2026-11-02 | La medición de desarrollo de las relaciones de OE2 incorpora IS1004 (§4.3 y tabla de métricas), que antes figuraba sin puntuar: se puntúa con la referencia de su único anotador y su traducción automática. Pasan a ser 9 relaciones de oro en tres series. | Issue #229, issue #204 y [notebook 22](../../notebooks/22-jss-relaciones-temporales-openkos.ipynb). |
-
+| 5.2 | 2026-11-02 | Se registra la concordancia del juez de τ con una persona (50 pares) y su consecuencia para leer las métricas de alineación del Experimento A: con τ = 0,70 son un piso conservador. Se mantiene τ = 0,70; no cambian umbrales ni criterios de éxito. | Acuerdo de 43 de 50 pares (86 %), kappa 0,716 (IC 95 % de 0,520 a 0,880); los 7 desacuerdos son del juez en «no» y la persona en «sí»; por debajo de 0,70 el juez dice «sí» en el 21 % de los pares y la persona en el 42 % ([ADR 0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md), [notebook 17](../../notebooks/17-jss-tau-referencia-en.ipynb) §8). Evidencia limitada: 24 pares bajo el umbral, una sola persona que además adjudica y mantiene el proyecto, y solo ES2015 y TS3009. |
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
 > la evidencia que lo motivó**. El historial nunca se reescribe: se agrega una fila.
@@ -272,7 +272,7 @@ el único enlace de oro alineado que la máquina encontró, en TS3009, tiene tip
 lo largo de τ; si cambia, se declara. Cada corrida se repite al menos tres veces y se reporta
 media y dispersión, porque la extracción con un modelo de lenguaje no es determinista. **No
 existe un criterio de éxito para OE2** (ver decisión abierta A); τ sí está fijado: 0,70 como valor
-principal, con 0,75 y 0,80 de sensibilidad ([ADR 0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md)).
+principal, con 0,75 y 0,80 de sensibilidad ([ADR 0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md)). El juez que respalda ese valor coincide con una persona en 43 de 50 pares (86 %, kappa 0,716) pero es más estricto que ella, así que el recall y el F1 de alineación con τ = 0,70 deben leerse como un piso conservador, en contra de la máquina.
 
 Un riesgo ya observado: una primera prueba sobre ES2015 con OpenKOS 0.5.2 extrajo 4 objetos
 Decision frente a 29 en la anotación adjudicada. Con la versión fijada (0.7.0), la máquina extrae
@@ -402,7 +402,7 @@ uno se indica dónde se manifiesta, las opciones con su contrapartida y qué blo
 
 - **Dónde se ve.** D16 define el éxito solo para OE3/E3. En OE1 el kappa se reporta "sin
   umbral por diseño" (documento 06, §1); en OE2 el F1 es una curva sobre τ sin regla de
-  lectura (τ sí está fijado, ADR 0012; propuesta §5.4; documento 03, criterio de cumplimiento de OE2:
+  lectura (τ sí está fijado, ADR 0012, con su concordancia juez-persona ya medida; propuesta §5.4; documento 03, criterio de cumplimiento de OE2:
   "reportados como curva sobre τ").
 - **Opciones.**
   1. *Dejarlo descriptivo* (estado actual). Evita fijar umbrales sin datos, pero el lector
