@@ -136,3 +136,17 @@ def test_missing_run_exits_with_a_message(env: dict[str, Any]) -> None:
 
     assert result.exit_code == 1
     assert "no-existe" in result.output
+
+
+def test_prints_the_extraction_gap_and_h3_verdicts_when_relations_are_present(
+    env: dict[str, Any],
+) -> None:
+    (env["dir"] / "relaciones.json").write_text(
+        json.dumps({"run_name": RUN, "tau": 0.70, "n_errors": 0, "pooled": {"n_gold_links": 2}})
+    )
+
+    result = _run("--c2-extraction", RUN, "--descriptive")
+
+    output = " ".join(result.output.split())
+    assert "Brecha de extracción" in output and "H3" in output
+    assert "not_computable" in output

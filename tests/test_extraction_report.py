@@ -217,3 +217,28 @@ def test_reference_kinds_and_provenance_are_recorded(tmp_path: Path) -> None:
     assert report["interval"]["resamples"] == 200
     assert report["interval"]["confidence_level"] == 0.95
     assert report["provenance"]["git_commit"] == "abc"
+
+
+def test_hypotheses_use_the_principal_decision_figures_and_the_run_model() -> None:
+    runs = [
+        ExtractionRun(
+            r.run_name,
+            r.run,
+            r.seed,
+            r.record,
+            {**r.manifest, "openkos": {"generative_model": "qwen3:8b"}},
+        )
+        for r in RUNS
+    ]
+    report = _build(runs=runs, relations={"tau": 0.70, "pooled": {"n_gold_links": 4}})
+
+    principal = _entry(report, 0.70)["origin_meetings"]["pooled"]
+    h2 = report["hypotheses"]["extraction_gap_relations_vs_decisions"]
+    assert h2["tau"] == 0.70
+    assert h2["decisions"]["gap"] == pytest.approx(1 - principal["recall"])
+    assert h2["verdict"] == "not_computable"
+    assert report["hypotheses"]["h3"]["scale"]["measured_models"] == ["qwen3:8b"]
+
+
+def test_hypotheses_are_absent_without_relations() -> None:
+    assert _build()["hypotheses"] is None

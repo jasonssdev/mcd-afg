@@ -240,3 +240,12 @@ def test_sample_and_human_check_cover_the_outdated_label(out: Path) -> None:
     assert "outdated (H4" in checked.output
     payload = json.loads((run / "juez-humano.json").read_text(encoding="utf-8"))
     assert payload["outdated_reliable"] is True
+
+
+def test_report_prints_h2_as_not_computable_without_c3(out: Path) -> None:
+    _write_run(out, "ev", "evaluation")
+    result = _invoke_wide("b-report", "--run-name", "ev", "--questions", "q.csv")
+    assert result.exit_code == 0, result.output
+    assert "H2: no calculable" in result.output
+    data = json.loads((out / "ev" / "analisis.json").read_text())
+    assert data["h2"]["verdict"] == "not_computable"

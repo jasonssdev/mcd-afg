@@ -13,6 +13,9 @@ intervals of ADR 0011 (the independent-decision intervals travel beside them as
 - ADR 0012: the full curve over ``tau_grid``, tau 0.70 as the principal point and 0.75 and
   0.80 as sensitivities, each with the null-coverage floor the ADR records.
 
+With ``relations`` the report adds the extraction gap (complementary to H2, ADR 0018) and
+H3 (:mod:`afg.experiments.hypotheses`) at the principal tau and scope.
+
 Per threshold and scope the report carries the figures pooled over every series and run, the
 same figures per series, and the per-run figures with their mean and standard deviation
 (thesis section 5.8; the deviation is ``None`` with a single run). Nothing here computes an
@@ -46,6 +49,7 @@ from afg.evaluation.scoring import (
     score_series,
 )
 from afg.experiments.extraction_runs import ExtractionRun
+from afg.experiments.hypotheses import hypotheses_report
 from afg.extraction.runner import MIN_RUNS
 
 __all__ = ["NULL_COVERAGE", "SCOPES", "build_extraction_report"]
@@ -234,6 +238,14 @@ def build_extraction_report(
         if count < MIN_RUNS
     ]
     first = runs[0]
+    principal = next(e for e in curve if e["tau"] == tau_principal)[SCOPES[0]]["pooled"]
+    models = sorted(
+        {
+            str(r.manifest["openkos"]["generative_model"])
+            for r in runs
+            if (r.manifest.get("openkos") or {}).get("generative_model")
+        }
+    )
     return {
         "run_name": run_name,
         "partition": partition,
@@ -263,6 +275,14 @@ def build_extraction_report(
         },
         "warnings": warnings,
         "curve": curve,
+        "hypotheses": None
+        if relations is None
+        else hypotheses_report(
+            decision_figures=principal,
+            relations_pooled=relations.get("pooled"),
+            tau=tau_principal,
+            models=models,
+        ),
         "relations": None
         if relations is None
         else {
