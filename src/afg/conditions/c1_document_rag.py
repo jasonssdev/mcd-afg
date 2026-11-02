@@ -41,11 +41,11 @@ from afg.conditions.c1_chunking import Chunk, chunk_meetings
 from afg.conditions.c1_prompt_budget import (
     CONTEXT_CHUNK_TARGET,
     ELISION_MARKER,
+    OPENKOS_SYSTEM_OVERHEAD_CHARS,
     bounded_text,
     budget_chars,
     chunk_lines,
     fair_shares,
-    openkos_system_overhead_chars,
 )
 from afg.conditions.c1_retrieval import Embedder, HybridRetriever, OllamaEmbedder
 from afg.conditions.c1_tuning import PinnedC1Params, load_pinned_c1_params, series_meetings
@@ -258,7 +258,7 @@ def body_budget(
     built over the labels and the question, plus OpenKOS's larger system prompt), not C1's
     own shorter generic prompt, so both conditions get an equal TEXT budget (ADR 0007).
     """
-    overhead = len(_user_content(labels, question)) + openkos_system_overhead_chars()
+    overhead = len(_user_content(labels, question)) + OPENKOS_SYSTEM_OVERHEAD_CHARS
     return budget_chars(
         planning=context_window,
         generation_reserve_tokens=max_generation_tokens,

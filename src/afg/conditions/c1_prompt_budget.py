@@ -6,8 +6,8 @@ and the ones that do not fit are excerpted (``src/openkos/prompt_budget.py``, is
 C1 must do the same or it would send the model a different amount of text than C2 and C3
 read. This is a line-for-line port of the pure functions OpenKOS uses (``budget_chars``,
 ``chunk_lines``, ``bounded_text``, ``fair_shares``) and the semantics are not changed. The one
-input that is OpenKOS's and not C1's is the prompt overhead (``openkos_system_overhead_chars``,
-read from the pinned package), so the body budget equals the one C2 gets. OpenKOS's
+input that is OpenKOS's and not C1's is the prompt overhead (``OPENKOS_SYSTEM_OVERHEAD_CHARS``,
+a constant checked against the pinned package), so the body budget equals the one C2 gets. OpenKOS's
 ``nested_shares`` (revision history) is not ported: it only runs when ``revision_history`` is
 on, which is off by default and in the experiment.
 """
@@ -33,23 +33,14 @@ def budget_chars(*, planning: int, generation_reserve_tokens: int, overhead_char
     return max(budget, 0)
 
 
-def openkos_system_overhead_chars() -> int:
-    """System-prompt chars OpenKOS charges against the context budget of ``query``.
-
-    ``openkos.retrieval.answer._bound_bodies`` charges the larger of its answer prompt and its
-    sufficiency prompt, because both receive the same user message. C1 charges the same value,
-    read from the pinned ``openkos==0.7.0`` package (no prompt text is copied here), so that
-    C1 and C2 plan the same TEXT budget (ADR 0007, decision 3) even though C1 sends a shorter
-    generic prompt. Needs the ``instrument`` extra; fails clearly when it is missing.
-    """
-    try:
-        from openkos.retrieval.answer import _SUFFICIENCY_PROMPT, _SYSTEM_PROMPT
-    except ImportError as error:  # pragma: no cover - environment without the extra
-        raise RuntimeError(
-            "C1 plans its context budget with OpenKOS's own prompt overhead (ADR 0007): "
-            "install the `instrument` extra (`uv sync --extra instrument`)."
-        ) from error
-    return max(len(_SYSTEM_PROMPT), len(_SUFFICIENCY_PROMPT))
+# System-prompt chars OpenKOS charges against the context budget of ``query``: the larger of its
+# answer and sufficiency prompts, because both receive the same user message. This is
+# ``max(len(_SYSTEM_PROMPT), len(_SUFFICIENCY_PROMPT))`` in ``openkos/retrieval/answer.py``
+# (``_bound_bodies``) for the pinned ``openkos==0.7.0`` (1,280 and 422 chars). C1 charges the same
+# value so that C1 and C2 plan the same TEXT budget (ADR 0007, decision 3) although C1 sends a
+# shorter generic prompt. A constant, so C1 never needs the ``instrument`` extra at runtime; a test
+# compares it with the installed package and fails if the pin moves without updating it.
+OPENKOS_SYSTEM_OVERHEAD_CHARS: Final = 1280
 
 
 def chunk_lines(text: str, target: int) -> list[str]:

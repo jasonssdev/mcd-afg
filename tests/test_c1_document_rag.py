@@ -30,6 +30,7 @@ from afg.conditions.c1_document_rag import (
     parse_citations,
     strip_concept_id_scaffolding,
 )
+from afg.conditions.c1_prompt_budget import OPENKOS_SYSTEM_OVERHEAD_CHARS
 from afg.conditions.c1_tuning import PinnedC1Params
 from afg.domain.decision import EvidenceSpan
 from afg.domain.question import Question, QuestionStratum
@@ -504,19 +505,31 @@ def test_with_seed_changes_only_the_seed_and_shares_the_index(transcripts: Path)
 def test_body_budget_equals_the_budget_openkos_plans_for_the_same_question() -> None:
     """C1 and C2 share a TEXT budget by construction: C1 charges OpenKOS's own prompt
     overhead (its larger system prompt) instead of its own shorter generic prompt."""
-    from openkos import prompt_budget
-    from openkos.retrieval.answer import _SUFFICIENCY_PROMPT, _SYSTEM_PROMPT, _user_content
+    prompt_budget = pytest.importorskip("openkos.prompt_budget")
+    answer_module = pytest.importorskip("openkos.retrieval.answer")
+    sufficiency_prompt = answer_module._SUFFICIENCY_PROMPT
+    system_prompt = answer_module._SYSTEM_PROMPT
+    user_content = answer_module._user_content
 
     question = "What selling price was set for the remote control?"
     labels = [f"[concept_id: ES2015a-c{i} — ES2015a]\n" for i in range(5)]
     expected = prompt_budget.budget_chars(
         planning=12288,
         generation_reserve_tokens=8192,
-        overhead_chars=len(_user_content(labels, question))
-        + max(len(_SYSTEM_PROMPT), len(_SUFFICIENCY_PROMPT)),
+        overhead_chars=len(user_content(labels, question))
+        + max(len(system_prompt), len(sufficiency_prompt)),
     )
     assert body_budget(labels, question, context_window=12288, max_generation_tokens=8192) == (
         expected
     )
     # The generic C1 prompt is shorter, so charging it would have left MORE room than C2 has.
-    assert len(answer_prompt()) < max(len(_SYSTEM_PROMPT), len(_SUFFICIENCY_PROMPT))
+    assert len(answer_prompt()) < max(len(system_prompt), len(sufficiency_prompt))
+
+
+def test_overhead_constant_matches_the_installed_openkos() -> None:
+    """Guard: the pinned constant must equal OpenKOS's own overhead (skipped without the extra)."""
+    answer_module = pytest.importorskip("openkos.retrieval.answer")
+    assert (
+        max(len(answer_module._SYSTEM_PROMPT), len(answer_module._SUFFICIENCY_PROMPT))
+        == OPENKOS_SYSTEM_OVERHEAD_CHARS
+    )
