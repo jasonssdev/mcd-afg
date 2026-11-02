@@ -2,7 +2,7 @@
 
 ## Estado
 
-Aceptada (2026-10-07). Enmendada (2026-10-15): la versión de OpenKOS a fijar queda abierta (#94). Enmendada (2026-11-01): OpenKOS fijado a `==0.7.0` (resuelve #94); ver las secciones Enmienda.
+Aceptada (2026-10-07). Enmendada (2026-10-15): la versión de OpenKOS a fijar queda abierta (#94). Enmendada (2026-11-01): OpenKOS fijado a `==0.7.0` (resuelve #94); ver las secciones Enmienda. **Reemplazada en parte por el [ADR 0014](0014-adr-c1-como-rag-convencional.md) (2026-11-01)**: las decisiones 3, 4 y 8 sobre la etapa de respuesta de C1 ya no rigen; C1 es un RAG convencional. Lo que sigue vigente es que C1 se construye en este proyecto y que C2 y C3 usan OpenKOS 0.7.0 tal como se distribuye.
 
 ## Contexto
 
@@ -150,3 +150,30 @@ entonces.
 - **Los parámetros pueden cambiar en las series de desarrollo** y se congelan antes de
   cualquier serie de evaluación ([ADR 0005](0005-adr-development-evaluation-split.md)). Un
   cambio posterior de versión exige otra enmienda.
+
+## Enmienda (2026-11-01, verificación de suficiencia y fuentes en bruto)
+
+Esta sección resuelve el punto abierto de la verificación de suficiencia que dejó la
+[enmienda anterior del 2026-11-01](#enmienda-2026-11-01) y la pregunta sobre las fuentes en
+bruto (#146). El texto anterior no se reescribe: queda como registro de lo que se decidió con
+la información de entonces.
+
+- **C2 y C3 usan OpenKOS tal como se distribuye.** La tesis compara un RAG convencional (C1)
+  con OpenKOS como producto; cambiar su configuración mediría otra cosa.
+- **Las fuentes en bruto se conservan.** `sources/` sigue en la recuperación de C2 y C3. La
+  ablación prevista en #146 no se hace: quitarlas mediría una variante que no es el producto.
+- **La verificación de suficiencia de C2 y C3 corre con el modelo empaquetado,
+  `gemma4:26b-a4b`.** No se fija `models: {sufficiency: qwen3:8b}` en sus espacios de trabajo.
+  El valor está en `[shared_budget].sufficiency_model` de `config/experiments.toml`, y el
+  manifiesto de cada corrida del Experimento B registra el modelo y su huella
+  (`sufficiency_model`, `sufficiency_model_digest`).
+- **El modelo de respuesta sigue siendo `qwen3:8b` en las tres condiciones.**
+- **Superado por el [ADR 0014](0014-adr-c1-como-rag-convencional.md):** esta enmienda decía
+  antes que C1 hacía su verificación de suficiencia con el mismo modelo. Ya no es así: C1 es un
+  RAG convencional, con una sola llamada, un prompt genérico y sin verificación de
+  suficiencia, y no lee `sufficiency_model`. Las partes de este ADR sobre la etapa de
+  respuesta de C1 (decisiones 3, 4 y 8, y la actualización de la copia de prompts de la
+  enmienda anterior del 2026-11-01) quedan reemplazadas.
+- Las corridas de desarrollo con la verificación forzada a `qwen3:8b` (por ejemplo,
+  `reports/experiment-b/humo-c2-es2015-openkos070/`) son registros de esa configuración y no
+  representan la decisión vigente.

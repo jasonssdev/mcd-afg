@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 03 — Objetivos |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 3.1 |
+| **Versión** | 4.0 |
 | **Fecha** | 2026-11-01 |
 | **Estado** | Vigente |
 
@@ -20,6 +20,7 @@
 | 2.4 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (ground truth, precision, recall, accuracy, LLM-as-a-judge). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
 | 3.0 | 2026-10-15 | Cambia un criterio: el criterio de éxito del experimento (D16) se enuncia con la regla de decisión enmendada por D17, que es el intervalo bootstrap del 95 % de la **diferencia pareada** C2 − C1 en E3 por encima de 0, y ya no la no superposición de los intervalos independientes (que queda como cifra de robustez). Además: OE2 se mide sobre las 11 series de evaluación (ADR 0005) y no sobre las 14; la escala grande del instrumento se nombra como ≈32B (`qwen3:32b`); se elimina un párrafo que describía la versión 2.2 en pasado. | Enmienda D17 ([ADR 0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md)), hecha el 2026-10-15 antes de cualquier corrida de evaluación, con simulación de potencia en el [notebook 10](../../notebooks/10-jss-potencia-criterio-d16.ipynb); el alcance de OE2 sigue el ADR 0005 y el modelo grande sale de `config/experiments.toml`. |
 | 3.1 | 2026-11-01 | Se agrega, en OE1, una remisión al [documento 10](10-jss-confiabilidad-de-la-referencia.md), que reporta los resultados de confiabilidad. El objetivo, los criterios, las hipótesis y las cifras no cambian. | Los resultados de la Fase 2 de OE1 ya existen y tienen su propio documento. |
+| 4.0 | 2026-11-01 | Cambia un objetivo y la forma de leer las hipótesis: C1 pasa a ser un RAG convencional (ya no responde con la etapa de respuesta de OpenKOS), de modo que lo que se mide es el valor del sistema compilado frente a un RAG convencional, y no el valor de la representación aislada. Se actualizan el objetivo general, OE3 y H1. H4 se mide entre las preguntas que cada condición responde, y se declara la limitación de que la diferencia entre C1 y C2/C3 no se reparte entre representación y etapa de respuesta. El costo de los errores de extracción (C3 frente a C2), OE1, OE2 y OE4 no cambian. | Decisión del 2026-11-01 ([ADR 0014](../decisions/0014-adr-c1-como-rag-convencional.md)): la pregunta del proyecto es si conviene el sistema compilado frente al RAG que se usa hoy, y una línea base con piezas de OpenKOS no la responde. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -42,14 +43,15 @@ reinterpretarse después para que parezcan lo que se buscaba.
 Diseñar, implementar y evaluar experimentalmente un método de extracción automática y
 representación persistente de decisiones organizacionales —incluyendo su evolución a través
 de reuniones sucesivas— utilizando modelos de lenguaje de ejecución local, con el fin de
-**cuantificar por separado** el valor aportado por la representación, el costo introducido
-por los errores de su extracción automática, y las condiciones bajo las cuales el resultado
-neto supera a un sistema RAG aplicado directamente sobre las transcripciones originales.
+**cuantificar por separado** el valor del sistema compilado frente a un RAG convencional,
+el costo introducido por los errores de su extracción automática, y las condiciones bajo las
+cuales el resultado neto supera a ese RAG convencional aplicado directamente sobre las
+transcripciones originales.
 
 Dicho sin tecnicismos: se construye un sistema que lee transcripciones de reuniones, saca
 de ellas las decisiones y las guarda en una base con sus relaciones (qué decisión cambió a
 cuál). Se hace con modelos de lenguaje que corren en un computador propio, sin enviar datos
-a servicios externos. Y se mide, por separado, tres cosas: cuánto ayuda tener esa base,
+a servicios externos. Y se mide, por separado, tres cosas: cuánto vale el sistema que construye esa base frente a un RAG convencional,
 cuánto daño hacen los errores que la máquina comete al construirla, y en qué casos el saldo
 final es mejor que la práctica actual, que es buscar directamente en las transcripciones con
 RAG (la técnica que recupera fragmentos de texto parecidos a la pregunta y redacta una
@@ -64,8 +66,8 @@ estado del arte revisado:
    sucesivas** sobre un corpus real. Es un conjunto de reuniones donde personas marcaron a
    mano qué decisiones hay y cómo se relacionan entre reuniones (por ejemplo, "esta
    decisión revierte aquella"). Ninguna capa de anotación publicada lo ofrece.
-2. Un **diseño de tres condiciones** que separa el valor de la representación del costo de
-   su extracción, en lugar de comparar sistemas completos. Se explica en OE3.
+2. Un **diseño de tres condiciones** que contrasta el sistema compilado con un RAG
+   convencional y separa, además, el costo de los errores de su extracción. Se explica en OE3.
 3. Una **taxonomía determinista de atribución de error** (extracción, recuperación,
    síntesis): un procedimiento con reglas fijas para decir, ante cada respuesta equivocada,
    en qué etapa del sistema nació el error. Es aplicable a cualquier sistema que persista
@@ -171,22 +173,28 @@ mejor un sistema con base de decisiones que uno que busca en las transcripciones
 
 **Qué se hace.** Se compara el desempeño frente a un mismo banco de preguntas estratificado,
 bajo tres condiciones que comparten modelo generativo, modelo de *embeddings*, hardware y
-presupuesto de contexto. Todo lo demás igual: si una condición responde mejor, la única
-explicación posible es cómo organiza la información.
+ventana de contexto. Cada condición trae su propio sistema de consulta completo (cómo
+organiza la información y cómo redacta la respuesta): lo que se compara es un RAG
+convencional contra un sistema de conocimiento compilado, tal como se distribuye.
 
 | | Condición | Rol |
 |---|---|---|
-| **C1** | RAG documental sobre las transcripciones originales | Piso — la práctica actual |
+| **C1** | RAG convencional sobre las transcripciones originales | Piso — la práctica actual |
 | **C2** | Base estructurada construida automáticamente | La propuesta bajo evaluación |
 | **C3** | Base estructurada construida desde la anotación de OE1 | Referencia superior, no "techo teórico" |
 
 Las tres condiciones se leen juntas. C1 es lo que haría hoy cualquier organización: buscar
-en las transcripciones. C2 es la propuesta: la misma base de decisiones, construida por la
-máquina. C3 es esa misma base, pero construida desde la anotación humana de OE1, es decir,
-sin errores de extracción. La distancia entre C1 y C3 mide cuánto vale tener la base. La
-distancia entre C3 y C2 mide cuánto cuestan los errores de la máquina al construirla. Sin
-C3, una comparación C1 contra C2 no podría distinguir ambas cosas; ese es el límite de los
-trabajos previos que el documento 01 señala.
+en las transcripciones los fragmentos parecidos a la pregunta y pedirle a un modelo que
+responda con ellos, con una instrucción genérica, una sola llamada y la opción de decir que
+no sabe. C2 es la propuesta: una base de decisiones construida por la máquina y consultada
+con OpenKOS, que además verifica si el material alcanza para responder. C3 es esa misma base, pero construida desde la anotación humana de OE1, es decir,
+sin errores de extracción. La distancia entre C1 y C3 mide cuánto vale el sistema compilado
+frente a un RAG convencional. La distancia entre C3 y C2, que usan el mismo sistema, mide
+cuánto cuestan los errores de la máquina al construir la base. Sin C3, una comparación C1
+contra C2 no podría distinguir ambas cosas; ese es el límite de los trabajos previos que el
+documento 01 señala. Hay una salvedad que se declara: como C1 y C2/C3 difieren en la
+representación y también en la etapa de respuesta, la distancia entre C1 y C3 no puede
+repartirse entre ambas.
 
 Las preguntas del banco se agrupan en estratos, es decir, en tipos: desde el hecho puntual
 ("¿qué se decidió sobre X?", E1) hasta la evolución ("¿cómo cambió la decisión sobre X entre
@@ -268,7 +276,7 @@ Extensiones si hay tiempo: segunda escala de modelo (H3), validación humana amp
 tiempo. Por eso hay una fecha fija para comprobarlo: al cierre de la semana 3 de AFG2, el
 adaptador de OpenKOS (el sistema que construye la base de decisiones en C2) debe correr de
 punta a punta sobre las tres series de desarrollo (extracción, persistencia y consulta). Si
-no lo hace, OE3 se reduce a comparar **C1 contra C3** (el valor de la representación sin
+no lo hace, OE3 se reduce a comparar **C1 contra C3** (el valor del sistema compilado sin
 errores de extracción) y OE4 se pospone a AFG3 o se declara fuera de alcance. La decisión se
 toma en esa fecha y se registra en `docs/decisions/`, no se descubre en la semana 7.
 
@@ -293,17 +301,17 @@ contradice, el resultado igual vale, y se dice.
 
 | | Hipótesis | Fundamento |
 |---|---|---|
-| **H1** | C2 y C3 superarán a C1 en preguntas de evolución (E3), con diferencia pequeña o nula en hecho puntual (E1) | La ventaja de la representación es relacional |
+| **H1** | C2 y C3 superarán a C1 en preguntas de evolución (E3), con diferencia pequeña o nula en hecho puntual (E1) | La ventaja del sistema compilado es relacional |
 | **H2** | La brecha C3 − C2 será mayor en relaciones temporales que en identificación de decisiones | Extraer que algo se decidió es más fácil que extraer correctamente que una decisión reemplaza a otra |
 | **H3** | La dirección de las relaciones temporales será un modo de falla dominante, sin mejora proporcional al tamaño del modelo | Observación informal en el instrumento a dos escalas (≈8B y ≈32B, `qwen3:32b`): alrededor de un 25 % de direcciones invertidas, sin mejora clara con la escala. Es una observación previa, no una medición del proyecto; la segunda escala es una extensión. |
-| **H4** | C1 mostrará mayor tasa de respuestas confiadas pero desactualizadas en preguntas de evolución | Consistente con lo reportado en la literatura de recuperación insuficiente |
+| **H4** | Entre las preguntas de evolución que efectivamente responde, C1 mostrará mayor tasa de respuestas confiadas pero desactualizadas que C2 y C3 | Consistente con lo reportado en la literatura de recuperación insuficiente. Se mide entre las respondidas para que la verificación de suficiencia de C2 y C3 no decida el resultado; cuando una condición se abstiene se reporta aparte (E4) |
 
 En palabras llanas: se espera que la base de decisiones ayude sobre todo cuando la pregunta
 es sobre cómo cambió algo, y poco cuando es un dato suelto (H1). Se espera que la máquina se
 equivoque más al decir cómo se relacionan dos decisiones que al detectarlas (H2), y que su
 error más frecuente sea invertir la dirección: decir que A cambió a B cuando fue al revés
 (H3). Y se espera que el sistema que busca en las transcripciones responda con seguridad
-cosas que ya quedaron desactualizadas (H4), como el resumen del botón turbo del documento
+cosas que ya quedaron desactualizadas (H4, contando solo las preguntas que responde), como el resumen del botón turbo del documento
 01.
 
 **Origen de la observación de H3.** Proviene de corridas informales previas de OpenKOS
@@ -311,10 +319,10 @@ realizadas por Jason Sepúlveda antes de este proyecto, sin registro en este rep
 eso no se cita como cifra del proyecto ni entra en ningún notebook: es la motivación de la
 hipótesis, no evidencia. La medición formal es OE2.
 
-**Plan ante resultado negativo.** Si H1 no se sostiene —si RAG documental iguala a la
-representación estructurada incluso en preguntas de evolución—, el resultado es igualmente
+**Plan ante resultado negativo.** Si H1 no se sostiene —si un RAG convencional iguala al
+sistema compilado incluso en preguntas de evolución—, el resultado es igualmente
 publicable: sería la primera medición controlada que acota el valor de compilar en este
-dominio. Ninguna conclusión del proyecto depende de que la representación estructurada gane;
+dominio. Ninguna conclusión del proyecto depende de que el sistema compilado gane;
 el aporte es la medición, no el sistema.
 
 **Nota provisional sobre E3.** El estrato E3, el de las preguntas sobre evolución, necesita
@@ -332,7 +340,7 @@ vale la pena anotar, y no son el ground truth de OE1.
 | Término | Qué significa en este documento |
 |---|---|
 | Ground truth | Las decisiones y relaciones marcadas a mano contra las que se mide todo lo demás. Es OE1. |
-| C1, C2, C3 | Las tres condiciones que se comparan: buscar en las transcripciones (C1), base construida por la máquina (C2), base construida desde la anotación humana (C3). |
+| C1, C2, C3 | Las tres condiciones que se comparan: buscar en las transcripciones con un RAG convencional (C1), base construida por la máquina (C2), base construida desde la anotación humana (C3). |
 | Precision, recall, F1 | De lo extraído, cuánto era correcto; de lo correcto, cuánto se extrajo; y la combinación de ambas. |
 | τ (tau) | El umbral de parecido a partir del cual dos decisiones se consideran la misma. Los resultados se reportan para varios valores. |
 | Estrato (E1–E4) | Tipo de pregunta del banco, desde el hecho puntual (E1) hasta las preguntas incontestables (E4), pasando por las de evolución (E3). |

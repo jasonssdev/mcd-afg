@@ -1,0 +1,35 @@
+# 0014. C1 es un RAG convencional: una sola llamada, un prompt genérico y sin verificación de suficiencia
+
+## Estado
+
+Aceptada (2026-11-01). Reemplaza parte de: [0006](0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) — las decisiones 3, 4 y 8 (C1 con los prompts de respuesta de OpenKOS copiados, su verificación de suficiencia y la igualdad de instrucciones entre condiciones) y la enmienda del 2026-11-01 sobre la suficiencia de C1. Se mantienen la construcción de C1 en este proyecto, `openkos query --json`, la fijación de OpenKOS a `==0.7.0`, la temperatura y la semilla explícitas, y el uso de C2 y C3 sin modificar. El ajuste de C1 del [ADR 0007](0007-adr-ajuste-c1-y-presupuesto-de-contexto.md) no cambia.
+
+## Contexto
+
+La pregunta de la tesis es si una organización debería usar un sistema de conocimiento compilado en lugar del RAG que usa hoy. El diseño del [ADR 0006](0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) hacía que C1 respondiera con una copia byte a byte de los prompts de respuesta de OpenKOS y, tras la actualización a la 0.7.0, con su misma verificación de suficiencia con `gemma4:26b-a4b`. Con eso la única diferencia entre C1 y C2 era cómo se organiza el conocimiento, pero la comparación dejaba de ser contra un RAG como el que se usa en la práctica: C1 pasaba a ser «OpenKOS sin compilación». Una línea base que hereda piezas del producto evaluado no representa la práctica actual, que es la comparación que le interesa a quien decide.
+
+Además, los prompts copiados hablan de *concepts* y de *compiled bundle*, que no describen fragmentos de transcripción; el ADR 0006 lo declaraba como limitación.
+
+## Decisión
+
+1. **C1 es un RAG convencional.** Recupera con la misma búsqueda híbrida (léxica + densa con `bge-m3`), los mismos parámetros del [ADR 0007](0007-adr-ajuste-c1-y-presupuesto-de-contexto.md) (K = 5, fragmentos de hasta 1.200 caracteres, 1 turno de solape) y la misma ventana de contexto, y genera la respuesta con **una sola llamada** a `qwen3:8b`.
+2. **El prompt de C1 es genérico.** Es una adaptación de la plantilla `rlm/rag-prompt`, de uso extendido, en `src/afg/conditions/prompts/c1/answer.md`: responde solo con el contexto recuperado, se abstiene respondiendo exactamente «I don't know.» y cita los bloques usados en línea como `[n]`. Su SHA-256 está fijado y una prueba lo verifica.
+3. **C1 no tiene verificación de suficiencia separada** ni copia ningún componente de OpenKOS. La abstención se detecta porque la respuesta es exactamente la frase fija. Una respuesta sin `[n]` no cita nada.
+4. **C2 y C3 no cambian.** Usan OpenKOS 0.7.0 tal como se distribuye: se conservan las fuentes en bruto (`sources/`), de modo que la ablación prevista en #146 no se hace, y la verificación de suficiencia corre con el modelo empaquetado, `gemma4:26b-a4b` (`[shared_budget].sufficiency_model`, que se registra en el manifiesto del Experimento B).
+5. **Lo compartido y lo que varía.** Las tres condiciones comparten el modelo de respuesta (`qwen3:8b`), el modelo de *embeddings* (`bge-m3`), el hardware y la ventana de contexto. Lo que varía es **todo el sistema de consulta**: la representación y la etapa de respuesta propia de cada condición. Como el prompt de C1 es más corto que el de OpenKOS, queda algo más de la misma ventana para los bloques recuperados; el ajuste de K y del tamaño de fragmento no se ve afectado.
+6. **H4 se mide entre las respondidas.** La tasa de respuestas confiadas pero desactualizadas ante preguntas de evolución se calcula sobre las preguntas que cada condición efectivamente responde, de modo que la verificación de suficiencia de C2 y C3 no decida el resultado. La abstención se reporta aparte, como corrección del rechazo (estrato E4).
+7. **Los objetivos se reformulan** (tesis, secciones 1.2, 1.5, 2, 3 y 4): el valor que se mide pasa de «el valor aportado por la representación» a «el valor del sistema compilado frente a un RAG convencional». El costo de los errores de extracción (C3 frente a C2, ambos OpenKOS) se sigue midiendo por separado y sin mezcla. OE1, OE2 y OE4 no cambian.
+
+## Alternativas descartadas
+
+- **C1 con la etapa de respuesta de OpenKOS (el diseño del ADR 0006).** Aísla la representación, pero mide «OpenKOS sin compilación» y no la práctica actual; además arrastra prompts redactados para otro tipo de contexto. Se descarta porque la pregunta de la tesis es compilar frente a lo que se usa hoy.
+- **Una cuarta condición, C1+, con la etapa de respuesta de OpenKOS**, para separar el efecto de la representación del de la etapa de respuesta. Daría la descomposición completa, pero añade una condición entera al Experimento B (corridas, juez, revisión humana) en un proyecto con horas y cómputo acotados. Se descarta por costo y alcance; la limitación queda declarada.
+- **Mantener C1 con la verificación de suficiencia en `gemma4:26b-a4b`.** Iguala el modelo de esa etapa, pero deja a C1 con una pieza de OpenKOS y con un modelo más grande que no forma parte de un RAG convencional. Se descarta por la misma razón que la primera alternativa.
+
+## Consecuencias
+
+- **Limitación declarada.** La diferencia entre C1 y C2/C3 mide el valor del sistema compilado frente a un RAG convencional, pero **no puede repartirse** entre la representación y la etapa de respuesta (la verificación de suficiencia). Está en la sección 7 de la tesis y debe repetirse en toda lectura de ese contraste. La comparación C2 frente a C3 no la tiene: ambas usan el mismo sistema.
+- **Las corridas de desarrollo de C1 hechas con el diseño anterior son registros de ese diseño** y se rehacen con el C1 nuevo antes de decidir sobre ellas. Los resultados de los notebooks 19 y 21 corresponden al diseño anterior. Lo mismo vale para las corridas de C2 hechas con la verificación forzada a `qwen3:8b` (ADR 0006, enmienda del 2026-11-01).
+- **La igualdad de instrucciones entre condiciones deja de existir** (decisión 8 del ADR 0006) y ya no se verifica; el SHA-256 del prompt de C1 se sigue registrando en su traza.
+- **El código de C1 se simplifica**: se eliminan la copia de los prompts de OpenKOS y la segunda llamada, y se agregan el prompt propio, la detección de la frase de abstención y el análisis de las citas `[n]`.
+- **No cambia ninguna anotación, adjudicación, banco de preguntas ni calibración del juez.**

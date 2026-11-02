@@ -38,7 +38,7 @@ tres cosas que hoy se confunden:
 
 | | Condición | Rol en el experimento |
 |---|---|---|
-| **C1** | RAG documental sobre las transcripciones | **Piso** — la práctica actual |
+| **C1** | RAG convencional sobre las transcripciones | **Piso** — la práctica actual |
 | **C2** | Base estructurada construida automáticamente | **La propuesta bajo evaluación** |
 | **C3** | Base estructurada desde anotación humana | **Referencia superior** |
 
@@ -325,7 +325,7 @@ uv run afg judge calibration-second-sheet   # hoja sin etiquetas para la segunda
 uv run afg judge calibration-agreement  # kappa entre las dos personas que etiquetan, por columna
 
 uv run afg c1 tune                  # mide el recall de evidencia de C1 sobre desarrollo y elige segmentación y K (ADR 0007)
-uv run afg c1 ask                   # responde una pregunta con C1 como lo haría `openkos query`, con fragmentos de transcripción
+uv run afg c1 ask                   # responde una pregunta con C1, un RAG convencional sobre fragmentos de transcripción (ADR 0014)
 
 uv run afg c3 build                 # construye las bases de C3: copia los espacios de una corrida de C2 (`--c2-extraction`, `--series S1,S2`, `--runs N`) y sustituye sus decisiones por las de la anotación de oro (en inglés, relaciones como enlaces), reindexa y deja `c3-manifest.json` con lo escrito y lo descartado (ADR 0013); solo series de desarrollo; `--overwrite` reemplaza
 uv run afg experiment a             # Experimento A: extracción de decisiones con OpenKOS sobre una serie de desarrollo

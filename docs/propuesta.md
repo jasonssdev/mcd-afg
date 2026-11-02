@@ -18,7 +18,7 @@ El enfoque estándar para consultar este material es la Recuperación Aumentada 
 
 Estas no son deficiencias de implementación corregibles con mejor *chunking* o mejor *embedding*; son consecuencia de que la representación sea el documento original.
 
-La alternativa —construir un grafo o índice estructurado antes de consultar— está siendo explorada activamente (notablemente GraphRAG, Edge et al., 2024), pero la evidencia disponible compara sistemas completos entre sí, no aísla **qué parte de la diferencia proviene de la representación y qué parte del proceso que la construye**.
+La alternativa —construir un grafo o índice estructurado antes de consultar— está siendo explorada activamente (notablemente GraphRAG, Edge et al., 2024), pero la evidencia disponible compara sistemas completos entre sí y no mide, de forma rigurosa, **el costo aguas abajo de los errores de extracción que ese tipo de sistema deja escritos** (§1.3).
 
 ### 1.3 El riesgo simétrico
 
@@ -38,9 +38,9 @@ Dos equipos competentes, el mismo corpus, el mismo constructo nominal, y desacue
 
 ### 1.5 Formulación
 
-> **El problema central es la ausencia de una medición controlada que separe tres cosas hoy confundidas: el valor de mantener una representación persistente y estructurada de decisiones; el costo de los errores que introduce su extracción automática; y la contribución específica de representar la evolución temporal de una decisión a lo largo de una serie de reuniones.**
+> **El problema central es la ausencia de una medición controlada que separe tres cosas hoy confundidas: el valor de un sistema que compila las decisiones en una base persistente y estructurada, frente a un RAG convencional; el costo de los errores que introduce su extracción automática; y la contribución específica de representar la evolución temporal de una decisión a lo largo de una serie de reuniones.**
 
-Sin esa separación, un resultado favorable a un sistema estructurado no permite saber si conviene invertir en mejores extractores, en mejores representaciones, o en ninguna de las dos.
+Sin esa separación, un resultado favorable a un sistema estructurado no permite saber si conviene invertir en mejores extractores, en mejores representaciones, o en ninguna de las dos. Y sin un RAG convencional como punto de comparación, no permite saber si compilar conviene frente a lo que las organizaciones usan hoy.
 
 ### 1.6 El vacío específico que este trabajo aborda
 
@@ -62,7 +62,7 @@ La estructura de AMI hace este vacío especialmente llamativo: el corpus fue dis
 
 ## 2. Objetivo General
 
-Diseñar, implementar y evaluar experimentalmente un método de extracción automática y representación persistente de decisiones organizacionales —incluyendo su evolución a través de reuniones sucesivas— utilizando modelos de lenguaje de ejecución local, con el fin de **cuantificar por separado** el valor aportado por la representación, el costo introducido por los errores de su extracción automática, y las condiciones bajo las cuales el resultado neto supera a un sistema RAG aplicado directamente sobre las transcripciones originales.
+Diseñar, implementar y evaluar experimentalmente un método de extracción automática y representación persistente de decisiones organizacionales —incluyendo su evolución a través de reuniones sucesivas— utilizando modelos de lenguaje de ejecución local, con el fin de **cuantificar por separado** el valor del sistema compilado frente a un RAG convencional, el costo introducido por los errores de su extracción automática, y las condiciones bajo las cuales el resultado neto supera a ese RAG convencional aplicado directamente sobre las transcripciones originales.
 
 ---
 
@@ -94,9 +94,11 @@ Comparar el desempeño frente a un mismo banco de preguntas estratificado bajo t
 
 | | Condición | Rol |
 |---|---|---|
-| **C1** | RAG documental sobre las transcripciones originales | **Piso** — la práctica actual |
-| **C2** | Base estructurada construida automáticamente | **La propuesta bajo evaluación** |
+| **C1** | RAG convencional sobre las transcripciones originales | **Piso** — la práctica actual |
+| **C2** | Base estructurada construida automáticamente (OpenKOS tal como se distribuye) | **La propuesta bajo evaluación** |
 | **C3** | Base estructurada construida desde la anotación de OE1 | **Referencia superior** — la misma representación sin errores de extracción |
+
+C1 se compara contra C2 y C3 como sistemas completos de consulta, cada uno con su propia etapa de respuesta (§5.3); la comparación C2 contra C3 sigue aislando, con el mismo sistema, el efecto de los errores de extracción.
 
 - **Calidad:** corrección de la respuesta y **soporte de evidencia** (si cada afirmación es atribuible a una fuente identificada, en la línea de Rashkin et al., 2023), más **corrección del rechazo**: qué hace cada condición ante una pregunta que el material no puede responder.
 - **Operativas:** consumo de memoria, y **costo amortizado** — no latencia aislada, sino el punto de equilibrio en número de consultas a partir del cual el costo total de compilar más consultar es inferior al de consultar repetidamente (§5.6).
@@ -117,12 +119,12 @@ Se declaran antes de la ejecución para evitar reinterpretación posterior de lo
 
 | | Hipótesis | Fundamento |
 |---|---|---|
-| **H1** | C2 y C3 superarán a C1 en preguntas de **evolución** (*¿cambió la decisión sobre X?*), con diferencia pequeña o nula en preguntas de **hecho puntual** | La ventaja de la representación es relacional; donde no hay relación que representar, no debería haber ventaja |
+| **H1** | C2 y C3 superarán a C1 en preguntas de **evolución** (*¿cambió la decisión sobre X?*), con diferencia pequeña o nula en preguntas de **hecho puntual** | La ventaja del sistema compilado es relacional; donde no hay relación que representar, no debería haber ventaja |
 | **H2** | La brecha C3 − C2 será **mayor en las relaciones temporales que en la identificación de decisiones** | Extraer que algo se decidió es más fácil que extraer correctamente que una decisión reemplaza a otra |
 | **H3** | La **dirección** de las relaciones temporales será un modo de falla dominante, y no mejorará proporcionalmente con el tamaño del modelo | Observación preliminar en el sistema instrumento: ~25% de direcciones invertidas, sin mejora al pasar de un modelo de 8B a uno de 27B, aunque la exactitud del *tipo* de relación sí mejoró sustancialmente |
-| **H4** | C1 exhibirá mayor tasa de respuestas **confiadas pero desactualizadas** ante preguntas de evolución | Consistente con lo reportado por RealTime QA cuando la recuperación es insuficiente |
+| **H4** | Entre las preguntas de evolución que efectivamente responde, C1 exhibirá mayor tasa de respuestas **confiadas pero desactualizadas** que C2 y C3 | Consistente con lo reportado por RealTime QA cuando la recuperación es insuficiente. Se mide **entre las respondidas** para que la verificación de suficiencia de C2 y C3 no decida el resultado; la abstención se reporta aparte (corrección del rechazo, E4) |
 
-**Plan ante resultado negativo.** Si H1 no se sostiene —si RAG documental iguala a la representación estructurada incluso en preguntas de evolución— el resultado es igualmente publicable y constituye el aporte principal: sería la primera medición controlada que acota el valor de compilar en este dominio. El trabajo está diseñado para que **el aporte sea la medición, no el sistema**. Ninguna conclusión del proyecto depende de que la representación estructurada gane.
+**Plan ante resultado negativo.** Si H1 no se sostiene —si un RAG convencional iguala al sistema compilado incluso en preguntas de evolución— el resultado es igualmente publicable y constituye el aporte principal: sería la primera medición controlada que acota el valor de compilar en este dominio. El trabajo está diseñado para que **el aporte sea la medición, no el sistema**. Ninguna conclusión del proyecto depende de que la representación estructurada gane.
 
 ---
 
@@ -175,10 +177,10 @@ Cada decisión se representa con: identificador, objeto de decisión, contenido,
 
 ### 5.3 Las tres condiciones
 
-Las tres comparten **el mismo modelo generativo, el mismo modelo de *embeddings*, el mismo hardware y el mismo presupuesto de contexto**. Lo único que varía es la representación consultada. Sin esta restricción, cualquier diferencia observada es inatribuible.
+Las tres comparten **el mismo modelo generativo de respuesta, el mismo modelo de *embeddings*, el mismo hardware y la misma ventana de contexto**. Lo que varía es **todo el sistema de consulta**: la representación consultada y la etapa de respuesta propia de cada condición. Sin las restricciones compartidas, cualquier diferencia observada es inatribuible.
 
-- **C1 — RAG documental.** Transcripciones segmentadas, indexadas y recuperadas por búsqueda híbrida (léxica + densa). Debe ser una línea base **honesta**: parámetros de segmentación y número de fragmentos recuperados ajustados sobre un conjunto de desarrollo separado, no fijados arbitrariamente. Una línea base debilitada invalida el experimento completo.
-- **C2 — Compilación automática.** Extracción con modelo local, persistencia con procedencia, consulta sobre los objetos compilados.
+- **C1 — RAG convencional.** Transcripciones segmentadas, indexadas y recuperadas por búsqueda híbrida (léxica + densa), con una sola llamada de generación y un *prompt* genérico adaptado de una plantilla de RAG de uso extendido (`rlm/rag-prompt`): responde solo con el contexto recuperado, se abstiene con una frase fija cuando no lo encuentra y cita los fragmentos entre corchetes. No tiene verificación de suficiencia separada ni copia de componentes de OpenKOS. Debe ser una línea base **honesta**: parámetros de segmentación y número de fragmentos recuperados ajustados sobre un conjunto de desarrollo separado, no fijados arbitrariamente. Una línea base debilitada invalida el experimento completo.
+- **C2 — Compilación automática.** Extracción con modelo local, persistencia con procedencia, consulta sobre los objetos compilados. Se usa OpenKOS 0.7.0 tal como se distribuye: recuperación sobre la base compilada y sus fuentes, y verificación de suficiencia con el modelo que el producto incluye.
 - **C3 — Compilación desde la referencia.** Idéntica a C2 salvo que los objetos provienen de la anotación de OE1.
 
 ### 5.4 Protocolo de alineamiento
@@ -240,7 +242,7 @@ Modelos generativos de ejecución local (familia Qwen o equivalente, en escalas 
 
 ### 5.9 Instrumento
 
-La implementación se realiza sobre **OpenKOS**, motor de compilación de conocimiento local desarrollado previamente por uno de los integrantes del equipo (Jason Sepúlveda) (código abierto, Apache-2.0), que ya provee ingesta, extracción tipada con procedencia, almacenamiento en formato abierto, recuperación híbrida y verificación de suficiencia de contexto.
+La implementación se realiza sobre **OpenKOS**, motor de compilación de conocimiento local desarrollado previamente por uno de los integrantes del equipo (Jason Sepúlveda) (código abierto, Apache-2.0), que ya provee ingesta, extracción tipada con procedencia, almacenamiento en formato abierto, recuperación híbrida y verificación de suficiencia de contexto. C2 y C3 lo usan tal como se distribuye (versión 0.7.0); C1 no reutiliza su etapa de respuesta (§5.3).
 
 **La distinción es importante para la evaluación del proyecto de título:**
 
@@ -305,6 +307,8 @@ Declarados por adelantado para acotar las conclusiones defendibles.
 - **Escenarios multiusuario**, permisos o gobernanza.
 - **Robustez ante error de reconocimiento automático del habla.** Se trabaja sobre transcripciones manuales. La degradación bajo ASR es una extensión natural, no parte de este trabajo.
 - **Afirmaciones de significancia sobre diferencias pequeñas**, por la limitación de potencia declarada en §5.0.
+
+**Atribución de la diferencia entre C1 y C2/C3.** C1 y las condiciones compiladas difieren en la representación y también en la etapa de respuesta (C2 y C3 incluyen una verificación de suficiencia que C1 no tiene). Por eso la diferencia entre C1 y C2/C3 mide el valor del sistema compilado frente a un RAG convencional, **pero no puede repartirse** entre la representación y la etapa de respuesta. La comparación entre C2 y C3, que usan el mismo sistema, no tiene esta limitación. Esta decisión y las alternativas descartadas están en el [ADR 0014](decisions/0014-adr-c1-como-rag-convencional.md).
 
 **Riesgo principal del proyecto y su mitigación.** Que el número de **relaciones reales entre reuniones** no alcance para sostener el estrato E3. El riesgo ya no se formula sobre las 6 series de la versión anterior de esta propuesta, porque la muestra cambió (§5.0); la evidencia disponible lo vuelve además más estrecho y mejor documentado. E3 exige **un mínimo de 25 preguntas** (§5.5). La estimación provisional de §5.0 da **≈ 37 relaciones reales en las 11 series de evaluación, con IC 95 % [17 – 58]**: **el valor central deja holgura; la cota inferior no alcanza el mínimo.** E3 es por tanto **plausible pero no establecido**, y con n = 11 pares adjudicados eso es exactamente todo lo que puede afirmarse.
 
@@ -402,4 +406,4 @@ Durante la preparación de esta versión se identificó un preprint de julio de 
 
 **Lo que sí aporta a OE4.** Su **tasa de contaminación**, la proporción de hechos almacenados que son falsos, es un precedente directo para medir el error de extracción como la proporción de entradas de la representación de C2 que son incorrectas frente al conjunto de referencia de C3. Su separación entre errores de escritura y errores de recuperación coincide con la de este trabajo; la atribución por etapa de OE4 (extracción, recuperación, síntesis), en cambio, no tiene equivalente en ese trabajo y sigue siendo propia.
 
-El aporte central se mantiene: el enlace temporal entre decisiones en un corpus real de reuniones y el diseño de tres condiciones que separa el valor de la representación del costo de su extracción. *ConsistencyGate* se cita como trabajo relacionado sobre contaminación de memoria, no como antecedente que reduzca ese aporte.
+El aporte central se mantiene: el enlace temporal entre decisiones en un corpus real de reuniones y el diseño de tres condiciones que contrasta el sistema compilado con un RAG convencional y separa el costo de su extracción. *ConsistencyGate* se cita como trabajo relacionado sobre contaminación de memoria, no como antecedente que reduzca ese aporte.
