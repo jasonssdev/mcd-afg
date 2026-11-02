@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 02 — Fuente de datos |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.5 |
-| **Fecha** | 2026-10-15 |
+| **Versión** | 1.6 |
+| **Fecha** | 2026-11-02 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -18,6 +18,7 @@
 | 1.3 | 2026-10-15 | Se agrega la sección 7, «Calidad y relevancia de los datos»: resumen de lo que el análisis exploratorio ([documento 07](07-jss-analisis-exploratorio.md)) encontró sobre valores faltantes, duplicados y valores atípicos, y de la relevancia de los datos para el problema, con las cifras del documento 07 y su fuente. Se agregan filas de trazabilidad. No cambia ninguna cifra, decisión ni sección anterior. | La rúbrica del pre-informe de AFG2 (sección 3) pide describir el origen, el tipo, la calidad y la relevancia de los datos; este documento cubría origen y tipo, y la calidad y la relevancia estaban solo en el documento 07. |
 | 1.4 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (ground truth, baseline, overlap coefficient, filtro léxico (*blocking*)). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
 | 1.5 | 2026-10-15 | Se remite a `docs/README.md` como tabla única de las cifras del corpus, se aclara que los 92 pares candidatos salen de `afg corpus inventory` y no de `[oe1]`, y se precisa el alcance de la regla de la fila 1.1: se aplica a los documentos escritos; los guiones hablados de `docs/entregables/` son la excepción, porque los lee una persona en cámara (`CONTRIBUTING.md` §7.3). Se elimina un párrafo de la sección de cambios que describía la versión 1.2 en pasado. No cambia ninguna cifra ni decisión. | Auditoría de gobernanza del 2026-10-15: cifras duplicadas entre documentos y regla de redacción descrita sin su excepción. |
+| 1.6 | 2026-11-02 | §4.6: la proporción del PM ya no se llama «estructural»; se dice que no es un artefacto de la muestra y que está mezclada con el mayor volumen de habla de quien preside. Las cifras no cambian. | Coherencia con el documento 07, §6.1, que la confunde con el volumen de habla y la reduce al normalizar (notebook 03, §10.5 y §11.4). |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -209,7 +210,9 @@ Cada participante del escenario tiene un rol: jefe de proyecto (PM), diseñador 
 las 14 series, el reparto de quién dice las decisiones es: **PM 47,0 % · ID 22,8 % · ME
 15,3 % · UI 14,9 %**. Casi la mitad de las decisiones las enuncia quien preside. La
 proporción del PM se mantiene entre 44 % y 50 % en cada sitio por separado, lo que indica
-que es **estructural** (quien preside habla y decide más) y no un artefacto de la muestra.
+que no es un artefacto de la muestra. Esa proporción está mezclada con el mayor volumen de
+habla de quien preside, así que no se lee como un efecto del rol sin un análisis adicional
+(documento 07, §6.1).
 Este dato vuelve en el documento de aspectos éticos: un sistema que recupere mejor lo que
 dijo el jefe de proyecto borraría del registro a quien propuso la idea.
 
