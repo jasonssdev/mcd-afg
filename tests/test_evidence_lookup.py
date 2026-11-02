@@ -223,3 +223,35 @@ def test_cli_decision_unknown_id_lists_available(
     result = _run("--decision", "M1a.d99")
     assert result.exit_code == 1
     assert "M1a.d99" in result.output and "M1a.d02" in result.output
+
+
+def test_cli_decision_mode_reads_a_single_annotator_reference(
+    cli_env: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    (cli_env / "M1.decisions.gv.csv").write_text(
+        "decision_id,meeting_id,source_sentence_id,sentence_text,evidence_text,status,"
+        "decision_object,decision_content,annotator\n"
+        'M1a.d01,M1a,M1a.x.s.1,The price is twelve euros.,"A: price is twelve euros .",'
+        "decision,precio,fijar el precio en 12 euros,gv\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        "afg.annotation.goldset.summlink_dialogue_act_ids",
+        lambda ami_root, meeting_id: {"M1a.x.s.1": ["M1a.A.da.5", "M1a.C.da.4"]},
+    )
+    monkeypatch.setattr(afg_cli, "AMI_DIR", cli_env)
+
+    result = _run("--decision", "M1a.d01")
+
+    assert result.exit_code == 0, result.output
+    assert "fijar el precio en 12 euros" in _flat(result.output)
+
+
+def test_cli_decision_with_two_single_files_is_a_clean_error(cli_env: Path) -> None:
+    for initials in ("gv", "gm"):
+        (cli_env / f"M1.decisions.{initials}.csv").write_text("decision_id\n", encoding="utf-8")
+
+    result = _run("--decision", "M1a.d01")
+
+    assert result.exit_code == 1
+    assert "decisions.gm.csv" in _flat(result.output) and "Traceback" not in result.output

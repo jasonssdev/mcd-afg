@@ -1,9 +1,19 @@
-"""The adjudicated human reference for Experiment A (OE2), loaded as decisions.
+"""The human reference for Experiment A (OE2), loaded as decisions.
 
 Source: ``data/processed/decisions/<SERIES>.decisions.adjudicated.csv``, the file written by
-``afg gold adjudicate`` once the adjudicator has filled the ``final_*`` columns. The
-per-annotator and the machine-generated base files are NOT references: they carry no
-adjudicated verdict, so this loader refuses them.
+``afg gold adjudicate`` once the adjudicator has filled the ``final_*`` columns. A series with
+a single annotator (the development series IS1004 and the evaluation series, one annotator
+each; issue #229) has no adjudication: its reference is its only
+``<SERIES>.decisions.<ini>.csv`` (``<ini>`` = the annotator's initials). The adjudicated file
+always wins; two or more single-annotator files without an adjudication are ambiguous and
+:func:`resolve_reference` refuses them. The machine-generated base file
+``<SERIES>.decisions.csv`` is never a reference.
+
+A single-annotator row is read in the adjudicated shape (``status`` -> ``final_status``,
+``decision_object`` -> ``final_object``, ``decision_content`` -> ``final_content``,
+``annotator`` -> ``adjudicator``, the initials when blank), so every rule below applies to
+both kinds unchanged. :attr:`ReferenceSet.source_kind` records which kind was used
+(``"adjudicated"`` or ``"single:<ini>"``).
 
 ## What counts as a reference decision
 
@@ -56,15 +66,20 @@ from afg.shared.csvio import open_csv_reader
 from afg.shared.paths import AMI_DIR, GOLD_DECISIONS_DIR, TRANSCRIPTS_DIR
 
 __all__ = [
+    "AmbiguousReferenceError",
     "Language",
     "NotAdjudicatedError",
     "ReferenceDecision",
     "ReferenceFigures",
     "ReferenceSet",
+    "SeriesFile",
     "load_reference",
     "load_series_reference",
     "primary_role",
     "reference_figures",
+    "reference_kind",
+    "resolve_reference",
+    "resolve_series_file",
     "roles_of",
 ]
 
@@ -79,7 +94,80 @@ _DECISION = AnnotationStatus.DECISION.value
 
 
 class NotAdjudicatedError(ValueError):
-    """The file is not a complete adjudicated decisions CSV."""
+    """The file is not a complete adjudicated (or single-annotator) decisions CSV."""
+
+
+class AmbiguousReferenceError(NotAdjudicatedError):
+    """No adjudicated file and two or more single-annotator files: which one is the reference?"""
+
+
+_ADJUDICATED = "adjudicated"
+_INITIALS = r"[a-z]{2,4}"
+_SINGLE_DECISIONS = re.compile(rf"^[^.]+\.decisions\.({_INITIALS})\.csv$")
+_SINGLE_COLUMNS = {
+    "status": "final_status",
+    "decision_object": "final_object",
+    "decision_content": "final_content",
+}
+_SINGLE_REQUIRED = ("decision_id", "meeting_id", "source_sentence_id", "status")
+
+
+@dataclass(frozen=True, slots=True)
+class SeriesFile:
+    """The file that is a series' reference and which kind it is."""
+
+    path: Path
+    kind: str
+    """``"adjudicated"`` or ``"single:<ini>"``."""
+
+
+def reference_kind(path: Path) -> str:
+    """``"single:<ini>"`` for a ``<SERIES>.<stem>.<ini>.csv`` file, else ``"adjudicated"``."""
+    match = re.match(rf"^[^.]+\.[^.]+\.({_INITIALS})\.csv$", path.name)
+    return f"single:{match.group(1)}" if match else _ADJUDICATED
+
+
+def resolve_series_file(series_id: str, directory: Path, stem: str) -> SeriesFile:
+    """``<series>.<stem>.adjudicated.csv`` or, without it, the only ``<series>.<stem>.<ini>.csv``.
+
+    ``stem`` is ``"decisions"`` (this module) or ``"candidates"`` (relation gold). The adjudicated
+    file wins. Files whose middle part is not 2-4 lowercase letters (the machine base, a
+    ``recall-sample``, a translation) are not single-annotator files.
+
+    Raises:
+        FileNotFoundError: neither kind exists; the message names what was expected.
+        AmbiguousReferenceError: two or more single-annotator files and no adjudication.
+    """
+    adjudicated = directory / f"{series_id}.{stem}.{_ADJUDICATED}.csv"
+    if adjudicated.is_file():
+        return SeriesFile(adjudicated, _ADJUDICATED)
+    pattern = re.compile(rf"^{re.escape(series_id)}\.{stem}\.({_INITIALS})\.csv$")
+    singles = sorted(
+        p for p in directory.glob(f"{series_id}.{stem}.*.csv") if pattern.match(p.name)
+    )
+    if len(singles) == 1:
+        return SeriesFile(singles[0], reference_kind(singles[0]))
+    if singles:
+        raise AmbiguousReferenceError(
+            f"{series_id} has no {adjudicated.name} and more than one single-annotator file: "
+            f"{', '.join(p.name for p in singles)}. Adjudicate them, or keep only the one that "
+            "is the reference."
+        )
+    raise FileNotFoundError(
+        f"Reference not found for {series_id}: expected {adjudicated.name} or one "
+        f"{series_id}.{stem}.<ini>.csv (annotator initials) in {directory}."
+    )
+
+
+def resolve_reference(series_id: str, decisions_dir: Path = GOLD_DECISIONS_DIR) -> SeriesFile:
+    """The decisions file that is the reference of ``series_id`` (:func:`resolve_series_file`)."""
+    try:
+        return resolve_series_file(series_id, decisions_dir, "decisions")
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(
+            f"{exc} Run `afg gold adjudicate` and fill the final_* columns, or annotate the "
+            "series with a single annotator; the machine base file is not a reference."
+        ) from exc
 
 
 @dataclass(frozen=True, slots=True)
@@ -121,6 +209,8 @@ class ReferenceSet:
     decisions: tuple[ReferenceDecision, ...]
     excluded: Mapping[str, int] = field(default_factory=dict)
     evidence_misses: tuple[str, ...] = ()
+    source_kind: str = _ADJUDICATED
+    """``"adjudicated"`` or ``"single:<ini>"``: the kind of file the reference was read from."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -219,16 +309,36 @@ def _match_quotes(
 
 
 def _read_adjudicated(path: Path) -> list[dict[str, str]]:
+    """Rows of an adjudicated file, or of a single-annotator file mapped to that shape."""
+    single = _SINGLE_DECISIONS.match(path.name)
     with open_csv_reader(path) as handle:
         reader = csv.DictReader(handle)
         header = reader.fieldnames or []
-        missing = [c for c in _REQUIRED_COLUMNS if c not in header]
-        if missing:
-            raise NotAdjudicatedError(
-                f"{path.name} is not an adjudicated decisions file: missing column(s) "
-                f"{', '.join(missing)}. Use <SERIES>.decisions.adjudicated.csv."
-            )
-        return [{k: (v or "").strip() for k, v in row.items() if k} for row in reader]
+        if single:
+            missing = [c for c in _SINGLE_REQUIRED if c not in header]
+            if missing:
+                raise NotAdjudicatedError(
+                    f"{path.name} is not a single-annotator decisions file: missing "
+                    f"column(s) {', '.join(missing)}."
+                )
+        else:
+            missing = [c for c in _REQUIRED_COLUMNS if c not in header]
+            if missing:
+                raise NotAdjudicatedError(
+                    f"{path.name} is not an adjudicated decisions file: missing column(s) "
+                    f"{', '.join(missing)}. Use <SERIES>.decisions.adjudicated.csv."
+                )
+        rows = [{k: (v or "").strip() for k, v in row.items() if k} for row in reader]
+    if single:
+        return [_as_adjudicated(row, single.group(1)) for row in rows]
+    return rows
+
+
+def _as_adjudicated(row: dict[str, str], initials: str) -> dict[str, str]:
+    """A single-annotator row in the adjudicated shape."""
+    mapped = {_SINGLE_COLUMNS.get(k, k): v for k, v in row.items()}
+    mapped["adjudicator"] = row.get("annotator", "") or initials
+    return mapped
 
 
 _INHERITED_FROM_PARENT = ("meeting_id", "source_sentence_id", "evidence_text")
@@ -264,7 +374,7 @@ def load_reference(
     language: Language = "es",
     translation_path: Path | None = None,
 ) -> ReferenceSet:
-    """Load an adjudicated decisions CSV as the reference set of its series.
+    """Load an adjudicated (or single-annotator) decisions CSV as the reference set of its series.
 
     ``language="es"`` (default) uses the human labels as adjudicated. ``language="en"``
     substitutes ``decision_object``/``content`` with the automatic translation from
@@ -362,6 +472,7 @@ def load_reference(
         decisions=tuple(decisions),
         excluded=dict(excluded),
         evidence_misses=tuple(misses),
+        source_kind=reference_kind(path),
     )
 
 
@@ -373,16 +484,13 @@ def load_series_reference(
     transcripts_dir: Path = TRANSCRIPTS_DIR,
     language: Language = "es",
 ) -> ReferenceSet:
-    """Load ``<series_id>.decisions.adjudicated.csv`` with evidence from the AMI ``summlink``.
+    """Load the reference of ``series_id`` with evidence from the AMI ``summlink``.
 
+    The reference is ``<series_id>.decisions.adjudicated.csv`` or, without it, the only
+    ``<series_id>.decisions.<ini>.csv`` (:func:`resolve_reference`).
     ``language="en"`` reads the labels from ``<series_id>.reference-en.csv`` in ``decisions_dir``.
     """
-    path = decisions_dir / f"{series_id}.decisions.adjudicated.csv"
-    if not path.is_file():
-        raise FileNotFoundError(
-            f"Adjudicated reference not found: {path}. Run `afg gold adjudicate` and fill "
-            "the final_* columns first; the annotator and base files are not references."
-        )
+    path = resolve_reference(series_id, decisions_dir).path
     meeting_ids = sorted({r["meeting_id"] for r in _read_adjudicated(path) if r.get("meeting_id")})
     sentence_acts: dict[str, list[str]] = {}
     for meeting_id in meeting_ids:
@@ -420,7 +528,9 @@ def adjudicated_decision_evidence(
     sentence_acts: Mapping[str, Sequence[str]],
     transcripts_dir: Path = TRANSCRIPTS_DIR,
 ) -> DecisionEvidence:
-    """Dialogue acts of one decision of an adjudicated file (same rule as :func:`load_reference`).
+    """Dialogue acts of one decision of an adjudicated or single-annotator file.
+
+    Same rule as :func:`load_reference`.
 
     Unlike :func:`load_reference`, a half-adjudicated file is fine: only the requested row
     is looked at, so an annotator can build a question from the decisions already closed.

@@ -9,13 +9,14 @@ import pytest
 import yaml
 
 from afg.domain.decision import EvidenceSpan
-from afg.evaluation.reference import ReferenceDecision, ReferenceSet
+from afg.evaluation.reference import AmbiguousReferenceError, ReferenceDecision, ReferenceSet
 from afg.extraction.openkos.bundle_reader import read_decision_bundle
 from afg.extraction.openkos.gold_bundle import (
     GOLD_GENERATOR,
     GoldRelation,
     GoldWorkspaceExistsError,
     build_gold_workspace,
+    gold_relations_kind,
     load_gold_relations,
 )
 from afg.extraction.openkos.workspace import OpenKosCommandError
@@ -322,3 +323,81 @@ def test_load_gold_relations_keeps_only_accepted_pairs(tmp_path: Path) -> None:
 
 def test_load_gold_relations_without_a_file_is_empty(tmp_path: Path) -> None:
     assert load_gold_relations("ES2015", relations_dir=tmp_path) == ()
+
+
+def _single_relations_csv(path: Path, rows: list[tuple[str, str, str, str]]) -> None:
+    lines = ["pair_id,earlier_decision_id,later_decision_id,relation,direction_ok"]
+    lines += [f"p{i},{a},{b},{rel},{ok}" for i, (a, b, rel, ok) in enumerate(rows)]
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def test_load_gold_relations_falls_back_to_the_only_single_annotator_file(tmp_path: Path) -> None:
+    _single_relations_csv(
+        tmp_path / "IS1004.candidates.gm.csv",
+        [
+            ("IS1004a.d01", "IS1004b.d01", "refina", "si"),
+            ("IS1004a.d02", "IS1004b.d02", "no_relacionada", "si"),
+            ("IS1004a.d03", "IS1004b.d03", "reafirma", "no"),
+            ("IS1004a.d04", "IS1004b.d04", "", ""),
+        ],
+    )
+    (tmp_path / "IS1004.candidates.csv").write_text("machine base", encoding="utf-8")
+
+    assert load_gold_relations("IS1004", relations_dir=tmp_path) == (
+        GoldRelation("IS1004a.d01", "IS1004b.d01", "refina"),
+    )
+    assert gold_relations_kind("IS1004", relations_dir=tmp_path) == "single:gm"
+
+
+def test_adjudicated_relations_win_over_single_files(tmp_path: Path) -> None:
+    _relations_csv(
+        tmp_path / "ES2015.candidates.adjudicated.csv",
+        [("ES2015a.d01", "ES2015b.d01", "refina", "si")],
+    )
+    _single_relations_csv(
+        tmp_path / "ES2015.candidates.gv.csv", [("ES2015a.d09", "ES2015b.d09", "reafirma", "si")]
+    )
+
+    assert load_gold_relations("ES2015", relations_dir=tmp_path) == (
+        GoldRelation("ES2015a.d01", "ES2015b.d01", "refina"),
+    )
+    assert gold_relations_kind("ES2015", relations_dir=tmp_path) == "adjudicated"
+
+
+def test_two_single_relation_files_without_adjudication_are_ambiguous(tmp_path: Path) -> None:
+    for initials in ("gv", "gm"):
+        _single_relations_csv(tmp_path / f"IS1004.candidates.{initials}.csv", [])
+
+    with pytest.raises(AmbiguousReferenceError, match=r"candidates\.gm\.csv.*candidates\.gv\.csv"):
+        load_gold_relations("IS1004", relations_dir=tmp_path)
+    with pytest.raises(AmbiguousReferenceError):
+        gold_relations_kind("IS1004", relations_dir=tmp_path)
+
+
+def test_no_relations_file_is_none_kind_and_empty(tmp_path: Path) -> None:
+    assert gold_relations_kind("ES2015", relations_dir=tmp_path) == "none"
+
+
+def test_manifest_records_the_reference_kinds(env: dict[str, Path]) -> None:
+    reference = ReferenceSet(
+        series_id="ES2015", decisions=_reference_set().decisions, source_kind="single:gv"
+    )
+    build_gold_workspace(
+        series_id="ES2015",
+        c2_run="compiled",
+        run=1,
+        c2_workspace=env["c2"],
+        target=env["target"],
+        reference=reference,
+        relations=RELATIONS,
+        relations_kind="single:gm",
+        runner=FakeRunner(),
+        executable="openkos",
+        transcripts_dir=env["transcripts"],
+        generated_at="2026-10-28T10:00:00Z",
+    )
+
+    manifest = json.loads((env["target"] / "c3-manifest.json").read_text("utf-8"))
+    assert manifest["decisions_reference_kind"] == "single:gv"
+    assert manifest["relations_reference_kind"] == "single:gm"
+    assert manifest["reference_decisions"] == 6  # existing keys unchanged

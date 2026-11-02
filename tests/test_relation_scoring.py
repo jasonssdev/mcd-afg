@@ -7,9 +7,11 @@ from pathlib import Path
 import pytest
 
 from afg.domain.relation import RelationType
+from afg.evaluation.reference import AmbiguousReferenceError
 from afg.evaluation.relations import (
     GoldPair,
     RelationCase,
+    gold_source,
     load_gold_pairs,
     score_relations,
 )
@@ -357,3 +359,33 @@ def test_load_gold_pairs_falls_back_to_the_single_annotator_file(tmp_path: Path)
 def test_load_gold_pairs_without_any_file_raises(tmp_path: Path) -> None:
     with pytest.raises(FileNotFoundError, match="IS1004"):
         load_gold_pairs("IS1004", relations_dir=tmp_path)
+
+
+def test_load_gold_pairs_falls_back_to_any_single_annotator_initials(tmp_path: Path) -> None:
+    (tmp_path / "TS3009.candidates.gm.csv").write_text(
+        SINGLE.replace("IS1004", "TS3009"), encoding="utf-8"
+    )
+    (tmp_path / "TS3009.candidates.csv").write_text("machine base", encoding="utf-8")
+    (tmp_path / "TS3009.recall-sample.csv").write_text("x", encoding="utf-8")
+
+    pairs = load_gold_pairs("TS3009", relations_dir=tmp_path)
+
+    assert [p.relation for p in pairs] == [R.REFINA, R.REEMPLAZA]
+
+
+def test_load_gold_pairs_with_two_single_files_and_no_adjudication_is_ambiguous(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "IS1004.candidates.gv.csv").write_text(SINGLE, encoding="utf-8")
+    (tmp_path / "IS1004.candidates.gm.csv").write_text(SINGLE, encoding="utf-8")
+
+    with pytest.raises(AmbiguousReferenceError, match=r"candidates\.gm\.csv.*candidates\.gv\.csv"):
+        load_gold_pairs("IS1004", relations_dir=tmp_path)
+
+
+def test_gold_source_names_the_kind(tmp_path: Path) -> None:
+    (tmp_path / "IS1004.candidates.gm.csv").write_text(SINGLE, encoding="utf-8")
+    assert gold_source("IS1004", tmp_path).kind == "single:gm"
+
+    (tmp_path / "IS1004.candidates.adjudicated.csv").write_text(ADJUDICATED, encoding="utf-8")
+    assert gold_source("IS1004", tmp_path).kind == "adjudicated"

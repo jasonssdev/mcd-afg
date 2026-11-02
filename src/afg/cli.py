@@ -145,8 +145,12 @@ from afg.evaluation.judge_calibration_worksheet import (
     worksheet_questions,
     write_worksheet,
 )
-from afg.evaluation.reference import NotAdjudicatedError, load_series_reference
-from afg.evaluation.relations import load_gold_pairs
+from afg.evaluation.reference import (
+    NotAdjudicatedError,
+    ReferenceDecision,
+    load_series_reference,
+)
+from afg.evaluation.relations import gold_source, load_gold_pairs
 from afg.evaluation.translation import TranslationError
 from afg.experiments.provenance import LiveProbe, ProvenanceProbe, collect_provenance
 from afg.experiments.question_bank import (
@@ -169,6 +173,7 @@ from afg.extraction.openkos.commands import OpenKosError, SubprocessRunner
 from afg.extraction.openkos.gold_bundle import (
     GoldWorkspaceExistsError,
     build_gold_workspace,
+    gold_relations_kind,
     load_gold_relations,
 )
 from afg.extraction.openkos.settings import openkos_run_settings
@@ -777,7 +782,7 @@ def gold_evidencia(
         str | None,
         typer.Option(
             "--decision",
-            help="Decisión ya adjudicada (p. ej. ES2015a.d01): su evidencia lista para pegar.",
+            help="Decisión de la referencia (p. ej. ES2015a.d01): su evidencia lista para pegar.",
         ),
     ] = None,
 ) -> None:
@@ -790,7 +795,7 @@ def gold_evidencia(
        --turnos 40-46 para ver un tramo).
     2. Banco de preguntas, para llenar `reference_evidence`: cada turno
        trae quién habló, el texto y el valor para pegar en la celda.
-       Si la decisión ya está adjudicada, --decision ES2015a.d01 lo da
+       Si la decisión ya está en la referencia, --decision ES2015a.d01 lo da
        directo.
 
     Necesita las transcripciones: `uv run afg gold setup`.
@@ -861,18 +866,24 @@ def _evidencia_por_decision(decision: str) -> None:
         DecisionNotFoundError,
         NotAdjudicatedError,
         adjudicated_decision_evidence,
+        resolve_reference,
     )
 
     meeting_id, _, _ = decision.partition(".")
     series = meeting_id[:-1]
-    path = GOLD_DECISIONS_DIR / f"{series}.decisions.adjudicated.csv"
-    if not path.is_file():
+    try:
+        path = resolve_reference(series, GOLD_DECISIONS_DIR).path
+    except FileNotFoundError:
         console.print(
-            f"[bold red]La serie {series} aún no tiene decisiones adjudicadas "
-            f"({_short(path)}).[/bold red] Mientras tanto busca en la transcripción: "
-            f'`uv run afg gold evidencia --meeting {meeting_id} --term "palabra"`.'
+            f"[bold red]La serie {series} aún no tiene referencia de decisiones: ni "
+            f"`{series}.decisions.adjudicated.csv` ni un único `{series}.decisions.<ini>.csv` "
+            f"en {_short(GOLD_DECISIONS_DIR)}.[/bold red] Mientras tanto busca en la "
+            f'transcripción: `uv run afg gold evidencia --meeting {meeting_id} --term "palabra"`.'
         )
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None
+    except NotAdjudicatedError as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+        raise typer.Exit(code=1) from exc
     if not (AMI_DIR.exists() and TRANSCRIPTS_DIR.exists()):
         console.print(
             "[bold red]Falta el corpus o las transcripciones.[/bold red] "
@@ -886,7 +897,7 @@ def _evidencia_por_decision(decision: str) -> None:
         )
         if info.final_status != "decision":
             console.print(
-                f"[bold red]{decision} quedó adjudicada como `{info.final_status}`, no como "
+                f"[bold red]{decision} quedó en la referencia como `{info.final_status}`, no como "
                 "decisión:[/bold red] no sirve de base para una pregunta."
             )
             raise typer.Exit(code=1)
@@ -1574,24 +1585,29 @@ def gold_validate_adjudication(
 
 @gold_app.command("translation-template", rich_help_panel=_PANEL_MAINTENANCE)
 def gold_translation_template(
-    series: str = typer.Option(..., "--series", help="Serie adjudicada, p. ej. ES2015."),
+    series: str = typer.Option(
+        ...,
+        "--series",
+        help="Serie con referencia (adjudicada o de un solo anotador), p. ej. IS1004.",
+    ),
     force: bool = typer.Option(
         False, "--force", help="Regenera aunque el archivo ya exista (borra la traducción)."
     ),
 ) -> None:
     """(Mantenedor) Crea la plantilla de traducción al inglés de la referencia de una serie.
 
-    Escribe `<serie>.reference-en.csv` con una fila por decisión de la referencia adjudicada,
-    el español copiado y `object_en`/`content_en` vacíos. La traducción es automática y no es
-    una etiqueta: el español adjudicado sigue siendo la verdad. Ver
+    Escribe `<serie>.reference-en.csv` con una fila por decisión de la referencia, el español
+    copiado y `object_en`/`content_en` vacíos. La referencia es `<serie>.decisions.adjudicated.csv`
+    o, si la serie tiene un solo anotador, su único `<serie>.decisions.<ini>.csv`. La traducción
+    es automática y no es una etiqueta: el español de la referencia sigue siendo la verdad. Ver
     docs/anotacion/traduccion-referencia.md.
     """
     from afg.evaluation.translation import write_translation_template
 
     try:
         path = write_translation_template(series, decisions_dir=GOLD_DECISIONS_DIR, force=force)
-    except (FileExistsError, FileNotFoundError) as exc:
-        console.print(f"[bold red]{exc}[/bold red]")
+    except (FileExistsError, FileNotFoundError, NotAdjudicatedError) as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
         raise typer.Exit(code=1) from exc
     console.print(f"Escrito {_short(path)}")
     console.print(
@@ -1602,17 +1618,26 @@ def gold_translation_template(
 
 @gold_app.command("validate-translation", rich_help_panel=_PANEL_MAINTENANCE)
 def gold_validate_translation(
-    series: str = typer.Option(..., "--series", help="Serie adjudicada, p. ej. ES2015."),
+    series: str = typer.Option(
+        ...,
+        "--series",
+        help="Serie con referencia (adjudicada o de un solo anotador), p. ej. IS1004.",
+    ),
 ) -> None:
     """(Mantenedor) Verifica que la traducción de la referencia está completa y vigente.
 
     Cada decisión de la referencia necesita exactamente una fila con `object_en` y
     `content_en` llenos, el español igual al adjudicado actual (si no, está desactualizada)
-    y un `translation_method` permitido. Sale con código distinto de cero si algo falla.
+    y un `translation_method` permitido. Lee la misma referencia que `translation-template`
+    (adjudicada o de un solo anotador). Sale con código distinto de cero si algo falla.
     """
     from afg.evaluation.translation import validate_translation
 
-    issues = validate_translation(series, decisions_dir=GOLD_DECISIONS_DIR)
+    try:
+        issues = validate_translation(series, decisions_dir=GOLD_DECISIONS_DIR)
+    except (FileNotFoundError, NotAdjudicatedError) as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+        raise typer.Exit(code=1) from exc
     if not issues:
         console.print(f"[green]Sin errores.[/green] La traducción de {series} está completa.")
         return
@@ -2673,7 +2698,8 @@ def experiment_a_relations(
     Por cada espacio de trabajo `run-r` lee las decisiones, las alinea con las de oro, lee los
     hallazgos de `openkos revisions` (`.openkos/findings.db`, solo lectura) y puntúa existencia,
     tipo y dirección en las variantes principal y de sensibilidad. Escribe
-    `reports/experiment-a/<corrida>/relaciones.json`. Solo series de desarrollo.
+    `reports/experiment-a/<corrida>/relaciones.json`, que anota por serie qué referencia se usó
+    (`adjudicated` o `single:<iniciales>`). Solo series de desarrollo.
     """
     import json
 
@@ -2688,13 +2714,22 @@ def experiment_a_relations(
         raise typer.Exit(code=1)
     series_ids = _relations_series(run_root, series)
     partition = _require_development_series(series_ids)
+    reference_kinds: dict[str, str] = {}
+
+    def _reference_of(series_id: str) -> Sequence[ReferenceDecision]:
+        reference = load_series_reference(series_id, language="en")
+        reference_kinds[series_id] = reference.source_kind
+        return reference.decisions
+
     try:
         report = score_workspaces(
             run_name=c2_extraction,
             workspace_root=run_root,
             series_ids=series_ids,
-            reference_of=lambda s: load_series_reference(s, language="en").decisions,
+            reference_of=_reference_of,
             gold_of=load_gold_pairs,
+            reference_kind_of=reference_kinds.__getitem__,
+            gold_kind_of=lambda s: gold_source(s).kind,
             similarity=make_alignment_similarity(),
             tau=tau,
             transcripts_dir=TRANSCRIPTS_DIR,
@@ -2788,7 +2823,12 @@ def c3_build(
         except (FileNotFoundError, NotAdjudicatedError, TranslationError) as exc:
             console.print(f"[bold red]{escape(str(exc))}[/bold red]")
             raise typer.Exit(code=1) from exc
-        relations = load_gold_relations(series_id)
+        try:
+            relations = load_gold_relations(series_id)
+            relations_kind = gold_relations_kind(series_id)
+        except NotAdjudicatedError as exc:
+            console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+            raise typer.Exit(code=1) from exc
         for run in range(n_runs):
             try:
                 result = build_gold_workspace(
@@ -2799,6 +2839,7 @@ def c3_build(
                     target=OPENKOS_C3_WORKSPACES_DIR / c2_extraction / series_id / f"run-{run}",
                     reference=reference,
                     relations=relations,
+                    relations_kind=relations_kind,
                     runner=runner,
                     executable=executable,
                     transcripts_dir=TRANSCRIPTS_DIR,

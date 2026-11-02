@@ -7,6 +7,11 @@ relations (:mod:`afg.evaluation.relations`). A workspace that cannot be read (no
 mismatch, unreadable bundle) becomes an entry with ``error`` and is left out of the pooled
 figures, so one bad run does not hide the others.
 
+Provenance: when the caller passes ``reference_kind_of`` and ``gold_kind_of``, the report adds
+``reference_kinds`` (top level and per entry): which file kind each series' reference decisions and
+gold relations came from, ``"adjudicated"`` or ``"single:<ini>"`` (single-annotator series, issue
+#229). The other keys do not change.
+
 Development series only (ADR 0005); the caller enforces it.
 """
 
@@ -97,21 +102,31 @@ def score_workspaces(
     run_revisions_first: bool = False,
     report: Callable[[str], None] | None = None,
     partition: str = "development",
+    reference_kind_of: Callable[[str], str] | None = None,
+    gold_kind_of: Callable[[str], str] | None = None,
 ) -> dict[str, Any]:
     """Score every workspace of ``series_ids`` under ``workspace_root`` and pool the results.
 
     ``run_revisions_first`` runs ``openkos revisions --auto --all`` (needs ``runner``) in each
     workspace before reading it; otherwise the existing ``findings.db`` is read.
+    ``reference_kind_of`` / ``gold_kind_of`` give the kind of reference file per series
+    (called after ``reference_of`` / ``gold_of``); both are needed for the provenance keys.
     """
     say = report or (lambda _line: None)
     entries: list[dict[str, Any]] = []
     cases: list[RelationCase] = []
+    kinds: dict[str, dict[str, str]] = {}
     for series_id in series_ids:
         series_dir = workspace_root / series_id
         if not series_dir.is_dir():
             continue
         reference = reference_of(series_id)
         gold = gold_of(series_id)
+        if reference_kind_of is not None and gold_kind_of is not None:
+            kinds[series_id] = {
+                "decisions": reference_kind_of(series_id),
+                "relations": gold_kind_of(series_id),
+            }
         for run, workspace in discover_runs(series_dir):
             try:
                 if run_revisions_first:
@@ -132,10 +147,12 @@ def score_workspaces(
             except (OpenKosError, FileNotFoundError) as exc:
                 entries.append({"series": series_id, "run": run, "error": str(exc)})
                 continue
+            if series_id in kinds:
+                entry["reference_kinds"] = kinds[series_id]
             entries.append(entry)
             cases.append(case)
     pooled: Mapping[str, Any] = score_relations(cases).to_dict()
-    return {
+    result: dict[str, Any] = {
         "run_name": run_name,
         "partition": partition,
         "tau": tau,
@@ -145,3 +162,6 @@ def score_workspaces(
         "entries": entries,
         "pooled": dict(pooled),
     }
+    if kinds:
+        result["reference_kinds"] = kinds
+    return result

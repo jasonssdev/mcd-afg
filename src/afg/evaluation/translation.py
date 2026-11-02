@@ -1,15 +1,21 @@
-"""English translation of the adjudicated reference (issue #141).
+"""English translation of the reference (issue #141; single-annotator series, issue #229).
 
 The extraction output is in the transcript's original language (English) while the human
 labels (``final_object``, ``final_content``) are in Spanish. To compare like with like, each
-adjudicated series gets a sidecar file ``<SERIES>.reference-en.csv`` with an automatic
+series gets a sidecar file ``<SERIES>.reference-en.csv`` with an automatic
 translation of those two labels.
 
 The translation is NOT a label: it never decides a status or a relation, and the Spanish
 ``final_*`` columns stay the ground truth. The sidecar copies the Spanish source
-(``final_object``, ``final_content``) so a later change in the adjudication is detected
+(``final_object``, ``final_content``) so a later change in the reference is detected
 ("desactualizada") instead of silently scoring against an old translation. The sidecar is a
 separate file because ``afg gold adjudicate --force`` can regenerate the adjudicated CSV.
+
+The Spanish source is the series' resolved reference file
+(:func:`afg.evaluation.reference.resolve_reference`): ``<SERIES>.decisions.adjudicated.csv`` or,
+for a single-annotator series, its only ``<SERIES>.decisions.<ini>.csv`` (``decision_object`` and
+``decision_content`` play the part of ``final_object`` and ``final_content``). The staleness check
+compares the copied Spanish with the resolved file's current text.
 
 One row per reference decision, i.e. per row :func:`afg.evaluation.reference.load_reference`
 returns (``final_status == "decision"`` after compuesta-child inheritance).
@@ -21,7 +27,11 @@ import csv
 from collections.abc import Mapping
 from pathlib import Path
 
-from afg.evaluation.reference import _inherit_from_compuesta_parent, _read_adjudicated
+from afg.evaluation.reference import (
+    _inherit_from_compuesta_parent,
+    _read_adjudicated,
+    resolve_reference,
+)
 from afg.shared.csvio import open_csv_reader, open_csv_writer
 from afg.shared.paths import GOLD_DECISIONS_DIR
 
@@ -29,7 +39,6 @@ __all__ = [
     "ALLOWED_METHODS",
     "TRANSLATION_COLUMNS",
     "TranslationError",
-    "adjudicated_path",
     "load_translations",
     "translation_path",
     "validate_translation",
@@ -54,11 +63,6 @@ class TranslationError(ValueError):
     """The English translation of a reference is missing, incomplete or out of date."""
 
 
-def adjudicated_path(series_id: str, decisions_dir: Path = GOLD_DECISIONS_DIR) -> Path:
-    """Adjudicated decisions CSV of ``series_id``."""
-    return decisions_dir / f"{series_id}.decisions.adjudicated.csv"
-
-
 def translation_path(series_id: str, decisions_dir: Path = GOLD_DECISIONS_DIR) -> Path:
     """English translation file of ``series_id``."""
     return decisions_dir / f"{series_id}.reference-en.csv"
@@ -78,14 +82,11 @@ def write_translation_template(
     """Write ``<series>.reference-en.csv`` with the Spanish filled and the English empty.
 
     Raises:
-        FileNotFoundError: the series has no adjudicated file.
+        FileNotFoundError: the series has no reference file (adjudicated or single-annotator).
+        AmbiguousReferenceError: no adjudication and two or more single-annotator files.
         FileExistsError: the translation file exists and ``force`` is false.
     """
-    source = adjudicated_path(series_id, decisions_dir)
-    if not source.is_file():
-        raise FileNotFoundError(
-            f"No existe {source.name}: la serie {series_id} no está adjudicada todavía."
-        )
+    source = resolve_reference(series_id, decisions_dir).path
     target = translation_path(series_id, decisions_dir)
     if target.exists() and not force:
         raise FileExistsError(
@@ -171,7 +172,7 @@ def validate_translation_files(adjudicated: Path, translation: Path) -> list[str
 def validate_translation(series_id: str, *, decisions_dir: Path = GOLD_DECISIONS_DIR) -> list[str]:
     """:func:`validate_translation_files` for ``series_id`` under ``decisions_dir``."""
     return validate_translation_files(
-        adjudicated_path(series_id, decisions_dir), translation_path(series_id, decisions_dir)
+        resolve_reference(series_id, decisions_dir).path, translation_path(series_id, decisions_dir)
     )
 
 
