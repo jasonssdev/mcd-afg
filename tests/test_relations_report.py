@@ -140,3 +140,28 @@ def test_no_workspaces_gives_an_empty_report(tmp_path: Path) -> None:
 
     assert report["entries"] == []
     assert report["pooled"]["n_gold_pairs"] == 0
+
+
+def test_report_records_which_reference_kind_each_series_used(tmp_path: Path) -> None:
+    write_workspace(tmp_path / "ws", findings=[Row((A, B), "refines")])
+
+    report = _score(
+        tmp_path,
+        reference_kind_of=lambda s: "single:gv",
+        gold_kind_of=lambda s: "adjudicated",
+    )
+
+    assert report["reference_kinds"] == {
+        "ES2015": {"decisions": "single:gv", "relations": "adjudicated"}
+    }
+    [entry] = report["entries"]
+    assert entry["reference_kinds"] == {"decisions": "single:gv", "relations": "adjudicated"}
+    assert entry["alignment"]["aligned"] == 2  # existing keys unchanged
+
+
+def test_report_without_kind_callbacks_has_no_provenance_keys(tmp_path: Path) -> None:
+    write_workspace(tmp_path / "ws", findings=[Row((A, B), "refines")])
+
+    report = _score(tmp_path)
+
+    assert "reference_kinds" not in report

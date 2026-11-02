@@ -11,7 +11,7 @@ from typer.testing import CliRunner
 
 import afg.cli as afg_cli
 from afg.domain.relation import RelationType
-from afg.evaluation.reference import ReferenceSet
+from afg.evaluation.reference import ReferenceSet, SeriesFile
 from afg.evaluation.relations import GoldPair
 from afg.extraction.openkos.commands import CommandResult
 from tests.openkos_findings import Row
@@ -55,6 +55,7 @@ def env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
         "load_gold_pairs",
         lambda series: (GoldPair("ES2015a.d01", "ES2015b.d01", RelationType.REFINA, True),),
     )
+    monkeypatch.setattr(afg_cli, "gold_source", lambda series: SeriesFile(Path("x"), "single:gv"))
     monkeypatch.setattr(afg_cli, "make_alignment_similarity", lambda: text_similarity)
     monkeypatch.setattr(afg_cli, "SubprocessRunner", Runner)
     return {"tmp": tmp_path, "workspace": workspace, "calls": calls}
@@ -81,6 +82,9 @@ def test_writes_the_report_under_the_run_folder(env: dict[str, Any]) -> None:
     assert report["pooled"]["existence_end_to_end"]["tp"] == 1
     assert [(e["series"], e["run"]) for e in report["entries"]] == [("ES2015", 0)]
     assert env["calls"] == []  # OpenKOS is not run without the flag
+    assert report["reference_kinds"] == {
+        "ES2015": {"decisions": "adjudicated", "relations": "single:gv"}
+    }
     assert "relaciones.json" in result.output
 
 

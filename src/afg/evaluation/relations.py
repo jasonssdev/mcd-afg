@@ -1,11 +1,12 @@
 """Scoring of machine temporal relations against the gold relations (OE2, H2 and H3; ADR 0016).
 
 Gold: the pairs of a series' Task-B candidates file, ``<ID>.candidates.adjudicated.csv``
-(``final_relation`` / ``final_direction_ok``) or, for a single-annotator series,
-``<ID>.candidates.gv.csv`` (``relation`` / ``direction_ok``). Machine: the verdicts of
-``openkos revisions`` (:mod:`afg.extraction.openkos.revisions`). The two sides name decisions
-differently, so a machine decision is mapped to a gold decision by the decision alignment of
-Experiment A (ADR 0011, ADR 0012) and a :class:`RelationCase` carries that mapping.
+(``final_relation`` / ``final_direction_ok``) or, for a single-annotator series, the series'
+only ``<ID>.candidates.<ini>.csv`` (``relation`` / ``direction_ok``; ``<ini>`` = annotator
+initials, issue #229). The adjudicated file wins; two single files are ambiguous. Machine: the
+verdicts of ``openkos revisions`` (:mod:`afg.extraction.openkos.revisions`). The two sides name
+decisions differently, so a machine decision is mapped to a gold decision by the decision
+alignment of Experiment A (ADR 0011, ADR 0012) and a :class:`RelationCase` carries that mapping.
 
 Definitions
 -----------
@@ -48,6 +49,7 @@ from typing import Any
 
 from afg.domain.relation import RelationType
 from afg.evaluation.metrics import precision_recall_f1, wilson_interval
+from afg.evaluation.reference import SeriesFile, resolve_series_file
 from afg.extraction.openkos.revisions import MachineRelation
 from afg.shared.csvio import open_csv_reader
 from afg.shared.paths import GOLD_RELATIONS_DIR
@@ -80,28 +82,34 @@ class GoldPair:
         return self.earlier_decision_id if self.direction_ok else self.later_decision_id
 
 
+def gold_source(series_id: str, relations_dir: Path = GOLD_RELATIONS_DIR) -> SeriesFile:
+    """The candidates file that is the gold of ``series_id`` and its kind.
+
+    Raises:
+        FileNotFoundError: no ``.candidates.adjudicated.csv`` and no ``.candidates.<ini>.csv``.
+        AmbiguousReferenceError: no adjudication and two or more single-annotator files.
+    """
+    return resolve_series_file(series_id, relations_dir, "candidates")
+
+
 def load_gold_pairs(
     series_id: str, *, relations_dir: Path = GOLD_RELATIONS_DIR
 ) -> tuple[GoldPair, ...]:
-    """The adjudicated pairs of ``series_id`` (single-annotator file when there is no adjudication).
+    """The gold pairs of ``series_id`` (:func:`gold_source`: adjudicated, else the single file).
 
     Rows without a relation (not yet adjudicated) are skipped; ``no_relacionada`` and
     ``introduce`` rows are kept because they are the gold non-links.
 
     Raises:
-        FileNotFoundError: neither file exists.
+        FileNotFoundError: neither kind of file exists.
+        AmbiguousReferenceError: two or more single-annotator files and no adjudication.
     """
-    adjudicated = relations_dir / f"{series_id}.candidates.adjudicated.csv"
-    single = relations_dir / f"{series_id}.candidates.gv.csv"
-    if adjudicated.is_file():
-        path, relation_col, direction_col = adjudicated, "final_relation", "final_direction_ok"
-    elif single.is_file():
-        path, relation_col, direction_col = single, "relation", "direction_ok"
+    source = gold_source(series_id, relations_dir)
+    path = source.path
+    if source.kind == "adjudicated":
+        relation_col, direction_col = "final_relation", "final_direction_ok"
     else:
-        raise FileNotFoundError(
-            f"No gold relations for {series_id}: expected {adjudicated.name} or {single.name} "
-            f"in {relations_dir}."
-        )
+        relation_col, direction_col = "relation", "direction_ok"
     pairs: list[GoldPair] = []
     with open_csv_reader(path) as handle:
         for row in csv.DictReader(handle):

@@ -22,6 +22,13 @@ texto en el mismo idioma, cada serie adjudicada tiene una **traducción automát
 de esas dos columnas. Se aplica a las series ya adjudicadas (hoy ES2015 y TS3009); las
 siguientes se traducen con este mismo método.
 
+Una serie de un solo anotador (IS1004 en desarrollo; las series de evaluación) no tiene archivo
+adjudicado: su referencia es el único `<SERIE>.decisions.<ini>.csv`, y `translation-template`
+y `validate-translation` leen ese archivo con las columnas `decision_object` y `decision_content`
+en lugar de `final_object` y `final_content`. La hoja de traducción conserva los nombres
+`final_*` en ambos casos. Si hay dos archivos de un solo anotador y ninguna adjudicación, los
+comandos fallan y los nombran (issue #229).
+
 Dos reglas que no cambian:
 
 - **La traducción no es una etiqueta.** No decide ningún estado ni relación y no cambia
