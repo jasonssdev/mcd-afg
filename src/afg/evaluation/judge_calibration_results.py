@@ -9,6 +9,7 @@ never recomputed.
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -49,8 +50,17 @@ class StoredCalibration:
     failures: dict[str, tuple[str, ...]]
 
 
-def save_calibration_results(path: Path, result: CalibrationResult, *, n_items: int) -> None:
-    """Write ``result`` as JSON (UTF-8, LF), creating the folder."""
+def save_calibration_results(
+    path: Path,
+    result: CalibrationResult,
+    *,
+    n_items: int,
+    pinned_environment: Mapping[str, Any] | None = None,
+) -> None:
+    """Write ``result`` as JSON (UTF-8, LF), creating the folder.
+
+    ``pinned_environment`` is the guard's record, merged into the top level when given.
+    """
     payload: dict[str, Any] = {
         "n_items": n_items,
         "candidates": [
@@ -77,6 +87,7 @@ def save_calibration_results(path: Path, result: CalibrationResult, *, n_items: 
             "failures": {model: list(f) for model, f in result.decision.failures.items()},
         },
     }
+    payload.update(pinned_environment or {})
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 

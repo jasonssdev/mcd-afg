@@ -101,3 +101,24 @@ def test_factory_wires_the_shared_generation_settings() -> None:
     condition = afg_cli.make_closed_book_condition()
     assert condition.settings == GenerationSettings.from_config()
     assert condition.condition_id == "C0"
+
+
+def test_pinned_environment_guard_runs_before_any_answer(
+    env: dict[str, Any], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from tests.pinned_guard import tripwire
+
+    calls = tripwire(monkeypatch)
+    result = _invoke(env, "--run-name", "guard")
+
+    assert result.exit_code == 1
+    assert calls == [(["qwen3:8b", "gpt-oss:20b"], False)]
+    assert env["condition"].seeds == []
+    assert not env["out"].exists()
+
+
+def test_manifest_records_the_pinned_environment_check(env: dict[str, Any]) -> None:
+    assert _invoke(env, "--runs", "1", "--run-name", "pin").exit_code == 0
+
+    manifest = json.loads((env["out"] / "pin" / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["pinned_environment_ok"] is True

@@ -137,3 +137,36 @@ def test_prints_a_spanish_summary_without_markup_errors(env: dict[str, Any]) -> 
 
     assert "recall" in result.output.lower()
     assert "ES2015" in result.output
+
+
+def test_scoring_alone_checks_only_the_embedding_model(
+    env: dict[str, Any], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from tests.pinned_guard import tripwire
+
+    calls = tripwire(monkeypatch)
+    result = _run("--c2-extraction", RUN)
+
+    assert result.exit_code == 1
+    assert calls == [(["bge-m3"], False)]
+    assert not (env["tmp"] / "out").exists()
+
+
+def test_run_revisions_checks_every_model_openkos_may_route_to(
+    env: dict[str, Any], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from tests.pinned_guard import tripwire
+
+    calls = tripwire(monkeypatch)
+    result = _run("--c2-extraction", RUN, "--run-revisions")
+
+    assert result.exit_code == 1
+    assert calls == [(["qwen3:8b", "gemma4:26b-a4b", "bge-m3"], True)]
+    assert env["calls"] == []
+
+
+def test_report_records_the_pinned_environment_check(env: dict[str, Any]) -> None:
+    assert _run("--c2-extraction", RUN).exit_code == 0
+
+    report = json.loads((env["tmp"] / "out" / RUN / "relaciones.json").read_text(encoding="utf-8"))
+    assert report["pinned_environment_ok"] is True

@@ -156,3 +156,26 @@ def test_an_existing_single_series_run_is_refused(tmp_path: Path, fake: FakeAdap
     assert result.exit_code == 1
     assert "uno" in result.output
     assert fake.calls == []
+
+
+def test_pinned_environment_guard_runs_before_any_work_and_is_recorded(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, fake: FakeAdapter
+) -> None:
+    from tests.pinned_guard import tripwire
+
+    calls = tripwire(monkeypatch)
+    result = _run("--series", "ES2015", "--runs", "1", "--run-name", "guard")
+
+    assert result.exit_code == 1
+    assert calls == [(["qwen3:8b", "gemma4:26b-a4b", "bge-m3"], True)]
+    assert fake.calls == []
+    assert not (tmp_path / "out").exists()
+
+
+def test_batch_manifest_records_the_pinned_environment_check(
+    tmp_path: Path, fake: FakeAdapter
+) -> None:
+    assert _run("--series", "ES2015", "--runs", "1", "--run-name", "pin").exit_code == 0
+
+    manifest = json.loads((tmp_path / "out" / "pin" / "manifest.json").read_text())
+    assert manifest["pinned_environment_ok"] is True

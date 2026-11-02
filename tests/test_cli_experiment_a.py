@@ -210,3 +210,25 @@ def test_missing_frozen_transcripts_are_reported_in_spanish(
     result = _run("--series", "ES2015", "--run-name", "sin-transcripciones")
     assert result.exit_code == 1
     assert "ES2015a" in result.output
+
+
+def test_pinned_environment_guard_runs_before_any_work_and_is_recorded(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, fake: FakeAdapter
+) -> None:
+    from tests.pinned_guard import tripwire
+
+    calls = tripwire(monkeypatch)
+    result = _run("--series", "ES2015", "--runs", "1", "--run-name", "guard")
+
+    assert result.exit_code == 1
+    assert calls == [(["qwen3:8b", "gemma4:26b-a4b", "bge-m3"], True)]
+    assert fake.calls == []
+    assert not (tmp_path / "out").exists()
+
+
+def test_manifest_records_the_pinned_environment_check(tmp_path: Path, fake: FakeAdapter) -> None:
+    assert _run("--series", "ES2015", "--runs", "1", "--run-name", "pin").exit_code == 0
+
+    manifest = json.loads((tmp_path / "out" / "pin" / "manifest.json").read_text())
+    assert manifest["pinned_environment_ok"] is True
+    assert "ollama_version" in manifest["pinned_environment"]

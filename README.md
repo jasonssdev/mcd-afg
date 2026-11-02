@@ -251,7 +251,7 @@ de forzar una resolución, sobre todo si el conflicto está en un CSV de anotaci
 | `docs/decisions/` | El registro de decisiones: los ADR de arquitectura y la tabla D1–D17 de decisiones de método con su evidencia. Append-only | Quien quiera saber por qué algo se hizo así |
 | `notebooks/` | El registro académico: qué se hizo, qué se midió y por qué se decidió. Versionados con sus salidas | Todos; se leen en GitHub sin ejecutar |
 | `bibliography/` | `refs.bib` (49 referencias verificadas), criterios de inclusión, tabla de cribado y una plantilla de notas por referencia (las notas son opcionales y hoy no hay ninguna) | Quien cite algo |
-| `config/` | Parámetros versionados: series elegidas, partición desarrollo/evaluación, modelos, umbrales | Se lee; se cambia solo con un ADR |
+| `config/` | Parámetros versionados: series elegidas, partición desarrollo/evaluación, modelos, umbrales y, en `experiments.toml`, las huellas y versiones fijadas del entorno de modelos (`[pinned_environment]`) | Se lee; se cambia solo con un ADR |
 | `.agents/skills/` | Skills del proyecto en formato abierto SKILL.md (hoy, `deck-uc`: presentaciones y documentos con la identidad UC). Se versionan los textos y la lista de hashes; los archivos institucionales de `assets/` no (ver sección 9) | Quien produzca presentaciones o documentos con identidad UC |
 | `data/` | `raw/` (corpus, ignorado por git), `interim/`, `processed/` (los CSV de anotación) | Anotadores escriben en `processed/` |
 | `reports/` | Tablas y figuras generadas por el código | Se regeneran; no se editan a mano |

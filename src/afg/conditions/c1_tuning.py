@@ -32,7 +32,7 @@ and the ranking can change, so the grid retrieves once per K instead.
 from __future__ import annotations
 
 import json
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -487,8 +487,12 @@ def save_tuning_results(
     *,
     config: TuningConfig,
     n_questions: int,
+    pinned_environment: Mapping[str, Any] | None = None,
 ) -> None:
-    """Write the grid results and the decision as JSON (UTF-8, LF), creating the folder."""
+    """Write the grid results and the decision as JSON (UTF-8, LF), creating the folder.
+
+    ``pinned_environment`` is the guard's record, merged into the top level when given.
+    """
     w = selection.winner
     payload = {
         "n_questions": n_questions,
@@ -508,6 +512,7 @@ def save_tuning_results(
             "reason": selection.reason,
         },
     }
+    payload.update(pinned_environment or {})
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 

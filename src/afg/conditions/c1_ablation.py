@@ -12,9 +12,10 @@ is involved.
 from __future__ import annotations
 
 import json
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, fields, replace
 from pathlib import Path
+from typing import Any
 
 from afg.conditions.c1_retrieval import RETRIEVAL_MODES, Embedder
 from afg.conditions.c1_tuning import (
@@ -81,8 +82,13 @@ def save_ablation_results(
     config: TuningConfig,
     n_questions: int,
     git_commit: str | None,
+    pinned_environment: Mapping[str, Any] | None = None,
 ) -> None:
-    """Write the ablation as JSON (UTF-8, LF), creating the folder."""
+    """Write the ablation as JSON (UTF-8, LF), creating the folder.
+
+    ``pinned_environment`` is the guard's record (``pinned_environment_ok`` and the pins), merged
+    into the top level when given.
+    """
     payload = {
         "git_commit": git_commit,
         "n_questions": n_questions,
@@ -102,6 +108,7 @@ def save_ablation_results(
             for r in results
         ],
     }
+    payload.update(pinned_environment or {})
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 

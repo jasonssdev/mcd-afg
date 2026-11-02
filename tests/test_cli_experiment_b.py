@@ -530,3 +530,36 @@ def test_questions_check_rejects_validators_that_are_not_annotators(
     out = _out(result)
     assert result.exit_code == 1
     assert "jss" in out and "gm, gv" in out
+
+
+@pytest.mark.parametrize(
+    ("conditions", "extra", "models"),
+    [
+        ("c1", [], ["qwen3:8b", "gpt-oss:20b", "bge-m3"]),
+        (
+            "c1,c2",
+            ["--c2-extraction", "x"],
+            ["qwen3:8b", "gpt-oss:20b", "gemma4:26b-a4b", "bge-m3"],
+        ),
+    ],
+)
+def test_pinned_environment_guard_runs_before_any_answer(
+    env: dict[str, Any], conditions: str, extra: list[str], models: list[str]
+) -> None:
+    from tests.pinned_guard import tripwire
+
+    env["monkeypatch"].setattr(afg_cli, "make_c2_condition", lambda run: FakeC1())
+    calls = tripwire(env["monkeypatch"])
+    result = _invoke(env, "--conditions", conditions, *extra, "--run-name", "guard")
+
+    assert result.exit_code == 1
+    assert calls == [(models, True)]
+    assert env["condition"].seeds == []
+    assert not env["out"].exists()
+
+
+def test_manifest_records_the_pinned_environment_check(env: dict[str, Any]) -> None:
+    assert _invoke(env, "--runs", "1", "--run-name", "pin").exit_code == 0
+
+    manifest = json.loads((env["out"] / "pin" / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["pinned_environment_ok"] is True

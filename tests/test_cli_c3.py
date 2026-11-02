@@ -173,3 +173,25 @@ def test_dropped_decisions_are_listed_in_the_summary(
 
     assert result.exit_code == 0, result.output
     assert "descartada" in _out(result) and "ES2015a.d09" in _out(result)
+
+
+def test_pinned_environment_guard_runs_before_any_build(
+    env: dict[str, Any], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from tests.pinned_guard import tripwire
+
+    calls = tripwire(monkeypatch)
+    result = _run("--c2-extraction", C2_RUN, "--series", "ES2015", "--runs", "1")
+
+    assert result.exit_code == 1
+    assert calls == [(["bge-m3"], True)]
+    assert env["runner"].calls == []
+    assert not env["c3"].exists()
+
+
+def test_c3_manifest_records_the_pinned_environment_check(env: dict[str, Any]) -> None:
+    assert _run("--c2-extraction", C2_RUN, "--series", "ES2015", "--runs", "1").exit_code == 0
+
+    workspace = env["c3"] / C2_RUN / "ES2015" / "run-0"
+    manifest = json.loads((workspace / "c3-manifest.json").read_text(encoding="utf-8"))
+    assert manifest["pinned_environment_ok"] is True

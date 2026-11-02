@@ -290,6 +290,26 @@ class TestRunRobustness:
         assert any((paths["results"].parent / "candidatos").iterdir())
         assert json.loads(paths["results"].read_text(encoding="utf-8"))["decision"]["selected"]
 
+    def test_pinned_environment_guard_runs_before_any_call(
+        self, paths: dict[str, Path], monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        from tests.pinned_guard import tripwire
+
+        calls = tripwire(monkeypatch)
+        monkeypatch.setattr(afg_cli, "run_calibration", lambda *a, **k: pytest.fail("ran"))
+        result = _invoke("calibration-run")
+        assert result.exit_code == 1
+        assert calls == [(["m1", "m2", "m3"], False)]
+        assert not paths["results"].exists()
+
+    def test_results_record_the_pinned_environment_check(
+        self, paths: dict[str, Path], monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(afg_cli, "run_calibration", lambda *a, **k: _run_result())
+        assert _invoke("calibration-run").exit_code == 0
+        stored = json.loads(paths["results"].read_text(encoding="utf-8"))
+        assert stored["pinned_environment_ok"] is True
+
     def test_stale_checkpoints_are_not_reused_when_the_labels_change(
         self, paths: dict[str, Path], monkeypatch: pytest.MonkeyPatch
     ) -> None:

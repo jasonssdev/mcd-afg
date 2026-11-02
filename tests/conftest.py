@@ -26,3 +26,16 @@ for _flag in ("GITHUB_ACTIONS", "FORCE_COLOR", "PY_COLORS"):
 @pytest.fixture
 def rng() -> Iterator[np.random.Generator]:
     yield np.random.default_rng(seed=42)
+
+
+@pytest.fixture(autouse=True)
+def _pinned_environment_passes(monkeypatch: pytest.MonkeyPatch) -> None:
+    """CLI tests run with fake probes whose digests are not the pinned ones: the guard passes.
+
+    The guard itself is tested in ``test_pinned_environment.py`` and ``test_cli_pinned_guard.py``,
+    and each wired command has a test that replaces this stub with a refusing guard.
+    """
+    import afg.cli as afg_cli
+    from tests.pinned_guard import passing_guard
+
+    monkeypatch.setattr(afg_cli, "require_pinned_environment", passing_guard, raising=False)

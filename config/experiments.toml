@@ -18,6 +18,21 @@ temperature = 0.1                    # same: openkos leaves temperature unset by
 top_p = 0.9
 runs_per_config = 3                  # thesis section 5.8: minimum 3 runs, report mean + dispersion
 
+[pinned_environment]
+# Fingerprints the experiment and calibration commands refuse to run without (avance 09,
+# section 11.1, controls 6 and 7). Before any model call the command compares the installed
+# Ollama and OpenKOS versions and the digest of every model it uses with these values and stops
+# with the full list of differences. Keyed by the model names used in this file: a renamed model
+# without a pin fails too. Changing a value here is a decision (new run series), not a repair.
+ollama_version = "0.32.9"
+openkos_version = "0.7.0"
+
+[pinned_environment.model_digests]
+"qwen3:8b" = "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41"
+"gpt-oss:20b" = "f38aa0c53da5f8c49d08c43a99df24ff53167fe68e24664a7777288e7656fdfe"
+"gemma4:26b-a4b" = "001e5dafc3c77684c2307ebc6ab8e336e10c9b18eca52acf547d72fc83c3ca8c"
+"bge-m3" = "7907646426070047a77226ac3e684fbbe8410524f7b4a74d02837e43f2146bab"
+
 [retrieval]
 answer_limit = 5                     # read by the pending Experiment A/B code; keep. `--limit` of `openkos query` for C2 and C3 (OpenKOS default, ADR 0006). Kept on purpose: the three conditions share a TEXT budget, not an equal K (ADR 0007). C1 uses [retrieval.c1].k
 rrf_k = 60                           # reciprocal rank fusion constant, as in openkos retrieval/fusion.py

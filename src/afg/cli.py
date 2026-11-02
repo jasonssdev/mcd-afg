@@ -16,7 +16,7 @@ from rich.console import Console
 from rich.markup import escape
 
 if TYPE_CHECKING:
-    from collections.abc import Collection, Sequence
+    from collections.abc import Collection, Mapping, Sequence
 
     from afg.annotation.workspace import AnnotationPlan, WorkspacePaths
     from afg.corpus.frozen import FrozenTurn
@@ -152,6 +152,7 @@ from afg.evaluation.reference import (
 )
 from afg.evaluation.relations import gold_source, load_gold_pairs
 from afg.evaluation.translation import TranslationError
+from afg.experiments.pinned_environment import PinnedEnvironmentError, check_pinned_environment
 from afg.experiments.provenance import LiveProbe, ProvenanceProbe, collect_provenance
 from afg.experiments.question_bank import (
     QuestionBankIssue,
@@ -1945,6 +1946,7 @@ def judge_calibration_run() -> None:
             "con la ventana actual, que puede no ser el que vio quien etiquetó.[/yellow]"
         )
     candidates = load_candidates()
+    pinned = require_pinned_environment(list(candidates), needs_openkos=False)
     try:
         absent = missing_models(candidates, list_installed_models())
     except (RuntimeError, ConnectionError, OSError) as exc:
@@ -2017,7 +2019,9 @@ def judge_calibration_run() -> None:
         console.print(f"[bold red]{exc}[/bold red]")
         console.print("Lo ya terminado quedó guardado; al repetir el comando se reanuda desde ahí.")
         raise typer.Exit(code=1) from exc
-    save_calibration_results(RESULTS_PATH, result, n_items=summary.n_items)
+    save_calibration_results(
+        RESULTS_PATH, result, n_items=summary.n_items, pinned_environment=pinned
+    )
     console.print(f"Resultados guardados en {_short(RESULTS_PATH)}.")
     console.print(
         "Vuelve a ejecutar el notebook 05 (`uv run jupyter nbconvert --to notebook --execute "
@@ -2242,6 +2246,7 @@ def c1_tune() -> None:
     from rich.table import Table
 
     config, questions, meetings = _c1_development_inputs()
+    pinned = require_pinned_environment([configured_embedding_model()], needs_openkos=False)
 
     n_configs = len(config.chunk_size) * len(config.chunk_overlap)
     console.print(
@@ -2297,7 +2302,12 @@ def c1_tune() -> None:
         f"{selection.reason}"
     )
     save_tuning_results(
-        C1_TUNING_RESULTS_PATH, results, selection, config=config, n_questions=len(questions)
+        C1_TUNING_RESULTS_PATH,
+        results,
+        selection,
+        config=config,
+        n_questions=len(questions),
+        pinned_environment=pinned,
     )
     console.print(f"Resultados guardados en {_short(C1_TUNING_RESULTS_PATH)}.")
 
@@ -2315,6 +2325,7 @@ def c1_ablate() -> None:
     from rich.table import Table
 
     config, questions, meetings = _c1_development_inputs()
+    pinned = require_pinned_environment([configured_embedding_model()], needs_openkos=False)
     try:
         params = load_pinned_c1_params()
     except ValueError as exc:
@@ -2351,6 +2362,7 @@ def c1_ablate() -> None:
         config=config,
         n_questions=len(questions),
         git_commit=current_git_commit(),
+        pinned_environment=pinned,
     )
     console.print(f"Resultados guardados en {_short(C1_ABLATION_PATH)}.")
 
@@ -2403,7 +2415,9 @@ def _require_development_series(series_ids: Sequence[str]) -> str:
     return "development"
 
 
-def _experiment_a_manifest(name: str, series: str, partition: str, n_runs: int) -> dict[str, Any]:
+def _experiment_a_manifest(
+    name: str, series: str, partition: str, n_runs: int, pinned: Mapping[str, Any]
+) -> dict[str, Any]:
     """The opening manifest of an Experiment A run directory (settings and provenance)."""
     from datetime import UTC, datetime
 
@@ -2431,6 +2445,7 @@ def _experiment_a_manifest(name: str, series: str, partition: str, n_runs: int) 
             **{key: provenance[key] for key in EXPERIMENT_A_PROVENANCE_KEYS},
         },
         "git_dirty": provenance["git_dirty"],
+        **pinned,
         "status": "running",
         "completed_runs": [],
         "error": None,
@@ -2469,6 +2484,7 @@ def experiment_a(
     from datetime import UTC, datetime
 
     partition = _require_development_series([series])
+    pinned = require_pinned_environment(_openkos_models(), needs_openkos=True)
 
     budget = load_experiments_config()["shared_budget"]
     n_runs = runs if runs is not None else int(budget["runs_per_config"])
@@ -2481,7 +2497,7 @@ def experiment_a(
         )
         raise typer.Exit(code=1)
 
-    manifest = _experiment_a_manifest(name, series, partition, n_runs)
+    manifest = _experiment_a_manifest(name, series, partition, n_runs, pinned)
     manifest_path = run_dir / "manifest.json"
     records_path = run_dir / "extracciones.jsonl"
 
@@ -2583,10 +2599,13 @@ def experiment_a_batch(
 
     series_ids = _batch_series(series, partition)
     batch_partition = _require_development_series(series_ids)
+    pinned = require_pinned_environment(_openkos_models(), needs_openkos=True)
     budget = load_experiments_config()["shared_budget"]
     n_runs = runs if runs is not None else int(budget["runs_per_config"])
     name = run_name or datetime.now(UTC).strftime("a-%Y%m%d-%H%M%S")
-    base_manifest = _experiment_a_manifest(name, ",".join(series_ids), batch_partition, n_runs)
+    base_manifest = _experiment_a_manifest(
+        name, ",".join(series_ids), batch_partition, n_runs, pinned
+    )
     base_manifest.pop("completed_runs")
     base_manifest.pop("error")
     run_dir = EXPERIMENT_A_DIR / name
@@ -2717,6 +2736,11 @@ def experiment_a_relations(
         raise typer.Exit(code=1)
     series_ids = _relations_series(run_root, series)
     partition = _require_development_series(series_ids)
+    pinned = (
+        require_pinned_environment(_openkos_models(), needs_openkos=True)
+        if run_revisions
+        else require_pinned_environment([configured_embedding_model()], needs_openkos=False)
+    )
     reference_kinds: dict[str, str] = {}
 
     def _reference_of(series_id: str) -> Sequence[ReferenceDecision]:
@@ -2745,6 +2769,7 @@ def experiment_a_relations(
     except (FileNotFoundError, NotAdjudicatedError, TranslationError) as exc:
         console.print(f"[bold red]{escape(str(exc))}[/bold red]")
         raise typer.Exit(code=1) from exc
+    report.update(pinned)
     out_path = EXPERIMENT_A_DIR / c2_extraction / "relaciones.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -2796,6 +2821,7 @@ def c3_build(
     """
     series_ids = _batch_series(series, None)
     _require_development_series(series_ids)
+    pinned = require_pinned_environment([configured_embedding_model()], needs_openkos=True)
     budget = load_experiments_config()["shared_budget"]
     n_runs = runs if runs is not None else int(budget["runs_per_config"])
 
@@ -2847,6 +2873,7 @@ def c3_build(
                     executable=executable,
                     transcripts_dir=TRANSCRIPTS_DIR,
                     overwrite=overwrite,
+                    pinned_environment=pinned,
                 )
             except (GoldWorkspaceExistsError, OpenKosError, FileNotFoundError, OSError) as exc:
                 console.print(f"[bold red]{series_id} run-{run}: {escape(str(exc))}[/bold red]")
@@ -2873,6 +2900,33 @@ def c3_build(
 def make_provenance_probe() -> ProvenanceProbe:
     """The probe that reads model digests and versions from the local machine."""
     return LiveProbe(openkos_executable=get_settings().openkos_executable)
+
+
+def require_pinned_environment(models: Sequence[str], *, needs_openkos: bool) -> dict[str, Any]:
+    """Stop the command (exit code 1) unless the installed environment is the pinned one.
+
+    Call it before the first model call. ``models`` are the models the command uses and
+    ``needs_openkos`` whether it runs OpenKOS. The returned record (``pinned_environment_ok`` and
+    the pins) goes into the manifest of the run. There is no bypass: fix the environment or, as a
+    reviewed decision, the pins in ``[pinned_environment]`` of ``config/experiments.toml``.
+    """
+    try:
+        return check_pinned_environment(
+            make_provenance_probe(), models=models, needs_openkos=needs_openkos
+        )
+    except (PinnedEnvironmentError, ValueError) as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+        raise typer.Exit(code=1) from exc
+
+
+def _openkos_models() -> list[str]:
+    """Every model an OpenKOS workspace command may route to (extraction, revisions, embeddings)."""
+    budget = load_experiments_config()["shared_budget"]
+    return [
+        str(budget["generative_model"]),
+        str(budget["sufficiency_model"]),
+        configured_embedding_model(),
+    ]
 
 
 JUDGE_ORDER: PresentationOrder = "reference_first"
@@ -3083,6 +3137,18 @@ def experiment_b(
             )
         raise typer.Exit(code=1)
 
+    # OpenKOS is checked for every condition: C1 also records its version and copies its context
+    # budget (ADR 0007), so a different OpenKOS invalidates C1 runs too. The sufficiency model
+    # is only called by C2 and C3.
+    pinned = require_pinned_environment(
+        [
+            settings.generative_model,
+            settings.judge_model,
+            *([sufficiency_model] if {"c2", "c3"} & set(wanted) else []),
+            configured_embedding_model(),
+        ],
+        needs_openkos=True,
+    )
     name = run_name or datetime.now(UTC).strftime("b-%Y%m%d-%H%M%S")
     run_dir = EXPERIMENT_B_DIR / name
     provenance = collect_provenance(
@@ -3096,6 +3162,7 @@ def experiment_b(
         c2_extraction=c2_extraction,
         c3_workspaces=_short(OPENKOS_C3_WORKSPACES_DIR) if "c3" in wanted else None,
     )
+    provenance.update(pinned)
 
     def report(done: int, total: int) -> None:
         step = max(total // 10, 1)
@@ -3190,6 +3257,9 @@ def experiment_b_closed_book(
             )
         raise typer.Exit(code=1)
 
+    pinned = require_pinned_environment(
+        [settings.generative_model, settings.judge_model], needs_openkos=False
+    )
     run_dir = EXPERIMENT_B_DIR / run_name
     provenance = collect_provenance(
         make_provenance_probe(),
@@ -3198,6 +3268,7 @@ def experiment_b_closed_book(
         embedding_model=configured_embedding_model(),
         questions_path=questions,
     )
+    provenance.update(pinned)
 
     def report(done: int, total: int) -> None:
         step = max(total // 10, 1)
