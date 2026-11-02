@@ -12,12 +12,16 @@ import pytest
 from afg.domain.decision import EvidenceSpan
 from afg.domain.question import Answer, Question, QuestionStratum
 from afg.evaluation.judge import (
+    JUDGE_PROMPT_VERSION,
     JudgeConfigurationError,
     JudgeFailure,
     JudgeVerdict,
     MissingTranscriptExcerptError,
     OllamaJudgeBackend,
     judge_answer,
+    judge_prompt_sha256,
+    judge_prompt_version,
+    judge_system_prompt,
     list_installed_models,
     missing_models,
     require_distinct_model_families,
@@ -395,3 +399,68 @@ def test_configured_judge_is_the_one_selected_by_calibration() -> None:
     require_distinct_model_families(
         config["judge"]["model"], config["shared_budget"]["generative_model"]
     )
+
+
+# --- outdated: the answer presents the superseded state as current (H4, issue #241) ---------------
+
+OUTDATED_REPLY = json.dumps(
+    {"correct": False, "evidence_supported": True, "outdated": True, "rationale": "old state"}
+)
+
+
+def _e3_question(superseded: str | None = "SUPERSEDED-TEXT") -> Question:
+    return Question(
+        id="q1",
+        series_id="ES2015",
+        stratum=QuestionStratum.E3_EVOLUTION,
+        text="QUESTION-TEXT",
+        reference_answer="REFERENCE-TEXT",
+        superseded_answer=superseded,
+    )
+
+
+def _judge_e3(backend: FakeBackend, question: Question) -> JudgeVerdict | JudgeFailure:
+    return judge_answer(
+        question,
+        _answer(),
+        judge_model="mistral-small3.2:24b",
+        generative_model="qwen3:8b",
+        backend=backend,
+        transcript_excerpt="EXCERPT",
+    )
+
+
+def test_question_with_superseded_answer_shows_it_and_asks_for_outdated() -> None:
+    backend = FakeBackend(OUTDATED_REPLY)
+    verdict = _judge_e3(backend, _e3_question())
+    assert isinstance(verdict, JudgeVerdict)
+    assert verdict.outdated is True
+    call = backend.calls[0]
+    assert "SUPERSEDED-TEXT" in call["user"]
+    assert "outdated" in call["system"]
+    assert "outdated" in call["format_schema"]["properties"]
+
+
+def test_question_without_superseded_answer_keeps_the_original_judge() -> None:
+    backend = FakeBackend()
+    verdict = _judge_e3(backend, _e3_question(None))
+    assert isinstance(verdict, JudgeVerdict)
+    assert verdict.outdated is None
+    call = backend.calls[0]
+    assert call["system"] == judge_system_prompt()
+    assert "outdated" not in call["format_schema"]["properties"]
+    assert "Superseded" not in call["user"]
+
+
+def test_reply_without_outdated_is_a_schema_violation_when_it_was_asked() -> None:
+    verdict = _judge_e3(FakeBackend(GOOD), _e3_question())
+    assert isinstance(verdict, JudgeFailure)
+    assert verdict.reason == "schema_violation"
+
+
+def test_prompt_versions_are_pinned_by_hash() -> None:
+    assert JUDGE_PROMPT_VERSION == 2
+    assert judge_prompt_version(_e3_question()) == 2
+    assert judge_prompt_version(_e3_question(None)) == 1
+    assert judge_prompt_sha256(2) != judge_prompt_sha256(1)
+    assert len(judge_prompt_sha256(2)) == 64

@@ -41,6 +41,8 @@ from afg.evaluation.judge import (
     JudgeFailure,
     PresentationOrder,
     judge_answer,
+    judge_prompt_sha256,
+    judge_prompt_version,
     require_distinct_model_families,
 )
 from afg.evaluation.passage import judge_evidence_passage
@@ -385,6 +387,8 @@ def _evaluate(
             "order": settings.judge_order,
             "seed": settings.judge_seed,
             "temperature": settings.judge_temperature,
+            "prompt_version": judge_prompt_version(question),
+            "prompt_sha256": judge_prompt_sha256(judge_prompt_version(question)),
         },
         "started_at": now().isoformat(),
         "answer": None,

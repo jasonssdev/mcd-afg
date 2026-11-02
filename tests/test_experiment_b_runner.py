@@ -11,7 +11,7 @@ import pytest
 
 from afg.domain.decision import EvidenceSpan
 from afg.domain.question import Answer, Question, QuestionStratum
-from afg.evaluation.judge import JudgeConfigurationError
+from afg.evaluation.judge import JudgeConfigurationError, judge_prompt_sha256
 from afg.experiments.runner import (
     ManifestMismatchError,
     RunAbortedError,
@@ -145,9 +145,39 @@ def test_record_fields_and_citation(tmp_path: Path) -> None:
         "order": "reference_first",
         "seed": 42,
         "temperature": 0.0,
+        "prompt_version": 1,
+        "prompt_sha256": judge_prompt_sha256(1),
     }
     for name in ("started_at", "finished_at", "answer_seconds", "judge_seconds"):
         assert record[name] is not None
+
+
+def test_e3_with_superseded_answer_is_judged_with_prompt_v2_and_records_outdated(
+    tmp_path: Path,
+) -> None:
+    question = Question(
+        id="q1",
+        series_id="ES2015",
+        stratum=QuestionStratum.E3_EVOLUTION,
+        text="text",
+        reference_answer="ref",
+        reference_evidence=(SPAN,),
+        superseded_answer="old",
+    )
+    reply = json.dumps(
+        {"correct": False, "evidence_supported": True, "outdated": True, "rationale": "old"}
+    )
+    _run(
+        tmp_path,
+        [question],
+        [FakeCondition()],
+        settings=_settings(runs=1),
+        judge_backend=FakeBackend(reply),
+    )
+    (record,) = load_records(tmp_path / "run" / "respuestas.jsonl")
+    assert record["judge"]["prompt_version"] == 2
+    assert record["judge"]["prompt_sha256"] == judge_prompt_sha256(2)
+    assert record["verdict"]["outdated"] is True
 
 
 def test_generation_seed_is_base_plus_run_index(tmp_path: Path) -> None:

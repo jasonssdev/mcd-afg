@@ -27,6 +27,7 @@ def _record(
     stratum: str = "E3_evolution",
     partition: str = "evaluation",
     correct: bool | None = True,
+    outdated: bool | None = None,
     supported: bool = True,
     citation: bool | None = True,
     precision: float | None = 1.0,
@@ -44,7 +45,11 @@ def _record(
         "stratum": stratum,
         "partition": partition,
         "answer": {"text": "x", "abstained": abstained},
-        "verdict": {"correct": correct, "evidence_supported": supported} if judged else None,
+        "verdict": (
+            {"correct": correct, "evidence_supported": supported, "outdated": outdated}
+            if judged
+            else None
+        ),
         "judge_failure": judge_failure,
         "citation_correct": citation,
         "citation_precision": precision,
@@ -353,3 +358,121 @@ def test_citation_width_is_serialised_with_the_cell() -> None:
     cell = report_to_dict(report)["cells"][0]
     assert cell["citation_width"]["cited_acts_median"] == 1
     assert cell["citation_width"]["source_citations"] == 0
+
+
+# --- H4 proxy: incorrect answers among the answered E3 questions (issue #241) ---------------------
+
+
+def _h4(report: AnalysisReport, a: str, b: str, metric: str = "wrong_among_answered"):
+    return next(
+        c
+        for c in report.comparisons
+        if (c.condition_a, c.condition_b, c.stratum, c.metric) == (a, b, "E3", metric)
+    )
+
+
+def test_wrong_among_answered_excludes_abstentions_from_the_denominator() -> None:
+    # q0 answered wrong, q1 answered right, q2 abstained (even though judged "incorrect").
+    records = [
+        _record("E3q00", "C1", 0, correct=False),
+        _record("E3q01", "C1", 0, correct=True),
+        _record("E3q02", "C1", 0, correct=False, abstained=True),
+    ]
+    est = _cell(analyze_runs(records, settings=SETTINGS, min_questions=1), "C1", "E3").metrics[
+        "wrong_among_answered"
+    ]
+    assert est is not None
+    assert est.n_questions == 2
+    assert est.point == 0.5
+
+
+def test_wrong_among_answered_is_only_reported_for_e3() -> None:
+    records = [_record("E1q00", "C1", 0, stratum="E1_point_fact", correct=False)]
+    cell = _cell(analyze_runs(records, settings=SETTINGS, min_questions=1), "C1", "E1")
+    assert "wrong_among_answered" not in cell.metrics
+
+
+def test_h4_compares_c1_against_c2_and_c3_among_the_answered() -> None:
+    c1 = _bank("C1", [[False]] * 4)
+    c2 = _bank("C2", [[True]] * 4)
+    c3 = _bank("C3", [[True], [True], [True], [False]])
+    report = analyze_runs(c1 + c2 + c3, settings=SETTINGS, min_questions=1)
+    vs_c2 = _h4(report, "C1", "C2")
+    assert vs_c2.difference == 1.0
+    assert vs_c2.criterion == "supported"
+    assert _h4(report, "C1", "C3").difference == 0.75
+
+
+def test_h4_pairs_only_questions_answered_by_both_conditions() -> None:
+    c1 = [_record("E3q00", "C1", 0, correct=False), _record("E3q01", "C1", 0, correct=False)]
+    c2 = [
+        _record("E3q00", "C2", 0, correct=True),
+        _record("E3q01", "C2", 0, correct=False, abstained=True),
+    ]
+    cmp = _h4(analyze_runs(c1 + c2, settings=SETTINGS, min_questions=1), "C1", "C2")
+    assert cmp.n_pairs == 1
+
+
+# --- H4: outdated answers among the answered E3 questions (issue #241, ADR 0017) -----------------
+
+
+def _outdated_bank(condition: str, flags: list[bool | None]) -> list[dict[str, Any]]:
+    return [
+        _record(f"E3q{q:02d}", condition, 0, correct=False, outdated=flag)
+        for q, flag in enumerate(flags)
+    ]
+
+
+def test_outdated_rate_counts_the_judge_flag_among_the_answered() -> None:
+    records = [
+        _record("E3q00", "C1", 0, correct=False, outdated=True),
+        _record("E3q01", "C1", 0, correct=False, outdated=False),
+        _record("E3q02", "C1", 0, correct=False, outdated=True, abstained=True),
+    ]
+    est = _cell(analyze_runs(records, settings=SETTINGS, min_questions=1), "C1", "E3").metrics[
+        "outdated_among_answered"
+    ]
+    assert est is not None
+    assert est.n_questions == 2  # the abstention is out of the denominator
+    assert est.point == 0.5
+
+
+def test_outdated_rate_is_not_computed_without_the_judge_flag() -> None:
+    records = _outdated_bank("C1", [None, None])
+    cell = _cell(analyze_runs(records, settings=SETTINGS, min_questions=1), "C1", "E3")
+    assert cell.metrics["outdated_among_answered"] is None
+
+
+def test_outdated_rate_is_only_reported_for_e3() -> None:
+    records = [_record("E1q00", "C1", 0, stratum="E1_point_fact", outdated=True)]
+    cell = _cell(analyze_runs(records, settings=SETTINGS, min_questions=1), "C1", "E1")
+    assert "outdated_among_answered" not in cell.metrics
+
+
+def test_h4_is_supported_when_c1_minus_c2_is_above_zero() -> None:
+    c1 = _outdated_bank("C1", [True, True, True, False])
+    c2 = _outdated_bank("C2", [False, False, False, False])
+    c3 = _outdated_bank("C3", [True, False, False, False])
+    report = analyze_runs(c1 + c2 + c3, settings=SETTINGS, min_questions=1)
+    vs_c2 = _h4(report, "C1", "C2", "outdated_among_answered")
+    assert vs_c2.difference == 0.75
+    assert vs_c2.criterion == "supported"
+    vs_c3 = _h4(report, "C1", "C3", "outdated_among_answered")
+    assert vs_c3.difference == 0.5
+
+
+def test_h4_is_inconclusive_when_the_interval_includes_zero() -> None:
+    c1 = _outdated_bank("C1", [True, False, True, False])
+    c2 = _outdated_bank("C2", [False, True, False, True])
+    cmp = _h4(
+        analyze_runs(c1 + c2, settings=SETTINGS, min_questions=1),
+        "C1",
+        "C2",
+        "outdated_among_answered",
+    )
+    assert cmp.criterion == "inconclusive"
+
+
+def test_warning_when_answered_e3_records_lack_the_outdated_flag() -> None:
+    report = analyze_runs(_outdated_bank("C1", [None, True]), settings=SETTINGS, min_questions=1)
+    assert any("outdated" in w for w in report.warnings)

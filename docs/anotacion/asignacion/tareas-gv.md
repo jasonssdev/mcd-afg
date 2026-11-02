@@ -426,6 +426,9 @@ Qué revisas en cada pregunta:
   `E4_unanswerable`).
 - Que la **respuesta de referencia** se derive de la evidencia citada, no del resumen.
 - Que la **evidencia citada** exista y diga lo que la respuesta afirma.
+- Que en cada **E3** la columna `superseded_answer` describa el estado **anterior** de la
+  decisión, el que la respuesta de referencia reemplaza, y que la evidencia citada lo respalde.
+  En los demás estratos debe estar vacía.
 - Que las de **E4 sean genuinamente incontestables** con el material. Este es el punto que
   más se rompe: una E4 que en realidad sí tiene respuesta arruina la medición de abstención,
   porque un sistema que la contesta bien queda penalizado por acertar.
@@ -460,7 +463,7 @@ En cada fila que marcaste con `gv` comprueba que la serie sea una serie de evalu
 desarrollo —ES2015, IS1004 y TS3009— no aportan preguntas al banco: ADR 0005), que la evidencia
 esté bien formada (actos de una misma reunión separados con `;`, reuniones con `|`) y pertenezca
 a esa serie, que cada acto de diálogo citado exista en la transcripción, que la respuesta y la
-evidencia estén presentes (y que una E4 no lleve ninguna de las dos), y que `validated_by`
+evidencia estén presentes (y que una E4 no lleve ninguna de las dos), que toda E3 declare `superseded_answer` (y que ningún otro estrato la lleve), y que `validated_by`
 tenga las iniciales de quien valida (`gm` o `gv`) y sean distintas del autor. Avisa si una fila validada conserva `validation_notes`. No juzga criterio: que la
 respuesta salga de la evidencia o que una E4 sea realmente incontestable lo sigues revisando
 tú. E3 puede traer entre 25 y 40 preguntas: las filas de E3 sobre el mínimo que sigan vacías

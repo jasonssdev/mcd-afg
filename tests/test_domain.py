@@ -110,3 +110,16 @@ class TestClassifyDecisionStatus:
     ) -> None:
         result = classify_decision_status(explicit=explicit, accepted=accepted, anchored=anchored)
         assert result == expected
+
+
+class TestSupersededAnswer:
+    def test_defaults_to_none_and_is_kept_when_given(self) -> None:
+        base = {
+            "id": "q1",
+            "series_id": "ES2016",
+            "stratum": QuestionStratum.E3_EVOLUTION,
+            "text": "Changed?",
+        }
+        assert Question(**base).superseded_answer is None  # type: ignore[arg-type]
+        kept = Question(**base, superseded_answer="Plain chip")  # type: ignore[arg-type]
+        assert kept.superseded_answer == "Plain chip"

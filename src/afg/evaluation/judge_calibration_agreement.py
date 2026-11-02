@@ -95,27 +95,34 @@ def compute_human_agreement(
     unknown = [row["id"] for row in second_rows if row["id"] not in primary]
     if unknown:
         raise AgreementError(f"Second-labeler ids not in the primary set: {unknown}")
-    results: list[ColumnAgreement] = []
-    for column in LABEL_COLUMNS:
-        ids = [row["id"] for row in second_rows]
-        first = [_label(primary[i], column, who="primary") for i in ids]
-        second = [_label(row, column, who="second labeler") for row in second_rows]
-        disagreements = tuple(i for i, a, b in zip(ids, first, second, strict=True) if a != b)
-        kappa = cohen_kappa(
-            ["si" if v else "no" for v in first], ["si" if v else "no" for v in second]
-        )
-        value = None if kappa != kappa else kappa  # NaN: both labelers used a single class
-        results.append(
-            ColumnAgreement(
-                column=column,
-                n_items=len(ids),
-                n_agree=len(ids) - len(disagreements),
-                kappa=value,
-                disagreements=disagreements,
-                passes=value is not None and value >= min_kappa,
-            )
-        )
-    return tuple(results)
+    return tuple(
+        compute_column_agreement(column, primary, second_rows, min_kappa=min_kappa)
+        for column in LABEL_COLUMNS
+    )
+
+
+def compute_column_agreement(
+    column: str,
+    primary: Mapping[str, Mapping[str, str]],
+    second_rows: Sequence[Mapping[str, str]],
+    *,
+    min_kappa: float,
+) -> ColumnAgreement:
+    """Cohen's kappa of one label ``column``; ``primary`` maps id to the first labeler's row."""
+    ids = [row["id"] for row in second_rows]
+    first = [_label(primary[i], column, who="primary") for i in ids]
+    second = [_label(row, column, who="second labeler") for row in second_rows]
+    disagreements = tuple(i for i, a, b in zip(ids, first, second, strict=True) if a != b)
+    kappa = cohen_kappa(["si" if v else "no" for v in first], ["si" if v else "no" for v in second])
+    value = None if kappa != kappa else kappa  # NaN: both labelers used a single class
+    return ColumnAgreement(
+        column=column,
+        n_items=len(ids),
+        n_agree=len(ids) - len(disagreements),
+        kappa=value,
+        disagreements=disagreements,
+        passes=value is not None and value >= min_kappa,
+    )
 
 
 def select_second_sheet_rows(

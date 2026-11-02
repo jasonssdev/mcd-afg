@@ -458,7 +458,7 @@ Comprueba, en cada fila ya validada, que la serie sea una **serie de evaluación
 desarrollo —ES2015, IS1004 y TS3009— no aportan preguntas al banco: ADR 0005), que la evidencia
 esté bien formada y pertenezca a esa serie, que cada acto de diálogo citado **exista** en la
 transcripción de la reunión, que la respuesta y la evidencia estén presentes (y que una E4 no
-lleve ninguna de las dos), y que `validated_by` sean las iniciales de quien valida (`gm` o `gv`),
+lleve ninguna de las dos), que toda E3 declare `superseded_answer` (y que ningún otro estrato la lleve), y que `validated_by` sean las iniciales de quien valida (`gm` o `gv`),
 distintas del autor. En la evidencia los actos de una misma reunión se separan con `;` y las
 reuniones con `|`; una coma entre ids se rechaza con un ejemplo del formato correcto. Si faltan
 las transcripciones, avisa una sola vez y se corre `uv run afg gold setup`. Las filas aún sin
@@ -486,8 +486,26 @@ Las columnas salen del modelo `src/afg/domain/question.py::Question`, una por ca
 | `reference_answer` | La respuesta derivada de la evidencia, también en inglés. **La llenas tú**, y queda **vacía en E4**: el modelo la declara `None` para ese estrato, porque ahí la referencia *es la ausencia de respuesta* |
 | `reference_evidence` | Los actos de diálogo que la respaldan. **La llenas tú**. Formato `reunion:da_id;da_id`, y `\|` entre reuniones cuando la evidencia abarca más de una. **Vacía en E4**. Los ids se obtienen con `uv run afg gold evidencia` (ver «Cómo llenar `reference_evidence`» más abajo) |
 | `author` | `gm`, ya puesto por `questions-init` |
+| `superseded_answer` | **Solo en E3, y es obligatoria.** El estado anterior de la decisión, el que la respuesta de referencia reemplaza. **La llenas tú**, en inglés. **Vacía en E1, E2 y E4.** Cómo escribirla, abajo, en «Cómo llenar `superseded_answer`». Es la última columna del archivo |
 | `validated_by` | **Lo llena Germán.** Tú lo dejas vacío |
 | `validation_notes` | **Lo llena Germán** cuando devuelve una pregunta que no pasó, con el motivo. **Tú lo borras** al reentregar la pregunta corregida — la tabla completa de los cuatro estados está en `tareas-gv.md` §8 |
+
+### Cómo llenar `superseded_answer` (solo E3)
+
+Sirve para medir H4: el juez automático usa este texto para decidir si una respuesta del
+sistema presenta como vigente el estado que la discusión posterior ya había reemplazado.
+
+- **Qué escribir.** Una o dos frases, en inglés, con el estado **anterior** de la decisión, tal
+  como lo respondería alguien que se quedó con esa versión y no vio el cambio. Se escribe
+  como una respuesta, sin mencionar que después cambió. Ejemplo para el caso de la plantilla
+  (`ES2015.q003`): *"A television remote control that also covers other devices, such as DVD
+  and VCR."*
+- **De dónde sale.** De la evidencia citada de la reunión anterior, la misma que ya va en
+  `reference_evidence` (esa celda reúne las reuniones de los dos estados). No sale del resumen
+  abstractivo.
+- **Cuándo no corresponde.** Si no puedes nombrar un estado anterior distinto del vigente, la
+  pregunta no es E3 (regla de más arriba: nunca se inventa un caso E3). En E1, E2 y E4 la
+  columna queda vacía; `questions-check` lo rechaza si lleva texto.
 
 ### Cómo llenar `reference_evidence`
 
@@ -670,6 +688,7 @@ dividida con sentido).
 - [ ] `stratum` usa los valores literales de `QuestionStratum`
 - [ ] Cada respuesta de referencia se deriva de la evidencia citada, no del resumen
 - [ ] Toda E4 se buscó en las cuatro transcripciones de su serie y no aparece
+- [ ] Toda E3 trae `superseded_answer` (el estado anterior que su respuesta reemplaza); E1, E2 y E4 la dejan vacía
 - [ ] `author = gm` en todas las filas; `validated_by` vacío (lo llena `gv`)
 
 ### Entrega

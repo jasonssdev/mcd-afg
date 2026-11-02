@@ -52,6 +52,7 @@ BANK_COLUMNS = (
     "author",
     "validated_by",
     "validation_notes",
+    "superseded_answer",
 )
 
 
@@ -105,7 +106,14 @@ def is_question_bank(path: Path) -> bool:
     return "text" in header and "validated_by" in header
 
 
-_HUMAN_COLUMNS = ("text", "reference_answer", "reference_evidence", "series_id", "validation_notes")
+_HUMAN_COLUMNS = (
+    "text",
+    "reference_answer",
+    "reference_evidence",
+    "series_id",
+    "validation_notes",
+    "superseded_answer",
+)
 
 
 def _is_blank(row: dict[str, str]) -> bool:
@@ -226,6 +234,17 @@ def _check_content(
             problems.append("falta la respuesta de referencia.")
         if not has_evidence:
             problems.append("falta la evidencia de referencia.")
+    superseded = row["superseded_answer"].strip()
+    if stratum is QuestionStratum.E3_EVOLUTION:
+        if not superseded:
+            problems.append(
+                "falta superseded_answer: una E3 declara el estado anterior de la decisión, "
+                "el que la respuesta de referencia reemplaza (H4, ADR 0017)."
+            )
+    elif stratum is not None and superseded:
+        problems.append(
+            "superseded_answer solo se llena en E3: en otros estratos debe quedar vacía."
+        )
     return problems, spans
 
 
@@ -375,6 +394,7 @@ def load_question_bank(
                     text=row["text"].strip(),
                     reference_answer=row["reference_answer"].strip() or None,
                     reference_evidence=spans,
+                    superseded_answer=row["superseded_answer"].strip() or None,
                     author=author,
                     validated_by=validator,
                     validation_notes=notes or None,
