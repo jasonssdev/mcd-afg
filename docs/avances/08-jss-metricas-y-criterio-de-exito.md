@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 08 — Métricas y criterio de éxito |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 8.0 |
+| **Versión** | 8.1 |
 | **Fecha** | 2026-11-02 |
 | **Estado** | Vigente |
 
@@ -26,6 +26,7 @@
 | 6.0 | 2026-11-02 | La tasa de respuestas confiadas pero desactualizadas (H4) recibe su definición operativa: entre las preguntas E3 respondidas (sin abstención), la proporción cuya respuesta el juez marca como desactualizada, es decir, que presenta como vigente el estado anterior de la decisión, declarado por quien escribe la pregunta en la columna nueva `superseded_answer` del banco. La comparación es la diferencia pareada C1 − C2 y C1 − C3, y H4 se respalda si el intervalo bootstrap del 95 % de la diferencia queda por encima de 0. La tasa de respuestas incorrectas entre las respondidas se informa como cota superior. El campo del juez se valida con el acuerdo juez-humano, con el mismo umbral de kappa que la corrección. No cambian el criterio de éxito (D16/D17) ni las demás métricas. | Decisión del 2026-11-02 ([ADR 0017](../decisions/0017-adr-medicion-de-h4.md), issue #241): los documentos fijaban el denominador de H4 pero no cómo reconocer una respuesta desactualizada, y ni el juez ni el banco lo distinguían. |
 | 7.0 | 2026-11-02 | H2 y H3 reciben su definición operativa y sus reglas de lectura, fijadas antes de los resultados de evaluación. H2 se mide en el Experimento B: la diferencia entre la brecha de corrección C3 − C2 en E3 (relaciones) y en E1 (decisiones; E2 no entra), con bootstrap independiente por estrato; se respalda si el intervalo del 95 % queda por encima de 0, es contraria si queda por debajo y no es calculable sin C3, C2 o alguno de los estratos. La brecha de extracción del Experimento A (1 menos el recall de relaciones frente a la de decisiones) queda como cifra complementaria y declarada sesgada. H3 se mide en el Experimento A entre los enlaces detectados (error de dirección frente a error de tipo, con intervalos que no se solapan); su cláusula de escala de modelo no se mide. Antes la lectura de H2 que sugería el §4.3 era la cifra condicionada del Experimento A. No cambian el criterio de éxito (D16/D17) ni las demás métricas. | Decisión del 2026-11-02 ([ADR 0018](../decisions/0018-adr-medicion-de-h2-y-h3.md), issue #242): los documentos nombraban las hipótesis pero no decían sobre qué datos se calcula la brecha ni cuándo se respaldan. C3 y C2 son condiciones del Experimento B, y la brecha es el costo de los errores de extracción. |
 | 8.0 | 2026-11-02 | La corrida formal del Experimento B incluye a C0 (el mismo generador sin ningún texto de apoyo) como referencia sin recuperación. Se informan su corrección, su abstención en E4 y sus tasas de H4 con la cota superior, y dos comparaciones descriptivas: C1 − C0 (valor de la recuperación) y C2 − C0 (valor de la base compilada frente a no recuperar). No se informan para C0 las métricas de evidencia ni de citación. No cambian el criterio D16 ni las reglas de H1 a H4. | Decisión del autor del proyecto del 2026-11-02, registrada en el [ADR 0019](../decisions/0019-adr-c0-en-la-corrida-formal-del-experimento-b.md). La versión anterior solo contaba tres condiciones en el Experimento B. |
+| 8.1 | 2026-11-02 | §4.2: el recall del filtro léxico se reporta con intervalo de Wilson al 95 %, no bootstrap. Solo se corrige la redacción. | La versión 4.1 ya había cambiado el intervalo a Wilson (tabla de métricas, §3), pero el texto de §4.2 seguía diciendo bootstrap. |
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
 > la evidencia que lo motivó**. El historial nunca se reescribe: se agrega una fila.
@@ -238,7 +239,7 @@ encontrar.
 **Cómo se mide (Tarea C).** Se anotan 50 pares rechazados por el filtro en cada una de cuatro
 series (IS1004, ES2016, IS1003, TS3005; documento 07, §7.5); toda relación real entre ellos es
 un falso negativo. El **recall** es la proporción de relaciones reales que el filtro deja
-pasar. Se reporta por sitio de grabación y en conjunto, con intervalo bootstrap, en la forma "el
+pasar. Se reporta por sitio de grabación y en conjunto, con intervalo de Wilson al 95 %, en la forma "el
 filtro recuperó N de M relaciones en una muestra aleatoria de pares rechazados" (manual de
 anotación, §5).
 
