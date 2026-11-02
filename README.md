@@ -306,7 +306,6 @@ uv run afg gold adjudicate --series ES2015         # escribe los dos CSV de adju
 uv run afg gold questions-init                     # crea el banco vacío: 25 filas por estrato y 40 en E3 (115 en total)
 uv run afg gold questions-check                   # revisa el banco de preguntas fila por fila, sin correr nada (--complete exige el mínimo validado por estrato)
 uv run afg gold validate-adjudication --series ES2015   # verifica que el adjudicador terminó los dos CSV
-uv run afg gold link                               # sin implementar: sale con código 2 y espera OpenKOS ~0.6.0
 
 uv run afg skills sync-assets deck-uc   # copia los assets UC desde la carpeta compartida y verifica su SHA-256
 uv run afg skills verify deck-uc        # comprueba los assets ya instalados
@@ -330,6 +329,7 @@ uv run afg c1 ask                   # responde una pregunta con C1, un RAG conve
 uv run afg c3 build                 # construye las bases de C3: copia los espacios de una corrida de C2 (`--c2-extraction`, `--series S1,S2`, `--runs N`) y sustituye sus decisiones por las de la anotación de oro (en inglés, relaciones como enlaces), reindexa y deja `c3-manifest.json` con lo escrito y lo descartado (ADR 0013); solo series de desarrollo; `--overwrite` reemplaza
 uv run afg experiment a             # Experimento A: extracción de decisiones con OpenKOS sobre una serie de desarrollo
 uv run afg experiment a-batch       # Experimento A en lote: varias series x corridas bajo un solo --run-name (`--series S1,S2` o `--partition development`); un par fallido no detiene el lote, repetir el nombre lo reanuda y al final imprime un resumen de integridad sin puntajes
+uv run afg experiment a-relations --c2-extraction <corrida>   # puntúa las relaciones temporales de OpenKOS (existencia, tipo, dirección) contra el oro; `--run-revisions` corre antes `openkos revisions --auto --all`; escribe `reports/experiment-a/<corrida>/relaciones.json` (ADR 0016)
 uv run afg experiment b             # Experimento B: preguntas x condiciones x corridas, con juicio y citación; corren C1, C2 y C3 (C2 y C3 con `--c2-extraction <corrida de experiment a>`; C3 pide antes `afg c3 build`)
 uv run afg experiment b-report      # análisis del Experimento B: tasas, intervalos bootstrap y comparación D16
 uv run afg experiment b-sample      # muestra para la verificación humana: una corrida por pregunta y condición

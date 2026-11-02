@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "run_name": "ts3009-openkos070",
+  "created_at": "2026-11-02T03:45:40.860147+00:00",
+  "git_commit": "371738d84ab8cc87a1b12a0c04ff5d6d9c93384a",
+  "series": "TS3009",
+  "partition": "development",
+  "runs": 1,
+  "openkos": {
+    "executable": "openkos",
+    "generative_model": "qwen3:8b",
+    "embedding_model": "bge-m3",
+    "seed": 42,
+    "temperature": 0.1,
+    "versions": [
+      "0.7.0"
+    ],
+    "generative_model_digest": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41",
+    "embedding_model_digest": "7907646426070047a77226ac3e684fbbe8410524f7b4a74d02837e43f2146bab",
+    "model_digest_source": "ollama /api/tags",
+    "ollama_version": "0.32.9"
+  },
+  "git_dirty": false,
+  "status": "ok",
+  "completed_runs": [
+    0
+  ],
+  "error": null,
+  "updated_at": "2026-11-02T04:12:31.722107+00:00"
+}

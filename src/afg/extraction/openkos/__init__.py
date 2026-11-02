@@ -11,4 +11,6 @@ records the version it executed against. Modules:
   typed report and the checks C2 requires.
 * :mod:`~afg.extraction.openkos.bundle_reader` -- reads ``bundle/decisions/*.md`` into
   :class:`~afg.domain.decision.Decision` objects.
+* :mod:`~afg.extraction.openkos.revisions` -- ``openkos revisions``: runs it and reads
+  ``.openkos/findings.db`` (read-only, schema-guarded) as typed relations (ADR 0016).
 """

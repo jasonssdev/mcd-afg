@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 09 — Modelos y su justificación |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 8.0 |
-| **Fecha** | 2026-11-01 |
+| **Versión** | 9.0 |
+| **Fecha** | 2026-11-02 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -26,6 +26,7 @@
 | 7.0 | 2026-11-01 | Las cifras de desarrollo pasan a las corridas del diseño vigente: C1 como RAG convencional 17 de 21 (81,0 %) y C2 con OpenKOS 0.7.0 15 de 21 (71,4 %), en lugar de 16 de 21 (76,2 %) y 10 de 21 (47,6 %) del diseño anterior (caso de entrada, secciones 8.1, 8.2, 9 y 10). La atribución de las fallas de C2 (OE4, sección 8.4) se presenta como la de la corrida anterior, con su correspondencia pregunta por pregunta con la vigente; clasificar las fallas vigentes queda pendiente de una persona. Se actualizan la extracción de ES2015, la procedencia y el costo a la 0.7.0; la tabla de roles (cinco, con la verificación de suficiencia); la tabla de OpenKOS por tarea; la afirmación sobre qué toma C1 de OpenKOS (solo el método de recorte del presupuesto, no instrucciones ni verificación); las series adjudicadas (6 de 14, 4 de 11 de evaluación) y con referencia en inglés (6); los controles de comparabilidad (huellas ya registradas) y la trazabilidad (ADR 0014 y enmienda del ADR 0006). Las cifras de costo cambian con las corridas vigentes: responder una pregunta tarda unos 5 s en C1 y 14 s en C2, frente a 8,8 s y 10,3 s de las corridas anteriores, y juzgarla unos 4 s y 7 s, frente a 4,2 s en C1. | Corridas de desarrollo del 2026-11-01 con el diseño vigente (`humo-c1-es2015-rag` y `humo-c2-es2015-openkos070`, notebook 19) y verificación de coherencia de los avances con los notebooks. Las cifras salen del [notebook 19](../../notebooks/19-jss-modelos.ipynb) (secciones 7 y 8) y del [notebook 16](../../notebooks/16-jss-c2-fuentes-e1.ipynb) (sección 10). |
 | 7.1 | 2026-11-01 | Se incorpora la clasificación OE4 de las seis fallas E1 de la corrida vigente de C2: 3 de recuperación, 2 de extracción y 1 de síntesis (sección 8.4), con la corrida anterior (4, 3 y 2 de 9) como comparación. Una de las fallas (q017) es un caso de memoria contaminada. La figura de las etapas de las fallas pasa a mostrar la corrida vigente. Se actualizan la dificultad 8, la decisión pendiente sobre fuentes en bruto, la decisión pendiente 10 (resuelta), las limitaciones y la trazabilidad. | jss etiquetó una por una las seis fallas con la evidencia de la base compilada de la corrida vigente (hoja `oe4-etapa-e1.csv`); el documento las declaraba pendientes. Las cifras salen del [notebook 16](../../notebooks/16-jss-c2-fuentes-e1.ipynb) (sección 10) y del [notebook 19](../../notebooks/19-jss-modelos.ipynb) (sección 7.5). |
 | 8.0 | 2026-11-01 | El modelo de extracción de C2 y C3 queda decidido: `qwen3:8b`, el de OpenKOS 0.7.0, con la pasada de decisiones (`transcript_decisions`) activada, que es la única opción de C2 fuera de su valor por defecto (secciones 5, 6, 6.2, 6.4, 9, 10, 11 y 12). La regla del «mismo modelo generativo» se aplica al modelo que responde. `qwen3.6:27b` y `qwen3.6:35b-a3b` se descartan; la decisión 1 de la sección 11.1 pasa a resuelta y el extractor deja de figurar como pendiente en el congelamiento. | [ADR 0015](../decisions/0015-adr-modelo-extractor-de-c2.md), que cierra el issue #143: la épica de OpenKOS jasonssdev/openkos#1556 dejó todas las tareas en `qwen3:8b` salvo los jueces y la verificación de suficiencia, y `qwen3.6:27b`, que gana en F1 del pase de decisiones, tarda de 1,8 a 3,6 veces más y no es el modelo de OpenKOS. Las cifras no cambian: salen del [notebook 15](../../notebooks/15-jss-screen-de-modelos-openkos.ipynb) y del [notebook 19](../../notebooks/19-jss-modelos.ipynb). |
+| 9.0 | 2026-11-02 | Se agrega la puntuación de las relaciones temporales a OE2 (§2) con su medición de desarrollo y su limitación (§12). Se corrigen dos filas atrasadas de §11: el *recall* del filtro léxico ya tiene su función (#205) y C3 ya está implementado (`afg c3 build`); lo pendiente de C3 es la ground truth adjudicada. | [ADR 0016](../decisions/0016-adr-relaciones-temporales-de-openkos.md) (issue #96), [notebook 22](../../notebooks/22-jss-relaciones-temporales-openkos.ipynb) y el estado del código (`annotation/recall.py`, `conditions/c3_compiled_gold.py`). |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -126,7 +127,7 @@ objetivo tiene su métrica:
 | Objetivo | Pregunta | Métrica | Regla de lectura |
 |---|---|---|---|
 | OE1, ground truth | ¿Se puede construir una referencia de decisiones y relaciones confiable? | Kappa de Cohen (acuerdo entre dos anotadores descontado el azar; 1 es acuerdo perfecto) en tres ejes: existencia, tipo y dirección | Sin umbral por diseño: un kappa bajo se informa como hallazgo |
-| OE2, extracción (Experimento A) | ¿Qué tan bien reencuentra la máquina las decisiones del ground truth? | Precision (qué parte de lo extraído es correcto), recall (qué parte de lo que había se encontró) y F1 (su media armónica), como curva sobre τ (0,50 a 0,90, 9 valores) | Sin criterio de éxito; τ principal 0,70, con 0,75 y 0,80 de sensibilidad ([ADR 0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md)) |
+| OE2, extracción (Experimento A) | ¿Qué tan bien reencuentra la máquina las decisiones del ground truth? | Precision (qué parte de lo extraído es correcto), recall (qué parte de lo que había se encontró) y F1 (su media armónica), como curva sobre τ (0,50 a 0,90, 9 valores); sobre las relaciones, existencia del enlace, tipo y dirección ([ADR 0016](../decisions/0016-adr-relaciones-temporales-de-openkos.md); medición de desarrollo en el [notebook 22](../../notebooks/22-jss-relaciones-temporales-openkos.ipynb)) | Sin criterio de éxito; τ principal 0,70, con 0,75 y 0,80 de sensibilidad ([ADR 0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md)) |
 | OE3, utilidad (Experimento B) | ¿Responde mejor C2 que C1, sobre todo cuando la decisión cambió? | Corrección de la respuesta, calificada por el juez; principal en las preguntas de evolución (E3, al menos 25 por estrato) | Criterio D16, enmendado por D17: el intervalo de la diferencia pareada C2 − C1 en E3 (95 %, 10.000 remuestreos) debe quedar por encima de 0 |
 | OE4, atribución del error | Cuando C2 falla, ¿dónde nació el error? | Proporción de errores por etapa: extracción, recuperación o síntesis | Descriptivo; la cifra principal es la parte atribuible a la extracción |
 
@@ -911,7 +912,7 @@ El equivalente a «usar el conjunto de prueba una sola vez» es **congelar todo 
 | 8 | Texto efectivo entregado, no solo K | Comparar lo que realmente llega al generador en C1 y en C2 tras el recorte de contexto (ADR 0007), y no únicamente K o el límite nominal | Sin esto, la comparación puede favorecer a la condición que recibe más texto |
 | 9 | Instrucciones de respuesta de C1 | **Resuelta el 2026-11-01:** C1 usa un *prompt* genérico propio y ya no copia las instrucciones de OpenKOS (ADR 0014) | La redacción de la respuesta es parte de cada sistema y se declara como tal |
 | 10 | Clasificación OE4 de la corrida vigente de C2 | **Resuelta el 2026-11-01:** jss clasificó las 6 fallas E1 (recuperación 3, extracción 2, síntesis 1; 8.4) | Fija cuánto del error de C2 nace en la extracción, la cifra principal de OE4 |
-| 11 | *Recall* del filtro léxico (#205) | Las muestras de la Tarea C de ES2016, IS1003 y TS3005 están anotadas (50 pares cada una); faltan la de IS1004 (#203) y la función que calcula el *recall* con ellas | Sin el *recall* no se puede acotar cuántas relaciones se le escapan al filtro (documento 08) |
+| 11 | *Recall* del filtro léxico (#205) | Las muestras de la Tarea C de ES2016, IS1003 y TS3005 están anotadas (50 pares cada una); falta la de IS1004 (#203). La función que calcula el *recall* existe (`annotation/recall.py`) y la cifra preliminar, con tres de las cuatro muestras, está en el notebook 18, §8 | Sin el *recall* no se puede acotar cuántas relaciones se le escapan al filtro (documento 08) |
 
 Los controles 6 a 9 son los que el notebook 19 (sección 5.6) listaba antes de la corrida formal; las huellas de los modelos ya se registran en los manifiestos, la copia de instrucciones quedó resuelta con el ADR 0014, y por comprobar quedan el texto efectivo entregado y el formato distinto de las citas (#97). El [notebook 20](../../notebooks/20-gm-mejoras-modelado.ipynb) los ordena junto con los de las secciones 4, 8.2, 9 y 11 en una tabla de referencia.
 
@@ -921,7 +922,7 @@ Los controles 6 a 9 son los que el notebook 19 (sección 5.6) listaba antes de l
 |---|---|---|
 | Ground truth adjudicada de las 11 series de evaluación (OE1) | 6 de 14 series adjudicadas (4 de 11 de evaluación) | Pendiente |
 | Banco de preguntas (al menos 25 por estrato) validado | 0 de 115 filas escritas | Pendiente |
-| C3 ejecutable | Depende de la ground truth; hoy lanza «sin implementar» | Pendiente |
+| C3 ejecutable | Implementado (`afg c3 build` y la condición C3); depende de la ground truth adjudicada para construir sus espacios de trabajo | Pendiente |
 | Modelos y huellas (generador, verificación de suficiencia, *embeddings*, extractor, juez) | Los cinco modelos definidos: generador y extractor `qwen3:8b` (ADR 0015), verificación de suficiencia `gemma4:26b-a4b`, *embeddings* `bge-m3` y juez `gpt-oss:20b`; faltan las huellas de las corridas formales | Parcial |
 | Versión de OpenKOS | `==0.7.0` (#94, ADR 0006) | Congelado |
 | Parámetros de C1 | 1200 / 1 / 5 en `config/experiments.toml`; una prueba verifica que coinciden con el ganador guardado | Congelado |
@@ -951,6 +952,9 @@ desarrollo, antes de la primera corrida.
   inglés, así que el desempeño con preguntas en español no se midió.
 - Todavía no se conocen las **relaciones reales** entre decisiones: la viabilidad de E3 es
   plausible, no demostrada (documento 08).
+- La puntuación de relaciones de OE2 se midió solo en dos series de desarrollo (ES2015 y TS3009) con
+  6 relaciones de oro en total, y con un detector de OpenKOS que es experimental y no estaba medido
+  en reuniones reales: es una señal y no una estimación ([notebook 22](../../notebooks/22-jss-relaciones-temporales-openkos.ipynb)). IS1004 no se puntuó (#204).
 
 **De los modelos y de la medición**
 

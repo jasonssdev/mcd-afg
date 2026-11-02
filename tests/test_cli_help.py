@@ -13,7 +13,6 @@ import afg.cli as afg_cli
 _ANNOTATOR_COMMANDS = ("setup", "status", "validate", "evidencia", "questions-check", "prepare")
 _MAINTAINER_COMMANDS = (
     "build",
-    "link",
     "candidates",
     "recall-sample",
     "agreement",
@@ -86,6 +85,7 @@ _ENGLISH_HELP = re.compile(
         ("experiment",),
         ("experiment", "a"),
         ("experiment", "a-batch"),
+        ("experiment", "a-relations"),
         ("report",),
     ],
 )
@@ -93,21 +93,12 @@ def test_maintenance_group_help_is_in_spanish(args: tuple[str, ...]) -> None:
     assert not _ENGLISH_HELP.search(_help(*args))
 
 
-@pytest.mark.parametrize("args", [("gold", "link")])
-def test_stubs_state_they_are_unimplemented_and_wait_for_openkos(args: tuple[str, ...]) -> None:
-    out = " ".join(_help(*args).split())
-    assert "Sin implementar" in out
-    assert "OpenKOS ~0.6.0" in out
-    assert "código 2" in out
-
-
-@pytest.mark.parametrize("args", [["gold", "link"]])
-def test_stub_output_is_spanish_and_exits_with_code_2(args: list[str]) -> None:
-    result = CliRunner().invoke(afg_cli.app, args)
+def test_gold_link_was_retired() -> None:
+    """Task B candidates come from `afg gold candidates`; the unimplemented stub is gone."""
+    result = CliRunner().invoke(afg_cli.app, ["gold", "link"])
     assert result.exit_code == 2
-    assert "Sin implementar" in result.output
-    assert "Not yet implemented" not in result.output
-    assert "Requires" not in result.output
+    assert "No such command" in result.output
+    assert "link" not in " ".join(_help("gold").split()).replace("skills link", "")
 
 
 def test_report_help_names_only_what_it_regenerates() -> None:
