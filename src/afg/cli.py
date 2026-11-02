@@ -4127,6 +4127,66 @@ def experiment_b_oe4_sheet(
     )
 
 
+@experiment_app.command("b-oe4-summary")
+def experiment_b_oe4_summary(
+    run_names: Annotated[
+        list[str],
+        typer.Option(
+            "--run-name", help="Carpeta de la corrida en reports/experiment-b/ (repetible)."
+        ),
+    ],
+) -> None:
+    """Resume las etiquetas humanas de etapa (OE4) por condición y etapa.
+
+    Lee `oe4-etapa-e1.csv` de cada corrida, valida `etapa_humana` (recuperacion, extraccion,
+    sintesis; una hoja a medio etiquetar se rechaza) y cuenta cada etapa con su desacuerdo frente
+    a la etapa que sugiere la pista automática. Guarda `oe4-resumen.json` en la corrida.
+    """
+    import json
+
+    from rich.table import Table
+
+    from afg.experiments.c2_base_evidence import read_worksheet_rows
+    from afg.experiments.oe4_summary import OE4_SUMMARY_FILE, summarize_oe4_sheet
+
+    table = Table(title="OE4: etapa de las fallas según la persona")
+    for header in ("Corrida", "Condición", "Etapa", "Fallas", "Parte", "Contra la regla"):
+        table.add_column(header)
+    for run_name in run_names:
+        run_dir = EXPERIMENT_B_DIR / run_name
+        try:
+            manifest = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8"))
+            conditions = manifest.get("conditions") or []
+            if len(conditions) != 1:
+                raise ValueError(f"{run_name}: se esperaba una condición, hay {conditions}.")
+            rows = read_worksheet_rows(run_dir / OE4_SHEET_FILE)
+            summary = summarize_oe4_sheet(rows, condition=str(conditions[0]))
+        except (ValueError, KeyError, FileNotFoundError, CsvFormatError) as exc:
+            console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+            raise typer.Exit(code=1) from exc
+        record = summary.to_record(run_name=run_name, sheet=OE4_SHEET_FILE)
+        out_path = run_dir / OE4_SUMMARY_FILE
+        out_path.write_text(json.dumps(record, indent=2, ensure_ascii=False) + "\n", "utf-8")
+        for stage, cell in record["stages"].items():
+            against = [d for d in record["disagreements"] if d["human_stage"] == stage]
+            table.add_row(
+                run_name,
+                summary.condition,
+                stage,
+                str(cell["cases"]),
+                f"{cell['share']:.0%}",
+                str(len(against)),
+            )
+        agreement = record["rule_agreement"]
+        console.print(
+            f"{run_name}: {summary.n_failures} fallas; "
+            f"con sugerencia {agreement['with_suggestion']}, "
+            f"de acuerdo {agreement['agree']}, en desacuerdo {agreement['disagree']}. "
+            f"Guardado en {_short(out_path)}."
+        )
+    console.print(table)
+
+
 # --- report ---------------------------------------------------------------------------------
 
 
