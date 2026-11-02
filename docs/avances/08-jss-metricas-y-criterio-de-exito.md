@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 08 — Métricas y criterio de éxito |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 4.1 |
-| **Fecha** | 2026-11-01 |
+| **Versión** | 5.0 |
+| **Fecha** | 2026-11-02 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -20,6 +20,7 @@
 | 3.0 | 2026-11-01 | C1 pasa a ser un RAG convencional, así que el contraste C1 frente a C2/C3 se lee como el valor del sistema compilado frente a un RAG convencional, que no puede repartirse entre representación y etapa de respuesta. La tasa de respuestas confiadas pero desactualizadas (H4) se mide entre las preguntas que cada condición responde, y la abstención se reporta aparte como corrección del rechazo. No cambian el criterio de éxito (D16/D17), las métricas ni las cifras. | Decisión del 2026-11-01 ([ADR 0014](../decisions/0014-adr-c1-como-rag-convencional.md)). |
 | 4.0 | 2026-11-01 | Se corrigen cuatro afirmaciones que habían quedado atrás. (1) τ sí tiene regla de selección: el ADR 0012 lo fijó el 2026-10-19 (principal 0,70; 0,75 y 0,80 de sensibilidad), y lo que sigue sin existir es un criterio de éxito para OE1 y OE2 (§4.3 y decisión abierta A, que cambia de título). (2) La versión de OpenKOS está fijada en la 0.7.0, así que el riesgo observado en la extracción (§4.3) se actualiza: con la 0.7.0 la máquina extrae entre 69 y 71 decisiones por corrida en ES2015 frente a 27 de la referencia adjudicada, lo que anticipa una precision baja más que un recall bajo (antes: 4 objetos con la 0.5.2). (3) La muestra de *recall* del filtro léxico (§4.2 y tabla de métricas) ya no está «sin anotar»: tres de las cuatro muestras (ES2016, IS1003 y TS3005, 50 pares cada una) tienen anotación y falta la de IS1004 (#203) y la función que calcula el *recall* (#205). (4) Las referencias al documento 09 siguen su numeración actual (§5 a §7 para las condiciones, §6.3 para el LLM-as-a-judge). | ADR 0012 (τ) y ADR 0006, enmienda del 2026-11-01 (versión); extracción repetida con la 0.7.0 ([notebook 19](../../notebooks/19-jss-modelos.ipynb), §1.4); archivos `data/processed/relations/*.recall-sample.gv.csv` de ES2016, IS1003 y TS3005. |
 | 4.1 | 2026-11-01 | El intervalo del *recall* del filtro léxico pasa de bootstrap a Wilson al 95 %: con 50 pares por serie es esperable no hallar ningún falso negativo, y en ese caso el bootstrap da [0; 0], una certeza que la muestra no tiene. La función del cálculo está lista (#205) y la cifra preliminar, con tres de las cuatro muestras, está en el notebook 18, §8. | Decisión de jss del 2026-11-01; manual de anotación, §5. |
+| 5.0 | 2026-11-02 | La métrica de relaciones de OE2 pasa de «Accuracy de tipo y de dirección, pendiente» a existencia, tipo y dirección con el diseño del ADR 0016 (principal de extremo a extremo y condicionada; sensibilidades de tipo estricto y de dirección desconocida excluida), con su medición de desarrollo (§4.3). El estado del recall del filtro léxico (§4.2) deja de decir que falta la función (#205). | [ADR 0016](../decisions/0016-adr-relaciones-temporales-de-openkos.md) (issue #96) y [notebook 22](../../notebooks/22-jss-relaciones-temporales-openkos.ipynb). El §4.2 había quedado atrás de la versión 4.1, que ya declaraba lista la función (`annotation/recall.py`). |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -170,7 +171,7 @@ implementada y además tener una cifra preliminar sobre desarrollo.
 | **Kappa de anotación** (existencia, tipo, dirección) | Cuánto coinciden dos personas al marcar si dos decisiones se relacionan, cómo y en qué sentido | Series de control con doble anotación (4 de las 11 series de evaluación, 36,4 %; más 2 series de calibración de desarrollo) | Kappa de Cohen, un valor por cada uno de los tres ejes, nunca combinados | **Sin umbral de aceptación, por diseño.** Se reporta tal como salga; un kappa bajo es un hallazgo | Doc. 06 §1 y §5–6; manual de anotación §6; `annotation/agreement.py` | Medida en las cuatro series de control (Fase 2): existencia 0,783 (37 pares), tipo 0,554 (18 pares), dirección indefinida por acuerdo total (notebook 18, §6.1; documento 10) |
 | **Recall del filtro léxico** (*blocking*) | Qué parte de las relaciones reales deja pasar el filtro que decide qué pares se anotan | 200 pares rechazados (50 por serie × IS1004, ES2016, IS1003, TS3005) | Relaciones reales halladas entre los rechazados, sobre el total muestreado; por sitio y en conjunto, con intervalo de Wilson al 95 % (no bootstrap: con cero hallazgos daría [0; 0]) | **Sin umbral.** Se reporta la cifra y su intervalo | Doc. 06 §2; manual de anotación §5; `annotation/blocking.py`; `config/annotation.toml` `[annotation.recall_sample]` | Muestras generadas; anotadas las de ES2016, IS1003 y TS3005 (50 pares cada una); la función del cálculo está lista (#205) y la cifra preliminar, con tres de cuatro muestras, está en el [notebook 18](../../notebooks/18-jss-anotacion-f2-adjudicacion.ipynb), §8; falta la muestra de IS1004 (#203) |
 | **Precision, recall y F1** (OE2) | Qué tan bien la máquina encuentra las decisiones de la referencia | Decisiones extraídas por la máquina frente a las 343 de la referencia | Conteos de aciertos, sobras y faltantes tras el alineamiento (§4.3); F1 como **curva sobre τ** | Sin umbral ni criterio de éxito; curva con τ de 0,50 a 0,90 en pasos de 0,05 | Propuesta §5.4 y §5.6; [`docs/protocols/alignment.md`](../protocols/alignment.md); [`config/experiments.toml`](../../config/experiments.toml) `[alignment]` | Implementada. Pendiente de medir (no hay extracción real de evaluación) |
-| **Accuracy de tipo y de dirección** (OE2) | Si la máquina acierta qué relación hay entre dos decisiones y cuál revisa a cuál | Relaciones entre decisiones | Fracción de relaciones con etiqueta (o sentido) igual a la referencia; se reportan por separado | Sin umbral | Propuesta §5.6; `evaluation/metrics.py` | Implementada. Pendiente |
+| **Existencia, tipo y dirección de las relaciones** (OE2) | Si la máquina encuentra las relaciones entre decisiones, acierta cuál es y cuál revisa a cuál | Relaciones adjudicadas de la Tarea B frente a las de `openkos revisions` | Precision, recall y F1 del enlace; fracción de relaciones con tipo (o sentido) igual a la referencia; se reportan por separado. Principal: de extremo a extremo, con «revierte» y «reemplaza» como una clase y la dirección desconocida como error; segunda cifra condicionada a la alineación; sensibilidades: tipo estricto y dirección desconocida excluida | Sin umbral | Propuesta §5.6; [ADR 0016](../decisions/0016-adr-relaciones-temporales-de-openkos.md); `evaluation/relations.py` | Implementada y medida solo en desarrollo (ES2015, TS3009; [notebook 22](../../notebooks/22-jss-relaciones-temporales-openkos.ipynb)); IS1004 sin puntuar (#204). Pendiente en evaluación |
 | **Concordancia del alineamiento** | Si la regla automática que empareja decisiones coincide con el emparejamiento manual | Muestra de al menos 100 pares | Pares coincidentes entre ambos emparejamientos sobre la unión de pares emparejados | **≥ 0,80**; si no, se revisa la grilla de τ y se repite | Doc. 06 §1; [`docs/protocols/alignment.md`](../protocols/alignment.md); `evaluation/alignment.py` (`concordance`) | Implementada. Pendiente de medir |
 | **Corrección de respuesta** (OE3) | Si la respuesta acierta frente a la referencia | Preguntas del banco; **métrica principal en el estrato E3** | Promedio por pregunta de las corridas calificadas por el LLM-as-a-judge; IC bootstrap | Ver criterio D16 (§6): IC de la diferencia pareada C2 − C1 por encima de 0 | Doc. 06 §1; D16 y D17 (`docs/decisions/README.md`); [ADR 0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md); `experiments/analysis.py` | Implementada. Pendiente de medir |
 | **Soporte de evidencia** (OE3) | Si cada afirmación de la respuesta tiene respaldo en la transcripción | Preguntas del banco | Marca del LLM-as-a-judge por respuesta; promedio por pregunta | Secundaria y descriptiva. Verificación humana con su propia marca de confiable o no confiable (kappa ≥ 0,70) | Propuesta §5.6; [ADR 0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md) | Implementada. Pendiente |
@@ -236,9 +237,9 @@ pareja entre sitios; una pérdida alta no invalida el ground truth, pero obliga 
 declararlo como limitación.
 
 **Estado.** Las cuatro muestras están generadas. Tres (ES2016, IS1003 y TS3005, 50 pares cada
-una) ya tienen anotación; falta la de IS1004 (#203) y la función que calcula el recall con ellas
-(#205), así que todavía no hay cifra. En el código existe el muestreo, y el cálculo del recall se
-hará con el intervalo bootstrap general.
+una) ya tienen anotación; falta la de IS1004 (#203). La función que calcula el recall con ellas
+existe (#205, `annotation/recall.py`, con intervalo de Wilson) y la cifra preliminar, con tres de
+las cuatro muestras, está en el notebook 18, §8.
 
 ### 4.3 OE2: la extracción automática
 
@@ -254,6 +255,18 @@ contrasta con un emparejamiento manual de al menos 100 pares (concordancia ≥ 0
 elegir un único τ permitiría escoger el más favorable, **el F1 se reporta como curva** sobre
 la grilla 0,50 a 0,90. Dos reglas provisionales de puntuación (ámbito de la alineación y rol
 del hablante) se confirmarán con la primera extracción real (documento 06, §1).
+
+**Relaciones temporales ([ADR 0016](../decisions/0016-adr-relaciones-temporales-de-openkos.md)).** Sobre las relaciones se puntúan tres cosas: la existencia
+del enlace (precision, recall y F1), su tipo y su dirección. El valor principal es de extremo a
+extremo (una relación cuyas decisiones no se alinearon cuenta como omitida), une «revierte» y
+«reemplaza» en una clase y cuenta como error la dirección desconocida; la segunda cifra se condiciona
+a las relaciones con ambas decisiones alineadas y es la que separa la extracción de relaciones de
+la de decisiones (H2). Las sensibilidades son el tipo estricto y la dirección desconocida excluida.
+La medición de desarrollo ([notebook 22](../../notebooks/22-jss-relaciones-temporales-openkos.ipynb)) cubre ES2015 (tres corridas) y TS3009 (una); con 6 relaciones de
+oro es solo una señal: casi todos los enlaces de la máquina caen sobre decisiones que no se alinean
+con la referencia (1 de 75 en ES2015 y 3 de 26 en TS3009 tienen sus dos decisiones alineadas), y
+el único enlace de oro alineado, en TS3009, se encontró con tipo y dirección correctos. IS1004 no se
+puntuó porque su referencia tiene un solo anotador y no está traducida (#204).
 
 **Cómo leer el resultado.** Se leen la curva completa y si el orden entre condiciones cambia a
 lo largo de τ; si cambia, se declara. Cada corrida se repite al menos tres veces y se reporta
