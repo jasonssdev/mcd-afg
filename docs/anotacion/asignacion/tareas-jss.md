@@ -283,7 +283,7 @@ cifra.
 Qué mirar al ver los resultados:
 
 - **Cuántos falsos negativos aparecieron en cada sitio.** Con 50 pares por sitio, si son cero
-  o uno el intervalo de confianza por bootstrap va a ser ancho por abajo, pero la conclusión
+  o uno el intervalo de confianza (de Wilson) va a ser ancho por arriba, pero la conclusión
   —"el bloqueador pierde poco"— se sostiene. Si son muchos en un sitio, el punto de
   operación del bloqueador es el problema en ese sitio, y lo que toca es revisarlo, no
   muestrear más.
