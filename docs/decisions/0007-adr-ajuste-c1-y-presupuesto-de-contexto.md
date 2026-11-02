@@ -2,7 +2,7 @@
 
 ## Estado
 
-Aceptada (2026-10-15). Enmendada (2026-10-15): la decisión vigente es 1.200 caracteres, solapamiento 1 y K=5; ver la sección Enmienda. El título conserva la redacción original.
+Aceptada (2026-10-15). Enmendada (2026-10-15): la decisión de entonces era 1.200 caracteres, solapamiento de 1 turno y K=5; ver la primera sección Enmienda. Enmendada (2026-11-02): C1 lee el cuerpo Markdown con un divisor de texto genérico y se reajustó; la decisión vigente es **1.200 caracteres, solapamiento de 0 caracteres y K=5**; ver la segunda sección Enmienda. El título conserva la redacción original.
 
 ## Contexto
 
@@ -83,6 +83,8 @@ lee.
   Experimento B.
 
 ## Enmienda (2026-10-15)
+
+> Registro histórico. Los parámetros y la rejilla de esta sección se midieron sobre fragmentos armados con los turnos del `.jsonl`; la enmienda del 2026-11-02 los reemplaza.
 
 Esta sección corrige la medición del ajuste y su conclusión sobre los parámetros de C1. El
 texto anterior no se reescribe: queda como registro de lo que se decidió con la información de
@@ -165,12 +167,61 @@ configuraciones está en `reports/c1-tuning/resultados.json` y en el
 - El criterio de entrega exige el turno completo. Un acto cuyo turno se recorta parcialmente
   cuenta como no entregado, aunque parte de su texto llegue al modelo.
 
+## Enmienda (2026-11-02)
+
+El texto anterior no se reescribe: queda como registro de lo que se decidió con la información de entonces.
+
+### Por qué
+
+Hasta ahora C1 armaba sus fragmentos con los turnos del `.jsonl` de la transcripción (`max_chars` y `overlap_turns`). Eso le daba una estructura (quién habla y dónde termina cada turno) que un RAG convencional no tiene: un RAG corta el documento que recibe. Por decisión del autor del proyecto (2026-11-02), C1 lee ahora el mismo cuerpo Markdown (`.md`) que OpenKOS y lo segmenta con un divisor de texto estándar, `RecursiveCharacterTextSplitter` (ADR 0014, enmienda). Los parámetros ajustados dejan de ser válidos, porque describen otra segmentación, y el ajuste se repite.
+
+### Corrección del presupuesto de texto
+
+Una primera repetición del ajuste (el mismo día) usó el *prompt* genérico de C1 para calcular el espacio de los bloques, y eligió 1.200 caracteres, sin solape y K = 8. Esa repetición se descartó: el presupuesto de cuerpos de C1 era de unos 9.500 caracteres, mientras que el que OpenKOS 0.7.0 planifica para C2 es de unos 8.300 (media de las 21 preguntas de ES2015), porque el *prompt* de C1 (397 caracteres) es más corto que el mayor de los de OpenKOS (1.280). Eso contradecía la decisión 3 (igualdad del presupuesto de **texto**), y un K mayor solo ganaba porque C1 leía más texto que C2.
+
+Desde ahora la igualdad se cumple **por construcción**. El presupuesto de C1 para los bloques de una pregunta se calcula con la fórmula de OpenKOS 0.7.0 (`openkos.retrieval.answer._bound_bodies`) y con su misma sobrecarga: el marco del mensaje (con las etiquetas y la pregunta) más el mayor de sus dos *prompts* de sistema, el de respuesta y el de suficiencia (1.280 caracteres en la 0.7.0). La longitud de esos *prompts* se lee del paquete `openkos==0.7.0` fijado, sin copiar su texto al repositorio (`openkos_system_overhead_chars` en `src/afg/conditions/c1_prompt_budget.py`, `body_budget` en `c1_document_rag.py`); C1 conserva su *prompt* genérico para generar. Una prueba verifica que, para una pregunta de ejemplo, el presupuesto de C1 es igual al que OpenKOS calcula con sus propias funciones. Medido sobre las 21 preguntas de ES2015 con la corrida vigente de C1 (`humo-c1-es2015-md`) y la de C2 (`humo-c2-es2015-openkos070`), el presupuesto medio es de 8.657 caracteres para C1 y de 8.304 para C2 (OpenKOS recalculado con las etiquetas que C2 recibió).
+
+### Método (sin cambios)
+
+Se conservan la regla prerregistrada, la medición solo de recuperación (sin modelo generativo), la serie de ajuste (ES2015, índice de las cuatro reuniones, D15), las 17 preguntas respondibles, el filtro de elegibilidad `K × tamaño ≤ 13.516` y el margen de empate de 0,02. Cambia la rejilla, que ahora está en caracteres: `chunk_size` ∈ {800, 1200, 1600, 2400} × `chunk_overlap` ∈ {0, 200} × K ∈ {3, 5, 8, 10} (32 configuraciones), en `[retrieval.tuning]` de `config/experiments.toml`. Desempate: menor K, luego menor `chunk_size`, luego menor `chunk_overlap`.
+
+La cifra que decide, el recall entregado, es ahora **más estricta**. Los fragmentos ya no coinciden con los turnos, así que el evaluador (no C1) asigna cada fragmento a los actos de diálogo de todos los turnos cuyo intervalo de caracteres lo toca (`src/afg/evaluation/chunk_acts.py`, con los desplazamientos del `.jsonl`). Un acto cuenta como entregado solo si **todos** los caracteres de sus turnos llegan al modelo después del reparto y el recorte del presupuesto de contexto. Antes bastaba con que el turno apareciera completo como línea del fragmento.
+
+### Resultados
+
+| `chunk_size` | `chunk_overlap` | K | recall entregado | recall de fragmentos completos | caracteres entregados (media) | preguntas con acierto | elegible |
+|---|---|---|---|---|---|---|---|
+| 800 | 200 | 8 | 0,539 | 0,539 | 5.910 | 11/17 | sí |
+| 1.600 | 0 | 5 | 0,525 | 0,525 | 7.598 | 10/17 | sí |
+| **1.200** | **0** | **5 (nuevo)** | **0,520** | 0,520 | 5.679 | 11/17 | sí |
+| 1.200 | 200 | 5 | 0,480 | 0,480 | 5.689 | 10/17 | sí |
+| 2.400 | 0 | 3 | 0,471 | 0,471 | 6.805 | 9/17 | sí |
+| 1.200 | 0 | 8 | 0,387 | 0,593 | 7.111 | 9/17 | sí |
+| 1.200 | 0 | 10 | 0,299 | 0,613 | 7.357 | 8/17 | sí |
+| 1.200 | 200 | 8 | 0,172 | 0,613 | 6.521 | 6/17 | sí |
+
+La tabla completa de 32 configuraciones está en `reports/c1-tuning/resultados.json` y en el [notebook 06](../../notebooks/06-jss-ajuste-c1.ipynb).
+
+### Decisión
+
+- El mejor recall entregado entre las elegibles es 0,539 (800 / 200 / K = 8). Cuatro configuraciones quedan a no más de 0,02: esa, 800 / 200 / K = 10, 1.600 / 0 / K = 5 y 1.200 / 0 / K = 5. La regla prefiere el menor K (5), y entre las de K = 5, el menor tamaño.
+- **C1 usa `chunk_size` = 1.200, `chunk_overlap` = 0 y K = 5** (antes, 1.200 caracteres, 1 turno de solape y K = 5: cambia la segmentación, no el K). Los valores quedan en `[retrieval.c1]`; la prueba que los contrasta con el ganador almacenado sigue vigente.
+- El ganador entrega algún acto de referencia en 11 de las 17 preguntas (el ajuste por turnos, también 11). No tienen ningún acierto q008, q010, q013, q016, q026 y q028.
+- Las cifras de las dos mediciones **no son comparables entre sí** (otra segmentación, otro mapa de actos, un criterio de entrega más estricto). Con 1.200 caracteres y K = 5, la rejilla por turnos daba 0,569 (con 1 turno de solape) y la nueva, 0,520.
+- Con K = 8 o 10 el recall entregado cae (con 1.200 / 0: 0,387 y 0,299, frente a 0,593 y 0,613 de fragmentos completos): con el presupuesto igual al de C2, el reparto entre más bloques recorta turnos enteros, como ya mostraba la enmienda del 2026-10-15.
+
+### Limitaciones añadidas
+
+- Valen las limitaciones anteriores (una serie, 17 preguntas, el recall es un piso). La diferencia entre 0,539 y 0,520 está dentro del ruido; la elección entre las cuatro configuraciones empatadas la fija la regla.
+- La igualdad es de fórmula y de sobrecarga fija, no de cada carácter: el marco de cada pregunta incluye las etiquetas de los bloques, y las de C1 (`[concept_id: <fragmento> — <reunión>]`) son más cortas que las de los conceptos de OpenKOS, de modo que el presupuesto de C1 resulta unos 350 caracteres mayor (4 %) que el de C2. Además, el presupuesto es un tope: los conceptos de C2 son más cortos que los fragmentos de C1 y en promedio solo ocupan 5.399 caracteres de cuerpo, frente a 7.590 de C1.
+- Un fragmento puede cortar un turno por la mitad. Si un acto abarca dos turnos y uno de ellos queda cortado, el acto cuenta como no entregado aunque parte de su texto llegue al modelo.
+
 ## Trazabilidad
 
 - Notebook: [`06-jss-ajuste-c1.ipynb`](../../notebooks/06-jss-ajuste-c1.ipynb).
 - Resultados: `reports/c1-tuning/resultados.json`.
 - Regla prerregistrada: commit `cfce5af` (`[retrieval.tuning]` en `config/experiments.toml`).
-- Código: `src/afg/conditions/c1_tuning.py`; prueba de los parámetros fijados en
+- Código: `src/afg/conditions/c1_tuning.py`, `src/afg/conditions/c1_chunking.py` y `src/afg/evaluation/chunk_acts.py`; prueba de los parámetros fijados en
   `tests/test_c1_tuning.py`.
 - Complementa el [ADR 0006](0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) y se apoya
   en el [ADR 0005](0005-adr-development-evaluation-split.md) (ajuste solo en desarrollo).

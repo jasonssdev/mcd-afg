@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 06 — Metodología |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 8.1 |
+| **Versión** | 9.0 |
 | **Fecha** | 2026-11-02 |
 | **Estado** | Vigente |
 
@@ -37,6 +37,7 @@
 | 7.0 | 2026-11-01 | El «Riesgo de C2» (§7–8) deja de decir que la versión de OpenKOS está abierta y que la medición se repite con la que se fije: la versión está fijada en la 0.7.0 y, con ella, la extracción de ES2015 da entre 69 y 71 decisiones por corrida frente a 27 de la referencia adjudicada (el riesgo observado pasa de la pérdida de decisiones, 4 objetos con la 0.5.2, a las decisiones de más). Se corrigen las referencias al documento 09 (§5 a §7 para las condiciones y los parámetros, §6.3 para el juez), se agrega el documento 10 a los documentos relacionados y el kappa de «respaldada» se escribe 0,865 como en el documento 09 (antes 0,87). | Fijación de la versión (ADR 0006, enmienda del 2026-11-01) y extracción repetida con la 0.7.0 (69, 69 y 71 decisiones; [notebook 19](../../notebooks/19-jss-modelos.ipynb), §1.4 y §8.1). Las referencias seguían la numeración anterior del documento 09. Además, las menciones a «todo lo demás igual» (§3 y glosario) pasan a nombrar lo que se mantiene igual entre condiciones, porque la etapa de respuesta ya no lo es (ADR 0014). |
 | 8.0 | 2026-11-02 | Se registra la puntuación de las relaciones temporales de OE2 (§1): tipo con «revierte» y «reemplaza» como una clase, dirección derivada de las fechas con la desconocida como error, «introduce» sin enlace, y valor principal de extremo a extremo con una segunda cifra condicionada a la alineación; cada una con su sensibilidad. Se agrega la medición de desarrollo: ES2015 (tres corridas) y TS3009 (una); IS1004 sin puntuar (se puntúa desde la versión 8.1). | [ADR 0016](../decisions/0016-adr-relaciones-temporales-de-openkos.md) (issue #96) y [notebook 22](../../notebooks/22-jss-relaciones-temporales-openkos.ipynb). La métrica de OE2 sobre relaciones existía sin una forma de obtener las relaciones de la máquina; las hipótesis H2 y H3 se refieren a ellas. |
 | 8.1 | 2026-11-02 | La medición de las relaciones temporales (§1) incorpora IS1004, que antes no se había puntuado: su referencia es la de su único anotador y se compara con una traducción automática al inglés. Con ello la medición de desarrollo cubre las tres series y 9 relaciones de oro; en IS1004 ningún enlace de la máquina cae sobre decisiones alineadas y el enlace de oro con ambas decisiones alineadas no se encontró. | Issue #229 (la alineación acepta la referencia de un solo anotador), issue #204 (traducción de IS1004) y [notebook 22](../../notebooks/22-jss-relaciones-temporales-openkos.ipynb). |
+| 9.0 | 2026-11-02 | El ajuste de C1 (§3–4) se repite sobre el cuerpo Markdown de la transcripción, que C1 corta con un divisor de texto genérico (sin la estructura de turnos): el resultado pasa de fragmentos de 1.200 caracteres con 1 turno de solapamiento y K = 5 a **fragmentos de 1.200 caracteres, sin solapamiento, y K = 5** (cambia la segmentación; el K se mantiene). El espacio de C1 para los fragmentos se calcula con la sobrecarga de instrucciones de OpenKOS, de modo que es casi igual al de C2 (unos 8.700 frente a 8.300 caracteres). | Decisión del autor del proyecto del 2026-11-02: C1 recibe el mismo documento que OpenKOS, como un RAG convencional. Evidencia: [ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md) (enmienda del 2026-11-02), [ADR 0014](../decisions/0014-adr-c1-como-rag-convencional.md) (enmienda del 2026-11-02) y [notebook 06](../../notebooks/06-jss-ajuste-c1.ipynb). |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -270,14 +271,18 @@ repartir entre ambas (documento 09, §6.5).
   (qué parte de los pasajes que respaldan la respuesta aparece entre lo recuperado), contado
   sobre el texto que de verdad le llega al modelo una vez aplicado el límite de contexto de
   OpenKOS, y no sobre los fragmentos completos, que el modelo no llega a leer enteros. El
-  resultado son fragmentos de a lo más 1.200 caracteres, con 1 turno de solapamiento (el
-  último turno de un fragmento se repite al inicio del siguiente) y K = 5 fragmentos
-  recuperados. Las tres condiciones comparten la misma ventana de contexto y recortan con el
-  mismo método; el contexto máximo del ajuste fue de unos 7.400 caracteres. Desde el
-  2026-11-01 la instrucción de C1 es más corta que la de OpenKOS, de modo que a C1 le queda
-  algo más de espacio para los fragmentos, sin afectar el ajuste de K ni del tamaño. La
+  resultado son fragmentos de a lo más 1.200 caracteres, sin solapamiento, y K = 5 fragmentos
+  recuperados. C1 lee el mismo cuerpo de texto de la transcripción que OpenKOS y lo corta con un
+  divisor de texto genérico (por párrafos primero), sin acceso a los turnos de habla: así recibe
+  lo que recibiría un RAG convencional. Después de responder, el evaluador (no C1) relaciona cada
+  fragmento con los turnos y los actos de diálogo que cubre, para medir la recuperación y atribuir
+  los errores. Las tres condiciones comparten la misma ventana de contexto y recortan con el
+  mismo método; C1 calcula el espacio de los fragmentos con la fórmula de OpenKOS y con su misma
+  sobrecarga de instrucciones (aunque la instrucción propia de C1 es más corta), de modo que a C1
+  y a C2 les queda casi el mismo espacio para el texto recuperado (unos 8.700 caracteres en C1 y 8.300 en C2; la diferencia viene de que las etiquetas de los bloques de C1 son más cortas). El ajuste anterior, hecho con fragmentos
+  de turnos completos (1.200 caracteres, 1 turno de solapamiento y K = 5), queda como registro. La
   evidencia está en el [ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md)
-  (con su enmienda del 2026-10-15) y en el
+  (con sus enmiendas del 2026-10-15 y del 2026-11-02) y en el
   [notebook 06](../../notebooks/06-jss-ajuste-c1.ipynb).
 - **C2 — Compilación automática.** Extracción con modelo local, persistencia con
   procedencia (cada decisión guardada con la reunión y el pasaje de donde salió), consulta
@@ -583,7 +588,7 @@ desde `src/afg/` a través de un notebook, no entra en la tesis.
 | Acumulación por serie (D15) y criterio de éxito (D16) | [`../decisions/README.md`](../decisions/README.md), decisiones D15 y D16 |
 | Enmienda de D16 (diferencia pareada), decisión de la verificación humana del LLM-as-a-judge, kappa indefinido y muestra de una corrida por pregunta | [`../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md`](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md); [`../../notebooks/10-jss-potencia-criterio-d16.ipynb`](../../notebooks/10-jss-potencia-criterio-d16.ipynb); `src/afg/experiments/power.py` |
 | Ratificación del ámbito de alineación y del rol, e intervalo principal por reuniones del Experimento A | [`../decisions/0011-adr-alineacion-rol-e-intervalos-del-experimento-a.md`](../decisions/0011-adr-alineacion-rol-e-intervalos-del-experimento-a.md); [`../../notebooks/14-jss-alineacion-experimento-a.ipynb`](../../notebooks/14-jss-alineacion-experimento-a.ipynb); `src/afg/evaluation/scoring.py` (`meeting_cluster_intervals`, `pool_scores`) |
-| Ajuste de C1: 1.200 caracteres, 1 turno de solapamiento, K = 5; contexto de unos 7.400 caracteres | [`../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md`](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md) (enmienda 2026-10-15); [`../../notebooks/06-jss-ajuste-c1.ipynb`](../../notebooks/06-jss-ajuste-c1.ipynb) |
+| Ajuste de C1: 1.200 caracteres, sin solapamiento, K = 5; espacio para los fragmentos de unos 8.700 caracteres, casi igual al de C2 (unos 8.300) | [`../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md`](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md) (enmiendas 2026-10-15 y 2026-11-02); [`../../notebooks/06-jss-ajuste-c1.ipynb`](../../notebooks/06-jss-ajuste-c1.ipynb) |
 | Fechas de reunión: hora real en 6 de 14 series, sintética en 8 | [`../decisions/0008-adr-fechas-de-reunion-para-openkos.md`](../decisions/0008-adr-fechas-de-reunion-para-openkos.md); [`../../notebooks/08-jss-fechas-de-reunion.ipynb`](../../notebooks/08-jss-fechas-de-reunion.ipynb) |
 | Riesgo de C2 (4 extraídas con la 0.5.2 y de 69 a 71 con la 0.7.0, frente a 29 decisiones con acuerdo evaluado en ES2015; 27 finales, 34 filas) | [`../../data/processed/decisions/ES2015.decisions.adjudicated.csv`](../../data/processed/decisions/ES2015.decisions.adjudicated.csv); [`../../notebooks/19-jss-modelos.ipynb`](../../notebooks/19-jss-modelos.ipynb) §1.4; `jasonssdev/openkos#1348`, `#1349`, `#1350`, `#1384`; [`../decisions/0005-adr-development-evaluation-split.md`](../decisions/0005-adr-development-evaluation-split.md); [`../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md`](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) |
 | Umbrales de troceo de OpenKOS fijados con TS3005 (18.000 y 12.000 caracteres) | OpenKOS, `src/openkos/extraction/concept.py` en los commits `58b9e699` y `2bc2c8fe`; historial `578dea3d` y `0c96ad9c`; issue #145; [`../decisions/0005-adr-development-evaluation-split.md`](../decisions/0005-adr-development-evaluation-split.md) |
