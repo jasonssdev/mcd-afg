@@ -658,3 +658,77 @@ def test_descriptive_flag_is_serialised() -> None:
     )
     dumped = report_to_dict(report)["comparisons"]
     assert any(c["descriptive"] and c["condition_b"] == "C0" for c in dumped)
+
+
+# --- minimum sample guard (2026-11-02): no verdict below [question_bank].min_questions -----------
+
+
+def test_primary_verdict_is_insufficient_sample_below_the_minimum() -> None:
+    c1 = _bank("C1", [[False]] * 10)
+    c2 = _bank("C2", [[True]] * 10)
+    cmp = _primary(analyze_runs(c1 + c2, settings=SETTINGS, min_questions=25))
+    assert cmp.criterion == "insufficient_sample"
+    assert cmp.nonoverlap_criterion == "insufficient_sample"
+    assert cmp.sample_sufficient is False
+    # The numbers stay visible.
+    assert cmp.difference == pytest.approx(1.0)
+    assert cmp.difference_lower > 0
+
+
+def test_verdict_needs_the_minimum_in_both_conditions_of_the_pair() -> None:
+    c1 = _bank("C1", [[False]] * 30)
+    c2 = _bank("C2", [[True]] * 10)
+    assert _primary(analyze_runs(c1 + c2, settings=SETTINGS, min_questions=25)).criterion == (
+        "insufficient_sample"
+    )
+
+
+def test_h4_verdict_is_insufficient_sample_below_the_minimum() -> None:
+    c1 = _outdated_bank("C1", [True, True, True, False])
+    c2 = _outdated_bank("C2", [False, False, False, False])
+    report = analyze_runs(c1 + c2, settings=SETTINGS, min_questions=25)
+    cmp = _h4(report, "C1", "C2", "outdated_among_answered")
+    assert cmp.criterion == "insufficient_sample"
+    assert cmp.difference == 0.75
+
+
+def test_h2_verdict_is_insufficient_sample_below_the_minimum() -> None:
+    records = _h2_records([(True, True)] * 8, [(True, False)] * 8)
+    h2 = analyze_runs(records, settings=SETTINGS, min_questions=25).h2
+    assert h2.verdict == "insufficient_sample"
+    assert h2.difference == pytest.approx(1.0)
+    assert h2.difference_lower > 0
+    assert h2.reason is not None and "25" in h2.reason
+
+
+def test_h2_keeps_its_verdict_with_the_minimum_in_both_strata() -> None:
+    records = _h2_records([(True, True)] * 30, [(True, False)] * 30)
+    assert analyze_runs(records, settings=SETTINGS, min_questions=25).h2.verdict == "supported"
+
+
+def test_descriptive_comparisons_are_not_verdicts() -> None:
+    records = _bank("C0", [[False]] * 5) + _bank("C1", [[True]] * 5)
+    report = analyze_runs(records, settings=SETTINGS, min_questions=25)
+    descriptive = [c for c in report.comparisons if c.descriptive]
+    assert descriptive and all(c.criterion != "insufficient_sample" for c in descriptive)
+
+
+def test_insufficient_sample_is_serialised() -> None:
+    records = _bank("C1", [[False]] * 5) + _bank("C2", [[True]] * 5)
+    data = report_to_dict(analyze_runs(records, settings=SETTINGS, min_questions=25))
+    primary = next(c for c in data["comparisons"] if c["primary"])
+    assert primary["criterion"] == "insufficient_sample"
+    assert primary["sample_sufficient"] is False
+
+
+def test_pooled_overall_comparison_is_also_guarded() -> None:
+    c1 = _bank("C1", [[False]] * 10)
+    c2 = _bank("C2", [[True]] * 10)
+    report = analyze_runs(c1 + c2, settings=SETTINGS, min_questions=25)
+    overall = next(
+        c
+        for c in report.comparisons
+        if (c.condition_a, c.condition_b, c.stratum, c.metric)
+        == ("C2", "C1", ALL_STRATA, "correct")
+    )
+    assert overall.criterion == "insufficient_sample"

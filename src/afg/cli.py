@@ -3839,7 +3839,12 @@ def _width_cells(width: Any) -> tuple[str, str, str]:
 
 def _print_h4(report: Any) -> None:
     """H4 lines of ``b-report``: outdated answers among the answered E3 questions (ADR 0017)."""
-    from afg.experiments.analysis import H4_METRIC, H4_NOTE, H4_UPPER_BOUND_METRIC
+    from afg.experiments.analysis import (
+        H4_METRIC,
+        H4_NOTE,
+        H4_UPPER_BOUND_METRIC,
+        verdict_label,
+    )
 
     heads = {H4_METRIC: "H4", H4_UPPER_BOUND_METRIC: "Cota superior de H4"}
     kinds = {H4_METRIC: "desactualizadas", H4_UPPER_BOUND_METRIC: "incorrectas"}
@@ -3858,7 +3863,7 @@ def _print_h4(report: Any) -> None:
                 f"[bold]{heads[cmp.metric]}[/bold] {cmp.condition_a} frente a {cmp.condition_b}: "
                 f"diferencia {cmp.difference:+.2f} [{cmp.difference_lower:+.2f}, "
                 f"{cmp.difference_upper:+.2f}] sobre {cmp.n_pairs} preguntas respondidas por "
-                f"ambas: {cmp.criterion}."
+                f"ambas: {verdict_label(cmp.criterion)}."
             )
     console.print(f"[dim]{H4_NOTE}[/dim]")
 
@@ -3882,7 +3887,7 @@ def _print_closed_book(report: Any) -> None:
 
 def _print_h2(report: Any) -> None:
     """H2 line of ``b-report``: the C3 - C2 gap on E3 minus the one on E1 (ADR 0018)."""
-    from afg.experiments.analysis import H2_NOTE
+    from afg.experiments.analysis import H2_NOTE, verdict_label
 
     h2 = report.h2
     if h2.difference is None:
@@ -3891,8 +3896,11 @@ def _print_h2(report: Any) -> None:
         console.print(
             f"[bold]H2[/bold] brecha C3 - C2 en E3 ({h2.gap_e3:+.2f}, {h2.n_e3} preguntas) menos "
             f"la de E1 ({h2.gap_e1:+.2f}, {h2.n_e1} preguntas): {h2.difference:+.2f} "
-            f"[{h2.difference_lower:+.2f}, {h2.difference_upper:+.2f}]: {h2.verdict}."
+            f"[{h2.difference_lower:+.2f}, {h2.difference_upper:+.2f}]: "
+            f"{verdict_label(h2.verdict)}."
         )
+        if h2.reason:
+            console.print(f"[yellow]{escape(h2.reason)}[/yellow]")
     console.print(f"[dim]{H2_NOTE}[/dim]")
 
 
@@ -3932,7 +3940,12 @@ def experiment_b_report(
     from rich.table import Table
 
     from afg.evaluation.scoring import DevelopmentResultError, interval_settings_from_config
-    from afg.experiments.analysis import CRITERION_NOTE, analyze_runs, report_to_dict
+    from afg.experiments.analysis import (
+        CRITERION_NOTE,
+        analyze_runs,
+        report_to_dict,
+        verdict_label,
+    )
 
     if questions is None:
         console.print(
@@ -4008,9 +4021,9 @@ def experiment_b_report(
                 f"[bold]Principal (D16)[/bold] C2 frente a C1 en E3: diferencia "
                 f"{comparison.difference:+.2f} [{comparison.difference_lower:+.2f}, "
                 f"{comparison.difference_upper:+.2f}] sobre {comparison.n_pairs} preguntas: "
-                f"{comparison.criterion}. Robustez (intervalos independientes "
+                f"{verdict_label(comparison.criterion)}. Robustez (intervalos independientes "
                 f"{'solapados' if comparison.intervals_overlap else 'disjuntos'}): "
-                f"{comparison.nonoverlap_criterion}."
+                f"{verdict_label(comparison.nonoverlap_criterion)}."
             )
     console.print(f"[dim]{CRITERION_NOTE}[/dim]")
     _print_closed_book(report)

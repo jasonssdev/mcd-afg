@@ -273,3 +273,12 @@ def test_report_includes_c0_and_labels_its_comparisons_as_secondary(out: Path) -
     payload = json.loads((run / "analisis.json").read_text(encoding="utf-8"))
     assert [c["primary"] for c in payload["comparisons"] if c["condition_b"] == "C0"] == [False] * 4
     assert "descriptive_note" in payload
+
+
+def test_report_labels_verdicts_on_too_small_samples(out: Path) -> None:
+    _write_run(out, "ev", "evaluation")
+    result = _invoke_wide("b-report", "--run-name", "ev", "--questions", "q.csv")
+    assert result.exit_code == 0, result.output
+    principal = next(line for line in result.output.splitlines() if "Principal (D16)" in line)
+    assert "muestra insuficiente" in principal
+    assert "supported" not in principal

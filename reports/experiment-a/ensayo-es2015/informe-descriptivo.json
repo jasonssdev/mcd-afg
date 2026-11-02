@@ -1,0 +1,5664 @@
+{
+  "run_name": "ensayo-es2015",
+  "partition": "development",
+  "reportable": false,
+  "descriptive": true,
+  "language": "en",
+  "reference_kinds": {
+    "ES2015": "adjudicated"
+  },
+  "series": [
+    "ES2015"
+  ],
+  "runs": [
+    0
+  ],
+  "runs_per_series": {
+    "ES2015": 1
+  },
+  "tau_principal": 0.7,
+  "tau_sensitivity": [
+    0.75,
+    0.8
+  ],
+  "tau_grid": [
+    0.5,
+    0.55,
+    0.6,
+    0.65,
+    0.7,
+    0.75,
+    0.8,
+    0.85,
+    0.9
+  ],
+  "alignment_scope_principal": "origin_meetings",
+  "interval": {
+    "primary": "meeting-cluster bootstrap",
+    "reference": "wilson (precision, recall); bootstrap over decisions (f1)",
+    "resamples": 10000,
+    "confidence_level": 0.95,
+    "seed": 42
+  },
+  "provenance": {
+    "git_commit": "6c2466c2e66032cb97d107d1322443745fe188bc",
+    "git_dirty": false,
+    "created_at": "2026-11-02T15:47:22.863114+00:00",
+    "openkos": {
+      "executable": "openkos",
+      "generative_model": "qwen3:8b",
+      "embedding_model": "bge-m3",
+      "seed": 42,
+      "temperature": 0.1,
+      "versions": [
+        "0.7.0"
+      ],
+      "generative_model_digest": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41",
+      "embedding_model_digest": "7907646426070047a77226ac3e684fbbe8410524f7b4a74d02837e43f2146bab",
+      "model_digest_source": "ollama /api/tags",
+      "ollama_version": "0.32.9"
+    }
+  },
+  "warnings": [
+    "ES2015: 1 corrida(s), por debajo del mínimo de 3 corridas (sección 5.8 de la tesis); la dispersión entre corridas no es confiable."
+  ],
+  "curve": [
+    {
+      "tau": 0.5,
+      "role": null,
+      "null_coverage": null,
+      "origin_meetings": {
+        "pooled": {
+          "tp": 24,
+          "fp": 47,
+          "fn": 3,
+          "precision": 0.3380281690140845,
+          "recall": 0.8888888888888888,
+          "f1": 0.48979591836734687,
+          "intervals": {
+            "precision": [
+              0.3103448275862069,
+              0.35714285714285715
+            ],
+            "recall": [
+              0.55,
+              1.0
+            ],
+            "f1": [
+              0.39215686274509803,
+              0.5263157894736842
+            ]
+          },
+          "reference_intervals": {
+            "precision": [
+              0.23884988425189946,
+              0.4538338185724452
+            ],
+            "recall": [
+              0.7194219918172018,
+              0.9614796517169015
+            ],
+            "f1": [
+              0.3652326602282704,
+              0.5981308411214953
+            ]
+          },
+          "n_clusters": 4,
+          "confidence_level": 0.95,
+          "interval_methods": {
+            "precision": "meeting-cluster bootstrap",
+            "recall": "meeting-cluster bootstrap",
+            "f1": "meeting-cluster bootstrap"
+          },
+          "reference_interval_methods": {
+            "precision": "wilson",
+            "recall": "wilson",
+            "f1": "bootstrap over decisions"
+          },
+          "by_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 5,
+              "recall": 1.0,
+              "n_predicted": 17,
+              "n_correct": 5,
+              "precision": 0.29411764705882354
+            },
+            "ME": {
+              "n_reference": 6,
+              "n_covered": 6,
+              "recall": 1.0,
+              "n_predicted": 15,
+              "n_correct": 3,
+              "precision": 0.2
+            },
+            "PM": {
+              "n_reference": 15,
+              "n_covered": 12,
+              "recall": 0.8,
+              "n_predicted": 30,
+              "n_correct": 13,
+              "precision": 0.43333333333333335
+            },
+            "UI": {
+              "n_reference": 1,
+              "n_covered": 1,
+              "recall": 1.0,
+              "n_predicted": 9,
+              "n_correct": 3,
+              "precision": 0.3333333333333333
+            }
+          },
+          "by_role_every_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 5,
+              "recall": 1.0,
+              "n_predicted": 17,
+              "n_correct": 5,
+              "precision": 0.29411764705882354
+            },
+            "ME": {
+              "n_reference": 7,
+              "n_covered": 7,
+              "recall": 1.0,
+              "n_predicted": 16,
+              "n_correct": 3,
+              "precision": 0.1875
+            },
+            "PM": {
+              "n_reference": 19,
+              "n_covered": 16,
+              "recall": 0.8421052631578947,
+              "n_predicted": 32,
+              "n_correct": 13,
+              "precision": 0.40625
+            },
+            "UI": {
+              "n_reference": 3,
+              "n_covered": 3,
+              "recall": 1.0,
+              "n_predicted": 11,
+              "n_correct": 3,
+              "precision": 0.2727272727272727
+            }
+          }
+        },
+        "by_series": {
+          "ES2015": {
+            "tp": 24,
+            "fp": 47,
+            "fn": 3,
+            "precision": 0.3380281690140845,
+            "recall": 0.8888888888888888,
+            "f1": 0.48979591836734687,
+            "intervals": {
+              "precision": [
+                0.3103448275862069,
+                0.35714285714285715
+              ],
+              "recall": [
+                0.55,
+                1.0
+              ],
+              "f1": [
+                0.39215686274509803,
+                0.5263157894736842
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.23884988425189946,
+                0.4538338185724452
+              ],
+              "recall": [
+                0.7194219918172018,
+                0.9614796517169015
+              ],
+              "f1": [
+                0.3652326602282704,
+                0.5981308411214953
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            },
+            "by_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 5,
+                "recall": 1.0,
+                "n_predicted": 17,
+                "n_correct": 5,
+                "precision": 0.29411764705882354
+              },
+              "ME": {
+                "n_reference": 6,
+                "n_covered": 6,
+                "recall": 1.0,
+                "n_predicted": 15,
+                "n_correct": 3,
+                "precision": 0.2
+              },
+              "PM": {
+                "n_reference": 15,
+                "n_covered": 12,
+                "recall": 0.8,
+                "n_predicted": 30,
+                "n_correct": 13,
+                "precision": 0.43333333333333335
+              },
+              "UI": {
+                "n_reference": 1,
+                "n_covered": 1,
+                "recall": 1.0,
+                "n_predicted": 9,
+                "n_correct": 3,
+                "precision": 0.3333333333333333
+              }
+            },
+            "by_role_every_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 5,
+                "recall": 1.0,
+                "n_predicted": 17,
+                "n_correct": 5,
+                "precision": 0.29411764705882354
+              },
+              "ME": {
+                "n_reference": 7,
+                "n_covered": 7,
+                "recall": 1.0,
+                "n_predicted": 16,
+                "n_correct": 3,
+                "precision": 0.1875
+              },
+              "PM": {
+                "n_reference": 19,
+                "n_covered": 16,
+                "recall": 0.8421052631578947,
+                "n_predicted": 32,
+                "n_correct": 13,
+                "precision": 0.40625
+              },
+              "UI": {
+                "n_reference": 3,
+                "n_covered": 3,
+                "recall": 1.0,
+                "n_predicted": 11,
+                "n_correct": 3,
+                "precision": 0.2727272727272727
+              }
+            }
+          }
+        },
+        "per_run": [
+          {
+            "run": 0,
+            "tp": 24,
+            "fp": 47,
+            "fn": 3,
+            "precision": 0.3380281690140845,
+            "recall": 0.8888888888888888,
+            "f1": 0.48979591836734687,
+            "intervals": {
+              "precision": [
+                0.3103448275862069,
+                0.35714285714285715
+              ],
+              "recall": [
+                0.55,
+                1.0
+              ],
+              "f1": [
+                0.39215686274509803,
+                0.5263157894736842
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.23884988425189946,
+                0.4538338185724452
+              ],
+              "recall": [
+                0.7194219918172018,
+                0.9614796517169015
+              ],
+              "f1": [
+                0.3652326602282704,
+                0.5981308411214953
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            }
+          }
+        ],
+        "across_runs": {
+          "n_runs": 1,
+          "precision_mean": 0.3380281690140845,
+          "precision_stdev": null,
+          "recall_mean": 0.8888888888888888,
+          "recall_stdev": null,
+          "f1_mean": 0.48979591836734687,
+          "f1_stdev": null
+        }
+      },
+      "series": {
+        "pooled": {
+          "tp": 27,
+          "fp": 44,
+          "fn": 0,
+          "precision": 0.38028169014084506,
+          "recall": 1.0,
+          "f1": 0.5510204081632654,
+          "intervals": {
+            "precision": [
+              0.34375,
+              0.40476190476190477
+            ],
+            "recall": [
+              1.0,
+              1.0
+            ],
+            "f1": [
+              0.5116279069767442,
+              0.576271186440678
+            ]
+          },
+          "reference_intervals": {
+            "precision": [
+              0.2762717345193544,
+              0.49658143713342207
+            ],
+            "recall": [
+              0.8754449702581331,
+              1.0
+            ],
+            "f1": [
+              0.42222222222222217,
+              0.660377358490566
+            ]
+          },
+          "n_clusters": 4,
+          "confidence_level": 0.95,
+          "interval_methods": {
+            "precision": "meeting-cluster bootstrap",
+            "recall": "meeting-cluster bootstrap",
+            "f1": "meeting-cluster bootstrap"
+          },
+          "reference_interval_methods": {
+            "precision": "wilson",
+            "recall": "wilson",
+            "f1": "bootstrap over decisions"
+          },
+          "by_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 5,
+              "recall": 1.0,
+              "n_predicted": 17,
+              "n_correct": 5,
+              "precision": 0.29411764705882354
+            },
+            "ME": {
+              "n_reference": 6,
+              "n_covered": 6,
+              "recall": 1.0,
+              "n_predicted": 15,
+              "n_correct": 5,
+              "precision": 0.3333333333333333
+            },
+            "PM": {
+              "n_reference": 15,
+              "n_covered": 15,
+              "recall": 1.0,
+              "n_predicted": 30,
+              "n_correct": 17,
+              "precision": 0.5666666666666667
+            },
+            "UI": {
+              "n_reference": 1,
+              "n_covered": 1,
+              "recall": 1.0,
+              "n_predicted": 9,
+              "n_correct": 0,
+              "precision": 0.0
+            }
+          },
+          "by_role_every_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 5,
+              "recall": 1.0,
+              "n_predicted": 17,
+              "n_correct": 5,
+              "precision": 0.29411764705882354
+            },
+            "ME": {
+              "n_reference": 7,
+              "n_covered": 7,
+              "recall": 1.0,
+              "n_predicted": 16,
+              "n_correct": 5,
+              "precision": 0.3125
+            },
+            "PM": {
+              "n_reference": 19,
+              "n_covered": 19,
+              "recall": 1.0,
+              "n_predicted": 32,
+              "n_correct": 19,
+              "precision": 0.59375
+            },
+            "UI": {
+              "n_reference": 3,
+              "n_covered": 3,
+              "recall": 1.0,
+              "n_predicted": 11,
+              "n_correct": 1,
+              "precision": 0.09090909090909091
+            }
+          }
+        },
+        "by_series": {
+          "ES2015": {
+            "tp": 27,
+            "fp": 44,
+            "fn": 0,
+            "precision": 0.38028169014084506,
+            "recall": 1.0,
+            "f1": 0.5510204081632654,
+            "intervals": {
+              "precision": [
+                0.34375,
+                0.40476190476190477
+              ],
+              "recall": [
+                1.0,
+                1.0
+              ],
+              "f1": [
+                0.5116279069767442,
+                0.576271186440678
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.2762717345193544,
+                0.49658143713342207
+              ],
+              "recall": [
+                0.8754449702581331,
+                1.0
+              ],
+              "f1": [
+                0.42222222222222217,
+                0.660377358490566
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            },
+            "by_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 5,
+                "recall": 1.0,
+                "n_predicted": 17,
+                "n_correct": 5,
+                "precision": 0.29411764705882354
+              },
+              "ME": {
+                "n_reference": 6,
+                "n_covered": 6,
+                "recall": 1.0,
+                "n_predicted": 15,
+                "n_correct": 5,
+                "precision": 0.3333333333333333
+              },
+              "PM": {
+                "n_reference": 15,
+                "n_covered": 15,
+                "recall": 1.0,
+                "n_predicted": 30,
+                "n_correct": 17,
+                "precision": 0.5666666666666667
+              },
+              "UI": {
+                "n_reference": 1,
+                "n_covered": 1,
+                "recall": 1.0,
+                "n_predicted": 9,
+                "n_correct": 0,
+                "precision": 0.0
+              }
+            },
+            "by_role_every_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 5,
+                "recall": 1.0,
+                "n_predicted": 17,
+                "n_correct": 5,
+                "precision": 0.29411764705882354
+              },
+              "ME": {
+                "n_reference": 7,
+                "n_covered": 7,
+                "recall": 1.0,
+                "n_predicted": 16,
+                "n_correct": 5,
+                "precision": 0.3125
+              },
+              "PM": {
+                "n_reference": 19,
+                "n_covered": 19,
+                "recall": 1.0,
+                "n_predicted": 32,
+                "n_correct": 19,
+                "precision": 0.59375
+              },
+              "UI": {
+                "n_reference": 3,
+                "n_covered": 3,
+                "recall": 1.0,
+                "n_predicted": 11,
+                "n_correct": 1,
+                "precision": 0.09090909090909091
+              }
+            }
+          }
+        },
+        "per_run": [
+          {
+            "run": 0,
+            "tp": 27,
+            "fp": 44,
+            "fn": 0,
+            "precision": 0.38028169014084506,
+            "recall": 1.0,
+            "f1": 0.5510204081632654,
+            "intervals": {
+              "precision": [
+                0.34375,
+                0.40476190476190477
+              ],
+              "recall": [
+                1.0,
+                1.0
+              ],
+              "f1": [
+                0.5116279069767442,
+                0.576271186440678
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.2762717345193544,
+                0.49658143713342207
+              ],
+              "recall": [
+                0.8754449702581331,
+                1.0
+              ],
+              "f1": [
+                0.42222222222222217,
+                0.660377358490566
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            }
+          }
+        ],
+        "across_runs": {
+          "n_runs": 1,
+          "precision_mean": 0.38028169014084506,
+          "precision_stdev": null,
+          "recall_mean": 1.0,
+          "recall_stdev": null,
+          "f1_mean": 0.5510204081632654,
+          "f1_stdev": null
+        }
+      }
+    },
+    {
+      "tau": 0.55,
+      "role": null,
+      "null_coverage": null,
+      "origin_meetings": {
+        "pooled": {
+          "tp": 21,
+          "fp": 50,
+          "fn": 6,
+          "precision": 0.29577464788732394,
+          "recall": 0.7777777777777778,
+          "f1": 0.42857142857142855,
+          "intervals": {
+            "precision": [
+              0.20588235294117646,
+              0.3333333333333333
+            ],
+            "recall": [
+              0.35,
+              0.9655172413793104
+            ],
+            "f1": [
+              0.25925925925925924,
+              0.4912280701754386
+            ]
+          },
+          "reference_intervals": {
+            "precision": [
+              0.20232885201316625,
+              0.4101853819827466
+            ],
+            "recall": [
+              0.5924307113336743,
+              0.8939276054763997
+            ],
+            "f1": [
+              0.30804863925883036,
+              0.5326757090012331
+            ]
+          },
+          "n_clusters": 4,
+          "confidence_level": 0.95,
+          "interval_methods": {
+            "precision": "meeting-cluster bootstrap",
+            "recall": "meeting-cluster bootstrap",
+            "f1": "meeting-cluster bootstrap"
+          },
+          "reference_interval_methods": {
+            "precision": "wilson",
+            "recall": "wilson",
+            "f1": "bootstrap over decisions"
+          },
+          "by_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 5,
+              "recall": 1.0,
+              "n_predicted": 17,
+              "n_correct": 5,
+              "precision": 0.29411764705882354
+            },
+            "ME": {
+              "n_reference": 6,
+              "n_covered": 5,
+              "recall": 0.8333333333333334,
+              "n_predicted": 15,
+              "n_correct": 3,
+              "precision": 0.2
+            },
+            "PM": {
+              "n_reference": 15,
+              "n_covered": 10,
+              "recall": 0.6666666666666666,
+              "n_predicted": 30,
+              "n_correct": 11,
+              "precision": 0.36666666666666664
+            },
+            "UI": {
+              "n_reference": 1,
+              "n_covered": 1,
+              "recall": 1.0,
+              "n_predicted": 9,
+              "n_correct": 2,
+              "precision": 0.2222222222222222
+            }
+          },
+          "by_role_every_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 5,
+              "recall": 1.0,
+              "n_predicted": 17,
+              "n_correct": 5,
+              "precision": 0.29411764705882354
+            },
+            "ME": {
+              "n_reference": 7,
+              "n_covered": 6,
+              "recall": 0.8571428571428571,
+              "n_predicted": 16,
+              "n_correct": 3,
+              "precision": 0.1875
+            },
+            "PM": {
+              "n_reference": 19,
+              "n_covered": 13,
+              "recall": 0.6842105263157895,
+              "n_predicted": 32,
+              "n_correct": 11,
+              "precision": 0.34375
+            },
+            "UI": {
+              "n_reference": 3,
+              "n_covered": 3,
+              "recall": 1.0,
+              "n_predicted": 11,
+              "n_correct": 2,
+              "precision": 0.18181818181818182
+            }
+          }
+        },
+        "by_series": {
+          "ES2015": {
+            "tp": 21,
+            "fp": 50,
+            "fn": 6,
+            "precision": 0.29577464788732394,
+            "recall": 0.7777777777777778,
+            "f1": 0.42857142857142855,
+            "intervals": {
+              "precision": [
+                0.20588235294117646,
+                0.3333333333333333
+              ],
+              "recall": [
+                0.35,
+                0.9655172413793104
+              ],
+              "f1": [
+                0.25925925925925924,
+                0.4912280701754386
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.20232885201316625,
+                0.4101853819827466
+              ],
+              "recall": [
+                0.5924307113336743,
+                0.8939276054763997
+              ],
+              "f1": [
+                0.30804863925883036,
+                0.5326757090012331
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            },
+            "by_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 5,
+                "recall": 1.0,
+                "n_predicted": 17,
+                "n_correct": 5,
+                "precision": 0.29411764705882354
+              },
+              "ME": {
+                "n_reference": 6,
+                "n_covered": 5,
+                "recall": 0.8333333333333334,
+                "n_predicted": 15,
+                "n_correct": 3,
+                "precision": 0.2
+              },
+              "PM": {
+                "n_reference": 15,
+                "n_covered": 10,
+                "recall": 0.6666666666666666,
+                "n_predicted": 30,
+                "n_correct": 11,
+                "precision": 0.36666666666666664
+              },
+              "UI": {
+                "n_reference": 1,
+                "n_covered": 1,
+                "recall": 1.0,
+                "n_predicted": 9,
+                "n_correct": 2,
+                "precision": 0.2222222222222222
+              }
+            },
+            "by_role_every_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 5,
+                "recall": 1.0,
+                "n_predicted": 17,
+                "n_correct": 5,
+                "precision": 0.29411764705882354
+              },
+              "ME": {
+                "n_reference": 7,
+                "n_covered": 6,
+                "recall": 0.8571428571428571,
+                "n_predicted": 16,
+                "n_correct": 3,
+                "precision": 0.1875
+              },
+              "PM": {
+                "n_reference": 19,
+                "n_covered": 13,
+                "recall": 0.6842105263157895,
+                "n_predicted": 32,
+                "n_correct": 11,
+                "precision": 0.34375
+              },
+              "UI": {
+                "n_reference": 3,
+                "n_covered": 3,
+                "recall": 1.0,
+                "n_predicted": 11,
+                "n_correct": 2,
+                "precision": 0.18181818181818182
+              }
+            }
+          }
+        },
+        "per_run": [
+          {
+            "run": 0,
+            "tp": 21,
+            "fp": 50,
+            "fn": 6,
+            "precision": 0.29577464788732394,
+            "recall": 0.7777777777777778,
+            "f1": 0.42857142857142855,
+            "intervals": {
+              "precision": [
+                0.20588235294117646,
+                0.3333333333333333
+              ],
+              "recall": [
+                0.35,
+                0.9655172413793104
+              ],
+              "f1": [
+                0.25925925925925924,
+                0.4912280701754386
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.20232885201316625,
+                0.4101853819827466
+              ],
+              "recall": [
+                0.5924307113336743,
+                0.8939276054763997
+              ],
+              "f1": [
+                0.30804863925883036,
+                0.5326757090012331
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            }
+          }
+        ],
+        "across_runs": {
+          "n_runs": 1,
+          "precision_mean": 0.29577464788732394,
+          "precision_stdev": null,
+          "recall_mean": 0.7777777777777778,
+          "recall_stdev": null,
+          "f1_mean": 0.42857142857142855,
+          "f1_stdev": null
+        }
+      },
+      "series": {
+        "pooled": {
+          "tp": 27,
+          "fp": 44,
+          "fn": 0,
+          "precision": 0.38028169014084506,
+          "recall": 1.0,
+          "f1": 0.5510204081632654,
+          "intervals": {
+            "precision": [
+              0.34375,
+              0.40476190476190477
+            ],
+            "recall": [
+              1.0,
+              1.0
+            ],
+            "f1": [
+              0.5116279069767442,
+              0.576271186440678
+            ]
+          },
+          "reference_intervals": {
+            "precision": [
+              0.2762717345193544,
+              0.49658143713342207
+            ],
+            "recall": [
+              0.8754449702581331,
+              1.0
+            ],
+            "f1": [
+              0.42222222222222217,
+              0.660377358490566
+            ]
+          },
+          "n_clusters": 4,
+          "confidence_level": 0.95,
+          "interval_methods": {
+            "precision": "meeting-cluster bootstrap",
+            "recall": "meeting-cluster bootstrap",
+            "f1": "meeting-cluster bootstrap"
+          },
+          "reference_interval_methods": {
+            "precision": "wilson",
+            "recall": "wilson",
+            "f1": "bootstrap over decisions"
+          },
+          "by_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 5,
+              "recall": 1.0,
+              "n_predicted": 17,
+              "n_correct": 5,
+              "precision": 0.29411764705882354
+            },
+            "ME": {
+              "n_reference": 6,
+              "n_covered": 6,
+              "recall": 1.0,
+              "n_predicted": 15,
+              "n_correct": 5,
+              "precision": 0.3333333333333333
+            },
+            "PM": {
+              "n_reference": 15,
+              "n_covered": 15,
+              "recall": 1.0,
+              "n_predicted": 30,
+              "n_correct": 17,
+              "precision": 0.5666666666666667
+            },
+            "UI": {
+              "n_reference": 1,
+              "n_covered": 1,
+              "recall": 1.0,
+              "n_predicted": 9,
+              "n_correct": 0,
+              "precision": 0.0
+            }
+          },
+          "by_role_every_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 5,
+              "recall": 1.0,
+              "n_predicted": 17,
+              "n_correct": 5,
+              "precision": 0.29411764705882354
+            },
+            "ME": {
+              "n_reference": 7,
+              "n_covered": 7,
+              "recall": 1.0,
+              "n_predicted": 16,
+              "n_correct": 5,
+              "precision": 0.3125
+            },
+            "PM": {
+              "n_reference": 19,
+              "n_covered": 19,
+              "recall": 1.0,
+              "n_predicted": 32,
+              "n_correct": 18,
+              "precision": 0.5625
+            },
+            "UI": {
+              "n_reference": 3,
+              "n_covered": 3,
+              "recall": 1.0,
+              "n_predicted": 11,
+              "n_correct": 0,
+              "precision": 0.0
+            }
+          }
+        },
+        "by_series": {
+          "ES2015": {
+            "tp": 27,
+            "fp": 44,
+            "fn": 0,
+            "precision": 0.38028169014084506,
+            "recall": 1.0,
+            "f1": 0.5510204081632654,
+            "intervals": {
+              "precision": [
+                0.34375,
+                0.40476190476190477
+              ],
+              "recall": [
+                1.0,
+                1.0
+              ],
+              "f1": [
+                0.5116279069767442,
+                0.576271186440678
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.2762717345193544,
+                0.49658143713342207
+              ],
+              "recall": [
+                0.8754449702581331,
+                1.0
+              ],
+              "f1": [
+                0.42222222222222217,
+                0.660377358490566
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            },
+            "by_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 5,
+                "recall": 1.0,
+                "n_predicted": 17,
+                "n_correct": 5,
+                "precision": 0.29411764705882354
+              },
+              "ME": {
+                "n_reference": 6,
+                "n_covered": 6,
+                "recall": 1.0,
+                "n_predicted": 15,
+                "n_correct": 5,
+                "precision": 0.3333333333333333
+              },
+              "PM": {
+                "n_reference": 15,
+                "n_covered": 15,
+                "recall": 1.0,
+                "n_predicted": 30,
+                "n_correct": 17,
+                "precision": 0.5666666666666667
+              },
+              "UI": {
+                "n_reference": 1,
+                "n_covered": 1,
+                "recall": 1.0,
+                "n_predicted": 9,
+                "n_correct": 0,
+                "precision": 0.0
+              }
+            },
+            "by_role_every_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 5,
+                "recall": 1.0,
+                "n_predicted": 17,
+                "n_correct": 5,
+                "precision": 0.29411764705882354
+              },
+              "ME": {
+                "n_reference": 7,
+                "n_covered": 7,
+                "recall": 1.0,
+                "n_predicted": 16,
+                "n_correct": 5,
+                "precision": 0.3125
+              },
+              "PM": {
+                "n_reference": 19,
+                "n_covered": 19,
+                "recall": 1.0,
+                "n_predicted": 32,
+                "n_correct": 18,
+                "precision": 0.5625
+              },
+              "UI": {
+                "n_reference": 3,
+                "n_covered": 3,
+                "recall": 1.0,
+                "n_predicted": 11,
+                "n_correct": 0,
+                "precision": 0.0
+              }
+            }
+          }
+        },
+        "per_run": [
+          {
+            "run": 0,
+            "tp": 27,
+            "fp": 44,
+            "fn": 0,
+            "precision": 0.38028169014084506,
+            "recall": 1.0,
+            "f1": 0.5510204081632654,
+            "intervals": {
+              "precision": [
+                0.34375,
+                0.40476190476190477
+              ],
+              "recall": [
+                1.0,
+                1.0
+              ],
+              "f1": [
+                0.5116279069767442,
+                0.576271186440678
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.2762717345193544,
+                0.49658143713342207
+              ],
+              "recall": [
+                0.8754449702581331,
+                1.0
+              ],
+              "f1": [
+                0.42222222222222217,
+                0.660377358490566
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            }
+          }
+        ],
+        "across_runs": {
+          "n_runs": 1,
+          "precision_mean": 0.38028169014084506,
+          "precision_stdev": null,
+          "recall_mean": 1.0,
+          "recall_stdev": null,
+          "f1_mean": 0.5510204081632654,
+          "f1_stdev": null
+        }
+      }
+    },
+    {
+      "tau": 0.6,
+      "role": null,
+      "null_coverage": null,
+      "origin_meetings": {
+        "pooled": {
+          "tp": 18,
+          "fp": 53,
+          "fn": 9,
+          "precision": 0.2535211267605634,
+          "recall": 0.6666666666666666,
+          "f1": 0.3673469387755102,
+          "intervals": {
+            "precision": [
+              0.15384615384615385,
+              0.328125
+            ],
+            "recall": [
+              0.3333333333333333,
+              0.9333333333333333
+            ],
+            "f1": [
+              0.21052631578947367,
+              0.47191011235955066
+            ]
+          },
+          "reference_intervals": {
+            "precision": [
+              0.1668055116318711,
+              0.36553925353561
+            ],
+            "recall": [
+              0.4782476050732008,
+              0.8135673850128435
+            ],
+            "f1": [
+              0.25020048115477145,
+              0.46938775510204084
+            ]
+          },
+          "n_clusters": 4,
+          "confidence_level": 0.95,
+          "interval_methods": {
+            "precision": "meeting-cluster bootstrap",
+            "recall": "meeting-cluster bootstrap",
+            "f1": "meeting-cluster bootstrap"
+          },
+          "reference_interval_methods": {
+            "precision": "wilson",
+            "recall": "wilson",
+            "f1": "bootstrap over decisions"
+          },
+          "by_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 5,
+              "recall": 1.0,
+              "n_predicted": 17,
+              "n_correct": 5,
+              "precision": 0.29411764705882354
+            },
+            "ME": {
+              "n_reference": 6,
+              "n_covered": 3,
+              "recall": 0.5,
+              "n_predicted": 15,
+              "n_correct": 2,
+              "precision": 0.13333333333333333
+            },
+            "PM": {
+              "n_reference": 15,
+              "n_covered": 9,
+              "recall": 0.6,
+              "n_predicted": 30,
+              "n_correct": 9,
+              "precision": 0.3
+            },
+            "UI": {
+              "n_reference": 1,
+              "n_covered": 1,
+              "recall": 1.0,
+              "n_predicted": 9,
+              "n_correct": 2,
+              "precision": 0.2222222222222222
+            }
+          },
+          "by_role_every_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 5,
+              "recall": 1.0,
+              "n_predicted": 17,
+              "n_correct": 5,
+              "precision": 0.29411764705882354
+            },
+            "ME": {
+              "n_reference": 7,
+              "n_covered": 4,
+              "recall": 0.5714285714285714,
+              "n_predicted": 16,
+              "n_correct": 2,
+              "precision": 0.125
+            },
+            "PM": {
+              "n_reference": 19,
+              "n_covered": 12,
+              "recall": 0.631578947368421,
+              "n_predicted": 32,
+              "n_correct": 9,
+              "precision": 0.28125
+            },
+            "UI": {
+              "n_reference": 3,
+              "n_covered": 3,
+              "recall": 1.0,
+              "n_predicted": 11,
+              "n_correct": 2,
+              "precision": 0.18181818181818182
+            }
+          }
+        },
+        "by_series": {
+          "ES2015": {
+            "tp": 18,
+            "fp": 53,
+            "fn": 9,
+            "precision": 0.2535211267605634,
+            "recall": 0.6666666666666666,
+            "f1": 0.3673469387755102,
+            "intervals": {
+              "precision": [
+                0.15384615384615385,
+                0.328125
+              ],
+              "recall": [
+                0.3333333333333333,
+                0.9333333333333333
+              ],
+              "f1": [
+                0.21052631578947367,
+                0.47191011235955066
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.1668055116318711,
+                0.36553925353561
+              ],
+              "recall": [
+                0.4782476050732008,
+                0.8135673850128435
+              ],
+              "f1": [
+                0.25020048115477145,
+                0.46938775510204084
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            },
+            "by_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 5,
+                "recall": 1.0,
+                "n_predicted": 17,
+                "n_correct": 5,
+                "precision": 0.29411764705882354
+              },
+              "ME": {
+                "n_reference": 6,
+                "n_covered": 3,
+                "recall": 0.5,
+                "n_predicted": 15,
+                "n_correct": 2,
+                "precision": 0.13333333333333333
+              },
+              "PM": {
+                "n_reference": 15,
+                "n_covered": 9,
+                "recall": 0.6,
+                "n_predicted": 30,
+                "n_correct": 9,
+                "precision": 0.3
+              },
+              "UI": {
+                "n_reference": 1,
+                "n_covered": 1,
+                "recall": 1.0,
+                "n_predicted": 9,
+                "n_correct": 2,
+                "precision": 0.2222222222222222
+              }
+            },
+            "by_role_every_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 5,
+                "recall": 1.0,
+                "n_predicted": 17,
+                "n_correct": 5,
+                "precision": 0.29411764705882354
+              },
+              "ME": {
+                "n_reference": 7,
+                "n_covered": 4,
+                "recall": 0.5714285714285714,
+                "n_predicted": 16,
+                "n_correct": 2,
+                "precision": 0.125
+              },
+              "PM": {
+                "n_reference": 19,
+                "n_covered": 12,
+                "recall": 0.631578947368421,
+                "n_predicted": 32,
+                "n_correct": 9,
+                "precision": 0.28125
+              },
+              "UI": {
+                "n_reference": 3,
+                "n_covered": 3,
+                "recall": 1.0,
+                "n_predicted": 11,
+                "n_correct": 2,
+                "precision": 0.18181818181818182
+              }
+            }
+          }
+        },
+        "per_run": [
+          {
+            "run": 0,
+            "tp": 18,
+            "fp": 53,
+            "fn": 9,
+            "precision": 0.2535211267605634,
+            "recall": 0.6666666666666666,
+            "f1": 0.3673469387755102,
+            "intervals": {
+              "precision": [
+                0.15384615384615385,
+                0.328125
+              ],
+              "recall": [
+                0.3333333333333333,
+                0.9333333333333333
+              ],
+              "f1": [
+                0.21052631578947367,
+                0.47191011235955066
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.1668055116318711,
+                0.36553925353561
+              ],
+              "recall": [
+                0.4782476050732008,
+                0.8135673850128435
+              ],
+              "f1": [
+                0.25020048115477145,
+                0.46938775510204084
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            }
+          }
+        ],
+        "across_runs": {
+          "n_runs": 1,
+          "precision_mean": 0.2535211267605634,
+          "precision_stdev": null,
+          "recall_mean": 0.6666666666666666,
+          "recall_stdev": null,
+          "f1_mean": 0.3673469387755102,
+          "f1_stdev": null
+        }
+      },
+      "series": {
+        "pooled": {
+          "tp": 25,
+          "fp": 46,
+          "fn": 2,
+          "precision": 0.352112676056338,
+          "recall": 0.9259259259259259,
+          "f1": 0.510204081632653,
+          "intervals": {
+            "precision": [
+              0.25,
+              0.4
+            ],
+            "recall": [
+              0.8064516129032258,
+              1.0
+            ],
+            "f1": [
+              0.4,
+              0.5714285714285715
+            ]
+          },
+          "reference_intervals": {
+            "precision": [
+              0.2512274812165329,
+              0.46817937788395564
+            ],
+            "recall": [
+              0.7663040731697686,
+              0.9794453459390113
+            ],
+            "f1": [
+              0.38351409978308026,
+              0.6189047261815454
+            ]
+          },
+          "n_clusters": 4,
+          "confidence_level": 0.95,
+          "interval_methods": {
+            "precision": "meeting-cluster bootstrap",
+            "recall": "meeting-cluster bootstrap",
+            "f1": "meeting-cluster bootstrap"
+          },
+          "reference_interval_methods": {
+            "precision": "wilson",
+            "recall": "wilson",
+            "f1": "bootstrap over decisions"
+          },
+          "by_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 5,
+              "recall": 1.0,
+              "n_predicted": 17,
+              "n_correct": 5,
+              "precision": 0.29411764705882354
+            },
+            "ME": {
+              "n_reference": 6,
+              "n_covered": 5,
+              "recall": 0.8333333333333334,
+              "n_predicted": 15,
+              "n_correct": 5,
+              "precision": 0.3333333333333333
+            },
+            "PM": {
+              "n_reference": 15,
+              "n_covered": 14,
+              "recall": 0.9333333333333333,
+              "n_predicted": 30,
+              "n_correct": 14,
+              "precision": 0.4666666666666667
+            },
+            "UI": {
+              "n_reference": 1,
+              "n_covered": 1,
+              "recall": 1.0,
+              "n_predicted": 9,
+              "n_correct": 1,
+              "precision": 0.1111111111111111
+            }
+          },
+          "by_role_every_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 5,
+              "recall": 1.0,
+              "n_predicted": 17,
+              "n_correct": 5,
+              "precision": 0.29411764705882354
+            },
+            "ME": {
+              "n_reference": 7,
+              "n_covered": 6,
+              "recall": 0.8571428571428571,
+              "n_predicted": 16,
+              "n_correct": 5,
+              "precision": 0.3125
+            },
+            "PM": {
+              "n_reference": 19,
+              "n_covered": 18,
+              "recall": 0.9473684210526315,
+              "n_predicted": 32,
+              "n_correct": 15,
+              "precision": 0.46875
+            },
+            "UI": {
+              "n_reference": 3,
+              "n_covered": 3,
+              "recall": 1.0,
+              "n_predicted": 11,
+              "n_correct": 1,
+              "precision": 0.09090909090909091
+            }
+          }
+        },
+        "by_series": {
+          "ES2015": {
+            "tp": 25,
+            "fp": 46,
+            "fn": 2,
+            "precision": 0.352112676056338,
+            "recall": 0.9259259259259259,
+            "f1": 0.510204081632653,
+            "intervals": {
+              "precision": [
+                0.25,
+                0.4
+              ],
+              "recall": [
+                0.8064516129032258,
+                1.0
+              ],
+              "f1": [
+                0.4,
+                0.5714285714285715
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.2512274812165329,
+                0.46817937788395564
+              ],
+              "recall": [
+                0.7663040731697686,
+                0.9794453459390113
+              ],
+              "f1": [
+                0.38351409978308026,
+                0.6189047261815454
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            },
+            "by_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 5,
+                "recall": 1.0,
+                "n_predicted": 17,
+                "n_correct": 5,
+                "precision": 0.29411764705882354
+              },
+              "ME": {
+                "n_reference": 6,
+                "n_covered": 5,
+                "recall": 0.8333333333333334,
+                "n_predicted": 15,
+                "n_correct": 5,
+                "precision": 0.3333333333333333
+              },
+              "PM": {
+                "n_reference": 15,
+                "n_covered": 14,
+                "recall": 0.9333333333333333,
+                "n_predicted": 30,
+                "n_correct": 14,
+                "precision": 0.4666666666666667
+              },
+              "UI": {
+                "n_reference": 1,
+                "n_covered": 1,
+                "recall": 1.0,
+                "n_predicted": 9,
+                "n_correct": 1,
+                "precision": 0.1111111111111111
+              }
+            },
+            "by_role_every_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 5,
+                "recall": 1.0,
+                "n_predicted": 17,
+                "n_correct": 5,
+                "precision": 0.29411764705882354
+              },
+              "ME": {
+                "n_reference": 7,
+                "n_covered": 6,
+                "recall": 0.8571428571428571,
+                "n_predicted": 16,
+                "n_correct": 5,
+                "precision": 0.3125
+              },
+              "PM": {
+                "n_reference": 19,
+                "n_covered": 18,
+                "recall": 0.9473684210526315,
+                "n_predicted": 32,
+                "n_correct": 15,
+                "precision": 0.46875
+              },
+              "UI": {
+                "n_reference": 3,
+                "n_covered": 3,
+                "recall": 1.0,
+                "n_predicted": 11,
+                "n_correct": 1,
+                "precision": 0.09090909090909091
+              }
+            }
+          }
+        },
+        "per_run": [
+          {
+            "run": 0,
+            "tp": 25,
+            "fp": 46,
+            "fn": 2,
+            "precision": 0.352112676056338,
+            "recall": 0.9259259259259259,
+            "f1": 0.510204081632653,
+            "intervals": {
+              "precision": [
+                0.25,
+                0.4
+              ],
+              "recall": [
+                0.8064516129032258,
+                1.0
+              ],
+              "f1": [
+                0.4,
+                0.5714285714285715
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.2512274812165329,
+                0.46817937788395564
+              ],
+              "recall": [
+                0.7663040731697686,
+                0.9794453459390113
+              ],
+              "f1": [
+                0.38351409978308026,
+                0.6189047261815454
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            }
+          }
+        ],
+        "across_runs": {
+          "n_runs": 1,
+          "precision_mean": 0.352112676056338,
+          "precision_stdev": null,
+          "recall_mean": 0.9259259259259259,
+          "recall_stdev": null,
+          "f1_mean": 0.510204081632653,
+          "f1_stdev": null
+        }
+      }
+    },
+    {
+      "tau": 0.65,
+      "role": null,
+      "null_coverage": null,
+      "origin_meetings": {
+        "pooled": {
+          "tp": 16,
+          "fp": 55,
+          "fn": 11,
+          "precision": 0.22535211267605634,
+          "recall": 0.5925925925925926,
+          "f1": 0.32653061224489793,
+          "intervals": {
+            "precision": [
+              0.15384615384615385,
+              0.26666666666666666
+            ],
+            "recall": [
+              0.2631578947368421,
+              0.8
+            ],
+            "f1": [
+              0.19607843137254902,
+              0.4
+            ]
+          },
+          "reference_intervals": {
+            "precision": [
+              0.14374669663520487,
+              0.33515175597998836
+            ],
+            "recall": [
+              0.407267009680647,
+              0.7548524292560443
+            ],
+            "f1": [
+              0.21301775147928997,
+              0.4230769230769231
+            ]
+          },
+          "n_clusters": 4,
+          "confidence_level": 0.95,
+          "interval_methods": {
+            "precision": "meeting-cluster bootstrap",
+            "recall": "meeting-cluster bootstrap",
+            "f1": "meeting-cluster bootstrap"
+          },
+          "reference_interval_methods": {
+            "precision": "wilson",
+            "recall": "wilson",
+            "f1": "bootstrap over decisions"
+          },
+          "by_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 3,
+              "recall": 0.6,
+              "n_predicted": 17,
+              "n_correct": 4,
+              "precision": 0.23529411764705882
+            },
+            "ME": {
+              "n_reference": 6,
+              "n_covered": 3,
+              "recall": 0.5,
+              "n_predicted": 15,
+              "n_correct": 2,
+              "precision": 0.13333333333333333
+            },
+            "PM": {
+              "n_reference": 15,
+              "n_covered": 9,
+              "recall": 0.6,
+              "n_predicted": 30,
+              "n_correct": 8,
+              "precision": 0.26666666666666666
+            },
+            "UI": {
+              "n_reference": 1,
+              "n_covered": 1,
+              "recall": 1.0,
+              "n_predicted": 9,
+              "n_correct": 2,
+              "precision": 0.2222222222222222
+            }
+          },
+          "by_role_every_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 3,
+              "recall": 0.6,
+              "n_predicted": 17,
+              "n_correct": 4,
+              "precision": 0.23529411764705882
+            },
+            "ME": {
+              "n_reference": 7,
+              "n_covered": 4,
+              "recall": 0.5714285714285714,
+              "n_predicted": 16,
+              "n_correct": 2,
+              "precision": 0.125
+            },
+            "PM": {
+              "n_reference": 19,
+              "n_covered": 12,
+              "recall": 0.631578947368421,
+              "n_predicted": 32,
+              "n_correct": 8,
+              "precision": 0.25
+            },
+            "UI": {
+              "n_reference": 3,
+              "n_covered": 3,
+              "recall": 1.0,
+              "n_predicted": 11,
+              "n_correct": 2,
+              "precision": 0.18181818181818182
+            }
+          }
+        },
+        "by_series": {
+          "ES2015": {
+            "tp": 16,
+            "fp": 55,
+            "fn": 11,
+            "precision": 0.22535211267605634,
+            "recall": 0.5925925925925926,
+            "f1": 0.32653061224489793,
+            "intervals": {
+              "precision": [
+                0.15384615384615385,
+                0.26666666666666666
+              ],
+              "recall": [
+                0.2631578947368421,
+                0.8
+              ],
+              "f1": [
+                0.19607843137254902,
+                0.4
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.14374669663520487,
+                0.33515175597998836
+              ],
+              "recall": [
+                0.407267009680647,
+                0.7548524292560443
+              ],
+              "f1": [
+                0.21301775147928997,
+                0.4230769230769231
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            },
+            "by_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 3,
+                "recall": 0.6,
+                "n_predicted": 17,
+                "n_correct": 4,
+                "precision": 0.23529411764705882
+              },
+              "ME": {
+                "n_reference": 6,
+                "n_covered": 3,
+                "recall": 0.5,
+                "n_predicted": 15,
+                "n_correct": 2,
+                "precision": 0.13333333333333333
+              },
+              "PM": {
+                "n_reference": 15,
+                "n_covered": 9,
+                "recall": 0.6,
+                "n_predicted": 30,
+                "n_correct": 8,
+                "precision": 0.26666666666666666
+              },
+              "UI": {
+                "n_reference": 1,
+                "n_covered": 1,
+                "recall": 1.0,
+                "n_predicted": 9,
+                "n_correct": 2,
+                "precision": 0.2222222222222222
+              }
+            },
+            "by_role_every_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 3,
+                "recall": 0.6,
+                "n_predicted": 17,
+                "n_correct": 4,
+                "precision": 0.23529411764705882
+              },
+              "ME": {
+                "n_reference": 7,
+                "n_covered": 4,
+                "recall": 0.5714285714285714,
+                "n_predicted": 16,
+                "n_correct": 2,
+                "precision": 0.125
+              },
+              "PM": {
+                "n_reference": 19,
+                "n_covered": 12,
+                "recall": 0.631578947368421,
+                "n_predicted": 32,
+                "n_correct": 8,
+                "precision": 0.25
+              },
+              "UI": {
+                "n_reference": 3,
+                "n_covered": 3,
+                "recall": 1.0,
+                "n_predicted": 11,
+                "n_correct": 2,
+                "precision": 0.18181818181818182
+              }
+            }
+          }
+        },
+        "per_run": [
+          {
+            "run": 0,
+            "tp": 16,
+            "fp": 55,
+            "fn": 11,
+            "precision": 0.22535211267605634,
+            "recall": 0.5925925925925926,
+            "f1": 0.32653061224489793,
+            "intervals": {
+              "precision": [
+                0.15384615384615385,
+                0.26666666666666666
+              ],
+              "recall": [
+                0.2631578947368421,
+                0.8
+              ],
+              "f1": [
+                0.19607843137254902,
+                0.4
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.14374669663520487,
+                0.33515175597998836
+              ],
+              "recall": [
+                0.407267009680647,
+                0.7548524292560443
+              ],
+              "f1": [
+                0.21301775147928997,
+                0.4230769230769231
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            }
+          }
+        ],
+        "across_runs": {
+          "n_runs": 1,
+          "precision_mean": 0.22535211267605634,
+          "precision_stdev": null,
+          "recall_mean": 0.5925925925925926,
+          "recall_stdev": null,
+          "f1_mean": 0.32653061224489793,
+          "f1_stdev": null
+        }
+      },
+      "series": {
+        "pooled": {
+          "tp": 21,
+          "fp": 50,
+          "fn": 6,
+          "precision": 0.29577464788732394,
+          "recall": 0.7777777777777778,
+          "f1": 0.42857142857142855,
+          "intervals": {
+            "precision": [
+              0.20588235294117646,
+              0.34177215189873417
+            ],
+            "recall": [
+              0.5714285714285714,
+              1.0
+            ],
+            "f1": [
+              0.32748538011695905,
+              0.5005257623554152
+            ]
+          },
+          "reference_intervals": {
+            "precision": [
+              0.20232885201316625,
+              0.4101853819827466
+            ],
+            "recall": [
+              0.5924307113336743,
+              0.8939276054763997
+            ],
+            "f1": [
+              0.3057384760112888,
+              0.538116591928251
+            ]
+          },
+          "n_clusters": 4,
+          "confidence_level": 0.95,
+          "interval_methods": {
+            "precision": "meeting-cluster bootstrap",
+            "recall": "meeting-cluster bootstrap",
+            "f1": "meeting-cluster bootstrap"
+          },
+          "reference_interval_methods": {
+            "precision": "wilson",
+            "recall": "wilson",
+            "f1": "bootstrap over decisions"
+          },
+          "by_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 3,
+              "recall": 0.6,
+              "n_predicted": 17,
+              "n_correct": 3,
+              "precision": 0.17647058823529413
+            },
+            "ME": {
+              "n_reference": 6,
+              "n_covered": 3,
+              "recall": 0.5,
+              "n_predicted": 15,
+              "n_correct": 5,
+              "precision": 0.3333333333333333
+            },
+            "PM": {
+              "n_reference": 15,
+              "n_covered": 14,
+              "recall": 0.9333333333333333,
+              "n_predicted": 30,
+              "n_correct": 13,
+              "precision": 0.43333333333333335
+            },
+            "UI": {
+              "n_reference": 1,
+              "n_covered": 1,
+              "recall": 1.0,
+              "n_predicted": 9,
+              "n_correct": 0,
+              "precision": 0.0
+            }
+          },
+          "by_role_every_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 3,
+              "recall": 0.6,
+              "n_predicted": 17,
+              "n_correct": 3,
+              "precision": 0.17647058823529413
+            },
+            "ME": {
+              "n_reference": 7,
+              "n_covered": 4,
+              "recall": 0.5714285714285714,
+              "n_predicted": 16,
+              "n_correct": 5,
+              "precision": 0.3125
+            },
+            "PM": {
+              "n_reference": 19,
+              "n_covered": 17,
+              "recall": 0.8947368421052632,
+              "n_predicted": 32,
+              "n_correct": 14,
+              "precision": 0.4375
+            },
+            "UI": {
+              "n_reference": 3,
+              "n_covered": 3,
+              "recall": 1.0,
+              "n_predicted": 11,
+              "n_correct": 0,
+              "precision": 0.0
+            }
+          }
+        },
+        "by_series": {
+          "ES2015": {
+            "tp": 21,
+            "fp": 50,
+            "fn": 6,
+            "precision": 0.29577464788732394,
+            "recall": 0.7777777777777778,
+            "f1": 0.42857142857142855,
+            "intervals": {
+              "precision": [
+                0.20588235294117646,
+                0.34177215189873417
+              ],
+              "recall": [
+                0.5714285714285714,
+                1.0
+              ],
+              "f1": [
+                0.32748538011695905,
+                0.5005257623554152
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.20232885201316625,
+                0.4101853819827466
+              ],
+              "recall": [
+                0.5924307113336743,
+                0.8939276054763997
+              ],
+              "f1": [
+                0.3057384760112888,
+                0.538116591928251
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            },
+            "by_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 3,
+                "recall": 0.6,
+                "n_predicted": 17,
+                "n_correct": 3,
+                "precision": 0.17647058823529413
+              },
+              "ME": {
+                "n_reference": 6,
+                "n_covered": 3,
+                "recall": 0.5,
+                "n_predicted": 15,
+                "n_correct": 5,
+                "precision": 0.3333333333333333
+              },
+              "PM": {
+                "n_reference": 15,
+                "n_covered": 14,
+                "recall": 0.9333333333333333,
+                "n_predicted": 30,
+                "n_correct": 13,
+                "precision": 0.43333333333333335
+              },
+              "UI": {
+                "n_reference": 1,
+                "n_covered": 1,
+                "recall": 1.0,
+                "n_predicted": 9,
+                "n_correct": 0,
+                "precision": 0.0
+              }
+            },
+            "by_role_every_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 3,
+                "recall": 0.6,
+                "n_predicted": 17,
+                "n_correct": 3,
+                "precision": 0.17647058823529413
+              },
+              "ME": {
+                "n_reference": 7,
+                "n_covered": 4,
+                "recall": 0.5714285714285714,
+                "n_predicted": 16,
+                "n_correct": 5,
+                "precision": 0.3125
+              },
+              "PM": {
+                "n_reference": 19,
+                "n_covered": 17,
+                "recall": 0.8947368421052632,
+                "n_predicted": 32,
+                "n_correct": 14,
+                "precision": 0.4375
+              },
+              "UI": {
+                "n_reference": 3,
+                "n_covered": 3,
+                "recall": 1.0,
+                "n_predicted": 11,
+                "n_correct": 0,
+                "precision": 0.0
+              }
+            }
+          }
+        },
+        "per_run": [
+          {
+            "run": 0,
+            "tp": 21,
+            "fp": 50,
+            "fn": 6,
+            "precision": 0.29577464788732394,
+            "recall": 0.7777777777777778,
+            "f1": 0.42857142857142855,
+            "intervals": {
+              "precision": [
+                0.20588235294117646,
+                0.34177215189873417
+              ],
+              "recall": [
+                0.5714285714285714,
+                1.0
+              ],
+              "f1": [
+                0.32748538011695905,
+                0.5005257623554152
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.20232885201316625,
+                0.4101853819827466
+              ],
+              "recall": [
+                0.5924307113336743,
+                0.8939276054763997
+              ],
+              "f1": [
+                0.3057384760112888,
+                0.538116591928251
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            }
+          }
+        ],
+        "across_runs": {
+          "n_runs": 1,
+          "precision_mean": 0.29577464788732394,
+          "precision_stdev": null,
+          "recall_mean": 0.7777777777777778,
+          "recall_stdev": null,
+          "f1_mean": 0.42857142857142855,
+          "f1_stdev": null
+        }
+      }
+    },
+    {
+      "tau": 0.7,
+      "role": "principal",
+      "null_coverage": 0.138,
+      "origin_meetings": {
+        "pooled": {
+          "tp": 9,
+          "fp": 62,
+          "fn": 18,
+          "precision": 0.1267605633802817,
+          "recall": 0.3333333333333333,
+          "f1": 0.1836734693877551,
+          "intervals": {
+            "precision": [
+              0.0625,
+              0.17894736842105263
+            ],
+            "recall": [
+              0.10526315789473684,
+              0.5357142857142857
+            ],
+            "f1": [
+              0.0784313725490196,
+              0.2698412698412698
+            ]
+          },
+          "reference_intervals": {
+            "precision": [
+              0.06814527589564845,
+              0.22369108278653727
+            ],
+            "recall": [
+              0.18643261498715652,
+              0.5217523949267993
+            ],
+            "f1": [
+              0.09467455621301776,
+              0.26530612244897955
+            ]
+          },
+          "n_clusters": 4,
+          "confidence_level": 0.95,
+          "interval_methods": {
+            "precision": "meeting-cluster bootstrap",
+            "recall": "meeting-cluster bootstrap",
+            "f1": "meeting-cluster bootstrap"
+          },
+          "reference_interval_methods": {
+            "precision": "wilson",
+            "recall": "wilson",
+            "f1": "bootstrap over decisions"
+          },
+          "by_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 17,
+              "n_correct": 2,
+              "precision": 0.11764705882352941
+            },
+            "ME": {
+              "n_reference": 6,
+              "n_covered": 3,
+              "recall": 0.5,
+              "n_predicted": 15,
+              "n_correct": 2,
+              "precision": 0.13333333333333333
+            },
+            "PM": {
+              "n_reference": 15,
+              "n_covered": 5,
+              "recall": 0.3333333333333333,
+              "n_predicted": 30,
+              "n_correct": 5,
+              "precision": 0.16666666666666666
+            },
+            "UI": {
+              "n_reference": 1,
+              "n_covered": 1,
+              "recall": 1.0,
+              "n_predicted": 9,
+              "n_correct": 0,
+              "precision": 0.0
+            }
+          },
+          "by_role_every_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 17,
+              "n_correct": 2,
+              "precision": 0.11764705882352941
+            },
+            "ME": {
+              "n_reference": 7,
+              "n_covered": 4,
+              "recall": 0.5714285714285714,
+              "n_predicted": 16,
+              "n_correct": 2,
+              "precision": 0.125
+            },
+            "PM": {
+              "n_reference": 19,
+              "n_covered": 8,
+              "recall": 0.42105263157894735,
+              "n_predicted": 32,
+              "n_correct": 5,
+              "precision": 0.15625
+            },
+            "UI": {
+              "n_reference": 3,
+              "n_covered": 2,
+              "recall": 0.6666666666666666,
+              "n_predicted": 11,
+              "n_correct": 0,
+              "precision": 0.0
+            }
+          }
+        },
+        "by_series": {
+          "ES2015": {
+            "tp": 9,
+            "fp": 62,
+            "fn": 18,
+            "precision": 0.1267605633802817,
+            "recall": 0.3333333333333333,
+            "f1": 0.1836734693877551,
+            "intervals": {
+              "precision": [
+                0.0625,
+                0.17894736842105263
+              ],
+              "recall": [
+                0.10526315789473684,
+                0.5357142857142857
+              ],
+              "f1": [
+                0.0784313725490196,
+                0.2698412698412698
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.06814527589564845,
+                0.22369108278653727
+              ],
+              "recall": [
+                0.18643261498715652,
+                0.5217523949267993
+              ],
+              "f1": [
+                0.09467455621301776,
+                0.26530612244897955
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            },
+            "by_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 17,
+                "n_correct": 2,
+                "precision": 0.11764705882352941
+              },
+              "ME": {
+                "n_reference": 6,
+                "n_covered": 3,
+                "recall": 0.5,
+                "n_predicted": 15,
+                "n_correct": 2,
+                "precision": 0.13333333333333333
+              },
+              "PM": {
+                "n_reference": 15,
+                "n_covered": 5,
+                "recall": 0.3333333333333333,
+                "n_predicted": 30,
+                "n_correct": 5,
+                "precision": 0.16666666666666666
+              },
+              "UI": {
+                "n_reference": 1,
+                "n_covered": 1,
+                "recall": 1.0,
+                "n_predicted": 9,
+                "n_correct": 0,
+                "precision": 0.0
+              }
+            },
+            "by_role_every_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 17,
+                "n_correct": 2,
+                "precision": 0.11764705882352941
+              },
+              "ME": {
+                "n_reference": 7,
+                "n_covered": 4,
+                "recall": 0.5714285714285714,
+                "n_predicted": 16,
+                "n_correct": 2,
+                "precision": 0.125
+              },
+              "PM": {
+                "n_reference": 19,
+                "n_covered": 8,
+                "recall": 0.42105263157894735,
+                "n_predicted": 32,
+                "n_correct": 5,
+                "precision": 0.15625
+              },
+              "UI": {
+                "n_reference": 3,
+                "n_covered": 2,
+                "recall": 0.6666666666666666,
+                "n_predicted": 11,
+                "n_correct": 0,
+                "precision": 0.0
+              }
+            }
+          }
+        },
+        "per_run": [
+          {
+            "run": 0,
+            "tp": 9,
+            "fp": 62,
+            "fn": 18,
+            "precision": 0.1267605633802817,
+            "recall": 0.3333333333333333,
+            "f1": 0.1836734693877551,
+            "intervals": {
+              "precision": [
+                0.0625,
+                0.17894736842105263
+              ],
+              "recall": [
+                0.10526315789473684,
+                0.5357142857142857
+              ],
+              "f1": [
+                0.0784313725490196,
+                0.2698412698412698
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.06814527589564845,
+                0.22369108278653727
+              ],
+              "recall": [
+                0.18643261498715652,
+                0.5217523949267993
+              ],
+              "f1": [
+                0.09467455621301776,
+                0.26530612244897955
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            }
+          }
+        ],
+        "across_runs": {
+          "n_runs": 1,
+          "precision_mean": 0.1267605633802817,
+          "precision_stdev": null,
+          "recall_mean": 0.3333333333333333,
+          "recall_stdev": null,
+          "f1_mean": 0.1836734693877551,
+          "f1_stdev": null
+        }
+      },
+      "series": {
+        "pooled": {
+          "tp": 13,
+          "fp": 58,
+          "fn": 14,
+          "precision": 0.18309859154929578,
+          "recall": 0.48148148148148145,
+          "f1": 0.26530612244897955,
+          "intervals": {
+            "precision": [
+              0.09375,
+              0.25263157894736843
+            ],
+            "recall": [
+              0.25,
+              0.6785714285714286
+            ],
+            "f1": [
+              0.1494661921708185,
+              0.3726182074805928
+            ]
+          },
+          "reference_intervals": {
+            "precision": [
+              0.11024726104284902,
+              0.2884817227439125
+            ],
+            "recall": [
+              0.30743226976218474,
+              0.6601438424504771
+            ],
+            "f1": [
+              0.16138328530259366,
+              0.35730088495575224
+            ]
+          },
+          "n_clusters": 4,
+          "confidence_level": 0.95,
+          "interval_methods": {
+            "precision": "meeting-cluster bootstrap",
+            "recall": "meeting-cluster bootstrap",
+            "f1": "meeting-cluster bootstrap"
+          },
+          "reference_interval_methods": {
+            "precision": "wilson",
+            "recall": "wilson",
+            "f1": "bootstrap over decisions"
+          },
+          "by_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 2,
+              "recall": 0.4,
+              "n_predicted": 17,
+              "n_correct": 2,
+              "precision": 0.11764705882352941
+            },
+            "ME": {
+              "n_reference": 6,
+              "n_covered": 3,
+              "recall": 0.5,
+              "n_predicted": 15,
+              "n_correct": 4,
+              "precision": 0.26666666666666666
+            },
+            "PM": {
+              "n_reference": 15,
+              "n_covered": 7,
+              "recall": 0.4666666666666667,
+              "n_predicted": 30,
+              "n_correct": 7,
+              "precision": 0.23333333333333334
+            },
+            "UI": {
+              "n_reference": 1,
+              "n_covered": 1,
+              "recall": 1.0,
+              "n_predicted": 9,
+              "n_correct": 0,
+              "precision": 0.0
+            }
+          },
+          "by_role_every_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 2,
+              "recall": 0.4,
+              "n_predicted": 17,
+              "n_correct": 2,
+              "precision": 0.11764705882352941
+            },
+            "ME": {
+              "n_reference": 7,
+              "n_covered": 4,
+              "recall": 0.5714285714285714,
+              "n_predicted": 16,
+              "n_correct": 4,
+              "precision": 0.25
+            },
+            "PM": {
+              "n_reference": 19,
+              "n_covered": 10,
+              "recall": 0.5263157894736842,
+              "n_predicted": 32,
+              "n_correct": 8,
+              "precision": 0.25
+            },
+            "UI": {
+              "n_reference": 3,
+              "n_covered": 3,
+              "recall": 1.0,
+              "n_predicted": 11,
+              "n_correct": 0,
+              "precision": 0.0
+            }
+          }
+        },
+        "by_series": {
+          "ES2015": {
+            "tp": 13,
+            "fp": 58,
+            "fn": 14,
+            "precision": 0.18309859154929578,
+            "recall": 0.48148148148148145,
+            "f1": 0.26530612244897955,
+            "intervals": {
+              "precision": [
+                0.09375,
+                0.25263157894736843
+              ],
+              "recall": [
+                0.25,
+                0.6785714285714286
+              ],
+              "f1": [
+                0.1494661921708185,
+                0.3726182074805928
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.11024726104284902,
+                0.2884817227439125
+              ],
+              "recall": [
+                0.30743226976218474,
+                0.6601438424504771
+              ],
+              "f1": [
+                0.16138328530259366,
+                0.35730088495575224
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            },
+            "by_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 2,
+                "recall": 0.4,
+                "n_predicted": 17,
+                "n_correct": 2,
+                "precision": 0.11764705882352941
+              },
+              "ME": {
+                "n_reference": 6,
+                "n_covered": 3,
+                "recall": 0.5,
+                "n_predicted": 15,
+                "n_correct": 4,
+                "precision": 0.26666666666666666
+              },
+              "PM": {
+                "n_reference": 15,
+                "n_covered": 7,
+                "recall": 0.4666666666666667,
+                "n_predicted": 30,
+                "n_correct": 7,
+                "precision": 0.23333333333333334
+              },
+              "UI": {
+                "n_reference": 1,
+                "n_covered": 1,
+                "recall": 1.0,
+                "n_predicted": 9,
+                "n_correct": 0,
+                "precision": 0.0
+              }
+            },
+            "by_role_every_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 2,
+                "recall": 0.4,
+                "n_predicted": 17,
+                "n_correct": 2,
+                "precision": 0.11764705882352941
+              },
+              "ME": {
+                "n_reference": 7,
+                "n_covered": 4,
+                "recall": 0.5714285714285714,
+                "n_predicted": 16,
+                "n_correct": 4,
+                "precision": 0.25
+              },
+              "PM": {
+                "n_reference": 19,
+                "n_covered": 10,
+                "recall": 0.5263157894736842,
+                "n_predicted": 32,
+                "n_correct": 8,
+                "precision": 0.25
+              },
+              "UI": {
+                "n_reference": 3,
+                "n_covered": 3,
+                "recall": 1.0,
+                "n_predicted": 11,
+                "n_correct": 0,
+                "precision": 0.0
+              }
+            }
+          }
+        },
+        "per_run": [
+          {
+            "run": 0,
+            "tp": 13,
+            "fp": 58,
+            "fn": 14,
+            "precision": 0.18309859154929578,
+            "recall": 0.48148148148148145,
+            "f1": 0.26530612244897955,
+            "intervals": {
+              "precision": [
+                0.09375,
+                0.25263157894736843
+              ],
+              "recall": [
+                0.25,
+                0.6785714285714286
+              ],
+              "f1": [
+                0.1494661921708185,
+                0.3726182074805928
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.11024726104284902,
+                0.2884817227439125
+              ],
+              "recall": [
+                0.30743226976218474,
+                0.6601438424504771
+              ],
+              "f1": [
+                0.16138328530259366,
+                0.35730088495575224
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            }
+          }
+        ],
+        "across_runs": {
+          "n_runs": 1,
+          "precision_mean": 0.18309859154929578,
+          "precision_stdev": null,
+          "recall_mean": 0.48148148148148145,
+          "recall_stdev": null,
+          "f1_mean": 0.26530612244897955,
+          "f1_stdev": null
+        }
+      }
+    },
+    {
+      "tau": 0.75,
+      "role": "sensitivity",
+      "null_coverage": 0.053,
+      "origin_meetings": {
+        "pooled": {
+          "tp": 7,
+          "fp": 64,
+          "fn": 20,
+          "precision": 0.09859154929577464,
+          "recall": 0.25925925925925924,
+          "f1": 0.14285714285714285,
+          "intervals": {
+            "precision": [
+              0.0625,
+              0.11392405063291139
+            ],
+            "recall": [
+              0.10526315789473684,
+              0.34375
+            ],
+            "f1": [
+              0.0784313725490196,
+              0.17054263565891473
+            ]
+          },
+          "reference_intervals": {
+            "precision": [
+              0.04858282372396934,
+              0.18980722240592846
+            ],
+            "recall": [
+              0.13170374561907197,
+              0.4467857131455307
+            ],
+            "f1": [
+              0.05381165919282511,
+              0.21524663677130043
+            ]
+          },
+          "n_clusters": 4,
+          "confidence_level": 0.95,
+          "interval_methods": {
+            "precision": "meeting-cluster bootstrap",
+            "recall": "meeting-cluster bootstrap",
+            "f1": "meeting-cluster bootstrap"
+          },
+          "reference_interval_methods": {
+            "precision": "wilson",
+            "recall": "wilson",
+            "f1": "bootstrap over decisions"
+          },
+          "by_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 17,
+              "n_correct": 1,
+              "precision": 0.058823529411764705
+            },
+            "ME": {
+              "n_reference": 6,
+              "n_covered": 2,
+              "recall": 0.3333333333333333,
+              "n_predicted": 15,
+              "n_correct": 2,
+              "precision": 0.13333333333333333
+            },
+            "PM": {
+              "n_reference": 15,
+              "n_covered": 4,
+              "recall": 0.26666666666666666,
+              "n_predicted": 30,
+              "n_correct": 4,
+              "precision": 0.13333333333333333
+            },
+            "UI": {
+              "n_reference": 1,
+              "n_covered": 1,
+              "recall": 1.0,
+              "n_predicted": 9,
+              "n_correct": 0,
+              "precision": 0.0
+            }
+          },
+          "by_role_every_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 17,
+              "n_correct": 1,
+              "precision": 0.058823529411764705
+            },
+            "ME": {
+              "n_reference": 7,
+              "n_covered": 3,
+              "recall": 0.42857142857142855,
+              "n_predicted": 16,
+              "n_correct": 2,
+              "precision": 0.125
+            },
+            "PM": {
+              "n_reference": 19,
+              "n_covered": 6,
+              "recall": 0.3157894736842105,
+              "n_predicted": 32,
+              "n_correct": 4,
+              "precision": 0.125
+            },
+            "UI": {
+              "n_reference": 3,
+              "n_covered": 2,
+              "recall": 0.6666666666666666,
+              "n_predicted": 11,
+              "n_correct": 0,
+              "precision": 0.0
+            }
+          }
+        },
+        "by_series": {
+          "ES2015": {
+            "tp": 7,
+            "fp": 64,
+            "fn": 20,
+            "precision": 0.09859154929577464,
+            "recall": 0.25925925925925924,
+            "f1": 0.14285714285714285,
+            "intervals": {
+              "precision": [
+                0.0625,
+                0.11392405063291139
+              ],
+              "recall": [
+                0.10526315789473684,
+                0.34375
+              ],
+              "f1": [
+                0.0784313725490196,
+                0.17054263565891473
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.04858282372396934,
+                0.18980722240592846
+              ],
+              "recall": [
+                0.13170374561907197,
+                0.4467857131455307
+              ],
+              "f1": [
+                0.05381165919282511,
+                0.21524663677130043
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            },
+            "by_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 17,
+                "n_correct": 1,
+                "precision": 0.058823529411764705
+              },
+              "ME": {
+                "n_reference": 6,
+                "n_covered": 2,
+                "recall": 0.3333333333333333,
+                "n_predicted": 15,
+                "n_correct": 2,
+                "precision": 0.13333333333333333
+              },
+              "PM": {
+                "n_reference": 15,
+                "n_covered": 4,
+                "recall": 0.26666666666666666,
+                "n_predicted": 30,
+                "n_correct": 4,
+                "precision": 0.13333333333333333
+              },
+              "UI": {
+                "n_reference": 1,
+                "n_covered": 1,
+                "recall": 1.0,
+                "n_predicted": 9,
+                "n_correct": 0,
+                "precision": 0.0
+              }
+            },
+            "by_role_every_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 17,
+                "n_correct": 1,
+                "precision": 0.058823529411764705
+              },
+              "ME": {
+                "n_reference": 7,
+                "n_covered": 3,
+                "recall": 0.42857142857142855,
+                "n_predicted": 16,
+                "n_correct": 2,
+                "precision": 0.125
+              },
+              "PM": {
+                "n_reference": 19,
+                "n_covered": 6,
+                "recall": 0.3157894736842105,
+                "n_predicted": 32,
+                "n_correct": 4,
+                "precision": 0.125
+              },
+              "UI": {
+                "n_reference": 3,
+                "n_covered": 2,
+                "recall": 0.6666666666666666,
+                "n_predicted": 11,
+                "n_correct": 0,
+                "precision": 0.0
+              }
+            }
+          }
+        },
+        "per_run": [
+          {
+            "run": 0,
+            "tp": 7,
+            "fp": 64,
+            "fn": 20,
+            "precision": 0.09859154929577464,
+            "recall": 0.25925925925925924,
+            "f1": 0.14285714285714285,
+            "intervals": {
+              "precision": [
+                0.0625,
+                0.11392405063291139
+              ],
+              "recall": [
+                0.10526315789473684,
+                0.34375
+              ],
+              "f1": [
+                0.0784313725490196,
+                0.17054263565891473
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.04858282372396934,
+                0.18980722240592846
+              ],
+              "recall": [
+                0.13170374561907197,
+                0.4467857131455307
+              ],
+              "f1": [
+                0.05381165919282511,
+                0.21524663677130043
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            }
+          }
+        ],
+        "across_runs": {
+          "n_runs": 1,
+          "precision_mean": 0.09859154929577464,
+          "precision_stdev": null,
+          "recall_mean": 0.25925925925925924,
+          "recall_stdev": null,
+          "f1_mean": 0.14285714285714285,
+          "f1_stdev": null
+        }
+      },
+      "series": {
+        "pooled": {
+          "tp": 9,
+          "fp": 62,
+          "fn": 18,
+          "precision": 0.1267605633802817,
+          "recall": 0.3333333333333333,
+          "f1": 0.1836734693877551,
+          "intervals": {
+            "precision": [
+              0.07692307692307693,
+              0.15555555555555556
+            ],
+            "recall": [
+              0.25,
+              0.4
+            ],
+            "f1": [
+              0.11764705882352941,
+              0.224
+            ]
+          },
+          "reference_intervals": {
+            "precision": [
+              0.06814527589564845,
+              0.22369108278653727
+            ],
+            "recall": [
+              0.18643261498715652,
+              0.5217523949267993
+            ],
+            "f1": [
+              0.09467455621301776,
+              0.26574633304572903
+            ]
+          },
+          "n_clusters": 4,
+          "confidence_level": 0.95,
+          "interval_methods": {
+            "precision": "meeting-cluster bootstrap",
+            "recall": "meeting-cluster bootstrap",
+            "f1": "meeting-cluster bootstrap"
+          },
+          "reference_interval_methods": {
+            "precision": "wilson",
+            "recall": "wilson",
+            "f1": "bootstrap over decisions"
+          },
+          "by_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 17,
+              "n_correct": 1,
+              "precision": 0.058823529411764705
+            },
+            "ME": {
+              "n_reference": 6,
+              "n_covered": 2,
+              "recall": 0.3333333333333333,
+              "n_predicted": 15,
+              "n_correct": 3,
+              "precision": 0.2
+            },
+            "PM": {
+              "n_reference": 15,
+              "n_covered": 6,
+              "recall": 0.4,
+              "n_predicted": 30,
+              "n_correct": 5,
+              "precision": 0.16666666666666666
+            },
+            "UI": {
+              "n_reference": 1,
+              "n_covered": 1,
+              "recall": 1.0,
+              "n_predicted": 9,
+              "n_correct": 0,
+              "precision": 0.0
+            }
+          },
+          "by_role_every_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 17,
+              "n_correct": 1,
+              "precision": 0.058823529411764705
+            },
+            "ME": {
+              "n_reference": 7,
+              "n_covered": 3,
+              "recall": 0.42857142857142855,
+              "n_predicted": 16,
+              "n_correct": 3,
+              "precision": 0.1875
+            },
+            "PM": {
+              "n_reference": 19,
+              "n_covered": 8,
+              "recall": 0.42105263157894735,
+              "n_predicted": 32,
+              "n_correct": 6,
+              "precision": 0.1875
+            },
+            "UI": {
+              "n_reference": 3,
+              "n_covered": 2,
+              "recall": 0.6666666666666666,
+              "n_predicted": 11,
+              "n_correct": 0,
+              "precision": 0.0
+            }
+          }
+        },
+        "by_series": {
+          "ES2015": {
+            "tp": 9,
+            "fp": 62,
+            "fn": 18,
+            "precision": 0.1267605633802817,
+            "recall": 0.3333333333333333,
+            "f1": 0.1836734693877551,
+            "intervals": {
+              "precision": [
+                0.07692307692307693,
+                0.15555555555555556
+              ],
+              "recall": [
+                0.25,
+                0.4
+              ],
+              "f1": [
+                0.11764705882352941,
+                0.224
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.06814527589564845,
+                0.22369108278653727
+              ],
+              "recall": [
+                0.18643261498715652,
+                0.5217523949267993
+              ],
+              "f1": [
+                0.09467455621301776,
+                0.26574633304572903
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            },
+            "by_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 17,
+                "n_correct": 1,
+                "precision": 0.058823529411764705
+              },
+              "ME": {
+                "n_reference": 6,
+                "n_covered": 2,
+                "recall": 0.3333333333333333,
+                "n_predicted": 15,
+                "n_correct": 3,
+                "precision": 0.2
+              },
+              "PM": {
+                "n_reference": 15,
+                "n_covered": 6,
+                "recall": 0.4,
+                "n_predicted": 30,
+                "n_correct": 5,
+                "precision": 0.16666666666666666
+              },
+              "UI": {
+                "n_reference": 1,
+                "n_covered": 1,
+                "recall": 1.0,
+                "n_predicted": 9,
+                "n_correct": 0,
+                "precision": 0.0
+              }
+            },
+            "by_role_every_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 17,
+                "n_correct": 1,
+                "precision": 0.058823529411764705
+              },
+              "ME": {
+                "n_reference": 7,
+                "n_covered": 3,
+                "recall": 0.42857142857142855,
+                "n_predicted": 16,
+                "n_correct": 3,
+                "precision": 0.1875
+              },
+              "PM": {
+                "n_reference": 19,
+                "n_covered": 8,
+                "recall": 0.42105263157894735,
+                "n_predicted": 32,
+                "n_correct": 6,
+                "precision": 0.1875
+              },
+              "UI": {
+                "n_reference": 3,
+                "n_covered": 2,
+                "recall": 0.6666666666666666,
+                "n_predicted": 11,
+                "n_correct": 0,
+                "precision": 0.0
+              }
+            }
+          }
+        },
+        "per_run": [
+          {
+            "run": 0,
+            "tp": 9,
+            "fp": 62,
+            "fn": 18,
+            "precision": 0.1267605633802817,
+            "recall": 0.3333333333333333,
+            "f1": 0.1836734693877551,
+            "intervals": {
+              "precision": [
+                0.07692307692307693,
+                0.15555555555555556
+              ],
+              "recall": [
+                0.25,
+                0.4
+              ],
+              "f1": [
+                0.11764705882352941,
+                0.224
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.06814527589564845,
+                0.22369108278653727
+              ],
+              "recall": [
+                0.18643261498715652,
+                0.5217523949267993
+              ],
+              "f1": [
+                0.09467455621301776,
+                0.26574633304572903
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            }
+          }
+        ],
+        "across_runs": {
+          "n_runs": 1,
+          "precision_mean": 0.1267605633802817,
+          "precision_stdev": null,
+          "recall_mean": 0.3333333333333333,
+          "recall_stdev": null,
+          "f1_mean": 0.1836734693877551,
+          "f1_stdev": null
+        }
+      }
+    },
+    {
+      "tau": 0.8,
+      "role": "sensitivity",
+      "null_coverage": 0.015,
+      "origin_meetings": {
+        "pooled": {
+          "tp": 3,
+          "fp": 68,
+          "fn": 24,
+          "precision": 0.04225352112676056,
+          "recall": 0.1111111111111111,
+          "f1": 0.06122448979591836,
+          "intervals": {
+            "precision": [
+              0.0,
+              0.07368421052631578
+            ],
+            "recall": [
+              0.0,
+              0.21428571428571427
+            ],
+            "f1": [
+              0.0,
+              0.1111111111111111
+            ]
+          },
+          "reference_intervals": {
+            "precision": [
+              0.014473260620475326,
+              0.11702416040484678
+            ],
+            "recall": [
+              0.03852034828309843,
+              0.28057800818279816
+            ],
+            "f1": [
+              0.0,
+              0.10762331838565022
+            ]
+          },
+          "n_clusters": 4,
+          "confidence_level": 0.95,
+          "interval_methods": {
+            "precision": "meeting-cluster bootstrap",
+            "recall": "meeting-cluster bootstrap",
+            "f1": "meeting-cluster bootstrap"
+          },
+          "reference_interval_methods": {
+            "precision": "wilson",
+            "recall": "wilson",
+            "f1": "bootstrap over decisions"
+          },
+          "by_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 17,
+              "n_correct": 1,
+              "precision": 0.058823529411764705
+            },
+            "ME": {
+              "n_reference": 6,
+              "n_covered": 1,
+              "recall": 0.16666666666666666,
+              "n_predicted": 15,
+              "n_correct": 1,
+              "precision": 0.06666666666666667
+            },
+            "PM": {
+              "n_reference": 15,
+              "n_covered": 2,
+              "recall": 0.13333333333333333,
+              "n_predicted": 30,
+              "n_correct": 1,
+              "precision": 0.03333333333333333
+            },
+            "UI": {
+              "n_reference": 1,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 9,
+              "n_correct": 0,
+              "precision": 0.0
+            }
+          },
+          "by_role_every_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 17,
+              "n_correct": 1,
+              "precision": 0.058823529411764705
+            },
+            "ME": {
+              "n_reference": 7,
+              "n_covered": 2,
+              "recall": 0.2857142857142857,
+              "n_predicted": 16,
+              "n_correct": 1,
+              "precision": 0.0625
+            },
+            "PM": {
+              "n_reference": 19,
+              "n_covered": 3,
+              "recall": 0.15789473684210525,
+              "n_predicted": 32,
+              "n_correct": 1,
+              "precision": 0.03125
+            },
+            "UI": {
+              "n_reference": 3,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 11,
+              "n_correct": 0,
+              "precision": 0.0
+            }
+          }
+        },
+        "by_series": {
+          "ES2015": {
+            "tp": 3,
+            "fp": 68,
+            "fn": 24,
+            "precision": 0.04225352112676056,
+            "recall": 0.1111111111111111,
+            "f1": 0.06122448979591836,
+            "intervals": {
+              "precision": [
+                0.0,
+                0.07368421052631578
+              ],
+              "recall": [
+                0.0,
+                0.21428571428571427
+              ],
+              "f1": [
+                0.0,
+                0.1111111111111111
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.014473260620475326,
+                0.11702416040484678
+              ],
+              "recall": [
+                0.03852034828309843,
+                0.28057800818279816
+              ],
+              "f1": [
+                0.0,
+                0.10762331838565022
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            },
+            "by_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 17,
+                "n_correct": 1,
+                "precision": 0.058823529411764705
+              },
+              "ME": {
+                "n_reference": 6,
+                "n_covered": 1,
+                "recall": 0.16666666666666666,
+                "n_predicted": 15,
+                "n_correct": 1,
+                "precision": 0.06666666666666667
+              },
+              "PM": {
+                "n_reference": 15,
+                "n_covered": 2,
+                "recall": 0.13333333333333333,
+                "n_predicted": 30,
+                "n_correct": 1,
+                "precision": 0.03333333333333333
+              },
+              "UI": {
+                "n_reference": 1,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 9,
+                "n_correct": 0,
+                "precision": 0.0
+              }
+            },
+            "by_role_every_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 17,
+                "n_correct": 1,
+                "precision": 0.058823529411764705
+              },
+              "ME": {
+                "n_reference": 7,
+                "n_covered": 2,
+                "recall": 0.2857142857142857,
+                "n_predicted": 16,
+                "n_correct": 1,
+                "precision": 0.0625
+              },
+              "PM": {
+                "n_reference": 19,
+                "n_covered": 3,
+                "recall": 0.15789473684210525,
+                "n_predicted": 32,
+                "n_correct": 1,
+                "precision": 0.03125
+              },
+              "UI": {
+                "n_reference": 3,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 11,
+                "n_correct": 0,
+                "precision": 0.0
+              }
+            }
+          }
+        },
+        "per_run": [
+          {
+            "run": 0,
+            "tp": 3,
+            "fp": 68,
+            "fn": 24,
+            "precision": 0.04225352112676056,
+            "recall": 0.1111111111111111,
+            "f1": 0.06122448979591836,
+            "intervals": {
+              "precision": [
+                0.0,
+                0.07368421052631578
+              ],
+              "recall": [
+                0.0,
+                0.21428571428571427
+              ],
+              "f1": [
+                0.0,
+                0.1111111111111111
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.014473260620475326,
+                0.11702416040484678
+              ],
+              "recall": [
+                0.03852034828309843,
+                0.28057800818279816
+              ],
+              "f1": [
+                0.0,
+                0.10762331838565022
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            }
+          }
+        ],
+        "across_runs": {
+          "n_runs": 1,
+          "precision_mean": 0.04225352112676056,
+          "precision_stdev": null,
+          "recall_mean": 0.1111111111111111,
+          "recall_stdev": null,
+          "f1_mean": 0.06122448979591836,
+          "f1_stdev": null
+        }
+      },
+      "series": {
+        "pooled": {
+          "tp": 3,
+          "fp": 68,
+          "fn": 24,
+          "precision": 0.04225352112676056,
+          "recall": 0.1111111111111111,
+          "f1": 0.06122448979591836,
+          "intervals": {
+            "precision": [
+              0.0,
+              0.07368421052631578
+            ],
+            "recall": [
+              0.0,
+              0.21428571428571427
+            ],
+            "f1": [
+              0.0,
+              0.1111111111111111
+            ]
+          },
+          "reference_intervals": {
+            "precision": [
+              0.014473260620475326,
+              0.11702416040484678
+            ],
+            "recall": [
+              0.03852034828309843,
+              0.28057800818279816
+            ],
+            "f1": [
+              0.0,
+              0.10762331838565022
+            ]
+          },
+          "n_clusters": 4,
+          "confidence_level": 0.95,
+          "interval_methods": {
+            "precision": "meeting-cluster bootstrap",
+            "recall": "meeting-cluster bootstrap",
+            "f1": "meeting-cluster bootstrap"
+          },
+          "reference_interval_methods": {
+            "precision": "wilson",
+            "recall": "wilson",
+            "f1": "bootstrap over decisions"
+          },
+          "by_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 17,
+              "n_correct": 1,
+              "precision": 0.058823529411764705
+            },
+            "ME": {
+              "n_reference": 6,
+              "n_covered": 1,
+              "recall": 0.16666666666666666,
+              "n_predicted": 15,
+              "n_correct": 1,
+              "precision": 0.06666666666666667
+            },
+            "PM": {
+              "n_reference": 15,
+              "n_covered": 2,
+              "recall": 0.13333333333333333,
+              "n_predicted": 30,
+              "n_correct": 1,
+              "precision": 0.03333333333333333
+            },
+            "UI": {
+              "n_reference": 1,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 9,
+              "n_correct": 0,
+              "precision": 0.0
+            }
+          },
+          "by_role_every_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 17,
+              "n_correct": 1,
+              "precision": 0.058823529411764705
+            },
+            "ME": {
+              "n_reference": 7,
+              "n_covered": 2,
+              "recall": 0.2857142857142857,
+              "n_predicted": 16,
+              "n_correct": 1,
+              "precision": 0.0625
+            },
+            "PM": {
+              "n_reference": 19,
+              "n_covered": 3,
+              "recall": 0.15789473684210525,
+              "n_predicted": 32,
+              "n_correct": 1,
+              "precision": 0.03125
+            },
+            "UI": {
+              "n_reference": 3,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 11,
+              "n_correct": 0,
+              "precision": 0.0
+            }
+          }
+        },
+        "by_series": {
+          "ES2015": {
+            "tp": 3,
+            "fp": 68,
+            "fn": 24,
+            "precision": 0.04225352112676056,
+            "recall": 0.1111111111111111,
+            "f1": 0.06122448979591836,
+            "intervals": {
+              "precision": [
+                0.0,
+                0.07368421052631578
+              ],
+              "recall": [
+                0.0,
+                0.21428571428571427
+              ],
+              "f1": [
+                0.0,
+                0.1111111111111111
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.014473260620475326,
+                0.11702416040484678
+              ],
+              "recall": [
+                0.03852034828309843,
+                0.28057800818279816
+              ],
+              "f1": [
+                0.0,
+                0.10762331838565022
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            },
+            "by_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 17,
+                "n_correct": 1,
+                "precision": 0.058823529411764705
+              },
+              "ME": {
+                "n_reference": 6,
+                "n_covered": 1,
+                "recall": 0.16666666666666666,
+                "n_predicted": 15,
+                "n_correct": 1,
+                "precision": 0.06666666666666667
+              },
+              "PM": {
+                "n_reference": 15,
+                "n_covered": 2,
+                "recall": 0.13333333333333333,
+                "n_predicted": 30,
+                "n_correct": 1,
+                "precision": 0.03333333333333333
+              },
+              "UI": {
+                "n_reference": 1,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 9,
+                "n_correct": 0,
+                "precision": 0.0
+              }
+            },
+            "by_role_every_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 17,
+                "n_correct": 1,
+                "precision": 0.058823529411764705
+              },
+              "ME": {
+                "n_reference": 7,
+                "n_covered": 2,
+                "recall": 0.2857142857142857,
+                "n_predicted": 16,
+                "n_correct": 1,
+                "precision": 0.0625
+              },
+              "PM": {
+                "n_reference": 19,
+                "n_covered": 3,
+                "recall": 0.15789473684210525,
+                "n_predicted": 32,
+                "n_correct": 1,
+                "precision": 0.03125
+              },
+              "UI": {
+                "n_reference": 3,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 11,
+                "n_correct": 0,
+                "precision": 0.0
+              }
+            }
+          }
+        },
+        "per_run": [
+          {
+            "run": 0,
+            "tp": 3,
+            "fp": 68,
+            "fn": 24,
+            "precision": 0.04225352112676056,
+            "recall": 0.1111111111111111,
+            "f1": 0.06122448979591836,
+            "intervals": {
+              "precision": [
+                0.0,
+                0.07368421052631578
+              ],
+              "recall": [
+                0.0,
+                0.21428571428571427
+              ],
+              "f1": [
+                0.0,
+                0.1111111111111111
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.014473260620475326,
+                0.11702416040484678
+              ],
+              "recall": [
+                0.03852034828309843,
+                0.28057800818279816
+              ],
+              "f1": [
+                0.0,
+                0.10762331838565022
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            }
+          }
+        ],
+        "across_runs": {
+          "n_runs": 1,
+          "precision_mean": 0.04225352112676056,
+          "precision_stdev": null,
+          "recall_mean": 0.1111111111111111,
+          "recall_stdev": null,
+          "f1_mean": 0.06122448979591836,
+          "f1_stdev": null
+        }
+      }
+    },
+    {
+      "tau": 0.85,
+      "role": null,
+      "null_coverage": null,
+      "origin_meetings": {
+        "pooled": {
+          "tp": 0,
+          "fp": 71,
+          "fn": 27,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "intervals": {
+            "precision": [
+              0.0,
+              0.0
+            ],
+            "recall": [
+              0.0,
+              0.0
+            ],
+            "f1": [
+              0.0,
+              0.0
+            ]
+          },
+          "reference_intervals": {
+            "precision": [
+              0.0,
+              0.051327952196890306
+            ],
+            "recall": [
+              0.0,
+              0.12455502974186701
+            ],
+            "f1": [
+              0.0,
+              0.0
+            ]
+          },
+          "n_clusters": 4,
+          "confidence_level": 0.95,
+          "interval_methods": {
+            "precision": "meeting-cluster bootstrap",
+            "recall": "meeting-cluster bootstrap",
+            "f1": "meeting-cluster bootstrap"
+          },
+          "reference_interval_methods": {
+            "precision": "wilson",
+            "recall": "wilson",
+            "f1": "bootstrap over decisions"
+          },
+          "by_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 17,
+              "n_correct": 0,
+              "precision": 0.0
+            },
+            "ME": {
+              "n_reference": 6,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 15,
+              "n_correct": 0,
+              "precision": 0.0
+            },
+            "PM": {
+              "n_reference": 15,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 30,
+              "n_correct": 0,
+              "precision": 0.0
+            },
+            "UI": {
+              "n_reference": 1,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 9,
+              "n_correct": 0,
+              "precision": 0.0
+            }
+          },
+          "by_role_every_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 17,
+              "n_correct": 0,
+              "precision": 0.0
+            },
+            "ME": {
+              "n_reference": 7,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 16,
+              "n_correct": 0,
+              "precision": 0.0
+            },
+            "PM": {
+              "n_reference": 19,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 32,
+              "n_correct": 0,
+              "precision": 0.0
+            },
+            "UI": {
+              "n_reference": 3,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 11,
+              "n_correct": 0,
+              "precision": 0.0
+            }
+          }
+        },
+        "by_series": {
+          "ES2015": {
+            "tp": 0,
+            "fp": 71,
+            "fn": 27,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "intervals": {
+              "precision": [
+                0.0,
+                0.0
+              ],
+              "recall": [
+                0.0,
+                0.0
+              ],
+              "f1": [
+                0.0,
+                0.0
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.0,
+                0.051327952196890306
+              ],
+              "recall": [
+                0.0,
+                0.12455502974186701
+              ],
+              "f1": [
+                0.0,
+                0.0
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            },
+            "by_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 17,
+                "n_correct": 0,
+                "precision": 0.0
+              },
+              "ME": {
+                "n_reference": 6,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 15,
+                "n_correct": 0,
+                "precision": 0.0
+              },
+              "PM": {
+                "n_reference": 15,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 30,
+                "n_correct": 0,
+                "precision": 0.0
+              },
+              "UI": {
+                "n_reference": 1,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 9,
+                "n_correct": 0,
+                "precision": 0.0
+              }
+            },
+            "by_role_every_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 17,
+                "n_correct": 0,
+                "precision": 0.0
+              },
+              "ME": {
+                "n_reference": 7,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 16,
+                "n_correct": 0,
+                "precision": 0.0
+              },
+              "PM": {
+                "n_reference": 19,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 32,
+                "n_correct": 0,
+                "precision": 0.0
+              },
+              "UI": {
+                "n_reference": 3,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 11,
+                "n_correct": 0,
+                "precision": 0.0
+              }
+            }
+          }
+        },
+        "per_run": [
+          {
+            "run": 0,
+            "tp": 0,
+            "fp": 71,
+            "fn": 27,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "intervals": {
+              "precision": [
+                0.0,
+                0.0
+              ],
+              "recall": [
+                0.0,
+                0.0
+              ],
+              "f1": [
+                0.0,
+                0.0
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.0,
+                0.051327952196890306
+              ],
+              "recall": [
+                0.0,
+                0.12455502974186701
+              ],
+              "f1": [
+                0.0,
+                0.0
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            }
+          }
+        ],
+        "across_runs": {
+          "n_runs": 1,
+          "precision_mean": 0.0,
+          "precision_stdev": null,
+          "recall_mean": 0.0,
+          "recall_stdev": null,
+          "f1_mean": 0.0,
+          "f1_stdev": null
+        }
+      },
+      "series": {
+        "pooled": {
+          "tp": 0,
+          "fp": 71,
+          "fn": 27,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "intervals": {
+            "precision": [
+              0.0,
+              0.0
+            ],
+            "recall": [
+              0.0,
+              0.0
+            ],
+            "f1": [
+              0.0,
+              0.0
+            ]
+          },
+          "reference_intervals": {
+            "precision": [
+              0.0,
+              0.051327952196890306
+            ],
+            "recall": [
+              0.0,
+              0.12455502974186701
+            ],
+            "f1": [
+              0.0,
+              0.0
+            ]
+          },
+          "n_clusters": 4,
+          "confidence_level": 0.95,
+          "interval_methods": {
+            "precision": "meeting-cluster bootstrap",
+            "recall": "meeting-cluster bootstrap",
+            "f1": "meeting-cluster bootstrap"
+          },
+          "reference_interval_methods": {
+            "precision": "wilson",
+            "recall": "wilson",
+            "f1": "bootstrap over decisions"
+          },
+          "by_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 17,
+              "n_correct": 0,
+              "precision": 0.0
+            },
+            "ME": {
+              "n_reference": 6,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 15,
+              "n_correct": 0,
+              "precision": 0.0
+            },
+            "PM": {
+              "n_reference": 15,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 30,
+              "n_correct": 0,
+              "precision": 0.0
+            },
+            "UI": {
+              "n_reference": 1,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 9,
+              "n_correct": 0,
+              "precision": 0.0
+            }
+          },
+          "by_role_every_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 17,
+              "n_correct": 0,
+              "precision": 0.0
+            },
+            "ME": {
+              "n_reference": 7,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 16,
+              "n_correct": 0,
+              "precision": 0.0
+            },
+            "PM": {
+              "n_reference": 19,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 32,
+              "n_correct": 0,
+              "precision": 0.0
+            },
+            "UI": {
+              "n_reference": 3,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 11,
+              "n_correct": 0,
+              "precision": 0.0
+            }
+          }
+        },
+        "by_series": {
+          "ES2015": {
+            "tp": 0,
+            "fp": 71,
+            "fn": 27,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "intervals": {
+              "precision": [
+                0.0,
+                0.0
+              ],
+              "recall": [
+                0.0,
+                0.0
+              ],
+              "f1": [
+                0.0,
+                0.0
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.0,
+                0.051327952196890306
+              ],
+              "recall": [
+                0.0,
+                0.12455502974186701
+              ],
+              "f1": [
+                0.0,
+                0.0
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            },
+            "by_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 17,
+                "n_correct": 0,
+                "precision": 0.0
+              },
+              "ME": {
+                "n_reference": 6,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 15,
+                "n_correct": 0,
+                "precision": 0.0
+              },
+              "PM": {
+                "n_reference": 15,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 30,
+                "n_correct": 0,
+                "precision": 0.0
+              },
+              "UI": {
+                "n_reference": 1,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 9,
+                "n_correct": 0,
+                "precision": 0.0
+              }
+            },
+            "by_role_every_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 17,
+                "n_correct": 0,
+                "precision": 0.0
+              },
+              "ME": {
+                "n_reference": 7,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 16,
+                "n_correct": 0,
+                "precision": 0.0
+              },
+              "PM": {
+                "n_reference": 19,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 32,
+                "n_correct": 0,
+                "precision": 0.0
+              },
+              "UI": {
+                "n_reference": 3,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 11,
+                "n_correct": 0,
+                "precision": 0.0
+              }
+            }
+          }
+        },
+        "per_run": [
+          {
+            "run": 0,
+            "tp": 0,
+            "fp": 71,
+            "fn": 27,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "intervals": {
+              "precision": [
+                0.0,
+                0.0
+              ],
+              "recall": [
+                0.0,
+                0.0
+              ],
+              "f1": [
+                0.0,
+                0.0
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.0,
+                0.051327952196890306
+              ],
+              "recall": [
+                0.0,
+                0.12455502974186701
+              ],
+              "f1": [
+                0.0,
+                0.0
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            }
+          }
+        ],
+        "across_runs": {
+          "n_runs": 1,
+          "precision_mean": 0.0,
+          "precision_stdev": null,
+          "recall_mean": 0.0,
+          "recall_stdev": null,
+          "f1_mean": 0.0,
+          "f1_stdev": null
+        }
+      }
+    },
+    {
+      "tau": 0.9,
+      "role": null,
+      "null_coverage": null,
+      "origin_meetings": {
+        "pooled": {
+          "tp": 0,
+          "fp": 71,
+          "fn": 27,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "intervals": {
+            "precision": [
+              0.0,
+              0.0
+            ],
+            "recall": [
+              0.0,
+              0.0
+            ],
+            "f1": [
+              0.0,
+              0.0
+            ]
+          },
+          "reference_intervals": {
+            "precision": [
+              0.0,
+              0.051327952196890306
+            ],
+            "recall": [
+              0.0,
+              0.12455502974186701
+            ],
+            "f1": [
+              0.0,
+              0.0
+            ]
+          },
+          "n_clusters": 4,
+          "confidence_level": 0.95,
+          "interval_methods": {
+            "precision": "meeting-cluster bootstrap",
+            "recall": "meeting-cluster bootstrap",
+            "f1": "meeting-cluster bootstrap"
+          },
+          "reference_interval_methods": {
+            "precision": "wilson",
+            "recall": "wilson",
+            "f1": "bootstrap over decisions"
+          },
+          "by_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 17,
+              "n_correct": 0,
+              "precision": 0.0
+            },
+            "ME": {
+              "n_reference": 6,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 15,
+              "n_correct": 0,
+              "precision": 0.0
+            },
+            "PM": {
+              "n_reference": 15,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 30,
+              "n_correct": 0,
+              "precision": 0.0
+            },
+            "UI": {
+              "n_reference": 1,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 9,
+              "n_correct": 0,
+              "precision": 0.0
+            }
+          },
+          "by_role_every_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 17,
+              "n_correct": 0,
+              "precision": 0.0
+            },
+            "ME": {
+              "n_reference": 7,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 16,
+              "n_correct": 0,
+              "precision": 0.0
+            },
+            "PM": {
+              "n_reference": 19,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 32,
+              "n_correct": 0,
+              "precision": 0.0
+            },
+            "UI": {
+              "n_reference": 3,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 11,
+              "n_correct": 0,
+              "precision": 0.0
+            }
+          }
+        },
+        "by_series": {
+          "ES2015": {
+            "tp": 0,
+            "fp": 71,
+            "fn": 27,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "intervals": {
+              "precision": [
+                0.0,
+                0.0
+              ],
+              "recall": [
+                0.0,
+                0.0
+              ],
+              "f1": [
+                0.0,
+                0.0
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.0,
+                0.051327952196890306
+              ],
+              "recall": [
+                0.0,
+                0.12455502974186701
+              ],
+              "f1": [
+                0.0,
+                0.0
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            },
+            "by_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 17,
+                "n_correct": 0,
+                "precision": 0.0
+              },
+              "ME": {
+                "n_reference": 6,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 15,
+                "n_correct": 0,
+                "precision": 0.0
+              },
+              "PM": {
+                "n_reference": 15,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 30,
+                "n_correct": 0,
+                "precision": 0.0
+              },
+              "UI": {
+                "n_reference": 1,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 9,
+                "n_correct": 0,
+                "precision": 0.0
+              }
+            },
+            "by_role_every_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 17,
+                "n_correct": 0,
+                "precision": 0.0
+              },
+              "ME": {
+                "n_reference": 7,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 16,
+                "n_correct": 0,
+                "precision": 0.0
+              },
+              "PM": {
+                "n_reference": 19,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 32,
+                "n_correct": 0,
+                "precision": 0.0
+              },
+              "UI": {
+                "n_reference": 3,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 11,
+                "n_correct": 0,
+                "precision": 0.0
+              }
+            }
+          }
+        },
+        "per_run": [
+          {
+            "run": 0,
+            "tp": 0,
+            "fp": 71,
+            "fn": 27,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "intervals": {
+              "precision": [
+                0.0,
+                0.0
+              ],
+              "recall": [
+                0.0,
+                0.0
+              ],
+              "f1": [
+                0.0,
+                0.0
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.0,
+                0.051327952196890306
+              ],
+              "recall": [
+                0.0,
+                0.12455502974186701
+              ],
+              "f1": [
+                0.0,
+                0.0
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            }
+          }
+        ],
+        "across_runs": {
+          "n_runs": 1,
+          "precision_mean": 0.0,
+          "precision_stdev": null,
+          "recall_mean": 0.0,
+          "recall_stdev": null,
+          "f1_mean": 0.0,
+          "f1_stdev": null
+        }
+      },
+      "series": {
+        "pooled": {
+          "tp": 0,
+          "fp": 71,
+          "fn": 27,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "intervals": {
+            "precision": [
+              0.0,
+              0.0
+            ],
+            "recall": [
+              0.0,
+              0.0
+            ],
+            "f1": [
+              0.0,
+              0.0
+            ]
+          },
+          "reference_intervals": {
+            "precision": [
+              0.0,
+              0.051327952196890306
+            ],
+            "recall": [
+              0.0,
+              0.12455502974186701
+            ],
+            "f1": [
+              0.0,
+              0.0
+            ]
+          },
+          "n_clusters": 4,
+          "confidence_level": 0.95,
+          "interval_methods": {
+            "precision": "meeting-cluster bootstrap",
+            "recall": "meeting-cluster bootstrap",
+            "f1": "meeting-cluster bootstrap"
+          },
+          "reference_interval_methods": {
+            "precision": "wilson",
+            "recall": "wilson",
+            "f1": "bootstrap over decisions"
+          },
+          "by_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 17,
+              "n_correct": 0,
+              "precision": 0.0
+            },
+            "ME": {
+              "n_reference": 6,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 15,
+              "n_correct": 0,
+              "precision": 0.0
+            },
+            "PM": {
+              "n_reference": 15,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 30,
+              "n_correct": 0,
+              "precision": 0.0
+            },
+            "UI": {
+              "n_reference": 1,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 9,
+              "n_correct": 0,
+              "precision": 0.0
+            }
+          },
+          "by_role_every_role": {
+            "ID": {
+              "n_reference": 5,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 17,
+              "n_correct": 0,
+              "precision": 0.0
+            },
+            "ME": {
+              "n_reference": 7,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 16,
+              "n_correct": 0,
+              "precision": 0.0
+            },
+            "PM": {
+              "n_reference": 19,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 32,
+              "n_correct": 0,
+              "precision": 0.0
+            },
+            "UI": {
+              "n_reference": 3,
+              "n_covered": 0,
+              "recall": 0.0,
+              "n_predicted": 11,
+              "n_correct": 0,
+              "precision": 0.0
+            }
+          }
+        },
+        "by_series": {
+          "ES2015": {
+            "tp": 0,
+            "fp": 71,
+            "fn": 27,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "intervals": {
+              "precision": [
+                0.0,
+                0.0
+              ],
+              "recall": [
+                0.0,
+                0.0
+              ],
+              "f1": [
+                0.0,
+                0.0
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.0,
+                0.051327952196890306
+              ],
+              "recall": [
+                0.0,
+                0.12455502974186701
+              ],
+              "f1": [
+                0.0,
+                0.0
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            },
+            "by_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 17,
+                "n_correct": 0,
+                "precision": 0.0
+              },
+              "ME": {
+                "n_reference": 6,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 15,
+                "n_correct": 0,
+                "precision": 0.0
+              },
+              "PM": {
+                "n_reference": 15,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 30,
+                "n_correct": 0,
+                "precision": 0.0
+              },
+              "UI": {
+                "n_reference": 1,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 9,
+                "n_correct": 0,
+                "precision": 0.0
+              }
+            },
+            "by_role_every_role": {
+              "ID": {
+                "n_reference": 5,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 17,
+                "n_correct": 0,
+                "precision": 0.0
+              },
+              "ME": {
+                "n_reference": 7,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 16,
+                "n_correct": 0,
+                "precision": 0.0
+              },
+              "PM": {
+                "n_reference": 19,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 32,
+                "n_correct": 0,
+                "precision": 0.0
+              },
+              "UI": {
+                "n_reference": 3,
+                "n_covered": 0,
+                "recall": 0.0,
+                "n_predicted": 11,
+                "n_correct": 0,
+                "precision": 0.0
+              }
+            }
+          }
+        },
+        "per_run": [
+          {
+            "run": 0,
+            "tp": 0,
+            "fp": 71,
+            "fn": 27,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "intervals": {
+              "precision": [
+                0.0,
+                0.0
+              ],
+              "recall": [
+                0.0,
+                0.0
+              ],
+              "f1": [
+                0.0,
+                0.0
+              ]
+            },
+            "reference_intervals": {
+              "precision": [
+                0.0,
+                0.051327952196890306
+              ],
+              "recall": [
+                0.0,
+                0.12455502974186701
+              ],
+              "f1": [
+                0.0,
+                0.0
+              ]
+            },
+            "n_clusters": 4,
+            "confidence_level": 0.95,
+            "interval_methods": {
+              "precision": "meeting-cluster bootstrap",
+              "recall": "meeting-cluster bootstrap",
+              "f1": "meeting-cluster bootstrap"
+            },
+            "reference_interval_methods": {
+              "precision": "wilson",
+              "recall": "wilson",
+              "f1": "bootstrap over decisions"
+            }
+          }
+        ],
+        "across_runs": {
+          "n_runs": 1,
+          "precision_mean": 0.0,
+          "precision_stdev": null,
+          "recall_mean": 0.0,
+          "recall_stdev": null,
+          "f1_mean": 0.0,
+          "f1_stdev": null
+        }
+      }
+    }
+  ],
+  "hypotheses": {
+    "extraction_gap_relations_vs_decisions": {
+      "tau": 0.7,
+      "definition": "gap C3 - C2 = 1 - recall of C2 against the reference (C3 scores 1)",
+      "note": "Cifra complementaria, no es H2 (ADR 0018). Sesgo mecánico: una relación solo se encuentra si sus dos decisiones se alinean, así que la brecha de relaciones de extremo a extremo incluye la de decisiones; la vista condicionada lo quita pero tiene pocos enlaces.",
+      "decisions": {
+        "n_reference": 27,
+        "recall": 0.3333333333333333,
+        "gap": 0.6666666666666667,
+        "gap_interval": [
+          0.4642857142857143,
+          0.8947368421052632
+        ]
+      },
+      "relations": {
+        "end_to_end": {
+          "n_reference": 3,
+          "recall": 0.0,
+          "gap": 1.0,
+          "gap_interval": [
+            0.4385029682449546,
+            1.0
+          ],
+          "difference": 0.33333333333333326
+        },
+        "conditional": {
+          "n_reference": 0,
+          "recall": null,
+          "gap": null,
+          "gap_interval": null
+        }
+      },
+      "verdicts": {
+        "end_to_end": "inconclusive",
+        "conditional": "not_computable"
+      },
+      "verdict": "inconclusive"
+    },
+    "h3": {
+      "definition": "failures among detected links (true positives of existence): direction = inverted + unknown (principal view); type = principal view",
+      "n_detected": 0,
+      "direction": null,
+      "type": null,
+      "inverted_among_known": null,
+      "most_frequent_failure": null,
+      "verdict": "not_computable",
+      "scale": {
+        "measured_models": [
+          "qwen3:8b"
+        ],
+        "status": "single_scale",
+        "note": "H3's second clause (no proportional improvement with model size) needs a second scale; none is measured by this report."
+      }
+    }
+  },
+  "relations": {
+    "source": "relaciones.json",
+    "tau": 0.7,
+    "alignment_scope": "origin_meetings",
+    "n_errors": 0,
+    "reference_kinds": {
+      "ES2015": {
+        "decisions": "adjudicated",
+        "relations": "adjudicated"
+      }
+    },
+    "pooled": {
+      "n_gold_pairs": 3,
+      "n_gold_links": 3,
+      "n_gold_links_aligned": 0,
+      "n_machine_relations": 49,
+      "n_machine_links": 26,
+      "n_machine_links_aligned": 0,
+      "existence_end_to_end": {
+        "tp": 0,
+        "fp": 26,
+        "fn": 3,
+        "precision": {
+          "successes": 0,
+          "trials": 26,
+          "rate": 0.0,
+          "lower": 0.0,
+          "upper": 0.12872892185921522
+        },
+        "recall": {
+          "successes": 0,
+          "trials": 3,
+          "rate": 0.0,
+          "lower": 0.0,
+          "upper": 0.5614970317550454
+        },
+        "f1": 0.0,
+        "fp_breakdown": {
+          "gold_no_link": 0,
+          "not_candidate": 0,
+          "unaligned": 26
+        }
+      },
+      "existence_conditional": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        },
+        "recall": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        },
+        "f1": null,
+        "fp_breakdown": {
+          "gold_no_link": 0,
+          "not_candidate": 0,
+          "unaligned": 0
+        }
+      },
+      "type_principal": {
+        "end_to_end": {
+          "successes": 0,
+          "trials": 3,
+          "rate": 0.0,
+          "lower": 0.0,
+          "upper": 0.5614970317550454
+        },
+        "conditional": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        },
+        "among_detected": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "type_strict": {
+        "end_to_end": {
+          "successes": 0,
+          "trials": 3,
+          "rate": 0.0,
+          "lower": 0.0,
+          "upper": 0.5614970317550454
+        },
+        "conditional": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        },
+        "among_detected": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "direction_principal": {
+        "end_to_end": {
+          "successes": 0,
+          "trials": 3,
+          "rate": 0.0,
+          "lower": 0.0,
+          "upper": 0.5614970317550454
+        },
+        "conditional": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        },
+        "among_detected": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "direction_unknown_excluded": {
+        "end_to_end": {
+          "successes": 0,
+          "trials": 3,
+          "rate": 0.0,
+          "lower": 0.0,
+          "upper": 0.5614970317550454
+        },
+        "conditional": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        },
+        "among_detected": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "unknown_direction": {
+        "successes": 0,
+        "trials": 0,
+        "rate": null,
+        "lower": null,
+        "upper": null
+      }
+    }
+  }
+}

@@ -95,7 +95,10 @@ CRITERION_NOTE = (
     "Criterio D16 (enmendado, ADR 0010): la hipótesis se respalda si el intervalo bootstrap del "
     "95 % de la diferencia pareada C2 - C1 queda por encima de 0; en otro caso el resultado es no "
     "concluyente. La no superposición de los intervalos independientes de C2 y C1 (redacción "
-    "original) se informa aparte como robustez y no reemplaza al criterio principal."
+    "original) se informa aparte como robustez y no reemplaza al criterio principal. Desde el "
+    "2026-11-02 el veredicto exige el mínimo prerregistrado de preguntas juzgadas por condición "
+    "en el estrato; por debajo se informa insufficient_sample (muestra insuficiente) con las "
+    "cifras a la vista."
 )
 
 H4_NOTE = (
@@ -104,7 +107,9 @@ H4_NOTE = (
     "la decisión (columna superseded_answer del banco). Por condición con su intervalo; "
     "C1 - C2 y C1 - C3 se aparean por pregunta respondida en ambas y H4 se respalda si el "
     "intervalo de la diferencia queda por encima de 0. La tasa de respuestas incorrectas entre "
-    "las respondidas se informa como cota superior, no como H4."
+    "las respondidas se informa como cota superior, no como H4. Desde el 2026-11-02, con menos "
+    "del mínimo prerregistrado de preguntas juzgadas en E3 en alguna de las dos condiciones, el "
+    "veredicto es insufficient_sample (muestra insuficiente)."
 )
 
 DESCRIPTIVE_NOTE = (
@@ -124,7 +129,9 @@ H2_NOTE = (
     "bootstrap de la diferencia de brechas remuestrea de forma independiente las preguntas de "
     "E1 y de E3. H2 se respalda si el intervalo queda por encima de 0, es contraria si queda "
     "por debajo y en otro caso es no concluyente. E2 no entra: pregunta qué versión prevalece, "
-    "lo que ya requiere la relación entre versiones."
+    "lo que ya requiere la relación entre versiones. Desde el 2026-11-02, con menos del mínimo "
+    "prerregistrado de preguntas juzgadas en E1 o E3 (en C2 o C3) el veredicto es "
+    "insufficient_sample (muestra insuficiente) y las cifras se muestran sin veredicto."
 )
 
 Record = Mapping[str, Any]
@@ -179,11 +186,15 @@ class Comparison:
     """``a_above`` / ``b_above`` when the independent 95 % intervals are disjoint, else
     ``overlap``."""
     criterion: str
-    """Primary verdict: ``supported`` only when the paired difference interval is above 0."""
+    """Primary verdict: ``supported`` only when the paired difference interval is above 0;
+    ``insufficient_sample`` below the pre-registered minimum of judged questions."""
     nonoverlap_criterion: str
     """Robustness: ``supported`` only when ``a_above``; every other outcome is ``inconclusive``."""
     descriptive: bool = False
     """A comparison against C0 (ADR 0019): secondary, it never decides D16 or H1-H4."""
+    sample_sufficient: bool = True
+    """False when a stratum of either condition has fewer judged questions than the
+    pre-registered minimum: both verdicts are then ``insufficient_sample`` (2026-11-02)."""
 
     @property
     def intervals_overlap(self) -> bool:
@@ -195,7 +206,8 @@ class H2Result:
     """H2: the C3 - C2 correctness gap on E3 (relations) minus the gap on E1 (decisions)."""
 
     verdict: str
-    """``supported`` / ``contrary`` / ``inconclusive`` / ``not_computable``."""
+    """``supported`` / ``contrary`` / ``inconclusive`` / ``not_computable`` /
+    ``insufficient_sample`` (a stratum of C2 or C3 below the pre-registered minimum)."""
     reason: str | None
     gap_e1: float | None
     gap_e3: float | None
@@ -215,6 +227,14 @@ class AnalysisReport:
     comparisons: tuple[Comparison, ...]
     warnings: tuple[str, ...]
     h2: H2Result
+
+
+INSUFFICIENT_SAMPLE = "insufficient_sample"
+
+
+def verdict_label(verdict: str) -> str:
+    """Console wording of a verdict; the too-small-sample case reads in Spanish (2026-11-02)."""
+    return "muestra insuficiente" if verdict == INSUFFICIENT_SAMPLE else verdict
 
 
 # --- extraction -------------------------------------------------------------------------------
@@ -499,7 +519,7 @@ def analyze_runs(
             f"{unflagged} respuestas E3 respondidas se juzgaron sin el campo outdated (la "
             "pregunta no tiene superseded_answer): quedan fuera de H4."
         )
-    comparisons = _compare(cells, scores_by_cell, strata, settings, warnings)
+    comparisons = _compare(cells, scores_by_cell, strata, settings, warnings, min_questions)
     return AnalysisReport(
         partition=partition,
         reportable=partition == "evaluation",
@@ -507,7 +527,7 @@ def analyze_runs(
         cells=tuple(cells),
         comparisons=tuple(comparisons),
         warnings=tuple(warnings),
-        h2=_h2(scores_by_cell, settings),
+        h2=_h2(scores_by_cell, settings, min_questions),
     )
 
 
@@ -517,6 +537,7 @@ def _compare(
     strata: Sequence[str],
     settings: IntervalSettings,
     warnings: list[str],
+    min_questions: int,
 ) -> list[Comparison]:
     present = {c.condition for c in cells}
     for needed in (PRIMARY_CONDITION, PRIMARY_BASELINE):
@@ -536,7 +557,15 @@ def _compare(
                 continue
             for metric in COMPARED_METRICS:
                 comparison = _paired(
-                    a, b, stratum, metric, cell_a, cell_b, scores_by_cell, settings
+                    a,
+                    b,
+                    stratum,
+                    metric,
+                    cell_a,
+                    cell_b,
+                    scores_by_cell,
+                    settings,
+                    min_questions=min_questions,
                 )
                 if comparison is not None:
                     results.append(comparison)
@@ -548,7 +577,18 @@ def _compare(
             if cell_a is None or cell_b is None:
                 continue
             for metric in DESCRIPTIVE_METRICS:
-                reference = _paired(a, b, stratum, metric, cell_a, cell_b, scores_by_cell, settings)
+                reference = _paired(
+                    a,
+                    b,
+                    stratum,
+                    metric,
+                    cell_a,
+                    cell_b,
+                    scores_by_cell,
+                    settings,
+                    min_questions=min_questions,
+                    guard_sample=False,
+                )
                 if reference is not None:
                     results.append(replace(reference, descriptive=True))
     for a, b in H4_PAIRS:
@@ -556,7 +596,17 @@ def _compare(
         if cell_a is None or cell_b is None:
             continue
         for metric in H4_METRICS:
-            h4 = _paired(a, b, H4_STRATUM, metric, cell_a, cell_b, scores_by_cell, settings)
+            h4 = _paired(
+                a,
+                b,
+                H4_STRATUM,
+                metric,
+                cell_a,
+                cell_b,
+                scores_by_cell,
+                settings,
+                min_questions=min_questions,
+            )
             if h4 is not None:
                 results.append(h4)
     return results
@@ -574,6 +624,7 @@ def _gap_differences(
 def _h2(
     scores_by_cell: Mapping[tuple[str, str, str], dict[str, tuple[float, int]]],
     settings: IntervalSettings,
+    min_questions: int,
 ) -> H2Result:
     """H2 of ADR 0018: percentile bootstrap of ``mean(E3 gaps) - mean(E1 gaps)``.
 
@@ -609,9 +660,22 @@ def _h2(
     lower = resampled[max(0, int((alpha / 2) * settings.n_resamples))]
     upper = resampled[min(settings.n_resamples - 1, int((1 - alpha / 2) * settings.n_resamples))]
     verdict = "supported" if lower > 0.0 else ("contrary" if upper < 0.0 else "inconclusive")
+    short = [
+        f"{condition} en {stratum} ({n})"
+        for stratum in (H2_DECISION_STRATUM, H2_RELATION_STRATUM)
+        for condition in ("C2", "C3")
+        if (n := len(scores_by_cell.get((condition, stratum, "correct"), {}))) < min_questions
+    ]
+    reason = None
+    if short:
+        verdict = "insufficient_sample"
+        reason = (
+            f"Muestra insuficiente: menos del mínimo prerregistrado de {min_questions} preguntas "
+            f"juzgadas en {', '.join(short)}."
+        )
     return H2Result(
         verdict=verdict,
-        reason=None,
+        reason=reason,
         gap_e1=_mean(e1),
         gap_e3=_mean(e3),
         difference=_mean(e3) - _mean(e1),
@@ -631,6 +695,9 @@ def _paired(
     cell_b: CellSummary,
     scores_by_cell: Mapping[tuple[str, str, str], dict[str, tuple[float, int]]],
     settings: IntervalSettings,
+    *,
+    min_questions: int,
+    guard_sample: bool = True,
 ) -> Comparison | None:
     scores_a = scores_by_cell[(a, stratum, metric)]
     scores_b = scores_by_cell[(b, stratum, metric)]
@@ -646,6 +713,13 @@ def _paired(
         direction = "b_above"
     else:
         direction = "overlap"
+    sufficient = not (
+        guard_sample
+        and any(
+            len(scores_by_cell[(condition, stratum, "correct")]) < min_questions
+            for condition in (a, b)
+        )
+    )
     return Comparison(
         primary=(a, b, stratum, metric)
         == (PRIMARY_CONDITION, PRIMARY_BASELINE, PRIMARY_STRATUM, PRIMARY_METRIC),
@@ -660,8 +734,17 @@ def _paired(
         interval_a=(est_a.lower, est_a.upper),
         interval_b=(est_b.lower, est_b.upper),
         direction=direction,
-        criterion="supported" if ci.lower > 0.0 else "inconclusive",
-        nonoverlap_criterion="supported" if direction == "a_above" else "inconclusive",
+        criterion=(
+            "insufficient_sample"
+            if not sufficient
+            else ("supported" if ci.lower > 0.0 else "inconclusive")
+        ),
+        nonoverlap_criterion=(
+            "insufficient_sample"
+            if not sufficient
+            else ("supported" if direction == "a_above" else "inconclusive")
+        ),
+        sample_sufficient=sufficient,
     )
 
 

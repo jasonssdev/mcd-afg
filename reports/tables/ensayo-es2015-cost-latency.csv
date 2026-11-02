@@ -1,0 +1,7 @@
+role,model,activity,units,mean_seconds,total_seconds,ratio,detail,source,status
+answer,qwen3:8b,ensayo-b-es2015 / C0,21,3.8202997699540684,80.22629516903544,,,reports/experiment-b/ensayo-b-es2015,desarrollo — no reportable
+answer,qwen3:8b,ensayo-b-es2015 / C1,21,5.6688642003324015,119.04614820698043,,,reports/experiment-b/ensayo-b-es2015,desarrollo — no reportable
+answer,qwen3:8b,ensayo-b-es2015 / C2,21,20.74966850004802,435.7430385010084,,,reports/experiment-b/ensayo-b-es2015,desarrollo — no reportable
+answer,qwen3:8b,ensayo-b-es2015 / C3,21,18.58102224204534,390.20146708295215,,,reports/experiment-b/ensayo-b-es2015,desarrollo — no reportable
+judge,gpt-oss:20b,ensayo-b-es2015,84,7.4099900952042805,622.4391679971595,,,reports/experiment-b/ensayo-b-es2015,desarrollo — no reportable
+extraction,qwen3:8b,OpenKOS completo ES2015 (ensayo-es2015),1,1545.465142,1545.465142,,OpenKOS 0.7.0,reports/experiment-a/ensayo-es2015,desarrollo — no reportable

@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "run_name": "ensayo-es2015",
+  "created_at": "2026-11-02T15:47:22.863114+00:00",
+  "git_commit": "6c2466c2e66032cb97d107d1322443745fe188bc",
+  "series": "ES2015",
+  "partition": "development",
+  "runs": 1,
+  "openkos": {
+    "executable": "openkos",
+    "generative_model": "qwen3:8b",
+    "embedding_model": "bge-m3",
+    "seed": 42,
+    "temperature": 0.1,
+    "versions": [
+      "0.7.0"
+    ],
+    "generative_model_digest": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41",
+    "embedding_model_digest": "7907646426070047a77226ac3e684fbbe8410524f7b4a74d02837e43f2146bab",
+    "model_digest_source": "ollama /api/tags",
+    "ollama_version": "0.32.9"
+  },
+  "git_dirty": false,
+  "pinned_environment_ok": true,
+  "pinned_environment": {
+    "ollama_version": "0.32.9",
+    "openkos_version": "0.7.0",
+    "model_digests": {
+      "qwen3:8b": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41",
+      "gemma4:26b-a4b": "001e5dafc3c77684c2307ebc6ab8e336e10c9b18eca52acf547d72fc83c3ca8c",
+      "bge-m3": "7907646426070047a77226ac3e684fbbe8410524f7b4a74d02837e43f2146bab"
+    }
+  },
+  "status": "ok",
+  "completed_runs": [
+    0
+  ],
+  "error": null,
+  "updated_at": "2026-11-02T16:13:08.328256+00:00"
+}
