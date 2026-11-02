@@ -247,7 +247,7 @@ de forzar una resolución, sobre todo si el conflicto está en un CSV de anotaci
 | `docs/avances/` | Los nueve documentos vivos (01 a 09): problema, fuente de datos, objetivos, bibliografía, ética, metodología, análisis exploratorio, métricas y criterio de éxito, modelos y justificación. Cada uno con versión e historial | Todos. Son la versión vigente del proyecto y de aquí salen las entregas |
 | `docs/entregables/` | Lo que se entregó al curso, congelado tal como se envió: guiones de video, informe de la semana 4 | Quien prepara una entrega; se agrega, no se edita |
 | `docs/anotacion/` | **El trabajo humano**: quién anota qué, el manual paso a paso de los CSV, la definición del constructo | Anotadores y adjudicador |
-| `docs/protocols/` | El protocolo de alineamiento entre decisiones extraídas y de referencia (máquina) | Quien trabaje en OE2 |
+| `docs/protocols/` | El protocolo de alineamiento entre decisiones extraídas y de referencia (máquina) y el registro de congelamiento (`congelamiento.md`: qué se fija antes de las corridas formales y qué series bloquea) | Quien trabaje en OE2; el mantenedor al congelar |
 | `docs/decisions/` | El registro de decisiones: los ADR de arquitectura y la tabla D1–D17 de decisiones de método con su evidencia. Append-only | Quien quiera saber por qué algo se hizo así |
 | `notebooks/` | El registro académico: qué se hizo, qué se midió y por qué se decidió. Versionados con sus salidas | Todos; se leen en GitHub sin ejecutar |
 | `bibliography/` | `refs.bib` (49 referencias verificadas), criterios de inclusión, tabla de cribado y una plantilla de notas por referencia (las notas son opcionales y hoy no hay ninguna) | Quien cite algo |
@@ -303,7 +303,7 @@ uv run afg gold agreement --series IS1004          # kappa: existencia / tipo / 
 uv run afg gold validate --annotator <iniciales>   # verifica tu trabajo antes de abrir el PR
 uv run afg gold status                             # panel: una fila por anotador y serie; con --annotator, estado y «Siguiente: …»
 uv run afg gold adjudicate --series ES2015         # escribe los dos CSV de adjudicación (prellenados donde hay acuerdo)
-uv run afg gold questions-init                     # crea el banco vacío: 25 filas por estrato y 40 en E3 (115 en total)
+uv run afg gold questions-init                     # (mantenedor) crea el banco vacío: 25 filas por estrato y 40 en E3 (115 en total); se niega a regenerar un banco con preguntas escritas
 uv run afg gold questions-check                   # revisa el banco de preguntas fila por fila, sin correr nada (--complete exige el mínimo validado por estrato)
 uv run afg gold validate-adjudication --series ES2015   # verifica que el adjudicador terminó los dos CSV
 
@@ -334,6 +334,7 @@ uv run afg experiment b             # Experimento B: preguntas x condiciones x c
 uv run afg experiment b-report      # análisis del Experimento B: tasas, intervalos bootstrap y comparación D16
 uv run afg experiment b-sample      # muestra para la verificación humana: una corrida por pregunta y condición
 uv run afg experiment b-human-check # acuerdo juez-humano (kappa de Cohen) por etiqueta, con el umbral prerregistrado
+uv run afg freeze write --adr <número>  # (mantenedor, una sola vez) escribe config/freeze.json al cerrar el ADR de congelamiento (#237); las series de evaluación solo corren con ese registro (docs/protocols/congelamiento.md)
 ```
 
 ### Notebooks

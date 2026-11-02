@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | Guía de traducción de la referencia |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.0 |
-| **Fecha** | 2026-10-19 |
+| **Versión** | 1.1 |
+| **Fecha** | 2026-11-02 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -13,16 +13,26 @@
 | Versión | Fecha | Cambio | Motivo |
 |---|---|---|---|
 | 1.0 | 2026-10-19 | Versión inicial: formato, comandos, reglas y qué hacer cuando cambia la adjudicación. | Issue #141: comparar las extracciones (en inglés) con una referencia en el mismo idioma. |
+| 1.1 | 2026-11-02 | Alcance a las 14 series, traducción por lote, estado actual y quién traduce las series de evaluación. | Fase 3 abierta y referencias de anotación individual admitidas (#229); seguimiento en #204. |
 
 ## Para qué sirve
 
 Las transcripciones de AMI y lo que extrae la máquina están en inglés; las etiquetas humanas
 de la referencia (`final_object`, `final_content`) están en español. Para comparar texto con
-texto en el mismo idioma, cada serie adjudicada tiene una **traducción automática al inglés**
-de esas dos columnas. Se aplica a las series ya adjudicadas (hoy ES2015 y TS3009); las
-siguientes se traducen con este mismo método.
+texto en el mismo idioma, cada serie de la referencia tiene una **traducción automática al
+inglés** de esas dos columnas. Se aplica a las **14 series** (adjudicadas o de anotación
+individual): cada una se traduce apenas se fusiona su anotación, en un PR por serie o por
+lote (issue #204), con este mismo método.
 
-Una serie de un solo anotador (IS1004 en desarrollo; las series de evaluación) no tiene archivo
+**Estado al 2026-11-02.** Traducidas, con su `data/processed/decisions/<SERIE>.reference-en.csv`:
+ES2008, ES2015, ES2016, IS1003, IS1004, IS1006, TS3005 y TS3009. Faltan IS1009, TS3003, ES2002,
+TS3011, IS1008 y ES2014, que se traducen al fusionarse cada una. Las traducciones de las series
+de evaluación las hace `jss` con un proceso aislado (sin consultar salidas de extracción, ver las
+reglas de abajo), a medida que se fusiona cada serie. Antes de las corridas formales
+las 14 deben existir y quedar en el congelamiento
+([`../protocols/congelamiento.md`](../protocols/congelamiento.md)).
+
+Una serie de un solo anotador (IS1004 e IS1006 y el resto de la Fase 3) no tiene archivo
 adjudicado: su referencia es el único `<SERIE>.decisions.<ini>.csv`, y `translation-template`
 y `validate-translation` leen ese archivo con las columnas `decision_object` y `decision_content`
 en lugar de `final_object` y `final_content`. La hoja de traducción conserva los nombres

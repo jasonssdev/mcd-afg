@@ -37,6 +37,12 @@ coinciden: tú completas el veredicto final y la razón donde discrepan. `valida
 que las columnas de máquina llegaron intactas y que los valores son legales, antes de que tú
 revises a ojo lo que ningún comando puede juzgar.
 
+**Congelamiento.** Con la anotación, las traducciones y el banco cerrados, el ADR de
+congelamiento (issue #237) fija la referencia, el banco, la configuración y el código. Se
+registra una sola vez con `uv run afg freeze write --adr <número>`, que escribe
+`config/freeze.json`; sin ese registro las series de evaluación no corren. Qué contiene, qué
+bloquea y cómo se verifica: [`../../protocols/congelamiento.md`](../../protocols/congelamiento.md).
+
 ---
 
 ## 1. Fase 0 — Generación de insumos (hecha)

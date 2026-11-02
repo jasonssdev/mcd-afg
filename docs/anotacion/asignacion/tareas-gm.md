@@ -9,32 +9,27 @@
 > documento dice **qué te toca y cómo lo entregas**; los criterios de etiquetado están allí y
 > solo allí.
 
-## Próximos pasos (estado al 2026-10-13)
+## Próximos pasos (estado al 2026-11-02)
 
-ES2015 ya está adjudicada. Lo que sigue, en este orden:
+Las Fases 1 y 2 están cerradas (todas las series de doble anotación, adjudicadas) y la Fase 3
+está abierta: tus tres series ya figuran en `released_series`. Lo que te toca ahora, en
+paralelo:
 
-1. **Sesión conjunta sobre ES2015** con `jss` y gv
-   ([`../calibracion/ES2015-sesion-conjunta.md`](../calibracion/ES2015-sesion-conjunta.md)).
-   Se habla **solo de ES2015**: no leas ni anotes TS3009 antes.
-2. **`jss` ya abrió TS3009**: la anotas ahora (recalibración):
+1. **Series de la Fase 3: TS3011, IS1008 y ES2014** (issues #200, #201 y #202). Son anotación
+   individual: no aplica la regla de independencia ni hay adjudicación posterior, pero sí la
+   anti-fuga (§4). Una serie por PR, con la receta de §8:
    ```bash
    git switch main && git pull
-   git switch -c data/anotacion-TS3009-gm
-   uv run afg gold setup --annotator gm
+   git switch -c data/anotacion-<ID>-gm
+   uv run afg gold prepare --annotator gm
+   uv run afg gold validate --annotator gm --series <ID>
    ```
-   Abre `data/processed/decisions/TS3009.decisions.gm.csv` (Tarea A) y luego
-   `data/processed/relations/TS3009.candidates.gm.csv` (Tarea B), en orden de reunión
-   `a → b → c → d`. Aplica la regla de oro nueva (manual §2): si `evidence_text` no alcanza,
-   lee la transcripción de **la misma reunión**. Al terminar:
-   ```bash
-   uv run afg gold validate --annotator gm --series TS3009
-   ```
-   y entrega con la convención de §8 (rama `data/anotacion-TS3009-gm`, commit
-   `data(anotacion): tareas A y B de TS3009 (gm)`, un PR). El issue de recalibración de
-   TS3009 asignado a ti (#79) sigue ese avance.
-3. **Independencia:** no abras el PR, la rama ni el CSV de Germán, ni comenten casos de
-   TS3009, hasta que `jss` anuncie la adjudicación de TS3009.
-4. **Espera la adjudicación de TS3009.** Después sigue ES2016 con la misma receta (§8).
+2. **Banco de preguntas** (issue #32, §7). El archivo `banco-preguntas.csv` ya existe en
+   `main`: no corras `questions-init`, que se niega a regenerar un banco con preguntas
+   escritas. E1 y E4 se pueden cerrar ya; E2 y E3 se escriben contra las relaciones
+   adjudicadas y se completan con la Fase 3. Cada E3 lleva `superseded_answer` (la columna
+   nueva, la última del archivo; ADR 0017, ver «Cómo llenar `superseded_answer`» en §7).
+   Antes de cada PR: `uv run afg gold questions-check`.
 
 ---
 
