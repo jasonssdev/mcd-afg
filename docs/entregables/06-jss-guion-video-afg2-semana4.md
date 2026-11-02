@@ -4,8 +4,8 @@
 |---|---|
 | **Entrega** | Video de avance #2 de AFG2 (semana 4) — modelado de datos |
 | **Fecha de envío** | Pendiente |
-| **Versión** | 1.7 |
-| **Construido desde** | `docs/avances/09-jss-modelos-y-justificacion.md` v8.0 (todos los bloques) · `notebooks/19-jss-modelos.ipynb` (fuente principal de las cifras) · `docs/entregables/figuras/modelos-*.png` (seis figuras exportadas por el notebook 19) |
+| **Versión** | 1.8 |
+| **Construido desde** | `docs/avances/09-jss-modelos-y-justificacion.md` v10.0 (todos los bloques) · `notebooks/19-jss-modelos.ipynb` (fuente principal de las cifras) · `docs/entregables/figuras/modelos-*.png` (seis figuras exportadas por el notebook 19) |
 | **Duración objetivo** | 9:57 a 145 palabras por minuto (máximo de la rúbrica: 10:00) |
 | **Formato** | Tres presentadores en cuatro bloques consecutivos, en este orden: Jason, Germán, Gustavo, Jason. Con diapositivas de apoyo |
 | **Extensión hablada** | 1.443 palabras: 393 + 393 + 392 + 265. A 145 palabras por minuto son 9:57; a 140, 10:18 |
@@ -30,6 +30,7 @@
 | 1.5 | 2026-11-01 | El bloque 4 presenta la atribución del error (OE4) de la corrida vigente de C2, ya clasificada por una persona: 3 de recuperación, 2 de extracción y 1 de síntesis, de 6 fallas, con un caso de memoria contaminada; la figura 14 pasa a mostrar la corrida vigente. La lámina 15 deja de decir que las fallas nuevas están pendientes y la lámina 16 y la frase final ya no incluyen clasificarlas. Se actualizan la fila de trazabilidad y las fuentes (avance 09 v7.1). Extensión sin cambio: 1.435 palabras (386 + 390 + 392 + 267); 9:54 a 145 palabras por minuto. Los bloques 1 a 3 no cambian. | jss clasificó las seis fallas E1 de la corrida vigente (avance 09 v7.1, notebooks 16 y 19). El guion aún no se había enviado. |
 | 1.6 | 2026-11-01 | El bloque 1 cambia el caso del precio, donde C1 y C2 ya aciertan, por dos casos de la corrida vigente que muestran el valor de compilar y el costo de sus errores: la fuente de energía (C2 acierta, C1 duda) y el costo máximo de producción (C1 acierta, C2 no lo tiene en su base). La lámina 1 pasa a una tabla de dos preguntas, y el bloque 3 nombra los mismos casos al hablar de C0. Extensión: 1.442 palabras (393 + 390 + 392 + 267); 9:57 a 145 palabras por minuto. | Los casos ilustran la lámina 3 (perder una decisión) y el criterio de éxito con datos reales; el guion aún no se había enviado. |
 | 1.7 | 2026-11-01 | El extractor de C2 deja de figurar como decisión pendiente (ADR 0015, issue #143). **Bloque 2 (Germán) cambia**: la lámina 5 y la figura 7 dicen que el extractor es `qwen3:8b`, el de OpenKOS, y la narración lo decide con la pasada de decisiones, que OpenKOS documenta para reuniones; Germán tendrá que grabarlo de nuevo si ya lo grabó. **Bloque 4 (Jason) cambia**: la lámina 15 marca el extractor como resuelto, la narración lo da por decidido y la lámina 16 queda en dos pasos, congelar y evaluar una vez. Los bloques 1 y 3 no cambian. Se actualizan los tiempos, la extensión y las fuentes (avance 09 v8.0). Extensión: 1.443 palabras (393 + 393 + 392 + 265); 9:57 a 145 palabras por minuto. | La decisión del extractor y de la pasada de decisiones quedó registrada en el [ADR 0015](../decisions/0015-adr-modelo-extractor-de-c2.md); el guion aún no se había enviado. |
+| 1.8 | 2026-11-02 | C1 pasa a leer el mismo texto que OpenKOS (cuerpo Markdown de la transcripción) y a cortarlo con un divisor de texto genérico, y se rehízo el ajuste y la corrida de desarrollo, con el espacio de C1 para los fragmentos igual al de C2. **Bloque 1 (Jason) cambia**: el caso de la fuente de energía deja de servir (C1 ahora acierta) y se reemplaza por el del alcance del control entre la primera y la segunda reunión (q028: C1 no lo encuentra, C2 acierta); cambian la lámina 1 y una frase hablada, y se quitan unas palabras para mantener la extensión. **Bloque 3 (Gustavo) cambia**: la lámina 8 y la narración del *grid search* (ganadora 1.200 caracteres, sin solape y 5 fragmentos), la ablación de la figura 9 (52 %, 31 % y 46 %) y la frase sobre C0, que ahora cita el costo máximo y el alcance; Gustavo tendrá que grabarlo de nuevo. Los bloques 2 y 4 no cambian. Las cifras por estrato (C0 22 %, C1 81 %, C2 71 %) no cambian, aunque C1 acierta otras preguntas. Se actualizan la trazabilidad y las fuentes (avance 09 v10.0). Extensión: 1.443 palabras (393 + 393 + 392 + 265). | Decisión del autor del proyecto del 2026-11-02 sobre la lectura de C1 ([ADR 0014](../decisions/0014-adr-c1-como-rag-convencional.md) y [ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md), enmiendas del 2026-11-02); el guion aún no se había enviado. |
 
 ## Qué pide el curso y dónde se cubre
 
@@ -58,7 +59,7 @@ finales: importa el proceso de selección y el trabajo inicial.
 
 | Bloque | Persona | Palabras | Tiempo (145 ppm) | Mensaje central |
 |---|---|---|---|---|
-| El problema en un caso, qué es «el modelo» y qué significa funcionar bien | Jason Sepúlveda | 393 | 0:00 – 2:43 | Dos casos en C0, C1 y C2 (corridas vigentes): la fuente de energía, donde C2 acierta y C1 duda, y el costo máximo, donde C1 acierta y C2 no lo tiene en su base; no se entrena nada, se comparan *pipelines*; el juez es un instrumento; criterio de éxito y costo de los errores |
+| El problema en un caso, qué es «el modelo» y qué significa funcionar bien | Jason Sepúlveda | 393 | 0:00 – 2:43 | Dos casos en C0, C1 y C2 (corridas vigentes): el alcance del control entre la primera y la segunda reunión, donde C2 acierta y C1 no lo encuentra, y el costo máximo, donde C1 acierta y C2 no lo tiene en su base; no se entrena nada, se comparan *pipelines*; el juez es un instrumento; criterio de éxito y costo de los errores |
 | Estrategia experimental y modelos por rol | Germán Vega | 393 | 2:43 – 5:25 | Partición 3 + 11 series con conjunto de prueba bajo llave; fuga declarada; restricciones del análisis exploratorio; generador, *embeddings*, juez (3 candidatos) y extractor (4 candidatos; decidido `qwen3:8b`, el de OpenKOS, con la pasada de decisiones) |
 | Búsqueda de parámetros, línea base, primeros resultados y costo | Gustavo Martínez | 392 | 5:25 – 8:07 | *Grid search* y su corrección, ablación, τ; línea base C0 y C1 frente a C2 por estrato, solo desarrollo; límites de C0; costo; librerías |
 | Dificultades, cambios de diseño, limitaciones y próximos pasos | Jason Sepúlveda | 265 | 8:07 – 9:57 | Aprendizajes, atribución del error de C2 (OE4, corrida vigente, 3 de recuperación, 2 de extracción y 1 de síntesis, solo desarrollo; un caso de memoria contaminada), qué cambió (OpenKOS 0.7.0, C1 como RAG convencional) y el extractor ya decidido, limitaciones y el paso siguiente: congelar y evaluar una vez |
@@ -86,7 +87,7 @@ Margen sobre el tope de 10:00: 0:03 a 145 palabras por minuto; a 140 el guion se
   frase de librerías del bloque 3 y la mención de τ, y no los ejemplos ni los nombres de modelos.
 - Las cifras de este guion salen de `docs/avances/09-jss-modelos-y-justificacion.md` v8.0 y del
   notebook 19; son de series de desarrollo. Todas son de las corridas de desarrollo con el diseño vigente. Ninguna se calcula aquí. Los porcentajes dichos en voz son los de la fuente
-  redondeados al entero (21 %, 79 %, 22 %, 81 %, 71 %, 57 %, 37 %, 42 %). Las de OE4 se dicen como conteos (3, 2 y 1 de 6, corrida vigente), con la frase «una serie y una persona».
+  redondeados al entero (17 %, 21 %, 22 %, 31 %, 46 %, 52 %, 57 %, 61 %, 71 %, 79 %, 81 %). Las de OE4 se dicen como conteos (3, 2 y 1 de 6, corrida vigente), con la frase «una serie y una persona».
 
 ---
 
@@ -96,19 +97,19 @@ Margen sobre el tope de 10:00: 0:03 a 145 palabras por minuto; a 140 el guion se
 
 Hola. Soy **Jason Sepúlveda**. Junto a **Germán Vega** y **Gustavo Martínez** presentamos el avance de modelado de datos de nuestro proyecto.
 
-Empiezo con dos casos reales. Un equipo diseña un control remoto en cuatro reuniones, y a tres sistemas les hicimos las mismas preguntas.
+Empiezo con dos casos. Un equipo diseña un control remoto en cuatro reuniones, y a tres sistemas les hicimos las mismas preguntas.
 
 > **▶ Lámina 1 — se muestra al decir «C0 responde solo con lo que el modelo ya sabe».**
 >
 > Título: «Dos preguntas, tres sistemas». Pie: «Una corrida de desarrollo: muestra el mecanismo, no es un resultado».
 >
-> | Sistema | Qué hace | ¿Qué fuente de energía se eligió? (referencia: energía cinética) | ¿Costo máximo de producción? (referencia: 12,50 €) |
+> | Sistema | Qué hace | ¿Cómo se aclaró el alcance entre la primera y la segunda reunión? (referencia: solo televisión) | ¿Costo máximo de producción? (referencia: 12,50 €) |
 > |---|---|---|---|
 > | C0 | Responde sin ningún texto de apoyo | Incorrecta | Incorrecta |
-> | C1 | Busca fragmentos de la transcripción y responde con ellos | Duda entre opciones: incorrecta | 12,50 €: correcta |
-> | C2 | Responde desde una base de decisiones construida antes | Energía cinética: correcta | Se abstiene: el dato no entró a su base |
+> | C1 | Busca fragmentos de la transcripción y responde con ellos | Habla de estilo y diseño, no del alcance: incorrecta | 12,50 €: correcta |
+> | C2 | Responde desde una base de decisiones construida antes | Solo televisión, sin teletext: correcta | Se abstiene: el dato no entró a su base |
 
-**C0** responde solo con lo que el modelo ya sabe: falla en las dos. **C1** busca fragmentos de la transcripción y responde con ellos. **C2** consulta una base de decisiones construida antes. ¿Qué fuente de energía se eligió? Energía cinética. C1 recibe fragmentos con varias opciones y duda; C2 tiene la decisión consolidada y acierta. ¿Cuál era el costo máximo de producción? Doce euros con cincuenta. C1 lo encuentra; C2 se abstiene, porque ese dato nunca entró a su base. Compilar ordena lo decidido, pero lo que no se guarda se pierde. Queremos medir qué pesa más.
+**C0** responde solo con lo que el modelo ya sabe: falla en las dos. **C1** busca fragmentos y responde con ellos. **C2** consulta una base de decisiones construida antes. ¿Cómo se aclaró el alcance entre la primera y la segunda reunión? Solo televisión. C1 trae pasajes de estilo y se va por las ramas; C2 tiene la decisión consolidada y acierta. ¿Cuál era el costo máximo de producción? Doce euros con cincuenta. C1 lo encuentra; C2 se abstiene, porque ese dato nunca entró a su base. Compilar ordena lo decidido, pero lo que no se guarda se pierde.
 
 Ahora, ¿cuál es nuestro «modelo»? El curso entiende por modelo un algoritmo que se entrena con datos. Nosotros **no entrenamos nada**. Usamos **LLM**, modelos de lenguaje ya entrenados, que corren en nuestros computadores con **Ollama**. Lo que comparamos son ***pipelines***: cada condición completa, desde el texto hasta la respuesta. C1 busca fragmentos; C2 usa la base construida por la máquina; C3, una base de referencia construida con anotaciones humanas. El **juez**, otro LLM que califica las respuestas, es un instrumento de medida, no un modelo bajo prueba.
 
@@ -209,22 +210,22 @@ Gracias, Germán. Soy **Gustavo Martínez**. Muestro cómo buscamos los parámet
 
 > **▶ Lámina 8 — se muestra al decir «Para el tamaño de fragmento de C1 hicimos un grid search».**
 >
-> Título: «Ajuste de C1: 32 configuraciones y una corrección». Columnas: tamaño de fragmento / turnos compartidos / fragmentos entregados (K).
+> Título: «Ajuste de C1: 32 configuraciones». Columnas: tamaño de fragmento / caracteres compartidos / fragmentos entregados (K).
 >
 > | Configuración | Recall recuperado | Recall entregado al modelo | Papel |
 > |---|---|---|---|
-> | 1600 / 0 / 8 | 0,642 | 0,446 | Primera elección (error de medición) |
-> | **1200 / 1 / 5** | 0,569 | 0,569 | Elección final |
+> | 1200 / 200 / 8 | 0,613 | 0,172 | Recupera mucho, pero el recorte descarta la evidencia |
+> | **1200 / 0 / 5** | 0,520 | 0,520 | Elección final |
 
-Usamos un método distinto según el parámetro. Para el tamaño de fragmento de C1 hicimos un ***grid search***: probar todas las combinaciones de una grilla, 32 en total, midiendo qué parte de la evidencia llega al modelo. Ganó 1.600 caracteres, sin turnos compartidos y 8 fragmentos. Pero encontramos un error propio: OpenKOS recorta el contexto y al modelo solo le llegaba una parte. Repetimos midiendo el texto entregado y ganó otra: 1.200 caracteres, un turno compartido y 5 fragmentos. Lo corregimos y lo dejamos documentado.
+Usamos un método distinto según el parámetro. Para el tamaño de fragmento de C1 hicimos un ***grid search***: probar todas las combinaciones de una grilla, 32. C1 lee el mismo texto que OpenKOS y lo corta con un divisor. Medir lo recuperado engaña: con 1.200 caracteres, 200 compartidos y 8 fragmentos se recupera el 61 % de la evidencia, pero al modelo le llega el 17 %, porque OpenKOS recorta el contexto. Medimos el texto entregado y ganó 1.200 caracteres, sin solape y 5 fragmentos.
 
 > **▶ Figura 9 — se muestra al decir «Segundo método, la ablación».**
 >
 > Sin texto sobrepuesto adicional.
 >
-> ![Recuperación de C1, ablación: solo léxico (BM25) 37,3 % de la evidencia y 7 de 17 preguntas; solo denso (bge-m3) 41,7 % y 9 de 17; híbrido (C1) 56,9 % y 11 de 17](figuras/modelos-ablacion-recuperacion.png)
+> ![Recuperación de C1, ablación: solo léxico (BM25) 31,4 % de la evidencia y 6 de 17 preguntas; solo denso (bge-m3) 45,6 % y 10 de 17; híbrido (C1) 52,0 % y 11 de 17](figuras/modelos-ablacion-recuperacion.png)
 
-Segundo método, la **ablación**: quitar una pieza para ver cuánto aportaba. En C1 medimos solo **BM25**, que busca por palabras compartidas; solo búsqueda densa con **embeddings**; y el híbrido, que los fusiona con *reciprocal rank fusion*. El híbrido entrega más evidencia: 57 %, frente a 37 % y 42 %.
+Segundo método, la **ablación**: quitar una pieza para ver cuánto aportaba. En C1 medimos solo **BM25**, que busca por palabras compartidas; solo búsqueda densa con **embeddings**; y el híbrido, que los fusiona con *reciprocal rank fusion*. El híbrido entrega más evidencia: 52 %, frente a 31 % y 46 %.
 
 Tercero, el umbral **τ**, que decide cuándo una decisión extraída es «la misma» que la de referencia. Lo calibramos con un control nulo y con el juez, y lo fijamos en 0,70. Cuarto, la regla de descarte del extractor y los umbrales del juez que ya conté.
 
@@ -236,7 +237,7 @@ Ahora la línea base. El curso pide siempre una simple. Tenemos dos: C0, el mode
 >
 > ![Respuestas correctas por estrato en desarrollo, ES2015, 21 preguntas: C0 sin contexto 19,0 % en E1 y 50 % en E4; C1 78,6 % en E1, 100 % en E2 y 100 % en E4; C2 57,1 % en E1, 100 % en E2 y 100 % en E4; E3 con un solo caso: 0 % en C0 y C1, 100 % en C2](figuras/modelos-baseline-por-estrato.png)
 
-Esto es **solo desarrollo**: una serie, 21 preguntas, una corrida. Sin contexto, el modelo acierta cerca del 22 %. Con C1, cerca del 81 %. Con C2, cerca del 71 %. C2 pierde sobre todo en preguntas de un hecho puntual, porque se abstiene más que C1. Y hay un solo caso de evolución, así que no podemos decir nada de lo que la tesis quiere probar. C0 falló la energía y el costo máximo en las tres corridas. Eso no descarta que el modelo haya visto AMI durante su entrenamiento.
+Esto es **solo desarrollo**: una serie, 21 preguntas, una corrida. Sin contexto, el modelo acierta cerca del 22 %. Con C1, cerca del 81 %. Con C2, cerca del 71 %. C2 pierde sobre todo en preguntas de un hecho puntual, porque se abstiene más que C1. Y hay un solo caso de evolución, así que no podemos decir nada de lo que la tesis quiere probar. C0 falló el alcance y el costo máximo en las tres corridas. Eso no descarta que el modelo haya visto AMI durante su entrenamiento.
 
 > **▶ Figura 11 — se muestra al decir «Costo: responder tarda».**
 >
@@ -319,7 +320,7 @@ Lo que sigue: congelar modelos, versiones y código, y solo entonces correr la e
 
 | Cifra o afirmación | Fuente |
 |---|---|
-| Casos del bloque 1: fuente de energía (q016, referencia «energía cinética»; C0 incorrecta en las 3 corridas, C1 incorrecta, C2 correcta) y costo máximo (q004, referencia «12,50 €»; C0 incorrecta en las 3 corridas, C1 correcta, C2 se abstiene por un error de extracción) | `reports/experiment-b/` (`diagnostico-sin-contexto-es2015`, `humo-c1-es2015-rag`, `humo-c2-es2015-openkos070`), preguntas q016 y q004; notebook 19, sección 7.4 (tabla por pregunta); etapa de q004: `humo-c2-es2015-openkos070/oe4-etapa-e1.csv` y documento 09 v7.1, §8.4 |
+| Casos del bloque 1: alcance del control entre la primera y la segunda reunión (q028, referencia «televisión solamente, sin DVD ni videograbadora»; C0 incorrecta en las 3 corridas, C1 incorrecta, C2 correcta) y costo máximo (q004, referencia «12,50 €»; C0 incorrecta en las 3 corridas, C1 correcta, C2 se abstiene por un error de extracción) | `reports/experiment-b/` (`diagnostico-sin-contexto-es2015`, `humo-c1-es2015-md`, `humo-c2-es2015-openkos070`), preguntas q028 y q004; notebook 19, sección 7.4 (tabla por pregunta); etapa de q004: `humo-c2-es2015-openkos070/oe4-etapa-e1.csv` y documento 09 v7.1, §8.4 |
 | No se entrena ningún modelo; Ollama local; el juez es instrumento; C1, C2 y C3 | Documento 09, §1 y §5; ADR 0005 |
 | Criterio de éxito: diferencia pareada C2 − C1 en E3, intervalo bootstrap por encima de 0 | Documento 09, §2.1 (ADR 0010, D16/D17) |
 | Costo de los errores; precision y recall por separado | Documento 09, §2.2 |
@@ -329,12 +330,12 @@ Lo que sigue: congelar modelos, versiones y código, y solo entonces correr la e
 | Roles y etiquetas: `qwen3:8b`, `bge-m3`, `gpt-oss:20b`, extractor `qwen3:8b` con la pasada de decisiones (#143, ADR 0015) | Documento 09 v8.0, §6; ADR 0015 |
 | Juez: tres candidatos, umbral de kappa 0,70, kappa 0,95 de `mistral-small3.2:24b` y `gpt-oss:20b`, `atla/selene-mini` descartado | Documento 09, §6.3; notebook 05 |
 | Extractor: cuatro candidatos, regla prerregistrada, `qwen3.6:27b` con mejor F1 y 1,8 a 3,6 veces el tiempo; decisión: `qwen3:8b`, el de OpenKOS, con la pasada de decisiones | Documento 09 v8.0, §6.2; ADR 0015; notebook 15; figura `modelos-screen-extraccion-f1-costo.png` |
-| *Grid search* de 32 configuraciones; 1600/0/8 (0,642 recuperado, 0,446 entregado) y 1200/1/5 (0,569) | Documento 09, §7.1; ADR 0007; notebook 06 |
-| Ablación: 0,373 BM25, 0,417 denso, 0,569 híbrido | Documento 09, §7.2; figura `modelos-ablacion-recuperacion.png` |
+| *Grid search* de 32 configuraciones; 1200/200/8 (0,613 recuperado, 0,172 entregado) y 1200/0/5 (0,520) | Documento 09 v10.0, §7.1; ADR 0007; notebook 06 |
+| Ablación: 0,314 BM25, 0,456 denso, 0,520 híbrido | Documento 09 v10.0, §7.2; figura `modelos-ablacion-recuperacion.png` |
 | τ principal 0,70 con control nulo y juez | Documento 09, §7.3; ADR 0012; notebook 17 |
 | Línea base: 22,2 % (C0), 81,0 % (C1), 71,4 % (C2); pérdida de C2 en E1 (8 de 14 frente a 11 de 14) por abstenciones; un solo caso de E3 | Documento 09 v7.1, §8.1 y §8.2; notebook 19, secciones 7.2 y 7.3; figura `modelos-baseline-por-estrato.png` |
-| C0: energía y costo máximo fallan en 3 corridas; no se descarta exposición previa a AMI | Notebook 19, sección 7.4 (tabla por pregunta, q016 y q004); documento 09, §8.3 |
-| Costo: unos 5 s por respuesta de C1, 4 s por juicio, entre 2 y 12 minutos por serie al extraer | Documento 09 v7.1, §9; figura `modelos-costo-latencia-por-rol.png` |
+| C0: alcance y costo máximo fallan en 3 corridas; no se descarta exposición previa a AMI | Notebook 19, sección 7.4 (tabla por pregunta, q028 y q004); documento 09, §8.3 |
+| Costo: unos 5 s por respuesta de C1, 4 s por juicio, entre 2 y 12 minutos por serie al extraer | Documento 09 v10.0, §9; figura `modelos-costo-latencia-por-rol.png` |
 | Librerías: Ollama, OpenKOS, sentence-transformers, scikit-learn, scipy, pandas; BM25 propio | `pyproject.toml` (dependencias y extras `instrument`, `llm` y `embeddings`); `src/afg/conditions/c1_retrieval.py` (BM25 propio); documento 09, §5 |
 | `qwen3:8b`: 0 de 20 reuniones fallidas con 5 corridas y 6 de 60 con 15 corridas nuevas | Documento 09, §6.2 y dificultad 7 |
 | Juez indulgente con respuestas genéricas; verificación humana del 20 % | Documento 09, §8.3 y §10 |

@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 09 — Modelos y su justificación |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 9.1 |
+| **Versión** | 10.0 |
 | **Fecha** | 2026-11-02 |
 | **Estado** | Vigente |
 
@@ -28,6 +28,7 @@
 | 8.0 | 2026-11-01 | El modelo de extracción de C2 y C3 queda decidido: `qwen3:8b`, el de OpenKOS 0.7.0, con la pasada de decisiones (`transcript_decisions`) activada, que es la única opción de C2 fuera de su valor por defecto (secciones 5, 6, 6.2, 6.4, 9, 10, 11 y 12). La regla del «mismo modelo generativo» se aplica al modelo que responde. `qwen3.6:27b` y `qwen3.6:35b-a3b` se descartan; la decisión 1 de la sección 11.1 pasa a resuelta y el extractor deja de figurar como pendiente en el congelamiento. | [ADR 0015](../decisions/0015-adr-modelo-extractor-de-c2.md), que cierra el issue #143: la épica de OpenKOS jasonssdev/openkos#1556 dejó todas las tareas en `qwen3:8b` salvo los jueces y la verificación de suficiencia, y `qwen3.6:27b`, que gana en F1 del pase de decisiones, tarda de 1,8 a 3,6 veces más y no es el modelo de OpenKOS. Las cifras no cambian: salen del [notebook 15](../../notebooks/15-jss-screen-de-modelos-openkos.ipynb) y del [notebook 19](../../notebooks/19-jss-modelos.ipynb). |
 | 9.0 | 2026-11-02 | Se agrega la puntuación de las relaciones temporales a OE2 (§2) con su medición de desarrollo y su limitación (§12). Se corrigen dos filas atrasadas de §11: el *recall* del filtro léxico ya tiene su función (#205) y C3 ya está implementado (`afg c3 build`); lo pendiente de C3 es la ground truth adjudicada. | [ADR 0016](../decisions/0016-adr-relaciones-temporales-de-openkos.md) (issue #96), [notebook 22](../../notebooks/22-jss-relaciones-temporales-openkos.ipynb) y el estado del código (`annotation/recall.py`, `conditions/c3_compiled_gold.py`). |
 | 9.1 | 2026-11-02 | La limitación de la puntuación de relaciones de OE2 (§12) pasa de dos a tres series de desarrollo y de 6 a 9 relaciones de oro, porque IS1004 ya se puntúa con la referencia de su único anotador y su traducción automática. | Issue #229, issue #204 y [notebook 22](../../notebooks/22-jss-relaciones-temporales-openkos.ipynb). |
+| 10.0 | 2026-11-02 | C1 pasa a leer el mismo cuerpo Markdown de la transcripción que OpenKOS y a cortarlo con un divisor de texto genérico, sin la estructura de turnos. Se repitió el ajuste de C1 (sección 7): la configuración ganadora pasa de 1.200 caracteres, 1 turno de solape y K = 5 a **1.200 caracteres, sin solape y K = 5** (recall entregado 0,520; antes 0,569, con otra segmentación y otro criterio de entrega). El espacio de C1 para los fragmentos se calcula ahora con la sobrecarga de instrucciones de OpenKOS, de modo que es casi igual al de C2 (unos 8.700 frente a 8.300 caracteres); una primera repetición con el espacio que daba la instrucción más corta de C1 (K = 8) se descartó. La ablación pasa a 0,520 (híbrido), 0,456 (denso) y 0,314 (léxico). Se rehízo la corrida de desarrollo de C1 (`humo-c1-es2015-md`): acierta 17 de 21 (81,0 %), igual que la anterior, con otro reparto de errores (cuatro veredictos cambian, dos en cada sentido; secciones 8.1 y 8.2). Cambian además la descripción del pipeline de C1 (sección 6), la dificultad 1, el estado del congelamiento y las limitaciones. | Decisión del autor del proyecto del 2026-11-02: un RAG convencional recibe el documento y lo corta, no la estructura de turnos. Evidencia: [notebook 06](../../notebooks/06-jss-ajuste-c1.ipynb), [notebook 19](../../notebooks/19-jss-modelos.ipynb) (secciones 6 y 7), [ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md) (enmienda del 2026-11-02) y [ADR 0014](../decisions/0014-adr-c1-como-rag-convencional.md) (enmienda del 2026-11-02). |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -200,7 +201,7 @@ conteos y longitudes sobre las 14 series de OE1, nunca texto de las series de ev
 | Una serie completa tiene entre 14.990 y 26.204 palabras, de 1,6 a 2,8 veces la ventana de 12.288 tokens del modelo | El generador no puede leer la serie: hace falta recuperar (C1) o compilar (C2) |
 | OpenKOS recorta el contexto del *prompt* a lo más 10.240 caracteres y a unos 7.400 tras la sobrecarga ([ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md)) | El tamaño de fragmento y K de C1 se ajustan contando el texto que **de verdad llega** al modelo, no el recuperado |
 | Las decisiones son raras: 13,3 por cada 1.000 turnos (343 decisiones en 25.857 turnos) | Encontrar una decisión es buscar una aguja: la recuperación importa |
-| Los turnos son muy cortos: mediana de 4 palabras y 31,5 % de una sola palabra | El fragmento de C1 no puede ser un turno: agrupa varios turnos completos |
+| Los turnos son muy cortos: mediana de 4 palabras y 31,5 % de una sola palabra | El fragmento de C1 no puede ser un turno: es un trozo de texto de tamaño fijo en caracteres que agrupa varios turnos y puede cortar alguno |
 | 26 de 343 decisiones no tienen actos de diálogo de evidencia | No se imputa ni se elimina: se marcan y se revisan a mano al adjudicar; no se puede verificar su citación |
 | Las series son temporales (reuniones a → d) y las cuatro de una serie comparten fecha. Solo 6 de 14 series tienen hora real de inicio | OpenKOS procesa cada serie en orden cronológico con fechas de evento ([ADR 0008](../decisions/0008-adr-fechas-de-reunion-para-openkos.md)); el orden vale, la hora sintética no es un dato temporal |
 | El corpus y lo que extrae el modelo están en inglés (6.190 de 6.198 textos extraídos), pero las etiquetas humanas del ground truth están en español | La ground truth se traduce al inglés para comparar texto con texto (6 series hasta ahora: ES2008, ES2015, ES2016, IS1003, TS3005 y TS3009); la traducción nunca es una etiqueta. τ se calibró después de traducir |
@@ -300,11 +301,11 @@ Anotación humana ─► C3: referencia humana adjudicada ─► consulta ──
 
 | Paso | C0 (diagnóstico, no es condición) | C1 (línea base) | C2 (la propuesta) | C3 (ground truth humana) |
 |---|---|---|---|---|
-| Material de partida | Ninguno | Transcripciones congeladas de la serie | Transcripciones, procesadas de la reunión a a la d | Anotación humana adjudicada de la serie (OE1) |
-| Preparación | — | Troceo en fragmentos de turnos completos: hasta 1.200 caracteres, 1 turno compartido entre fragmentos | OpenKOS extrae objetos (decisiones, temas, eventos) con `qwen3:8b`, con la pasada de decisiones activada (sección 6.2), y guarda la fuente en bruto | Objetos equivalentes a los de C2, elaborados desde anotaciones humanas adjudicadas |
+| Material de partida | Ninguno | Cuerpo Markdown de las transcripciones congeladas de la serie (el mismo texto que lee OpenKOS) | Transcripciones, procesadas de la reunión a a la d | Anotación humana adjudicada de la serie (OE1) |
+| Preparación | — | Troceo con un divisor de texto genérico (`RecursiveCharacterTextSplitter`): hasta 1.200 caracteres, sin caracteres compartidos entre fragmentos; no conoce los turnos | OpenKOS extrae objetos (decisiones, temas, eventos) con `qwen3:8b`, con la pasada de decisiones activada (sección 6.2), y guarda la fuente en bruto | Objetos equivalentes a los de C2, elaborados desde anotaciones humanas adjudicadas |
 | Índice | — | BM25 (léxico) + vectores densos de `bge-m3` | Índice híbrido de OpenKOS con `bge-m3` | Igual que C2 |
 | Recuperación | — | Fusión RRF (k = 60) y los 5 mejores fragmentos | `openkos query --limit 5`, sin modificar | Igual que C2 |
-| Presupuesto de contexto | — | La misma ventana y el mismo método de recorte de OpenKOS; su *prompt* es más corto, de modo que queda algo más de espacio para los fragmentos | El de OpenKOS | Igual que C2 |
+| Presupuesto de contexto | — | La misma ventana y el mismo método de recorte de OpenKOS; reserva la sobrecarga de instrucciones de OpenKOS (aunque su *prompt* es más corto), de modo que el espacio para los fragmentos es el mismo que el de C2 | El de OpenKOS | Igual que C2 |
 | ¿Alcanza el contexto? | Sin verificación | Sin verificación separada: el propio *prompt* de respuesta indica cuándo abstenerse | Verificación de suficiencia de OpenKOS, con `gemma4:26b-a4b` (sección 6.5) | Igual que C2 |
 | Respuesta | Solo la pregunta; prosa, o «no sé» | Una sola llamada con un *prompt* genérico adaptado de `rlm/rag-prompt`: responde con el contexto, se abstiene con la frase «I don't know.» y cita los bloques como `[n]` | OpenKOS, sin modificar | Igual que C2 |
 | Modelo generador | `qwen3:8b` | `qwen3:8b` | `qwen3:8b` | `qwen3:8b` |
@@ -395,7 +396,7 @@ hacía fallar el servidor de forma no determinista en documentos largos y `bge-m
 El modelo lee a lo más lo que cabe en su ventana, y eso se reparte entre las instrucciones, la
 pregunta, los bloques recuperados y la reserva para responder. Por eso el mismo `qwen3:8b` «ve»
 cosas distintas en C1 y en C2 si no se iguala el presupuesto de texto: es lo que iguala el ADR 0007
-(el *prompt* de C1, más corto, deja algo más de espacio para los fragmentos dentro de la misma ventana).
+(C1 reserva la sobrecarga de instrucciones de OpenKOS, aunque su *prompt* sea más corto, de modo que el espacio para los fragmentos es el mismo que el de C2).
 
 ### 6.2 Extractor de C2: el *screen* de cuatro modelos
 
@@ -528,7 +529,7 @@ de OpenKOS y las corridas de esos *screens* no se reprodujeron aquí. Se citan p
 Antes de redactar, la verificación de suficiencia pregunta si el contexto recuperado alcanza para
 responder; si no alcanza, el sistema se abstiene. A partir de la versión 0.7.0, OpenKOS hace esa
 verificación con un modelo propio, `gemma4:26b-a4b`, y no con el que redacta la respuesta. En las
-corridas de desarrollo vigentes, las 8 abstenciones de C2 las decidió esa verificación; las 3 de C1,
+corridas de desarrollo vigentes, las 8 abstenciones de C2 las decidió esa verificación; las 5 de C1,
 que no la tiene, las decidió el propio generador al responder «I don't know.» (sección 8.2).
 
 **Decisión (ADR 0006, enmienda del 2026-11-01, y ADR 0014).** La tesis compara un RAG
@@ -562,34 +563,43 @@ evaluación.
 
 ### 7.1 Fragmento y K de C1: *grid search* con regla prerregistrada
 
-**Método: *grid search*** (se prueban todas las combinaciones de una grilla). Se barren el tamaño
-máximo del fragmento (800, 1.200, 1.600 y 2.400 caracteres), los turnos compartidos entre
-fragmentos (0 y 1) y el número de fragmentos entregados K (3, 5, 8 y 10): 4 × 2 × 4 = 32
-configuraciones, de las cuales 26 caben en el presupuesto prerregistrado de 13.516 caracteres. La
-métrica es el *recall* de evidencia: qué parte de los pasajes que respaldan la respuesta llega al
-modelo, sobre las 17 preguntas de ES2015 con evidencia de referencia. No interviene ningún modelo
-generativo. Las configuraciones a menos de 0,02 de la mejor se consideran empatadas, y gana la de
-menor K, luego menor tamaño y luego menos turnos compartidos. La regla se fijó antes de ver
-resultados (`[retrieval.tuning]`; [ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md)).
+**Método: *grid search*** (se prueban todas las combinaciones de una grilla). C1 lee el cuerpo
+Markdown de la transcripción y lo corta con un divisor de texto genérico, de modo que el tamaño y el
+solape se miden en caracteres. Se barren el tamaño máximo del fragmento (800, 1.200, 1.600 y 2.400
+caracteres), los caracteres compartidos entre fragmentos consecutivos (0 y 200) y el número de
+fragmentos entregados K (3, 5, 8 y 10): 4 × 2 × 4 = 32 configuraciones, de las cuales 26 caben en
+el presupuesto prerregistrado de 13.516 caracteres. La métrica es el *recall* de evidencia: qué
+parte de los pasajes que respaldan la respuesta llega al modelo, sobre las 17 preguntas de ES2015
+con evidencia de referencia. No interviene ningún modelo generativo. Las configuraciones a menos de
+0,02 de la mejor se consideran empatadas, y gana la de menor K, luego menor tamaño y luego menos
+caracteres compartidos. La regla se fijó antes de ver resultados (`[retrieval.tuning]`;
+[ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md)) y no cambió; lo que cambió
+es la segmentación, y por eso se repitió el ajuste.
 
-La primera medición contó la evidencia sobre los fragmentos recuperados **completos** y eligió
-1.600 / 0 / 8, con un recall de 0,642. Después se comprobó que OpenKOS recorta el contexto: de
-esa configuración le llega al modelo texto con un recall de solo 0,446. Se repitió el ajuste con
-la misma regla, contando **solo el texto que de verdad llega al modelo**, y el ganador cambió:
+La cifra que decide cuenta la evidencia sobre **el texto que de verdad llega al modelo**, porque
+OpenKOS recorta el contexto del *prompt* (sección 3). Ahora es más estricta: como los fragmentos ya
+no coinciden con los turnos, un acto de diálogo de referencia cuenta solo si **todos** los turnos que
+lo componen llegan completos al modelo. Además, el espacio para los fragmentos es **igual al de C2**:
+C1 lo calcula con la fórmula de OpenKOS 0.7.0 y con su misma sobrecarga de instrucciones (la mayor
+de sus dos instrucciones de sistema), aunque su propia instrucción sea más corta. Una primera repetición del ajuste, que usó la instrucción corta de C1, dio a C1 unos 9.500 caracteres frente a unos 8.300 de C2 y eligió K = 8; se descartó por romper esa igualdad (ADR 0007, enmienda
+del 2026-11-02). El ganador, con el espacio igual, es 1.200 / 0 / K = 5:
 
-| Configuración (tamaño / turnos / K) | Recall de los fragmentos recuperados | Recall del texto que llega al modelo | Caracteres que llegan | Papel |
+| Configuración (tamaño / caracteres compartidos / K) | Recall de los fragmentos recuperados | Recall del texto que llega al modelo | Caracteres que llegan | Papel |
 |---|---|---|---|---|
-| 1600 / 0 / 8 | 0,642 | 0,446 | 6.946 | Ganadora de la primera medición (corregida) |
-| **1200 / 1 / 5** | 0,569 | 0,569 | 5.599 | **Ganadora final** |
-| 1600 / 0 / 5 | 0,583 | 0,583 | 7.628 | |
-| 1200 / 0 / 5 | 0,520 | 0,520 | 5.654 | |
-| 1200 / 1 / 8 | 0,598 | 0,510 | 8.146 | |
-| 1200 / 0 / 8 | 0,593 | 0,505 | 7.566 | |
+| 800 / 200 / 8 | 0,539 | 0,539 | 5.910 | La de mayor recall; a menos de 0,02 de la ganadora |
+| 1600 / 0 / 5 | 0,525 | 0,525 | 7.598 | Empatada con la ganadora |
+| **1200 / 0 / 5** | 0,520 | 0,520 | 5.679 | **Ganadora** |
+| 1200 / 0 / 8 | 0,593 | 0,387 | 7.111 | Recupera más, pero el recorte descarta evidencia |
+| 1200 / 200 / 10 | 0,613 | 0,172 | 7.038 | La que más evidencia pierde por el recorte |
 
-Es un error de medición propio, detectado y corregido a la vista: el ADR 0007 conserva el
-registro original y agrega una enmienda. Limitaciones: una serie y 17 preguntas, y la mejor
-configuración (0,583) y la elegida (0,569) están dentro del ruido; las desempata la regla y no la
-evidencia.
+Cuatro configuraciones quedan a menos de 0,02 de la mejor (0,539). Entre ellas la regla prefiere el
+menor K (5) y, con igual K, el menor tamaño; la ganadora entrega algún pasaje de referencia en 11 de
+las 17 preguntas. Con K = 8 o 10 el recorte reparte el presupuesto entre demasiados bloques y la
+evidencia que llega al modelo cae (con 1200 / 0, de 0,520 a 0,387 y 0,299). Las cifras no se
+comparan con las del ajuste anterior, por turnos (1200 / 1 turno / K = 5, 0,569): otra
+segmentación y un criterio de entrega más estricto. Limitaciones: una serie y 17 preguntas, y la
+mejor configuración (0,539) y la elegida (0,520) están dentro del ruido; las desempata la regla y no
+la evidencia.
 
 ### 7.2 Canales de recuperación: ablación
 
@@ -598,9 +608,9 @@ fijados, se mide cada canal por separado y la combinación, sobre las mismas 17 
 
 | Canal | Recall de evidencia entregada | Preguntas con algún pasaje entregado |
 |---|---|---|
-| Solo léxico (BM25) | 0,373 | 7 de 17 |
-| Solo denso (`bge-m3`) | 0,417 | 9 de 17 |
-| **Híbrido (C1)** | **0,569** | **11 de 17** |
+| Solo léxico (BM25) | 0,314 | 6 de 17 |
+| Solo denso (`bge-m3`) | 0,456 | 10 de 17 |
+| **Híbrido (C1)** | **0,520** | **11 de 17** |
 
 ![Ablación de la recuperación](../entregables/figuras/modelos-ablacion-recuperacion.png)
 
@@ -644,7 +654,7 @@ sigue pendiente.
 
 | Parámetro | Valor | Método | Evidencia |
 |---|---|---|---|
-| Tamaño de fragmento, turnos compartidos, K (C1) | 1200 / 1 / 5 | *Grid search* prerregistrado, 32 configuraciones | 7.1; ADR 0007; notebook 06 |
+| Tamaño de fragmento, caracteres compartidos, K (C1) | 1200 / 0 / 5 | *Grid search* prerregistrado, 32 configuraciones | 7.1; ADR 0007; notebook 06 |
 | Canales de recuperación (C1) | BM25 + denso, fusión RRF | Ablación de los tres modos | 7.2 |
 | `rrf_k` | 60 | Igual al de OpenKOS (no se buscó) | `[retrieval]` |
 | Bloques que entrega `openkos query` (C2, C3) | 5 | Valor por defecto de OpenKOS, conservado a propósito | ADR 0007, decisión 5 |
@@ -684,7 +694,7 @@ con OpenKOS 0.5.5: 10 de 21, 47,6 %), que siguen en `reports/` como registro.
 | Corrida | Condición | Preguntas | Corridas | Generador | Observación |
 |---|---|---|---|---|---|
 | Diagnóstico sin contexto | C0 | 21 | 3 | `qwen3:8b` | Se hizo con el árbol de trabajo sin confirmar; se declara y no cambia las cifras |
-| Humo de C1 (RAG convencional) | C1 | 21 | 1 | `qwen3:8b` | Su manifiesto registra las huellas de los modelos y la versión de OpenKOS |
+| Humo de C1 (RAG convencional sobre el cuerpo Markdown) | C1 | 21 | 1 | `qwen3:8b` | Su manifiesto registra las huellas de los modelos y la versión de OpenKOS; reemplaza a la corrida de C1 con fragmentos por turnos (`humo-c1-es2015-rag`), que se conserva como registro |
 | Humo de C2 (OpenKOS 0.7.0) | C2 | 21 | 1 | `qwen3:8b` | Verificación de suficiencia con `gemma4:26b-a4b`, registrada en el manifiesto |
 
 Las tres usan el mismo juez (`gpt-oss:20b`) y las mismas 21 preguntas. C0 se corrió 3 veces y C1 y C2 una sola, así que se comparan porcentajes y no conteos absolutos.
@@ -710,24 +720,25 @@ sobre lo que la tesis quiere probar**. Son 21 preguntas y una corrida: la direcc
 magnitud no. En E4, C0 «acierta» 6 de 12 porque el juez acepta como correcta una respuesta que
 admite no saber; no mide abstención en sentido estricto.
 
+**C1 con el cuerpo Markdown frente a C1 con fragmentos por turnos.** Con fragmentos por turnos (corrida del 2026-11-01) C1 acertaba 17 de 21 (81,0 %), con el mismo reparto por estrato. El total no cambia, pero cambian cuatro veredictos, dos en cada sentido: q008 (¿se incluyó una pantalla LCD?) y q010 (alarma para encontrar el control) pasan de correctas a incorrectas, y q013 (interfaz elegida) y q016 (fuente de energía) pasan de incorrectas a correctas. Con 21 preguntas y una corrida es ruido de muestreo: no hay evidencia de que quitar la estructura de turnos mejore ni empeore a C1.
+
 ### 8.2 Cómo fallan: respuestas equivocadas y abstenciones
 
 | Condición | Estrato | Preguntas | Correctas | Respuesta incorrecta | Abstención incorrecta | Abstención correcta (E4) |
 |---|---|---|---|---|---|---|
-| C1 | E1 | 14 | 11 | 3 | 0 | 0 |
+| C1 | E1 | 14 | 11 | 2 | 1 | 0 |
 | C1 | E2 | 2 | 2 | 0 | 0 | 0 |
 | C1 | E3 | 1 | 0 | 1 | 0 | 0 |
-| C1 | E4 | 4 | 4 | 0 | 0 | 3 |
+| C1 | E4 | 4 | 4 | 0 | 0 | 4 |
 | C2 | E1 | 14 | 8 | 2 | 4 | 0 |
 | C2 | E2 | 2 | 2 | 0 | 0 | 0 |
 | C2 | E3 | 1 | 1 | 0 | 0 | 0 |
 | C2 | E4 | 4 | 4 | 0 | 0 | 4 |
 
-En E1, C1 falla 3 veces, todas con una respuesta falsa; C2 falla 6, de las cuales 2 son
+En E1, C1 falla 3 veces, 2 con una respuesta falsa y 1 con una abstención; C2 falla 6, de las cuales 2 son
 respuestas falsas y 4 abstenciones. Es decir, la pérdida de C2 viene sobre todo de **callar**: la
 verificación de suficiencia decide que el contexto no alcanza. Y un dato importante para el diseño:
-de las 8 abstenciones de C2, las 8 las decidió esa verificación, un paso que C1 no tiene; las 3 de
-C1 las decidió el propio generador al responder «I don't know.». No es una diferencia de
+de las 8 abstenciones de C2, las 8 las decidió esa verificación, un paso que C1 no tiene; las 5 de C1 las decidió el propio generador al responder «I don't know.». No es una diferencia de
 conocimiento sino de diseño (sección 6.5), y es la razón de que H4 se mida entre las preguntas
 respondidas y de que la abstención se informe aparte.
 
@@ -848,9 +859,9 @@ verificación de suficiencia con otro modelo). Lo caro es **extraer**:
 
 | Rol | Modelo | Actividad | Segundos por unidad | Veces el tiempo del 8b |
 |---|---|---|---|---|
-| Responder | `qwen3:8b` | C1, corrida de humo (21) | 5,3 | |
+| Responder | `qwen3:8b` | C1, corrida de humo (21) | 5,1 | |
 | Responder | `qwen3:8b` | C2, corrida de humo (21) | 14,4 | |
-| Juzgar | `gpt-oss:20b` | C1, corrida de humo (21) | 3,9 | |
+| Juzgar | `gpt-oss:20b` | C1, corrida de humo (21) | 3,7 | |
 | Juzgar | `gpt-oss:20b` | C2, corrida de humo (21) | 7,2 | |
 | Juzgar | `gpt-oss:20b` | C0, diagnóstico (63) | 22,2 | |
 | Juzgar | `mistral-small3.2:24b` | Calibración (270 llamadas) | 5,5 | |
@@ -877,7 +888,7 @@ distinta máquina).
 
 | # | Dificultad | Qué pasó | Qué se hizo / estado |
 |---|---|---|---|
-| 1 | El recorte de contexto de OpenKOS invalidó una medición propia | El primer ajuste de C1 eligió 1600 / 0 / 8 (recall 0,642); al modelo le llegaba 0,446. Se repitió contando el texto entregado y el ganador pasó a 1200 / 1 / 5 | Corregido y documentado como enmienda del ADR 0007, sin borrar el registro original |
+| 1 | El recorte de contexto de OpenKOS invalidó una medición propia | El primer ajuste de C1 (2026-10-15) eligió 1600 / 0 / 8 (recall 0,642); al modelo le llegaba 0,446. Se repitió contando el texto entregado y el ganador pasó a 1200 caracteres, 1 turno de solape y K = 5. El 2026-11-02, al pasar C1 al cuerpo Markdown, se ajustó de nuevo y el ganador es 1200 / 0 / 5 (una primera repetición, con más espacio para C1 que para C2, se descartó) | Corregido y documentado como enmiendas del ADR 0007, sin borrar los registros anteriores |
 | 2 | La marca de atribución `USED:` se pierde a veces | En 2 de 21 respuestas de C1 (diseño anterior) el modelo escribió `USED:` al final de la frase y OpenKOS solo la reconoce al inicio de línea; se citaron todos los fragmentos y bajó la precision de la citación. Afecta a la citación, no a la corrección | Superada por el ADR 0014: C1 ya no usa `USED:`; cita los bloques como `[n]` y una respuesta sin citas no cita nada |
 | 3 | La regla de citación tuvo que revisarse | La primera versión exigía que todas las citas respaldaran la respuesta y rechazaba 8 de 13 respuestas, 7 de ellas correctas. Se cambió a «al menos una» y la precision se informa aparte | Resuelto (ADR 0009). Abierto: si el tamaño distinto de las citas de C1 y C2 sesga la comparación (#97) |
 | 4 | La versión de OpenKOS estaba sin fijar | Las corridas de extracción usaron la 0.5.5; el *screen* usó el arnés de la 0.6.0; la 0.7.0 cambia el modelo de la verificación de suficiencia (resuelto en 6.5). `pyproject.toml` pedía `openkos>=0.5.5` (un piso, no una versión) | Resuelto (#94, ADR 0006): `openkos==0.7.0` exacta, con Python 3.14 (ADR 0002). Las corridas hechas con la 0.5.5 son registros de esa versión; se rehicieron con la 0.7.0 en desarrollo (la extracción de ES2015 es idéntica con la misma semilla) y la decisión del extractor quedó resuelta en el ADR 0015 (#143) |
@@ -926,7 +937,7 @@ Los controles 6 a 9 son los que el notebook 19 (sección 5.6) listaba antes de l
 | C3 ejecutable | Implementado (`afg c3 build` y la condición C3); depende de la ground truth adjudicada para construir sus espacios de trabajo | Pendiente |
 | Modelos y huellas (generador, verificación de suficiencia, *embeddings*, extractor, juez) | Los cinco modelos definidos: generador y extractor `qwen3:8b` (ADR 0015), verificación de suficiencia `gemma4:26b-a4b`, *embeddings* `bge-m3` y juez `gpt-oss:20b`; faltan las huellas de las corridas formales | Parcial |
 | Versión de OpenKOS | `==0.7.0` (#94, ADR 0006) | Congelado |
-| Parámetros de C1 | 1200 / 1 / 5 en `config/experiments.toml`; una prueba verifica que coinciden con el ganador guardado | Congelado |
+| Parámetros de C1 | 1200 / 0 / 5 en `config/experiments.toml`; una prueba verifica que coinciden con el ganador guardado | Congelado |
 | Umbral τ | 0,70 principal; 0,75 y 0,80 de sensibilidad (ADR 0012) | Congelado, con concordancia del juez pendiente |
 | *Prompts* de respuesta | C1: *prompt* propio con huella SHA-256 verificada por prueba (ADR 0014); C2 y C3: los de OpenKOS 0.7.0 | Congelado |
 | Criterio de éxito | D16/D17, escrito antes de ejecutar (ADR 0010) | Congelado |
@@ -1002,7 +1013,7 @@ Cada sección de este documento se deriva del [notebook 19](../../notebooks/19-j
 
 | Sección de este documento | Sección del notebook 19 | ADR y reportes que la respaldan |
 |---|---|---|
-| Un caso para entrar en materia | Un caso para entrar en materia | `reports/experiment-b/` (corridas de C0, C1 y C2 en ES2015: `diagnostico-sin-contexto-es2015`, `humo-c1-es2015-rag`, `humo-c2-es2015-openkos070`) |
+| Un caso para entrar en materia | Un caso para entrar en materia | `reports/experiment-b/` (corridas de C0, C1 y C2 en ES2015: `diagnostico-sin-contexto-es2015`, `humo-c1-es2015-md`, `humo-c2-es2015-openkos070`) |
 | 1. Qué es «el modelo» | Cómo leer este notebook | [ADR 0003](../decisions/0003-adr-openkos-as-instrument.md); [ADR 0005](../decisions/0005-adr-development-evaluation-split.md) |
 | 2. Funcionar bien y costo de los errores | 1 | [ADR 0009](../decisions/0009-adr-regla-de-citacion-correcta.md), [0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md), [0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md); [notebook 10](../../notebooks/10-jss-potencia-criterio-d16.ipynb); [notebook 12](../../notebooks/12-jss-extraccion-openkos-es2015.ipynb); [documento 08](08-jss-metricas-y-criterio-de-exito.md) |
 | 3. Restricciones del análisis exploratorio | 2 | [documento 07](07-jss-analisis-exploratorio.md); [ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md), [0008](../decisions/0008-adr-fechas-de-reunion-para-openkos.md), [0011](../decisions/0011-adr-alineacion-rol-e-intervalos-del-experimento-a.md); `src/afg/eda/modeling.py` |

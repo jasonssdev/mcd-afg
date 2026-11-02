@@ -17,7 +17,7 @@ from tests.test_c1_tuning import (
     transcripts,  # noqa: F401 - pytest fixture
 )
 
-PARAMS = PinnedC1Params(max_chars=40, overlap_turns=0, k=1)
+PARAMS = PinnedC1Params(chunk_size=40, chunk_overlap=0, k=1)
 
 
 class CountingEmbedder(LetterEmbedder):
@@ -35,12 +35,12 @@ def test_one_result_per_mode_at_the_pinned_params(transcripts: Path) -> None:  #
     )
     assert [r.mode for r in results] == ["bm25", "dense", "hybrid"]
     for r in results:
-        assert (r.result.max_chars, r.result.overlap_turns, r.result.k) == (40, 0, 1)
+        assert (r.result.chunk_size, r.result.chunk_overlap, r.result.k) == (40, 0, 1)
         assert set(r.result.recalls) == {"q1", "q2"}
 
 
 def test_hybrid_mode_equals_the_tuning_grid_at_the_same_point(transcripts: Path) -> None:  # noqa: F811
-    config = small_config(max_chars=(40,), overlap_turns=(0,), k=(1,))
+    config = small_config(chunk_size=(40,), chunk_overlap=(0,), k=(1,))
     (grid,) = evaluate_grid(questions(), ["ES2015a"], config, LetterEmbedder(), transcripts)
     hybrid = next(
         r
@@ -83,7 +83,7 @@ def test_unknown_mode_is_rejected(transcripts: Path) -> None:  # noqa: F811
 
 
 def test_evaluate_grid_mode_defaults_to_hybrid(transcripts: Path) -> None:  # noqa: F811
-    config = small_config(max_chars=(40,), overlap_turns=(0,), k=(1,))
+    config = small_config(chunk_size=(40,), chunk_overlap=(0,), k=(1,))
     default = evaluate_grid(questions(), ["ES2015a"], config, LetterEmbedder(), transcripts)
     explicit = evaluate_grid(
         questions(), ["ES2015a"], config, LetterEmbedder(), transcripts, mode="hybrid"
@@ -106,7 +106,7 @@ def test_results_file_carries_config_modes_and_commit(
     assert data["git_commit"] == "abc123"
     assert data["n_questions"] == 2
     assert data["config"]["series"] == ["ES2015"]
-    assert data["params"] == {"max_chars": 40, "overlap_turns": 0, "k": 1}
+    assert data["params"] == {"chunk_size": 40, "chunk_overlap": 0, "k": 1}
     assert [m["mode"] for m in data["modes"]] == ["bm25", "dense", "hybrid"]
     first = data["modes"][0]
     assert {"mean_recall", "mean_delivered_recall", "recalls", "delivered_recalls"} <= set(first)

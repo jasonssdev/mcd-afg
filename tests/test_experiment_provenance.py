@@ -15,7 +15,7 @@ import pytest
 from afg.experiments import provenance as prov
 from afg.experiments.provenance import LiveProbe, collect_provenance, manifest_provenance_table
 
-_C1 = {"max_chars": 1200, "overlap_turns": 1, "k": 5, "extra": "ignored"}
+_C1 = {"chunk_size": 1200, "chunk_overlap": 1, "k": 5, "extra": "ignored"}
 
 
 class FakeProbe:
@@ -78,7 +78,7 @@ def test_digests_versions_and_params_are_recorded(tmp_path: Path) -> None:
     assert out["model_digest_source"] == "ollama /api/tags"
     assert out["ollama_version"] == "0.9.9"
     assert out["openkos_version"] == "0.5.2"
-    assert out["c1_params"] == {"max_chars": 1200, "overlap_turns": 1, "k": 5}
+    assert out["c1_params"] == {"chunk_size": 1200, "chunk_overlap": 1, "k": 5}
     assert out["questions_sha256"] == hashlib.sha256(b"id,text\nq1,hola\n").hexdigest()
     assert out["git_dirty"] is True
 

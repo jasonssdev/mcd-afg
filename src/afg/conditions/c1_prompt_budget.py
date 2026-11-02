@@ -5,9 +5,11 @@ retrieved bodies share ``(window - reply reserve) / TOKENS_PER_CHAR - overhead``
 and the ones that do not fit are excerpted (``src/openkos/prompt_budget.py``, issue #882).
 C1 must do the same or it would send the model a different amount of text than C2 and C3
 read. This is a line-for-line port of the pure functions OpenKOS uses (``budget_chars``,
-``chunk_lines``, ``bounded_text``, ``fair_shares``); nothing is imported from OpenKOS and the
-semantics are not changed. OpenKOS's ``nested_shares`` (revision history) is not ported: it
-only runs when ``revision_history`` is on, which is off by default and in the experiment.
+``chunk_lines``, ``bounded_text``, ``fair_shares``) and the semantics are not changed. The one
+input that is OpenKOS's and not C1's is the prompt overhead (``OPENKOS_SYSTEM_OVERHEAD_CHARS``,
+a constant checked against the pinned package), so the body budget equals the one C2 gets. OpenKOS's
+``nested_shares`` (revision history) is not ported: it only runs when ``revision_history`` is
+on, which is off by default and in the experiment.
 """
 
 from __future__ import annotations
@@ -29,6 +31,16 @@ def budget_chars(*, planning: int, generation_reserve_tokens: int, overhead_char
     """Characters available for the bounded text (``prompt_budget.budget_chars``)."""
     budget = int((planning - generation_reserve_tokens) / TOKENS_PER_CHAR) - overhead_chars
     return max(budget, 0)
+
+
+# System-prompt chars OpenKOS charges against the context budget of ``query``: the larger of its
+# answer and sufficiency prompts, because both receive the same user message. This is
+# ``max(len(_SYSTEM_PROMPT), len(_SUFFICIENCY_PROMPT))`` in ``openkos/retrieval/answer.py``
+# (``_bound_bodies``) for the pinned ``openkos==0.7.0`` (1,280 and 422 chars). C1 charges the same
+# value so that C1 and C2 plan the same TEXT budget (ADR 0007, decision 3) although C1 sends a
+# shorter generic prompt. A constant, so C1 never needs the ``instrument`` extra at runtime; a test
+# compares it with the installed package and fails if the pin moves without updating it.
+OPENKOS_SYSTEM_OVERHEAD_CHARS: Final = 1280
 
 
 def chunk_lines(text: str, target: int) -> list[str]:

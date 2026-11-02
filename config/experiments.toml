@@ -30,27 +30,29 @@ rrf_k = 60                           # reciprocal rank fusion constant, as in op
 # generative model is involved.
 # These values and the selection rule are pre-registered: committed before any result is seen.
 series = ["ES2015"]                  # development series whose whole meeting set is indexed (D15)
-max_chars = [800, 1200, 1600, 2400]  # chunk size cap, characters
-overlap_turns = [0, 1]               # turns shared between consecutive chunks
+# Grid over the Markdown chunking (ADR 0007, amendment of 2026-11-02): C1 chunks the Markdown
+# body with a generic character splitter, so the grid is in characters, not turns.
+chunk_size = [800, 1200, 1600, 2400]  # chunk size cap, characters
+chunk_overlap = [0, 200]             # characters shared between consecutive chunks
 k = [3, 5, 8, 10]                    # chunks sent to the answer prompt
 # Total context chars OpenKOS measured for 5 bodies before it bounded the context (issue
 # #882); pre-registered and kept as the eligibility filter, although the effective budget in
 # v0.5.4 is ~7,400 chars (ADR 0007, amendment). A config is eligible only if
-# k * max_chars <= char_budget.
+# k * chunk_size <= char_budget.
 char_budget = 13516
 # Winner: the eligible config with the highest mean recall; among eligible configs within
-# tie_margin of it, prefer smaller k, then smaller max_chars, then smaller overlap_turns.
+# tie_margin of it, prefer smaller k, then smaller chunk_size, then smaller chunk_overlap.
 tie_margin = 0.02
 
 [retrieval.c1]
 # Parameters C1 runs with, chosen by the pre-registered rule above on ES2015 (development
 # data, ADR 0005), measuring the recall of the text that reaches the model after OpenKOS's
 # context budget (ADR 0007, amendment of 2026-10-15). Result: reports/c1-tuning/resultados.json;
-# reasoning: notebook 06 and ADR 0007. A test checks these equal the stored winner. K=5 chunks
-# of at most 1200 characters fit the ~7,400-character context OpenKOS v0.5.4 sends, which is
-# the same for C1, C2 and C3 by construction.
-max_chars = 1200                     # chunk size cap, characters
-overlap_turns = 1                    # turns shared between consecutive chunks
+# reasoning: notebook 06 and ADR 0007. A test checks these equal the stored winner. The
+# ~7,400-character context OpenKOS v0.5.4 sends is the same for C1, C2 and C3 by construction.
+# Retuned on 2026-11-02 over the Markdown chunking (ADR 0007, amendment of 2026-11-02).
+chunk_size = 1200                    # chunk size cap, characters
+chunk_overlap = 0                    # characters shared between consecutive chunks
 k = 5                                # chunks sent to the answer prompt
 
 [alignment]

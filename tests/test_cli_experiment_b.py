@@ -123,7 +123,7 @@ def test_manifest_records_the_reproducibility_fields(env: dict[str, Any]) -> Non
     assert manifest["ollama_version"] == "0.9.9"
     assert manifest["openkos_version"] is None
     assert manifest["git_dirty"] is True
-    assert manifest["c1_params"] == {"max_chars": 1200, "overlap_turns": 1, "k": 5}
+    assert manifest["c1_params"] == {"chunk_size": 1200, "chunk_overlap": 0, "k": 5}
     assert manifest["questions_sha256"] == hashlib.sha256(env["questions"].read_bytes()).hexdigest()
 
 

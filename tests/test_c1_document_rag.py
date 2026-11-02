@@ -26,12 +26,17 @@ from afg.conditions.c1_document_rag import (
     GenerationSettings,
     OllamaChatBackend,
     assemble_context,
+    body_budget,
     parse_citations,
     strip_concept_id_scaffolding,
 )
+from afg.conditions.c1_prompt_budget import OPENKOS_SYSTEM_OVERHEAD_CHARS
 from afg.conditions.c1_tuning import PinnedC1Params
 from afg.domain.decision import EvidenceSpan
 from afg.domain.question import Question, QuestionStratum
+from afg.evaluation.chunk_acts import ChunkActMapper
+
+from .frozen_fixtures import write_frozen_meeting
 
 SETTINGS = GenerationSettings(
     model="qwen3:8b",
@@ -40,28 +45,13 @@ SETTINGS = GenerationSettings(
     context_window=12288,
     max_generation_tokens=8192,
 )
-PARAMS = PinnedC1Params(max_chars=120, overlap_turns=0, k=2)
+PARAMS = PinnedC1Params(chunk_size=50, chunk_overlap=0, k=2)
 
 
 def _write_meeting(directory: Path, meeting_id: str, turns: Sequence[str]) -> None:
-    lines = [
-        json.dumps(
-            {
-                "meeting_id": meeting_id,
-                "turn_index": i,
-                "speaker": "A",
-                "role": "PM",
-                "text": text,
-                "start": None,
-                "end": None,
-                "char_start": i * 1000,
-                "char_end": i * 1000 + len(text),
-                "dialogue_act_ids": [f"{meeting_id}.d{i}"],
-            }
-        )
-        for i, text in enumerate(turns)
-    ]
-    (directory / f"{meeting_id}.jsonl").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    write_frozen_meeting(
+        directory, meeting_id, [(text, (f"{meeting_id}.d{i}",)) for i, text in enumerate(turns)]
+    )
 
 
 class CountingEmbedder:
@@ -125,6 +115,7 @@ def _condition(
         settings=kw.pop("settings", SETTINGS),
         params=kw.pop("params", PARAMS),
         transcripts_dir=transcripts,
+        annotator=kw.pop("annotator", ChunkActMapper(transcripts)),
         **kw,
     )
 
@@ -251,6 +242,41 @@ def test_citations_are_the_acts_of_the_blocks_cited_inline(transcripts: Path) ->
     assert cited_acts == set(trace.cited_acts[cited.chunk_id])
 
 
+def test_cited_acts_come_from_the_evaluator_mapping_of_the_chunk_span(
+    transcripts: Path,
+) -> None:
+    chat = ScriptedChat("It costs twenty five euros [1].")
+    answer, trace = _condition(transcripts, chat).answer_with_trace(_question())
+    block = trace.context_blocks[0]
+    chunk = next(
+        c
+        for c in chunk_meetings(["ES2015a", "ES2015b"], 50, 0, transcripts)
+        if c.chunk_id == block.chunk_id
+    )
+    expected = ChunkActMapper(transcripts).acts_of(chunk)
+    assert expected  # the fixture carries one act per turn
+    assert trace.cited_acts == {chunk.chunk_id: expected}
+    assert answer.cited_evidence == (
+        EvidenceSpan(meeting_id=chunk.meeting_id, dialogue_act_ids=expected),
+    )
+    assert (block.char_start, block.char_end) == (chunk.char_start, chunk.char_end)
+
+
+def test_c1_answers_without_any_jsonl(transcripts: Path) -> None:
+    """C1 reads only the Markdown: the turn structure is never needed to retrieve or answer."""
+    for path in transcripts.glob("*.jsonl"):
+        path.unlink()
+    chat = ScriptedChat("It costs twenty five euros [1].")
+    condition = _condition(transcripts, chat, annotator=None)
+    answer, trace = condition.answer_with_trace(_question())
+    assert answer.text == "It costs twenty five euros [1]."
+    assert trace.cited_chunk_ids
+    assert trace.cited_acts == {}
+    assert answer.cited_evidence == ()
+    prompt = _user_message(chat)
+    assert "PM: the remote control costs twenty five euros" in prompt
+
+
 def test_a_reply_without_markers_cites_nothing(transcripts: Path) -> None:
     chat = ScriptedChat("answer without citations")
     answer, trace = _condition(transcripts, chat).answer_with_trace(_question())
@@ -278,7 +304,7 @@ def test_parse_citations_dedups_orders_and_bounds() -> None:
 
 def test_citations_group_dialogue_acts_by_meeting(transcripts: Path) -> None:
     chat = ScriptedChat("answer [1][2][3][4][5][6][7][8]")
-    answer, _ = _condition(transcripts, chat, params=PinnedC1Params(120, 0, 8)).answer_with_trace(
+    answer, _ = _condition(transcripts, chat, params=PinnedC1Params(50, 0, 8)).answer_with_trace(
         _question()
     )
     meetings = [span.meeting_id for span in answer.cited_evidence]
@@ -346,7 +372,7 @@ def test_generation_failure_propagates(transcripts: Path) -> None:
 
 def test_index_covers_the_whole_series_and_nothing_else(transcripts: Path) -> None:
     chat = ScriptedChat("a [1]", "b [1]")
-    _, trace = _condition(transcripts, chat, params=PinnedC1Params(120, 0, 8)).answer_with_trace(
+    _, trace = _condition(transcripts, chat, params=PinnedC1Params(50, 0, 8)).answer_with_trace(
         _question()
     )
     meetings = {r.meeting_id for r in trace.retrieved}
@@ -379,7 +405,7 @@ def test_blocks_that_do_not_fit_the_window_are_excerpted(tmp_path: Path) -> None
     chat = ScriptedChat("answer [1]")
     tight = dataclasses.replace(SETTINGS, context_window=8192 + 1600)
     _, trace = _condition(
-        tmp_path, chat, settings=tight, params=PinnedC1Params(120, 0, 2)
+        tmp_path, chat, settings=tight, params=PinnedC1Params(5000, 0, 2)
     ).answer_with_trace(_question("word1?"))
     assert trace.context_blocks
     assert all(b.excerpted for b in trace.context_blocks)
@@ -409,9 +435,9 @@ def test_assemble_context_is_what_the_condition_sends(tmp_path: Path) -> None:
     chat = ScriptedChat("answer [1]")
     tight = dataclasses.replace(SETTINGS, context_window=8192 + 1600)
     _, trace = _condition(
-        tmp_path, chat, settings=tight, params=PinnedC1Params(120, 0, 2)
+        tmp_path, chat, settings=tight, params=PinnedC1Params(5000, 0, 2)
     ).answer_with_trace(_question("word1?"))
-    chunks = chunk_meetings(["ES2015a"], 120, 0, tmp_path)
+    chunks = chunk_meetings(["ES2015a"], 5000, 0, tmp_path)
     by_id = {c.chunk_id: c for c in chunks}
     retrieved = [by_id[b.chunk_id] for b in trace.context_blocks]
     blocks, kept, omitted = assemble_context(
@@ -471,3 +497,39 @@ def test_with_seed_changes_only_the_seed_and_shares_the_index(transcripts: Path)
     assert base.settings.seed == SETTINGS.seed  # the original is untouched
     assert len(embedder.calls) == embedded + 1  # only the new question is embedded
     assert answer.condition == base.condition_id
+
+
+# --- body budget equals the one OpenKOS plans for C2 (ADR 0007, decision 3) ------------
+
+
+def test_body_budget_equals_the_budget_openkos_plans_for_the_same_question() -> None:
+    """C1 and C2 share a TEXT budget by construction: C1 charges OpenKOS's own prompt
+    overhead (its larger system prompt) instead of its own shorter generic prompt."""
+    prompt_budget = pytest.importorskip("openkos.prompt_budget")
+    answer_module = pytest.importorskip("openkos.retrieval.answer")
+    sufficiency_prompt = answer_module._SUFFICIENCY_PROMPT
+    system_prompt = answer_module._SYSTEM_PROMPT
+    user_content = answer_module._user_content
+
+    question = "What selling price was set for the remote control?"
+    labels = [f"[concept_id: ES2015a-c{i} — ES2015a]\n" for i in range(5)]
+    expected = prompt_budget.budget_chars(
+        planning=12288,
+        generation_reserve_tokens=8192,
+        overhead_chars=len(user_content(labels, question))
+        + max(len(system_prompt), len(sufficiency_prompt)),
+    )
+    assert body_budget(labels, question, context_window=12288, max_generation_tokens=8192) == (
+        expected
+    )
+    # The generic C1 prompt is shorter, so charging it would have left MORE room than C2 has.
+    assert len(answer_prompt()) < max(len(system_prompt), len(sufficiency_prompt))
+
+
+def test_overhead_constant_matches_the_installed_openkos() -> None:
+    """Guard: the pinned constant must equal OpenKOS's own overhead (skipped without the extra)."""
+    answer_module = pytest.importorskip("openkos.retrieval.answer")
+    assert (
+        max(len(answer_module._SYSTEM_PROMPT), len(answer_module._SUFFICIENCY_PROMPT))
+        == OPENKOS_SYSTEM_OVERHEAD_CHARS
+    )

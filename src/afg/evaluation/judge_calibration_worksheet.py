@@ -28,7 +28,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from afg.annotation.goldset import summlink_dialogue_act_ids
-from afg.conditions.c1_chunking import load_frozen_turns
+from afg.corpus.frozen import load_frozen_turns
 from afg.domain.decision import EvidenceSpan
 from afg.domain.question import (
     QuestionStratum,

@@ -31,14 +31,13 @@ from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
 
-from afg.conditions.c1_chunking import FrozenTurn, load_frozen_turns
+from afg.corpus.frozen import FrozenTurn, load_frozen_turns, turn_extent
 from afg.corpus.render import parse_front_matter
 from afg.domain.decision import EvidenceSpan
 from afg.shared.paths import TRANSCRIPTS_DIR
 
 # openkos.extraction.decision_pass._NEEDLE_TRAILING_PUNCTUATION
 _NEEDLE_TRAILING_PUNCTUATION = ".,;:!?"
-_ROLE_SEPARATOR = ": "
 
 
 class MissReason(StrEnum):
@@ -98,9 +97,7 @@ def _normalized_needle(quote: str) -> str:
     return text.rstrip(_NEEDLE_TRAILING_PUNCTUATION)
 
 
-def _turn_extent(turn: FrozenTurn) -> tuple[int, int]:
-    prefix = len(turn.role) + len(_ROLE_SEPARATOR)
-    return turn.char_start - prefix, turn.char_end
+_turn_extent = turn_extent
 
 
 def locate_quote(

@@ -31,7 +31,7 @@ from afg.extraction.openkos.commands import SubprocessRunner
 from afg.shared.paths import EXPERIMENT_A_DIR, EXPERIMENT_B_DIR, PROJECT_ROOT
 
 DIGEST_SOURCE = "ollama /api/tags"
-C1_PARAM_KEYS = ("max_chars", "overlap_turns", "k")
+C1_PARAM_KEYS = ("chunk_size", "chunk_overlap", "k")
 _TIMEOUT_S = 5.0
 
 

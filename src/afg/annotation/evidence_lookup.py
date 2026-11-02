@@ -11,7 +11,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Sequence
 from pathlib import Path
 
-from afg.conditions.c1_chunking import FrozenTurn, load_frozen_turns
+from afg.corpus.frozen import FrozenTurn, load_frozen_turns
 from afg.shared.paths import TRANSCRIPTS_DIR
 
 __all__ = [

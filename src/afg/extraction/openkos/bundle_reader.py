@@ -53,7 +53,7 @@ from pathlib import Path
 
 import yaml
 
-from afg.conditions.c1_chunking import FrozenTurn
+from afg.corpus.frozen import FrozenTurn
 from afg.domain.decision import Decision, DecisionStatus, EvidenceSpan
 from afg.extraction.openkos.commands import OpenKosError
 from afg.extraction.openkos.evidence import (

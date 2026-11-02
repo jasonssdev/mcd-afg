@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import dataclasses
-import json
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -21,7 +20,6 @@ from afg.conditions.c1_tuning import (
     evaluate_grid,
     evidence_recall,
     first_hit_rank,
-    load_act_turns,
     load_tuning_config,
     load_tuning_questions,
     load_tuning_results,
@@ -32,6 +30,9 @@ from afg.conditions.c1_tuning import (
 )
 from afg.domain.decision import EvidenceSpan
 from afg.domain.question import QuestionStratum
+from afg.evaluation.chunk_acts import ChunkActMapper
+
+from .frozen_fixtures import write_frozen_meeting
 
 # --- helpers ---------------------------------------------------------------------------
 
@@ -48,17 +49,14 @@ class LetterEmbedder:
         return out
 
 
-def chunk(chunk_id: str, acts: tuple[str, ...], text: str = "x") -> Chunk:
+def chunk(chunk_id: str, start: int, end: int, text: str = "x") -> Chunk:
     meeting = chunk_id.split(".")[0]
     return Chunk(
         chunk_id=chunk_id,
         meeting_id=meeting,
         series="ES2015",
-        first_turn=0,
-        last_turn=0,
-        start=None,
-        end=None,
-        dialogue_act_ids=acts,
+        char_start=start,
+        char_end=end,
         text=text,
     )
 
@@ -70,31 +68,11 @@ def span(meeting: str, *acts: str) -> EvidenceSpan:
 def write_meeting(
     directory: Path, meeting_id: str, turns: list[tuple[str, tuple[str, ...]]]
 ) -> None:
-    lines = []
-    offset = 0
-    for index, (text, acts) in enumerate(turns):
-        lines.append(
-            json.dumps(
-                {
-                    "meeting_id": meeting_id,
-                    "turn_index": index,
-                    "speaker": "A",
-                    "role": "PM",
-                    "text": text,
-                    "start": None,
-                    "end": None,
-                    "char_start": offset,
-                    "char_end": offset + len(text),
-                    "dialogue_act_ids": list(acts),
-                }
-            )
-        )
-        offset += len(text) + 2
-    (directory / f"{meeting_id}.jsonl").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    write_frozen_meeting(directory, meeting_id, turns)
 
 
 def result(
-    max_chars: int = 1200,
+    chunk_size: int = 1200,
     overlap: int = 0,
     k: int = 5,
     recall: float = 0.5,
@@ -104,8 +82,8 @@ def result(
     # By default the delivered recall equals the full-chunk recall (nothing was trimmed).
     shown = recall if delivered is None else delivered
     return ConfigResult(
-        max_chars=max_chars,
-        overlap_turns=overlap,
+        chunk_size=chunk_size,
+        chunk_overlap=overlap,
         k=k,
         mean_recall=recall,
         recalls={"q1": recall},
@@ -121,91 +99,144 @@ def result(
 
 # --- evidence recall -------------------------------------------------------------------
 
+# Body of the fixture below: turn extents (role prefix included)
+#   t0 "PM: first turn"   acts a, shared
+#   t1 "PM: second turn"  acts b
+#   t2 "PM: third turn"   acts c, shared
+BODY_TURNS = [
+    ("first turn", ("a", "shared")),
+    ("second turn", ("b",)),
+    ("third turn", ("c", "shared")),
+]
 
-def test_recall_is_fraction_of_reference_acts_in_the_union_of_chunks() -> None:
-    chunks = [chunk("M1.c000", ("a", "b")), chunk("M1.c001", ("c",))]
+
+@pytest.fixture
+def mapper(tmp_path: Path) -> ChunkActMapper:
+    write_frozen_meeting(tmp_path, "M1", BODY_TURNS)
+    return ChunkActMapper(tmp_path)
+
+
+def at(mapper: ChunkActMapper, first: int, last: int, chunk_id: str = "M1.c000") -> Chunk:
+    """A chunk of M1 covering turns ``first..last`` exactly (extent of the whole lines)."""
+    from afg.corpus.frozen import turn_extent
+
+    turns = mapper.turns("M1")
+    start, end = turn_extent(turns[first])[0], turn_extent(turns[last])[1]
+    from afg.corpus.render import read_meeting_body
+
+    body = read_meeting_body("M1", mapper.transcripts_dir)
+    return chunk(chunk_id, start, end, body[start:end])
+
+
+def test_recall_is_fraction_of_reference_acts_in_the_union_of_chunks(
+    mapper: ChunkActMapper,
+) -> None:
+    chunks = [at(mapper, 0, 0), at(mapper, 2, 2, "M1.c001")]
     evidence = [span("M1", "a", "c", "z", "y")]
-    assert evidence_recall(chunks, evidence) == pytest.approx(0.5)
+    assert evidence_recall(chunks, evidence, mapper) == pytest.approx(0.5)
 
 
-def test_recall_is_keyed_by_meeting_and_act() -> None:
-    chunks = [chunk("M1.c000", ("a",))]
-    assert evidence_recall(chunks, [span("M2", "a")]) == 0.0
-    assert evidence_recall(chunks, [span("M1", "a")]) == 1.0
+def test_recall_takes_the_acts_from_the_char_span_not_from_the_chunk(
+    mapper: ChunkActMapper,
+) -> None:
+    only_second = at(mapper, 1, 1)
+    assert evidence_recall([only_second], [span("M1", "a")], mapper) == 0.0
+    assert evidence_recall([only_second], [span("M1", "b")], mapper) == 1.0
+    # a span crossing two turns holds the acts of both
+    assert evidence_recall([at(mapper, 0, 1)], [span("M1", "a", "b")], mapper) == 1.0
 
 
-def test_recall_counts_acts_across_spans_once_each() -> None:
-    chunks = [chunk("M1.c000", ("a",)), chunk("M2.c000", ("b",))]
-    evidence = [span("M1", "a", "x"), span("M2", "b")]
-    assert evidence_recall(chunks, evidence) == pytest.approx(2 / 3)
+def test_recall_is_keyed_by_meeting_and_act(mapper: ChunkActMapper) -> None:
+    chunks = [at(mapper, 0, 0)]
+    assert evidence_recall(chunks, [span("M2", "a")], mapper) == 0.0
+    assert evidence_recall(chunks, [span("M1", "a")], mapper) == 1.0
 
 
-def test_recall_with_nothing_retrieved_is_zero() -> None:
-    assert evidence_recall([], [span("M1", "a")]) == 0.0
+def test_recall_counts_acts_across_spans_once_each(mapper: ChunkActMapper) -> None:
+    chunks = [at(mapper, 0, 0)]
+    evidence = [span("M1", "a", "x"), span("M1", "shared")]
+    assert evidence_recall(chunks, evidence, mapper) == pytest.approx(2 / 3)
 
 
-def test_recall_without_evidence_is_rejected() -> None:
+def test_recall_with_nothing_retrieved_is_zero(mapper: ChunkActMapper) -> None:
+    assert evidence_recall([], [span("M1", "a")], mapper) == 0.0
+
+
+def test_recall_without_evidence_is_rejected(mapper: ChunkActMapper) -> None:
     with pytest.raises(ValueError, match="evidence"):
-        evidence_recall([chunk("M1.c000", ("a",))], [])
+        evidence_recall([at(mapper, 0, 0)], [], mapper)
 
 
-def test_first_hit_rank_is_one_based_and_none_when_missed() -> None:
-    chunks = [chunk("M1.c000", ("a",)), chunk("M1.c001", ("b",)), chunk("M1.c002", ("b", "c"))]
-    assert first_hit_rank(chunks, [span("M1", "c", "b")]) == 2
-    assert first_hit_rank(chunks, [span("M1", "zzz")]) is None
-    assert first_hit_rank([], [span("M1", "a")]) is None
+def test_first_hit_rank_is_one_based_and_none_when_missed(mapper: ChunkActMapper) -> None:
+    chunks = [at(mapper, 0, 0), at(mapper, 1, 1, "M1.c001"), at(mapper, 1, 2, "M1.c002")]
+    assert first_hit_rank(chunks, [span("M1", "c", "b")], mapper) == 2
+    assert first_hit_rank(chunks, [span("M1", "zzz")], mapper) is None
+    assert first_hit_rank([], [span("M1", "a")], mapper) is None
 
 
 # --- delivered recall ------------------------------------------------------------------
 
-ACT_TURNS = {
-    ("M1", "a"): [(0, "PM: first turn")],
-    ("M1", "b"): [(1, "ME: second turn")],
-    ("M1", "c"): [(1, "ME: second turn"), (2, "PM: third turn")],
-}
+ELIDED = "\n[... source elided to fit the context window ...]\n"
 
 
-def block(chunk_id: str, acts: tuple[str, ...], text: str, first: int = 0, last: int = 2) -> tuple:  # type: ignore[type-arg]
-    c = dataclasses.replace(chunk(chunk_id, acts, text), first_turn=first, last_turn=last)
-    return (c, f"[concept_id: {chunk_id} — M1]\n{text}")
+def block(chunk: Chunk, text: str | None = None) -> tuple[Chunk, str]:
+    """A delivered block: the chunk and the text of its body after the label."""
+    return chunk, chunk.text if text is None else text
 
 
-def test_delivered_recall_counts_an_act_whose_turn_survives_intact() -> None:
-    delivered = [block("M1.c000", ("a", "b"), "PM: first turn\n\nME: second turn")]
-    evidence = [span("M1", "a", "b")]
-    assert delivered_recall(delivered, evidence, ACT_TURNS) == 1.0
+def test_delivered_recall_counts_an_act_whose_turn_survives_intact(
+    mapper: ChunkActMapper,
+) -> None:
+    delivered = [block(at(mapper, 0, 1))]
+    assert delivered_recall(delivered, [span("M1", "a", "b")], mapper) == 1.0
 
 
-def test_delivered_recall_ignores_an_act_whose_turn_was_elided() -> None:
-    text = "PM: first turn\n[... source elided to fit the context window ...]\nPM: third turn"
-    delivered = [block("M1.c000", ("a", "b", "c"), text)]
-    assert delivered_recall(delivered, [span("M1", "a", "b")], ACT_TURNS) == pytest.approx(0.5)
+def test_delivered_recall_ignores_an_act_whose_turn_was_elided(mapper: ChunkActMapper) -> None:
+    whole = at(mapper, 0, 2)
+    text = "PM: first turn" + ELIDED + "PM: third turn"
+    assert delivered_recall([block(whole, text)], [span("M1", "a", "b")], mapper) == (
+        pytest.approx(0.0 + 0.5)
+    )
 
 
-def test_delivered_recall_needs_every_turn_of_the_act() -> None:
-    # act c spans turns 1 and 2: with turn 2 missing the act is not fully delivered.
-    delivered = [block("M1.c000", ("c",), "ME: second turn")]
-    assert delivered_recall(delivered, [span("M1", "c")], ACT_TURNS) == 0.0
-    both = [block("M1.c000", ("c",), "ME: second turn\nPM: third turn")]
-    assert delivered_recall(both, [span("M1", "c")], ACT_TURNS) == 1.0
+def test_delivered_recall_needs_every_turn_of_the_act(mapper: ChunkActMapper) -> None:
+    # act "shared" spans turns 0 and 2: with turn 2 elided the act is not fully delivered.
+    whole = at(mapper, 0, 2)
+    partial = "PM: first turn\n\nPM: second turn" + ELIDED
+    assert delivered_recall([block(whole, partial)], [span("M1", "shared")], mapper) == 0.0
+    assert delivered_recall([block(whole)], [span("M1", "shared")], mapper) == 1.0
 
 
-def test_delivered_recall_matches_whole_lines_not_substrings() -> None:
-    acts = {("M1", "a"): [(0, "PM: yes")]}
-    delivered = [block("M1.c000", ("a",), "PM: yes indeed it is")]
-    assert delivered_recall(delivered, [span("M1", "a")], acts) == 0.0
+def test_delivered_recall_unions_the_turns_of_an_act_across_blocks(
+    mapper: ChunkActMapper,
+) -> None:
+    delivered = [block(at(mapper, 0, 0)), block(at(mapper, 2, 2, "M1.c001"))]
+    assert delivered_recall(delivered, [span("M1", "shared")], mapper) == 1.0
 
 
-def test_delivered_recall_with_nothing_delivered_is_zero_and_needs_evidence() -> None:
-    assert delivered_recall([], [span("M1", "a")], ACT_TURNS) == 0.0
+def test_delivered_recall_does_not_count_a_turn_cut_by_the_chunk_boundary(
+    mapper: ChunkActMapper,
+) -> None:
+    from afg.corpus.render import read_meeting_body
+
+    body = read_meeting_body("M1", mapper.transcripts_dir)
+    cut = chunk("M1.c000", 0, 8, body[:8])  # "PM: firs"
+    assert delivered_recall([block(cut)], [span("M1", "a")], mapper) == 0.0
+
+
+def test_delivered_recall_matches_positions_not_substrings(mapper: ChunkActMapper) -> None:
+    # The same words elsewhere in the block do not deliver the turn whose span was elided.
+    whole = at(mapper, 0, 2)
+    text = "PM: second turn" + ELIDED + "PM: third turn"
+    assert delivered_recall([block(whole, text)], [span("M1", "a")], mapper) == 0.0
+
+
+def test_delivered_recall_with_nothing_delivered_is_zero_and_needs_evidence(
+    mapper: ChunkActMapper,
+) -> None:
+    assert delivered_recall([], [span("M1", "a")], mapper) == 0.0
     with pytest.raises(ValueError, match="evidence"):
-        delivered_recall([], [], ACT_TURNS)
-
-
-def test_load_act_turns_maps_each_act_to_its_rendered_turns(transcripts: Path) -> None:
-    acts = load_act_turns(["ES2015a"], transcripts)
-    assert acts[("ES2015a", "d2")] == [(1, "PM: budget twelve euros fifty")]
-    assert set(acts) == {("ES2015a", f"d{i}") for i in range(1, 5)}
+        delivered_recall([], [], mapper)
 
 
 # --- selection rule --------------------------------------------------------------------
@@ -235,14 +266,14 @@ def test_ineligible_configs_never_win() -> None:
 
 def test_tie_margin_prefers_smaller_k_then_chars_then_overlap() -> None:
     results = [
-        result(max_chars=800, overlap=1, k=8, recall=0.80),
-        result(max_chars=1200, overlap=0, k=5, recall=0.79),
-        result(max_chars=800, overlap=1, k=5, recall=0.785),
-        result(max_chars=800, overlap=0, k=5, recall=0.781),
-        result(max_chars=800, overlap=0, k=3, recall=0.70),
+        result(chunk_size=800, overlap=1, k=8, recall=0.80),
+        result(chunk_size=1200, overlap=0, k=5, recall=0.79),
+        result(chunk_size=800, overlap=1, k=5, recall=0.785),
+        result(chunk_size=800, overlap=0, k=5, recall=0.781),
+        result(chunk_size=800, overlap=0, k=3, recall=0.70),
     ]
     winner = select_winner(results, tie_margin=0.02).winner
-    assert (winner.k, winner.max_chars, winner.overlap_turns) == (5, 800, 0)
+    assert (winner.k, winner.chunk_size, winner.chunk_overlap) == (5, 800, 0)
 
 
 def test_tie_margin_is_inclusive_and_excludes_clearly_worse() -> None:
@@ -263,8 +294,8 @@ def test_no_eligible_config_raises_a_clear_error() -> None:
 def test_real_config_is_pre_registered_grid() -> None:
     config = load_tuning_config()
     assert config.series == ("ES2015",)
-    assert config.max_chars == (800, 1200, 1600, 2400)
-    assert config.overlap_turns == (0, 1)
+    assert config.chunk_size == (800, 1200, 1600, 2400)
+    assert config.chunk_overlap == (0, 200)
     assert config.k == (3, 5, 8, 10)
     assert config.char_budget == 13516
     assert config.tie_margin == pytest.approx(0.02)
@@ -275,8 +306,8 @@ def test_series_outside_development_are_refused() -> None:
         "retrieval": {
             "tuning": {
                 "series": ["ES2002"],
-                "max_chars": [800],
-                "overlap_turns": [0],
+                "chunk_size": [800],
+                "chunk_overlap": [0],
                 "k": [3],
                 "char_budget": 1000,
                 "tie_margin": 0.0,
@@ -349,8 +380,8 @@ def transcripts(tmp_path: Path) -> Path:
 def small_config(**overrides: object) -> TuningConfig:
     values: dict[str, object] = {
         "series": ("ES2015",),
-        "max_chars": (40, 400),
-        "overlap_turns": (0, 1),
+        "chunk_size": (40, 400),
+        "chunk_overlap": (0, 10),
         "k": (1, 2, 3),
         "char_budget": 1000,
         "tie_margin": 0.02,
@@ -380,7 +411,7 @@ def test_grid_yields_one_result_per_config_and_k(transcripts: Path) -> None:
     config = small_config()
     results = evaluate_grid(questions(), ["ES2015a"], config, LetterEmbedder(), transcripts)
     assert len(results) == 2 * 2 * 3
-    keys = {(r.max_chars, r.overlap_turns, r.k) for r in results}
+    keys = {(r.chunk_size, r.chunk_overlap, r.k) for r in results}
     assert len(keys) == 12
     for r in results:
         assert set(r.recalls) == {"q1", "q2"}
@@ -388,7 +419,7 @@ def test_grid_yields_one_result_per_config_and_k(transcripts: Path) -> None:
 
 
 def test_whole_meeting_in_one_chunk_has_full_recall(transcripts: Path) -> None:
-    config = small_config(max_chars=(400,), overlap_turns=(0,), k=(1,))
+    config = small_config(chunk_size=(400,), chunk_overlap=(0,), k=(1,))
     (only,) = evaluate_grid(questions(), ["ES2015a"], config, LetterEmbedder(), transcripts)
     assert only.mean_recall == 1.0
     assert only.first_hit_ranks == {"q1": 1, "q2": 1}
@@ -399,7 +430,7 @@ def test_recall_never_decreases_with_k(transcripts: Path) -> None:
     results = evaluate_grid(questions(), ["ES2015a"], small_config(), LetterEmbedder(), transcripts)
     by_config: dict[tuple[int, int], list[ConfigResult]] = {}
     for r in results:
-        by_config.setdefault((r.max_chars, r.overlap_turns), []).append(r)
+        by_config.setdefault((r.chunk_size, r.chunk_overlap), []).append(r)
     for runs in by_config.values():
         runs.sort(key=lambda r: r.k)
         recalls = [r.mean_recall for r in runs]
@@ -415,7 +446,7 @@ def test_untrimmed_context_delivers_exactly_what_was_retrieved(transcripts: Path
 
 
 def test_a_starved_budget_delivers_nothing_though_chunks_are_retrieved(transcripts: Path) -> None:
-    config = small_config(max_chars=(400,), overlap_turns=(0,), k=(1,))
+    config = small_config(chunk_size=(400,), chunk_overlap=(0,), k=(1,))
     (only,) = evaluate_grid(
         questions(),
         ["ES2015a"],
@@ -443,7 +474,7 @@ def test_trimming_hides_evidence_that_full_chunks_contain(tmp_path: Path) -> Non
             (span("ES2015a", "d0", "d2", "d3", "d5"),),
         )
     ]
-    config = small_config(max_chars=(5000,), overlap_turns=(0,), k=(1,))
+    config = small_config(chunk_size=(5000,), chunk_overlap=(0,), k=(1,))
     (full,) = evaluate_grid(qs, ["ES2015a"], config, LetterEmbedder(), tmp_path)
     (tight,) = evaluate_grid(
         qs,
@@ -461,7 +492,7 @@ def test_trimming_hides_evidence_that_full_chunks_contain(tmp_path: Path) -> Non
 
 
 def test_context_chars_and_eligibility(transcripts: Path) -> None:
-    config = small_config(max_chars=(400,), overlap_turns=(0,), k=(1, 3), char_budget=900)
+    config = small_config(chunk_size=(400,), chunk_overlap=(0,), k=(1, 3), char_budget=900)
     first, second = evaluate_grid(questions(), ["ES2015a"], config, LetterEmbedder(), transcripts)
     assert first.eligible  # 1 * 400 <= 900
     assert not second.eligible  # 3 * 400 > 900
@@ -470,7 +501,7 @@ def test_context_chars_and_eligibility(transcripts: Path) -> None:
 
 
 def test_first_hit_rank_is_none_beyond_k(transcripts: Path) -> None:
-    config = small_config(max_chars=(40,), overlap_turns=(0,), k=(1, 3))
+    config = small_config(chunk_size=(40,), chunk_overlap=(0,), k=(1, 3))
     results = evaluate_grid(questions(), ["ES2015a"], config, LetterEmbedder(), transcripts)
     k1 = next(r for r in results if r.k == 1)
     k3 = next(r for r in results if r.k == 3)
@@ -502,12 +533,12 @@ def test_above_the_pool_the_grid_retrieves_per_k(
         return original(self, question, limit)
 
     monkeypatch.setattr(HybridRetriever, "retrieve", spy)
-    config = small_config(max_chars=(40,), overlap_turns=(0,), k=(3, 12))
+    config = small_config(chunk_size=(40,), chunk_overlap=(0,), k=(3, 12))
     evaluate_grid(questions(), ["ES2015a"], config, LetterEmbedder(), transcripts)
     assert sorted(set(limits)) == [3, 12]
 
     limits.clear()
-    config = small_config(max_chars=(40,), overlap_turns=(0,), k=(3, 10))
+    config = small_config(chunk_size=(40,), chunk_overlap=(0,), k=(3, 10))
     evaluate_grid(questions(), ["ES2015a"], config, LetterEmbedder(), transcripts)
     assert set(limits) == {10}
 
@@ -572,9 +603,9 @@ def test_questions_with_any_delivered_hit_counts_positive_delivered_recall() -> 
 
 
 def test_load_pinned_c1_params_reads_the_retrieval_c1_section() -> None:
-    experiments = {"retrieval": {"c1": {"max_chars": 1600, "overlap_turns": 0, "k": 8}}}
+    experiments = {"retrieval": {"c1": {"chunk_size": 1600, "chunk_overlap": 0, "k": 8}}}
     params = c1_tuning.load_pinned_c1_params(experiments)
-    assert (params.max_chars, params.overlap_turns, params.k) == (1600, 0, 8)
+    assert (params.chunk_size, params.chunk_overlap, params.k) == (1600, 0, 8)
 
 
 def test_load_pinned_c1_params_rejects_missing_section() -> None:
@@ -584,13 +615,15 @@ def test_load_pinned_c1_params_rejects_missing_section() -> None:
 
 def test_pinned_c1_params_are_the_stored_winner() -> None:
     """``[retrieval.c1]`` pins what the pre-registered rule chose (notebook 06, ADR 0007)."""
+    if '"chunk_size"' not in c1_tuning.RESULTS_PATH.read_text(encoding="utf-8"):
+        pytest.skip("stored tuning predates the Markdown chunking; rerun `afg c1 tune`")
     stored = load_tuning_results(c1_tuning.RESULTS_PATH)
     pinned = c1_tuning.load_pinned_c1_params()
     w = stored.winner
-    assert (pinned.max_chars, pinned.overlap_turns, pinned.k) == (
-        w.max_chars,
-        w.overlap_turns,
+    assert (pinned.chunk_size, pinned.chunk_overlap, pinned.k) == (
+        w.chunk_size,
+        w.chunk_overlap,
         w.k,
     )
     assert w.eligible
-    assert pinned.k * pinned.max_chars <= stored.config.char_budget
+    assert pinned.k * pinned.chunk_size <= stored.config.char_budget

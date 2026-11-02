@@ -190,7 +190,7 @@ def test_primary_role_is_the_role_with_most_evidence_acts(
 
 
 def test_primary_role_tie_goes_to_the_earliest_turn(transcripts: Path) -> None:
-    from afg.conditions.c1_chunking import load_frozen_turns
+    from afg.corpus.frozen import load_frozen_turns
 
     turns = load_frozen_turns(MEETING, transcripts)
 
