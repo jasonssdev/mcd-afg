@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 09 — Modelos y su justificación |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 9.0 |
+| **Versión** | 9.1 |
 | **Fecha** | 2026-11-02 |
 | **Estado** | Vigente |
 
@@ -27,6 +27,7 @@
 | 7.1 | 2026-11-01 | Se incorpora la clasificación OE4 de las seis fallas E1 de la corrida vigente de C2: 3 de recuperación, 2 de extracción y 1 de síntesis (sección 8.4), con la corrida anterior (4, 3 y 2 de 9) como comparación. Una de las fallas (q017) es un caso de memoria contaminada. La figura de las etapas de las fallas pasa a mostrar la corrida vigente. Se actualizan la dificultad 8, la decisión pendiente sobre fuentes en bruto, la decisión pendiente 10 (resuelta), las limitaciones y la trazabilidad. | jss etiquetó una por una las seis fallas con la evidencia de la base compilada de la corrida vigente (hoja `oe4-etapa-e1.csv`); el documento las declaraba pendientes. Las cifras salen del [notebook 16](../../notebooks/16-jss-c2-fuentes-e1.ipynb) (sección 10) y del [notebook 19](../../notebooks/19-jss-modelos.ipynb) (sección 7.5). |
 | 8.0 | 2026-11-01 | El modelo de extracción de C2 y C3 queda decidido: `qwen3:8b`, el de OpenKOS 0.7.0, con la pasada de decisiones (`transcript_decisions`) activada, que es la única opción de C2 fuera de su valor por defecto (secciones 5, 6, 6.2, 6.4, 9, 10, 11 y 12). La regla del «mismo modelo generativo» se aplica al modelo que responde. `qwen3.6:27b` y `qwen3.6:35b-a3b` se descartan; la decisión 1 de la sección 11.1 pasa a resuelta y el extractor deja de figurar como pendiente en el congelamiento. | [ADR 0015](../decisions/0015-adr-modelo-extractor-de-c2.md), que cierra el issue #143: la épica de OpenKOS jasonssdev/openkos#1556 dejó todas las tareas en `qwen3:8b` salvo los jueces y la verificación de suficiencia, y `qwen3.6:27b`, que gana en F1 del pase de decisiones, tarda de 1,8 a 3,6 veces más y no es el modelo de OpenKOS. Las cifras no cambian: salen del [notebook 15](../../notebooks/15-jss-screen-de-modelos-openkos.ipynb) y del [notebook 19](../../notebooks/19-jss-modelos.ipynb). |
 | 9.0 | 2026-11-02 | Se agrega la puntuación de las relaciones temporales a OE2 (§2) con su medición de desarrollo y su limitación (§12). Se corrigen dos filas atrasadas de §11: el *recall* del filtro léxico ya tiene su función (#205) y C3 ya está implementado (`afg c3 build`); lo pendiente de C3 es la ground truth adjudicada. | [ADR 0016](../decisions/0016-adr-relaciones-temporales-de-openkos.md) (issue #96), [notebook 22](../../notebooks/22-jss-relaciones-temporales-openkos.ipynb) y el estado del código (`annotation/recall.py`, `conditions/c3_compiled_gold.py`). |
+| 9.1 | 2026-11-02 | La limitación de la puntuación de relaciones de OE2 (§12) pasa de dos a tres series de desarrollo y de 6 a 9 relaciones de oro, porque IS1004 ya se puntúa con la referencia de su único anotador y su traducción automática. | Issue #229, issue #204 y [notebook 22](../../notebooks/22-jss-relaciones-temporales-openkos.ipynb). |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -952,9 +953,9 @@ desarrollo, antes de la primera corrida.
   inglés, así que el desempeño con preguntas en español no se midió.
 - Todavía no se conocen las **relaciones reales** entre decisiones: la viabilidad de E3 es
   plausible, no demostrada (documento 08).
-- La puntuación de relaciones de OE2 se midió solo en dos series de desarrollo (ES2015 y TS3009) con
-  6 relaciones de oro en total, y con un detector de OpenKOS que es experimental y no estaba medido
-  en reuniones reales: es una señal y no una estimación ([notebook 22](../../notebooks/22-jss-relaciones-temporales-openkos.ipynb)). IS1004 no se puntuó (#204).
+- La puntuación de relaciones de OE2 se midió solo en tres series de desarrollo (ES2015, IS1004 y TS3009) con
+  9 relaciones de oro en total, y con un detector de OpenKOS que es experimental y no estaba medido
+  en reuniones reales: es una señal y no una estimación ([notebook 22](../../notebooks/22-jss-relaciones-temporales-openkos.ipynb)). IS1004 se puntúa con la referencia de un solo anotador.
 
 **De los modelos y de la medición**
 
