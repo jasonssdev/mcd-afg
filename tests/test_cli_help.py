@@ -86,6 +86,8 @@ _ENGLISH_HELP = re.compile(
         ("experiment", "a"),
         ("experiment", "a-batch"),
         ("experiment", "a-relations"),
+        ("freeze",),
+        ("freeze", "write"),
         ("report",),
     ],
 )

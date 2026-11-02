@@ -110,7 +110,7 @@ def test_evaluation_series_are_refused_before_anything_happens(env: dict[str, An
     result = _run("--c2-extraction", "tmp-gate", "--series", "ES2008")
 
     assert result.exit_code == 1
-    assert "ES2008 no es una serie de desarrollo" in _out(result)
+    assert "ES2008" in _out(result) and "congelamiento" in _out(result)
     assert not env["c3"].exists()
     assert env["runner"].calls == []
 

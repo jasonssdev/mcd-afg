@@ -152,6 +152,14 @@ from afg.evaluation.reference import (
 )
 from afg.evaluation.relations import gold_source, load_gold_pairs
 from afg.evaluation.translation import TranslationError
+from afg.experiments.freeze import (
+    FREEZE_PATH,
+    FreezeError,
+    FreezeSources,
+    SeriesGateError,
+    gate_partition,
+    write_freeze_record,
+)
 from afg.experiments.pinned_environment import PinnedEnvironmentError, check_pinned_environment
 from afg.experiments.provenance import LiveProbe, ProvenanceProbe, collect_provenance
 from afg.experiments.question_bank import (
@@ -256,6 +264,10 @@ experiment_app = typer.Typer(
     help="OE2/OE3: corre el Experimento A y el Experimento B (tesis, sección 3)."
 )
 skills_app = typer.Typer(help="Instala, verifica y enlaza las skills de .agents/skills/.")
+freeze_app = typer.Typer(
+    help="Registro del congelamiento: lo que deben cumplir las corridas sobre las series de "
+    "evaluación (issue #238)."
+)
 
 app.add_typer(gold_app, name="gold")
 app.add_typer(corpus_app, name="corpus", rich_help_panel=_PANEL_MAINTENANCE)
@@ -265,6 +277,7 @@ app.add_typer(c1_app, name="c1", rich_help_panel=_PANEL_MAINTENANCE)
 app.add_typer(c3_app, name="c3", rich_help_panel=_PANEL_MAINTENANCE)
 app.add_typer(experiment_app, name="experiment", rich_help_panel=_PANEL_MAINTENANCE)
 app.add_typer(skills_app, name="skills", rich_help_panel=_PANEL_MAINTENANCE)
+app.add_typer(freeze_app, name="freeze", rich_help_panel=_PANEL_MAINTENANCE)
 
 
 @app.callback()
@@ -2502,30 +2515,27 @@ EXPERIMENT_A_PROVENANCE_KEYS = (
 """The :func:`collect_provenance` fields that apply to Experiment A (it has no judge or C1)."""
 
 
-def _require_development_series(series_ids: Sequence[str]) -> str:
-    """The partition of ``series_ids`` when all are development; otherwise refuse and exit.
+def _require_series_gate(series_ids: Sequence[str], *, questions: Path | None = None) -> str:
+    """The partition of ``series_ids`` when they may run; otherwise print why and exit.
 
-    The one place the Experiment A gate lives (``a`` and ``a-batch``): while the OpenKOS
-    version is not pinned, only development series run (ADR 0005 and ADR 0006).
+    The one gate of the commands that read series (``experiment a``, ``a-batch``,
+    ``a-relations``, ``experiment b`` and ``c3 build``). Development series run freely.
+    Evaluation series run only when the freeze record (``config/freeze.json``, written by
+    ``afg freeze write`` when the freeze ADR closes) exists and the config, the reference, the
+    question bank and the code still match it; any difference is listed. It runs before the
+    first model call. ``questions`` is the question file a command was given.
     """
-    partition_of = configured_partition_of()
-    refused = [(s, partition_of(s)) for s in series_ids if partition_of(s) != "development"]
-    if refused:
-        partitions = ", ".join(sorted({partition for _, partition in refused}))
-        names = ", ".join(series for series, _ in refused)
-        subject = (
-            f"{names} no es una serie de desarrollo"
-            if len(refused) == 1
-            else f"{names} no son series de desarrollo"
+    try:
+        return gate_partition(
+            series_ids,
+            configured_partition_of(),
+            freeze_path=FREEZE_PATH,
+            sources=FreezeSources(),
+            questions_path=questions,
         )
-        console.print(
-            f"[bold red]{subject} (partición: {partitions}). "
-            "El Experimento A solo corre series de desarrollo mientras la versión de OpenKOS "
-            "no esté fijada (ADR 0005 y ADR 0006).[/bold red]"
-        )
-    if refused:
-        raise typer.Exit(code=1)
-    return "development"
+    except SeriesGateError as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+        raise typer.Exit(code=1) from exc
 
 
 def _experiment_a_manifest(
@@ -2570,7 +2580,9 @@ def experiment_a(
     series: Annotated[
         str,
         typer.Option(
-            "--series", help="Serie a extraer (solo de desarrollo, ADR 0005), por ejemplo ES2015."
+            "--series",
+            help="Serie a extraer, por ejemplo ES2015. Las de evaluación exigen el registro de "
+            "congelamiento.",
         ),
     ],
     runs: Annotated[
@@ -2590,13 +2602,14 @@ def experiment_a(
     Por cada corrida crea un espacio de trabajo nuevo de OpenKOS en `data/interim/openkos/`,
     ingesta las cuatro reuniones de la serie en orden, lee las decisiones compiladas y agrega
     una línea a `extracciones.jsonl` en `reports/experiment-a/<run-name>/`, junto con
-    `manifest.json`. Solo corre series de desarrollo: las de evaluación se niegan (ADR 0005)
-    hasta fijar la versión de OpenKOS (ADR 0006). La semilla de la corrida r es `seed + r`.
+    `manifest.json`. Las series de desarrollo corren siempre; las de evaluación solo con el
+    registro de congelamiento (`config/freeze.json`) y si lo actual coincide con él (ADR 0005,
+    `afg freeze write`). La semilla de la corrida r es `seed + r`.
     """
     import json
     from datetime import UTC, datetime
 
-    partition = _require_development_series([series])
+    partition = _require_series_gate([series])
     pinned = require_pinned_environment(_openkos_models(), needs_openkos=True)
 
     budget = load_experiments_config()["shared_budget"]
@@ -2711,7 +2724,7 @@ def experiment_a_batch(
     )
 
     series_ids = _batch_series(series, partition)
-    batch_partition = _require_development_series(series_ids)
+    batch_partition = _require_series_gate(series_ids)
     pinned = require_pinned_environment(_openkos_models(), needs_openkos=True)
     budget = load_experiments_config()["shared_budget"]
     n_runs = runs if runs is not None else int(budget["runs_per_config"])
@@ -2834,7 +2847,8 @@ def experiment_a_relations(
     hallazgos de `openkos revisions` (`.openkos/findings.db`, solo lectura) y puntúa existencia,
     tipo y dirección en las variantes principal y de sensibilidad. Escribe
     `reports/experiment-a/<corrida>/relaciones.json`, que anota por serie qué referencia se usó
-    (`adjudicated` o `single:<iniciales>`). Solo series de desarrollo.
+    (`adjudicated` o `single:<iniciales>`). Las series de evaluación exigen el registro de
+    congelamiento.
     """
     import json
 
@@ -2848,7 +2862,7 @@ def experiment_a_relations(
         )
         raise typer.Exit(code=1)
     series_ids = _relations_series(run_root, series)
-    partition = _require_development_series(series_ids)
+    partition = _require_series_gate(series_ids)
     pinned = (
         require_pinned_environment(_openkos_models(), needs_openkos=True)
         if run_revisions
@@ -2933,7 +2947,7 @@ def c3_build(
     corre ningún modelo de extracción. Solo series de desarrollo.
     """
     series_ids = _batch_series(series, None)
-    _require_development_series(series_ids)
+    _require_series_gate(series_ids)
     pinned = require_pinned_environment([configured_embedding_model()], needs_openkos=True)
     budget = load_experiments_config()["shared_budget"]
     n_runs = runs if runs is not None else int(budget["runs_per_config"])
@@ -3141,6 +3155,55 @@ def make_experiment_b_condition(
     raise ValueError(f"La condición {condition_id.upper()} no está disponible.")
 
 
+@freeze_app.command("write")
+def freeze_write(
+    adr: Annotated[
+        str, typer.Option("--adr", help="Número del ADR de congelamiento, por ejemplo 0017.")
+    ],
+    commit: Annotated[
+        str | None,
+        typer.Option("--commit", help="Hash completo del código congelado (por defecto, HEAD)."),
+    ] = None,
+    series: Annotated[
+        str | None,
+        typer.Option(
+            "--series",
+            help="Series a congelar, separadas por coma (por defecto, las 14 de [oe1]).",
+        ),
+    ] = None,
+    output: Annotated[
+        Path, typer.Option("--output", help="Dónde escribir el registro.")
+    ] = FREEZE_PATH,
+) -> None:
+    """Escribe el registro de congelamiento que habilita las series de evaluación.
+
+    Guarda el ADR, el commit del código, la huella SHA-256 de `config/experiments.toml`, del
+    banco de preguntas y, por serie, de la referencia de decisiones, la de relaciones y la
+    traducción `<SERIE>.reference-en.csv`, más los valores de `[pinned_environment]`. Lo usa el
+    mantenedor una sola vez, al cerrar el ADR de congelamiento (issue #237); no sobrescribe un
+    registro existente. No llama a ningún modelo.
+    """
+    oe1 = load_corpus_config()["oe1"]
+    chosen = (
+        [s.strip() for s in series.split(",") if s.strip()]
+        if series
+        else [*oe1["development_series"], *oe1["evaluation_series"]]
+    )
+    frozen_commit = commit or current_git_commit()
+    if frozen_commit is None:
+        console.print("[bold red]No se pudo leer HEAD; indica --commit.[/bold red]")
+        raise typer.Exit(code=1)
+    try:
+        write_freeze_record(output, FreezeSources(), series=chosen, adr=adr, commit=frozen_commit)
+    except FreezeError as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    console.print(
+        f"Registro de congelamiento (ADR {escape(adr)}, {len(chosen)} series) escrito en "
+        f"{_short(output)}. Revísalo y súbelo junto con el ADR."
+    )
+
+
 @experiment_app.command("b")
 def experiment_b(
     questions: Annotated[
@@ -3225,6 +3288,7 @@ def experiment_b(
     except (QuestionBankError, ValueError, FileNotFoundError, CalibrationSetError) as exc:
         console.print(f"[bold red]{exc}[/bold red]")
         raise typer.Exit(code=1) from exc
+    _require_series_gate(sorted({q.series_id for q in bank}), questions=questions)
 
     config = load_experiments_config()
     settings = experiment_b_settings(runs)
