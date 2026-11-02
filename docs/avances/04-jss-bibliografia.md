@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 04 — Bibliografía |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.6 |
-| **Fecha** | 2026-11-01 |
+| **Versión** | 1.7 |
+| **Fecha** | 2026-11-02 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -19,6 +19,7 @@
 | 1.4 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (LLM-as-a-judge). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
 | 1.5 | 2026-10-15 | Se actualiza la nota de ConsistencyGate al estado cerrado: el trabajo fue leído (2026-10-07) y no acota la afirmación de novedad (`propuesta.md` §9). Se corrigen las referencias de numeración a las secciones reales de este documento (1 a 7). Las entradas bibliográficas no cambian. | Auditoría de gobernanza del 2026-10-15: la nota seguía pidiendo una lectura ya hecha y citaba secciones 8.x que no existen en este documento. |
 | 1.6 | 2026-11-01 | La condición C3 se describe sin decir que la distancia entre C1 y C3 mide «el valor de la estructura»: con C1 como RAG convencional, esa distancia estima el valor del sistema compilado frente a un RAG convencional, y la de C3 a C2, el costo de construir la base con una máquina. Las referencias al documento 09 (el LLM-as-a-judge) pasan de §4 a §6.3, su numeración actual. Las entradas bibliográficas no cambian. | Decisión del 2026-11-01 ([ADR 0014](../decisions/0014-adr-c1-como-rag-convencional.md)) y renumeración del documento 09. |
+| 1.7 | 2026-11-02 | Se agrega la referencia de OpenKOS 0.7.0 como software (repositorio público, licencia Apache 2.0), en el grupo 7, y se aclara que lo desarrolló un integrante del equipo. Las demás entradas no cambian. | El pre-informe de AFG2 cita OpenKOS y no tenía una referencia verificable; la versión 0.7.0 es la fijada para las corridas. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -362,7 +363,8 @@ Singh et al. proponen aplicar la misma idea a las decisiones que toman sistemas
 automatizados, para poder rendir cuentas de ellas. El marco de riesgos del NIST es el que
 el documento 05 usa para organizar los aspectos éticos. La especificación OKF describe el
 formato en que el instrumento OpenKOS guarda la base de decisiones de C2; se cita como
-borrador porque lo es.
+borrador porque lo es. OpenKOS mismo se cita como software, en la versión fijada para las corridas;
+lo desarrolló un integrante del equipo antes de este proyecto y en la tesis es un instrumento, no un aporte.
 
 Lebo, T., Sahoo, S., & McGuinness, D. (Eds.). (2013). *PROV-O: The PROV ontology* (W3C
 Recommendation, 30 de abril de 2013). World Wide Web Consortium.
@@ -377,6 +379,9 @@ Tabassi, E. (2023). *Artificial intelligence risk management framework (AI RMF 1
 Google Cloud. (2026). *Open Knowledge Format (OKF): Especificación v0.1* [Borrador]. Formato
 de la representación persistente usada por el instrumento OpenKOS (documento 06, §5–6).
 Documento borrador sin DOI ni versión estable publicada; se cita como tal.
+
+Sepúlveda, J. (2026). *OpenKOS* (Versión 0.7.0) [Software]. GitHub. https://github.com/jasonssdev/openkos Licencia Apache 2.0; versión publicada el
+29 de octubre de 2026.
 
 ## Trabajos relacionados y su vínculo con el proyecto
 

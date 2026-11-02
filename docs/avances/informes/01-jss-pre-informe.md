@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 01 — Pre-informe AFG2 |
 | **Autores** | Jason Sepúlveda S., Germán Vega, Gustavo Martínez |
-| **Versión** | 0.1 (borrador para revisión del equipo) |
+| **Versión** | 0.2 (borrador para revisión del equipo) |
 | **Fecha** | 2026-11-02 |
 | **Estado** | Borrador |
 
@@ -13,6 +13,7 @@
 | Versión | Fecha | Cambio | Motivo |
 |---|---|---|---|
 | 0.1 | 2026-11-02 | Borrador inicial, redactado a partir de los avances 01 a 10 (modelos en su versión 12.0). No se ha enviado. | Pre-informe de AFG2, con entrega el 2026-11-09. |
+| 0.2 | 2026-11-02 | Se cita OpenKOS 0.7.0 como software (repositorio público, licencia Apache 2.0) en el texto y en las referencias. | La referencia faltaba; avance 04 v1.7. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (0.1 → 0.2). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero y **debe declarar la evidencia
@@ -114,7 +115,7 @@ El filtro tiene un sesgo medido: si la decisión más corta del par tiene 2 o 3 
 
 ### 5.1 Qué es «el modelo» y qué condiciones se comparan
 
-El proyecto **no entrena ningún modelo**: los modelos de lenguaje (LLM) ya vienen entrenados y se ejecutan en un computador propio con Ollama, de modo que ningún dato sale de la máquina. Se evalúa si una forma de organizar la información responde mejor que otra, así que «el modelo» es el *pipeline* completo de cada condición; el juez es un instrumento de medida. OpenKOS, que compila y consulta la base, es un programa de código abierto desarrollado antes por un integrante del equipo: es el instrumento, no un aporte de la tesis.
+El proyecto **no entrena ningún modelo**: los modelos de lenguaje (LLM) ya vienen entrenados y se ejecutan en un computador propio con Ollama, de modo que ningún dato sale de la máquina. Se evalúa si una forma de organizar la información responde mejor que otra, así que «el modelo» es el *pipeline* completo de cada condición; el juez es un instrumento de medida. OpenKOS (Sepúlveda, 2026), que compila y consulta la base, es un programa de código abierto desarrollado antes por un integrante del equipo: es el instrumento, no un aporte de la tesis.
 
 **Tabla 2.** Las cuatro condiciones, con el mismo generador, *embeddings*, hardware y ventana de contexto.
 
@@ -221,6 +222,8 @@ Murray, G., Kleinbauer, T., Poller, P., Becker, T., Renals, S., & Kilgour, J. (2
 
 Panickssery, A., Bowman, S. R., & Feng, S. (2024). LLM evaluators recognize and favor their own generations. En *Advances in Neural Information Processing Systems 37 (NeurIPS 2024)* (pp. 68772–68802).
 
+Sepúlveda, J. (2026). *OpenKOS* (Versión 0.7.0) [Software]. GitHub. https://github.com/jasonssdev/openkos
+
 Tabassi, E. (2023). *Artificial intelligence risk management framework (AI RMF 1.0)* (NIST AI 100-1). National Institute of Standards and Technology. https://doi.org/10.6028/NIST.AI.100-1
 
 Vu, T., Iyyer, M., Wang, X., Constant, N., Wei, J., Wei, J., Tar, C., Sung, Y.-H., Zhou, D., Le, Q., & Luong, T. (2024). FreshLLMs: Refreshing large language models with search engine augmentation. En *Findings of the Association for Computational Linguistics: ACL 2024* (pp. 13697–13720). Association for Computational Linguistics. https://doi.org/10.18653/v1/2024.findings-acl.813
@@ -326,7 +329,6 @@ Cada cifra del informe proviene de un avance; ninguna se calculó aquí.
 
 **Pendientes de redacción para el equipo.**
 
-- OpenKOS no tiene una referencia citable en el avance 04 (solo la especificación OKF del formato, que no se cita en el cuerpo); si existe un repositorio o artículo citable, agregarlo.
 - La escala de lectura del kappa (Sección 6.1) se menciona sin autor porque el avance 04 no incluye Landis y Koch; si se quiere citar, agregar la referencia.
 - El encuadre de «el modelo» como *pipeline* (Sección 5.1) y la presentación de solo resultados de desarrollo siguen pendientes de confirmación con el tutor (avance 09, §1).
 - El recall del filtro léxico (Sección 4.3) y la adjudicación completa del *ground truth* (Sección 5.1) están en curso; actualizar antes del envío.
