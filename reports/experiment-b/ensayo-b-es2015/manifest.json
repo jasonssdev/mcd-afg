@@ -1,0 +1,64 @@
+{
+  "schema_version": 2,
+  "run_name": "ensayo-b-es2015",
+  "created_at": "2026-11-02T16:16:46.131807+00:00",
+  "updated_at": "2026-11-02T16:44:14.023367+00:00",
+  "git_commit": "6c2466c2e66032cb97d107d1322443745fe188bc",
+  "settings": {
+    "generative_model": "qwen3:8b",
+    "temperature": 0.1,
+    "base_seed": 42,
+    "runs": 1,
+    "judge_model": "gpt-oss:20b",
+    "judge_order": "reference_first",
+    "judge_seed": 42,
+    "judge_temperature": 0.0
+  },
+  "conditions": [
+    "C0",
+    "C1",
+    "C2",
+    "C3"
+  ],
+  "series": [
+    "ES2015"
+  ],
+  "partition": "development",
+  "development_only": true,
+  "note": "Development series (ADR 0005): these figures never enter a results table.",
+  "counts": {
+    "questions": 21,
+    "expected": 84,
+    "records": 84,
+    "complete": 84,
+    "errors": 0
+  },
+  "generative_model_digest": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41",
+  "judge_model_digest": "f38aa0c53da5f8c49d08c43a99df24ff53167fe68e24664a7777288e7656fdfe",
+  "sufficiency_model": "gemma4:26b-a4b",
+  "sufficiency_model_digest": "001e5dafc3c77684c2307ebc6ab8e336e10c9b18eca52acf547d72fc83c3ca8c",
+  "embedding_model_digest": "7907646426070047a77226ac3e684fbbe8410524f7b4a74d02837e43f2146bab",
+  "model_digest_source": "ollama /api/tags",
+  "ollama_version": "0.32.9",
+  "openkos_version": "0.7.0",
+  "c1_params": {
+    "chunk_size": 1200,
+    "chunk_overlap": 0,
+    "k": 5
+  },
+  "c2_extraction": "ensayo-es2015",
+  "c3_workspaces": "data/interim/openkos-c3",
+  "questions_sha256": "4292f1e2154a1716b3347c8d0dd42809cf664d8882132610699eff9bc9801e37",
+  "git_dirty": false,
+  "pinned_environment_ok": true,
+  "pinned_environment": {
+    "ollama_version": "0.32.9",
+    "openkos_version": "0.7.0",
+    "model_digests": {
+      "qwen3:8b": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41",
+      "gpt-oss:20b": "f38aa0c53da5f8c49d08c43a99df24ff53167fe68e24664a7777288e7656fdfe",
+      "gemma4:26b-a4b": "001e5dafc3c77684c2307ebc6ab8e336e10c9b18eca52acf547d72fc83c3ca8c",
+      "bge-m3": "7907646426070047a77226ac3e684fbbe8410524f7b4a74d02837e43f2146bab"
+    }
+  }
+}

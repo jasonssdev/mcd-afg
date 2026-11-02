@@ -1,0 +1,17 @@
+metric,view,successes,trials,rate,lower,upper,status
+existence_end_to_end,precision,0,26,0.0,0.0,0.12872892185921522,desarrollo — no reportable
+existence_end_to_end,recall,0,3,0.0,0.0,0.5614970317550454,desarrollo — no reportable
+existence_conditional,precision,0,0,,,,desarrollo — no reportable
+existence_conditional,recall,0,0,,,,desarrollo — no reportable
+type_principal,end_to_end,0,3,0.0,0.0,0.5614970317550454,desarrollo — no reportable
+type_principal,conditional,0,0,,,,desarrollo — no reportable
+type_principal,among_detected,0,0,,,,desarrollo — no reportable
+type_strict,end_to_end,0,3,0.0,0.0,0.5614970317550454,desarrollo — no reportable
+type_strict,conditional,0,0,,,,desarrollo — no reportable
+type_strict,among_detected,0,0,,,,desarrollo — no reportable
+direction_principal,end_to_end,0,3,0.0,0.0,0.5614970317550454,desarrollo — no reportable
+direction_principal,conditional,0,0,,,,desarrollo — no reportable
+direction_principal,among_detected,0,0,,,,desarrollo — no reportable
+direction_unknown_excluded,end_to_end,0,3,0.0,0.0,0.5614970317550454,desarrollo — no reportable
+direction_unknown_excluded,conditional,0,0,,,,desarrollo — no reportable
+direction_unknown_excluded,among_detected,0,0,,,,desarrollo — no reportable

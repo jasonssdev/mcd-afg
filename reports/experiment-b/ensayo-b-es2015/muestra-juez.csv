@@ -1,0 +1,447 @@
+id,stratum,question,reference_answer,answer_text,pasaje_transcripcion,archivos_transcripcion,correct,evidence_supported,respuesta_superada,outdated
+h001,E3,How was the remote control’s intended scope clarified between the first and second meetings?,"In the first meeting, the product was identified as a television remote control. In the second, the team settled on a single-function, television-only design rather than a multifunctional remote for DVDs, VCRs, and other devices.","Between the first and second meetings, the remote control’s intended scope was clarified by narrowing down its target use to television control, excluding features like teletext. Additionally, there was a discussion on the design priorities, emphasizing a fancy look-and-feel over a purely functional one, and considering the target audience's preferences for user-friendliness and uniqueness. The scope also involved deciding on the functionalities, such as vibration feedback and the placement of the remote control for universal use.","[ES2015a]
+PM: And uh tool training
+PM: is one thing that we're going to be doing today, um um as well as planning the project, how we're going to, uh, create this product, and, um, discuss, um, our aims and objects of this, uh Which brings us to our next subject, is, um, um, as a team we're going to be designing and creating a new kind of remote control.
+PM: Um, we want this to be a marketable product that can be trendy, um, a completely new style, so that, um, can really appeal to a, to a generation that doesn't want a simple plain kind of, uh, channel-changer. And, um, it needs to be user-friendly for, um, maybe, for an example, for people that, um, can't see the numbers as well, or, um, perhaps an ergonomic design.
+ID: Okay.
+ID: So this is a television remote control? Yeah.
+PM: Yes, it's a television remote control.
+PM: Right. I believe I should be taking minutes on this right now. So, alright.
+ID: Okay.
+PM: Um, yeah.
+PM: Um, the way that we're going to go about this is, um, we'll have a time where we can, um
+PM: come up with new ideas alone, and, and work on the project and then, um, after we've brainstormed and, and thought about, we can come together in a meeting and, and discuss what, what um, what kind of functional design we want to use. Same with conceptual design and detailed design.
+
+[ES2015b]
+PM: Right.
+PM: Does everyone agree with this? Does anyone object and, and find the multifunctional might be a better way to go?
+ID: Um, I was just wondering about the, what, what Genevieve said before, about having like some hidden controls like having the outer casing. And that would probably, um, I d, well well what you said before about it being a more profitable simplistic design. I suppose having that would complicate it a lot more. And limit the design. Do you think?
+UI: Yeah.
+UI: Yeah.
+ME: Yeah, I think I agree with the single design thing for now, because we're trying to do so much, that if we're trying to make a unique, user-friendly, dadada, and it's also multi also multifunctional, um, we're gonna go over budget for one thing. So
+ID: Yeah.
+UI: Yeah. Yeah.
+ID: Yeah. That's true. Yeah.
+PM: Mm-hmm.
+UI: And with this we'll have more room in the budget probably to make a more original design. We'll have more money to go into the design side of it.
+ID: Yeah.
+ME: Mm-hmm.
+PM: Yeah.
+ID: Okay. Yeah.
+PM: Alright. Sounds great.
+[...]
+ME: Yep.
+PM: Yeah.
+UI: Yeah.
+PM: Alright.
+ME: Okay. That's it for the market research.
+PM: Okay. Before we go into uh more discussion on we want this design to look like, I've received some information from the management that will affect some of our decisions. Um, for one thing, because Having controls with D_V_D_, V_C_R_, that sort of thing, would really complicate the design of the remote control. Um, we've decided not to include them and make it a specific, just a specific television um function. Which is good as, as we've sort of decided that we would like to go with that anyway. Um, for many reasons. So um we have that decision sort of made for us. Another thing that might um affect other decisions is that um the management feels that teletext is outdated, because more people are using the internet now. And so uh we won't concern ourselves with um navigating the teletext option. Yep.
+ID: Can I just interrupt?
+ID: Would you like to plug in your Have you got a PowerPoint or not? Okay. Thanks.
+ME: Yeah. Maybe we can do the
+PM: Okay, sure.
+PM: Yeah I do. I'm looking at looking at it right now.",data/interim/transcripts/ES2015a.md;data/interim/transcripts/ES2015b.md,,,,
+h002,E1,What selling price was set for the remote control?,Twenty-five Euros.,The selling price that was set for the remote control is 25 euros.,"[ES2015a]
+ME: Uh, what do we Oh.
+PM: Do you hear the eraser buzzing while you do that?
+ME: Yes I do.
+PM: Yea
+PM: Right.
+PM: So, now that we know how to use the whiteboard, um, the next, um, thing we need to address is our financial department, to meet our our budget, um or not meet our budget but more, um, like what kind of, uh, selling range we'll be looking at, um, wanna make this um selling price of twenty five Euros. And so we have to, um, come up with a way to, to create a, a uh remote control, where um
+ID: Okay.
+PM: we can like the price to create it will be significantly less. Um, we'd like to, um
+PM: to, uh, make fifty million Euro. I'm assuming that's what the M_ means. Um, and make it for an international market. Um, one thing we'd have to think about internationally is in the design of, um, like different kinds of, uh, V_C_R_s. Things like that, depending on which country you are. Another thing for the design team to think about. Um, we want it to cost, uh, absolute maximum of twelve Euro and fifty cents.
+ME: Okay, so we'll have a hundred percent profit then? Twelve fifty.
+PM: I'm bad at math. 'Kay. Um, so now that, um, that is underway, um",data/interim/transcripts/ES2015a.md,,,,
+h003,E4,On what exact date was the remote control scheduled for release?,,I don't know.,,,,,,
+h004,E1,,The international market.,"The question is too vague to provide a specific answer without additional context. Remote controls are intended for a variety of markets, including consumer electronics (such as televisions, air conditioners, and sound systems), industrial automation, automotive systems, and even medical devices. If you are referring to a specific remote control or product, please provide more details so I can give a more accurate response.","[ES2015a]
+PM: Yea
+PM: Right.
+PM: So, now that we know how to use the whiteboard, um, the next, um, thing we need to address is our financial department, to meet our our budget, um or not meet our budget but more, um, like what kind of, uh, selling range we'll be looking at, um, wanna make this um selling price of twenty five Euros. And so we have to, um, come up with a way to, to create a, a uh remote control, where um
+ID: Okay.
+PM: we can like the price to create it will be significantly less. Um, we'd like to, um
+PM: to, uh, make fifty million Euro. I'm assuming that's what the M_ means. Um, and make it for an international market. Um, one thing we'd have to think about internationally is in the design of, um, like different kinds of, uh, V_C_R_s. Things like that, depending on which country you are. Another thing for the design team to think about. Um, we want it to cost, uh, absolute maximum of twelve Euro and fifty cents.
+ME: Okay, so we'll have a hundred percent profit then? Twelve fifty.
+PM: I'm bad at math. 'Kay. Um, so now that, um, that is underway, um
+ME: Okay.
+PM: it is discussion time. So this is time for us to bring our initial ideas, any um
+PM: suggestions that you may have so far, a um your personal experiences with remote controls, and um, um, areas you see that, uh, could be improved in your experience with them.",data/interim/transcripts/ES2015a.md,,,,
+h005,E1,,Push buttons.,"I don't have enough information to answer that question. The choice of buttons would depend on the specific project, design requirements, or user interface preferences of the team in question. Without additional context, it's not possible to determine what kind of buttons they chose.","[ES2015c]
+ID: Um, it was whether we went for the simple, the regular, or the advanced chip. And that linked in with what buttons we would gonna have, so
+PM: Right, and we were going for more simplistic style, right?
+ID: Yeah, it was so that was without the L_C_D_. So that means we're not doing the advanced. So it depends on whether we wanted the scroll buttons or just the push buttons.
+UI: Yeah.
+PM: Yeah.
+PM: I think we decided on the pushbuttons, right?
+UI: Yeah. I don yeah.
+ID: Uh, so that's the simple.
+ME: Mm-hmm.
+PM: Yeah. Would we need a more advanced one for uh the lighting, the interior lighting system?
+ID: Yeah possibly. So, it's probably gonna be the regular chip that we're going to need. So it's a medium. So regular chip. Regular sorry.",data/interim/transcripts/ES2015c.md,,,,
+h006,E1,Which market was the remote control intended for?,The international market.,The remote control was intended for an international market [2][3]. The team discussed catering to different age groups and ensuring the product is universally accepted [2]. They also mentioned considering the design for various countries and keeping the price affordable [4][5].,"[ES2015a]
+PM: Yea
+PM: Right.
+PM: So, now that we know how to use the whiteboard, um, the next, um, thing we need to address is our financial department, to meet our our budget, um or not meet our budget but more, um, like what kind of, uh, selling range we'll be looking at, um, wanna make this um selling price of twenty five Euros. And so we have to, um, come up with a way to, to create a, a uh remote control, where um
+ID: Okay.
+PM: we can like the price to create it will be significantly less. Um, we'd like to, um
+PM: to, uh, make fifty million Euro. I'm assuming that's what the M_ means. Um, and make it for an international market. Um, one thing we'd have to think about internationally is in the design of, um, like different kinds of, uh, V_C_R_s. Things like that, depending on which country you are. Another thing for the design team to think about. Um, we want it to cost, uh, absolute maximum of twelve Euro and fifty cents.
+ME: Okay, so we'll have a hundred percent profit then? Twelve fifty.
+PM: I'm bad at math. 'Kay. Um, so now that, um, that is underway, um
+ME: Okay.
+PM: it is discussion time. So this is time for us to bring our initial ideas, any um
+PM: suggestions that you may have so far, a um your personal experiences with remote controls, and um, um, areas you see that, uh, could be improved in your experience with them.",data/interim/transcripts/ES2015a.md,,,,
+h007,E4,What warranty period was specified for the remote control?,,"Matching concepts were found in the compiled bundle, but none of them answers this question.",,,,,,
+h008,E3,,"In the first meeting, the product was identified as a television remote control. In the second, the team settled on a single-function, television-only design rather than a multifunctional remote for DVDs, VCRs, and other devices.","I don't have information about specific meetings or the clarification of the remote control's intended scope, as this context is not provided in the query or in my training data. If you can provide more details about the meetings or the project in question, I would be better able to assist.","[ES2015a]
+PM: And uh tool training
+PM: is one thing that we're going to be doing today, um um as well as planning the project, how we're going to, uh, create this product, and, um, discuss, um, our aims and objects of this, uh Which brings us to our next subject, is, um, um, as a team we're going to be designing and creating a new kind of remote control.
+PM: Um, we want this to be a marketable product that can be trendy, um, a completely new style, so that, um, can really appeal to a, to a generation that doesn't want a simple plain kind of, uh, channel-changer. And, um, it needs to be user-friendly for, um, maybe, for an example, for people that, um, can't see the numbers as well, or, um, perhaps an ergonomic design.
+ID: Okay.
+ID: So this is a television remote control? Yeah.
+PM: Yes, it's a television remote control.
+PM: Right. I believe I should be taking minutes on this right now. So, alright.
+ID: Okay.
+PM: Um, yeah.
+PM: Um, the way that we're going to go about this is, um, we'll have a time where we can, um
+PM: come up with new ideas alone, and, and work on the project and then, um, after we've brainstormed and, and thought about, we can come together in a meeting and, and discuss what, what um, what kind of functional design we want to use. Same with conceptual design and detailed design.
+
+[ES2015b]
+PM: Right.
+PM: Does everyone agree with this? Does anyone object and, and find the multifunctional might be a better way to go?
+ID: Um, I was just wondering about the, what, what Genevieve said before, about having like some hidden controls like having the outer casing. And that would probably, um, I d, well well what you said before about it being a more profitable simplistic design. I suppose having that would complicate it a lot more. And limit the design. Do you think?
+UI: Yeah.
+UI: Yeah.
+ME: Yeah, I think I agree with the single design thing for now, because we're trying to do so much, that if we're trying to make a unique, user-friendly, dadada, and it's also multi also multifunctional, um, we're gonna go over budget for one thing. So
+ID: Yeah.
+UI: Yeah. Yeah.
+ID: Yeah. That's true. Yeah.
+PM: Mm-hmm.
+UI: And with this we'll have more room in the budget probably to make a more original design. We'll have more money to go into the design side of it.
+ID: Yeah.
+ME: Mm-hmm.
+PM: Yeah.
+ID: Okay. Yeah.
+PM: Alright. Sounds great.
+[...]
+ME: Yep.
+PM: Yeah.
+UI: Yeah.
+PM: Alright.
+ME: Okay. That's it for the market research.
+PM: Okay. Before we go into uh more discussion on we want this design to look like, I've received some information from the management that will affect some of our decisions. Um, for one thing, because Having controls with D_V_D_, V_C_R_, that sort of thing, would really complicate the design of the remote control. Um, we've decided not to include them and make it a specific, just a specific television um function. Which is good as, as we've sort of decided that we would like to go with that anyway. Um, for many reasons. So um we have that decision sort of made for us. Another thing that might um affect other decisions is that um the management feels that teletext is outdated, because more people are using the internet now. And so uh we won't concern ourselves with um navigating the teletext option. Yep.
+ID: Can I just interrupt?
+ID: Would you like to plug in your Have you got a PowerPoint or not? Okay. Thanks.
+ME: Yeah. Maybe we can do the
+PM: Okay, sure.
+PM: Yeah I do. I'm looking at looking at it right now.",data/interim/transcripts/ES2015a.md;data/interim/transcripts/ES2015b.md,,,,
+h009,E1,What theme did the designers propose for the interchangeable covers and their colour schemes?,"A fruit-and-vegetable theme, with colour combinations named after fruits such as banana, watermelon, and vanilla.","The designers proposed a fruit and vegetable theme for the interchangeable covers and their colour schemes. The colour combinations were named after different fruits and vegetables, such as banana black and yellow, watermelon red and green, and vanilla as a more subdued cream color.","[ES2015d]
+PM: My goodness. There you go. Genevieve? Yeah.
+ID: Thanks. And you?
+ME: Yes. Oh it's nice. Oh I think I killed the five. I did. I killed the four. Oh god.
+PM: And something hmm.
+ID: O
+ID: Okay, as for the colours, we were presented with um a limited range of colours for this prototype. But we're thinking that, seeing as we're having it in interchangeable casing anyway, that this is not necessarily a representation of the true colours that we would necessarily use. Or the combination.
+ME: Oh it smells good.
+UI: Of Play Doh yeah.
+ID: Um and we're thinking to carry-on with the fruit and vegetable theme, the colour um combination just could just be named after different fruit, like banana could be black and yellow, watermelon red and green, or vanilla might be the most popular if it just uh blends in more settled cream instead of the others are all a bit garish.
+PM: Oh right.
+UI: 'Cause it'd be quite subtle and
+PM: Yeah. It looks more
+PM: Think like vanilla and banana would.
+ID: Banana's more representative of our colour scheme, like the company the yellow and black.",data/interim/transcripts/ES2015d.md,,,,
+h010,E2,Which chip choice was made in the third meeting and reaffirmed during the final cost review?,A regular chip was selected in meeting c and reaffirmed in meeting d.,"The chip choice made in the third meeting was the regular chip, which was reaffirmed during the final cost review.","[ES2015c]
+PM: I think we decided on the pushbuttons, right?
+UI: Yeah. I don yeah.
+ID: Uh, so that's the simple.
+ME: Mm-hmm.
+PM: Yeah. Would we need a more advanced one for uh the lighting, the interior lighting system?
+ID: Yeah possibly. So, it's probably gonna be the regular chip that we're going to need. So it's a medium. So regular chip. Regular sorry.
+PM: Yeah?
+PM: Okay. That's called medium, or regular?
+PM: 'Kay.
+ID: Regular chip.
+ME: Oh, is regular not simple?
+
+[ES2015d]
+PM: Um, there we go.
+PM: Okay here we go. So we need to tally up how much our w our product will be costing. So um if you can look up at the screen, um the large screen, oh I guess looking at your own too and telling me which one you think. Okay we're using kinetic which is quite a large expense at three Euros.
+ID: Yeah.
+ID: Yeah.
+UI: Oh right.
+PM: Um we're using a regular chip.
+ID: Yeah.
+PM: Um, it's cur it's double curved, so its curved all around. That's another three. We're already at five. Um, we're using plastic and rubber, so
+ID: Double double-curved yeah.
+ID: Yeah.
+PM: Good thing plastic is free, we're at eight. Um",data/interim/transcripts/ES2015c.md;data/interim/transcripts/ES2015d.md,,,,
+h011,E4,What were the exact dimensions of the finished remote control?,,"Matching concepts were found in the compiled bundle, but none of them answers this question.",,,,,,
+h012,E1,Which basic functions would the remote control provide?,"Power, channel selection, and volume control.","The remote control would provide the basic functions of power, channels, and volume. These functions are explicitly mentioned as the focus of the design, with the intention of keeping the remote simple and focused on essential operations.","[ES2015c]
+PM: You mean like we'll have the numbers of the channels, and we'll have the channel-changer, and volume, and power?
+ID: The power.
+ID: Volume.
+ME: Mm-hmm.
+PM: Um
+UI: So pretty just just the basic button functions.
+PM: Yeah. Like I don't know if we should go into like adjusting light levels, things like that, because different televisions will have
+ID: May yeah. Tone, contrast, and things. That's a bit
+PM: Um, yeah.
+ME: That was on, um
+ME: one of my presentations. About how often it was used. Do you remember that?
+[...]
+UI: You don't change that often, yeah.
+PM: Yeah, it does.
+ME: Mm-hmm.
+PM: Yeah, and different televisions. Like we, I don't know if we can make a remote that would be universal to all the different kinds of
+UI: Yeah.
+ID: Yeah. So we're just going for power, channels, volume,
+PM: changes like that.
+PM: Volume.
+ME: The other one was audio settings. Mono, stereo, pitch. I mean I sometimes use that. Some T_V_s will have the option of like living room style, movie style, um and that, they say that's used zero point eight times an hour, which is actually somewhat high. Like almost once an hour. Um, relevance of two.
+UI: Yeah.
+ID: Mm.
+[...]
+PM: Yeah, I don't, I it's, it's a problem with the international uh appeal, I think. Um, if we have audio because we don't know how other televisions work. But we know that everyone has this and it's the same.
+UI: But we
+ME: Yeah I guess that it affects the marketing, 'cause it, mm it is a good sales ploy to say, aren't you annoyed with remote controls that have all these buttons. This one has channel, volume and your channe and your power.
+ID: I've
+UI: Yeah.
+ID: Yeah, that's it. We can just go for, make it a selling point that it is just the basic. Yeah uh I brilliant.
+UI: That could be a sales pitch.
+PM: Yeah.
+ME: Yeah.
+UI: Simple and
+PM: Yeah.",data/interim/transcripts/ES2015c.md,,,,
+h013,E4,,,"I don't have specific information about the warranty period for a remote control, as it can vary depending on the manufacturer, model, and region. Typically, warranties for remote controls range from 1 to 3 years, but you should check the product documentation or contact the manufacturer for precise details.",,,,,,
+h014,E1,Which company branding elements had to be incorporated into the remote control?,The corporate logo and colour.,"The company branding elements that had to be incorporated into the remote control include the company's logo and colour. These elements were required to be present in some way on all the remote controls, as stated in the decision. The colour may vary depending on the theme, but the logo and colour are fundamental to the company branding.","[ES2015b]
+PM: Um, well, I mean we don't have the resources or or possibility of using the internet with the remote control, but um they were just pretty much saying that the teletext would not be used.
+ID: Yeah. Yeah.
+ID: Okay.
+ID: Yeah. Okay.
+PM: Alright, and another thing. This is for the design, the design of the product is that um we wanna create, um
+PM: more of a sense that people know that this is from our company. So, um, all the remote controls must have our um We'll incorporate our logo and colour in in some way. So, um, perhaps um our logo on the bottom, or wherever you feel like it would look good. Um, it doesn't have to be the colour of our um of our company but, another thing is that, um
+ID: Right.
+ID: Yeah. Yeah.
+ID: Okay.
+ID: Just
+PM: we need to, we probably would have to have that colour and, and logo decided upon. Um, I'm assuming that we already have one, but for the purposes of this meeting I, I wasn't offered a, like a type of logo or colour, so if that could be um somewhere on the design so that we can be recognisable.",data/interim/transcripts/ES2015b.md,,,,
+h015,E3,How was the remote control’s intended scope clarified between the first and second meetings?,"In the first meeting, the product was identified as a television remote control. In the second, the team settled on a single-function, television-only design rather than a multifunctional remote for DVDs, VCRs, and other devices.","The remote control’s intended scope was clarified by emphasizing the importance of a fancy look-and-feel over a functional one, as this was identified as the top priority [1]. Additionally, the team discussed evaluating whether they met their original requirements using a one-to-seven scale [2]. The conversation also touched on design ideas, such as unique shapes, to align with fashion trends [3].","[ES2015a]
+PM: And uh tool training
+PM: is one thing that we're going to be doing today, um um as well as planning the project, how we're going to, uh, create this product, and, um, discuss, um, our aims and objects of this, uh Which brings us to our next subject, is, um, um, as a team we're going to be designing and creating a new kind of remote control.
+PM: Um, we want this to be a marketable product that can be trendy, um, a completely new style, so that, um, can really appeal to a, to a generation that doesn't want a simple plain kind of, uh, channel-changer. And, um, it needs to be user-friendly for, um, maybe, for an example, for people that, um, can't see the numbers as well, or, um, perhaps an ergonomic design.
+ID: Okay.
+ID: So this is a television remote control? Yeah.
+PM: Yes, it's a television remote control.
+PM: Right. I believe I should be taking minutes on this right now. So, alright.
+ID: Okay.
+PM: Um, yeah.
+PM: Um, the way that we're going to go about this is, um, we'll have a time where we can, um
+PM: come up with new ideas alone, and, and work on the project and then, um, after we've brainstormed and, and thought about, we can come together in a meeting and, and discuss what, what um, what kind of functional design we want to use. Same with conceptual design and detailed design.
+
+[ES2015b]
+PM: Right.
+PM: Does everyone agree with this? Does anyone object and, and find the multifunctional might be a better way to go?
+ID: Um, I was just wondering about the, what, what Genevieve said before, about having like some hidden controls like having the outer casing. And that would probably, um, I d, well well what you said before about it being a more profitable simplistic design. I suppose having that would complicate it a lot more. And limit the design. Do you think?
+UI: Yeah.
+UI: Yeah.
+ME: Yeah, I think I agree with the single design thing for now, because we're trying to do so much, that if we're trying to make a unique, user-friendly, dadada, and it's also multi also multifunctional, um, we're gonna go over budget for one thing. So
+ID: Yeah.
+UI: Yeah. Yeah.
+ID: Yeah. That's true. Yeah.
+PM: Mm-hmm.
+UI: And with this we'll have more room in the budget probably to make a more original design. We'll have more money to go into the design side of it.
+ID: Yeah.
+ME: Mm-hmm.
+PM: Yeah.
+ID: Okay. Yeah.
+PM: Alright. Sounds great.
+[...]
+ME: Yep.
+PM: Yeah.
+UI: Yeah.
+PM: Alright.
+ME: Okay. That's it for the market research.
+PM: Okay. Before we go into uh more discussion on we want this design to look like, I've received some information from the management that will affect some of our decisions. Um, for one thing, because Having controls with D_V_D_, V_C_R_, that sort of thing, would really complicate the design of the remote control. Um, we've decided not to include them and make it a specific, just a specific television um function. Which is good as, as we've sort of decided that we would like to go with that anyway. Um, for many reasons. So um we have that decision sort of made for us. Another thing that might um affect other decisions is that um the management feels that teletext is outdated, because more people are using the internet now. And so uh we won't concern ourselves with um navigating the teletext option. Yep.
+ID: Can I just interrupt?
+ID: Would you like to plug in your Have you got a PowerPoint or not? Okay. Thanks.
+ME: Yeah. Maybe we can do the
+PM: Okay, sure.
+PM: Yeah I do. I'm looking at looking at it right now.",data/interim/transcripts/ES2015a.md;data/interim/transcripts/ES2015b.md,,,,
+h016,E1,What was the maximum allowed production cost per remote control?,Twelve Euros and fifty cents.,"Matching concepts were found in the compiled bundle, but none of them answers this question.","[ES2015a]
+PM: Yea
+PM: Right.
+PM: So, now that we know how to use the whiteboard, um, the next, um, thing we need to address is our financial department, to meet our our budget, um or not meet our budget but more, um, like what kind of, uh, selling range we'll be looking at, um, wanna make this um selling price of twenty five Euros. And so we have to, um, come up with a way to, to create a, a uh remote control, where um
+ID: Okay.
+PM: we can like the price to create it will be significantly less. Um, we'd like to, um
+PM: to, uh, make fifty million Euro. I'm assuming that's what the M_ means. Um, and make it for an international market. Um, one thing we'd have to think about internationally is in the design of, um, like different kinds of, uh, V_C_R_s. Things like that, depending on which country you are. Another thing for the design team to think about. Um, we want it to cost, uh, absolute maximum of twelve Euro and fifty cents.
+ME: Okay, so we'll have a hundred percent profit then? Twelve fifty.
+PM: I'm bad at math. 'Kay. Um, so now that, um, that is underway, um
+ME: Okay.
+PM: it is discussion time. So this is time for us to bring our initial ideas, any um
+PM: suggestions that you may have so far, a um your personal experiences with remote controls, and um, um, areas you see that, uh, could be improved in your experience with them.",data/interim/transcripts/ES2015a.md,,,,
+h017,E1,What theme did the designers propose for the interchangeable covers and their colour schemes?,"A fruit-and-vegetable theme, with colour combinations named after fruits such as banana, watermelon, and vanilla.","The designers proposed a fruit and vegetable theme for the interchangeable covers and their colour schemes, with specific examples like banana (yellow and black) and watermelon (red and green) [1]. They also mentioned other options such as apple green and brown, which they considered more trendy [1]. The theme was intended to align with the company's corporate identity and appeal to a broader audience [1].","[ES2015d]
+PM: My goodness. There you go. Genevieve? Yeah.
+ID: Thanks. And you?
+ME: Yes. Oh it's nice. Oh I think I killed the five. I did. I killed the four. Oh god.
+PM: And something hmm.
+ID: O
+ID: Okay, as for the colours, we were presented with um a limited range of colours for this prototype. But we're thinking that, seeing as we're having it in interchangeable casing anyway, that this is not necessarily a representation of the true colours that we would necessarily use. Or the combination.
+ME: Oh it smells good.
+UI: Of Play Doh yeah.
+ID: Um and we're thinking to carry-on with the fruit and vegetable theme, the colour um combination just could just be named after different fruit, like banana could be black and yellow, watermelon red and green, or vanilla might be the most popular if it just uh blends in more settled cream instead of the others are all a bit garish.
+PM: Oh right.
+UI: 'Cause it'd be quite subtle and
+PM: Yeah. It looks more
+PM: Think like vanilla and banana would.
+ID: Banana's more representative of our colour scheme, like the company the yellow and black.",data/interim/transcripts/ES2015d.md,,,,
+h018,E1,Was an LCD included in the remote control design?,"No, an LCD was excluded.","No, an LCD was not included in the remote control design. The remote control will not include teletext, LCD, or voice recognition functions.","[ES2015b]
+ME: Okay, so I Are we going to write off the L_C_D_ option? Yeah?
+ID: Yeah.
+PM: Is that how most people feel about that? Okay.
+UI: Yeah.
+ID: Yeah.
+ME: Okay. So no L_C_D_, no teletext, and no voice recognition.
+UI: I think it would be annoying though if I don't use teletext that much, but if it was on your T_V_, you'd want to be able to use it, if
+PM: Yeah, but another thing is that if we're reaching an international crowd, um, I know for one that in North America there is no such thing as teletext, so it'd be really superfluous.
+UI: You'd Yeah.
+ME: Yeah. Never heard of it.
+UI: So is it just Okay. Alright. Right.",data/interim/transcripts/ES2015b.md,,,,
+h019,E2,,A regular chip was selected in meeting c and reaffirmed in meeting d.,"I do not have enough information to answer this question. It refers to a specific event or decision that is not provided in the context, and I cannot infer details about meetings or chip choices without additional data.","[ES2015c]
+PM: I think we decided on the pushbuttons, right?
+UI: Yeah. I don yeah.
+ID: Uh, so that's the simple.
+ME: Mm-hmm.
+PM: Yeah. Would we need a more advanced one for uh the lighting, the interior lighting system?
+ID: Yeah possibly. So, it's probably gonna be the regular chip that we're going to need. So it's a medium. So regular chip. Regular sorry.
+PM: Yeah?
+PM: Okay. That's called medium, or regular?
+PM: 'Kay.
+ID: Regular chip.
+ME: Oh, is regular not simple?
+
+[ES2015d]
+PM: Um, there we go.
+PM: Okay here we go. So we need to tally up how much our w our product will be costing. So um if you can look up at the screen, um the large screen, oh I guess looking at your own too and telling me which one you think. Okay we're using kinetic which is quite a large expense at three Euros.
+ID: Yeah.
+ID: Yeah.
+UI: Oh right.
+PM: Um we're using a regular chip.
+ID: Yeah.
+PM: Um, it's cur it's double curved, so its curved all around. That's another three. We're already at five. Um, we're using plastic and rubber, so
+ID: Double double-curved yeah.
+ID: Yeah.
+PM: Good thing plastic is free, we're at eight. Um",data/interim/transcripts/ES2015c.md;data/interim/transcripts/ES2015d.md,,,,
+h020,E3,How was the remote control’s intended scope clarified between the first and second meetings?,"In the first meeting, the product was identified as a television remote control. In the second, the team settled on a single-function, television-only design rather than a multifunctional remote for DVDs, VCRs, and other devices.","Matching concepts were found in the compiled bundle, but none of them answers this question.","[ES2015a]
+PM: And uh tool training
+PM: is one thing that we're going to be doing today, um um as well as planning the project, how we're going to, uh, create this product, and, um, discuss, um, our aims and objects of this, uh Which brings us to our next subject, is, um, um, as a team we're going to be designing and creating a new kind of remote control.
+PM: Um, we want this to be a marketable product that can be trendy, um, a completely new style, so that, um, can really appeal to a, to a generation that doesn't want a simple plain kind of, uh, channel-changer. And, um, it needs to be user-friendly for, um, maybe, for an example, for people that, um, can't see the numbers as well, or, um, perhaps an ergonomic design.
+ID: Okay.
+ID: So this is a television remote control? Yeah.
+PM: Yes, it's a television remote control.
+PM: Right. I believe I should be taking minutes on this right now. So, alright.
+ID: Okay.
+PM: Um, yeah.
+PM: Um, the way that we're going to go about this is, um, we'll have a time where we can, um
+PM: come up with new ideas alone, and, and work on the project and then, um, after we've brainstormed and, and thought about, we can come together in a meeting and, and discuss what, what um, what kind of functional design we want to use. Same with conceptual design and detailed design.
+
+[ES2015b]
+PM: Right.
+PM: Does everyone agree with this? Does anyone object and, and find the multifunctional might be a better way to go?
+ID: Um, I was just wondering about the, what, what Genevieve said before, about having like some hidden controls like having the outer casing. And that would probably, um, I d, well well what you said before about it being a more profitable simplistic design. I suppose having that would complicate it a lot more. And limit the design. Do you think?
+UI: Yeah.
+UI: Yeah.
+ME: Yeah, I think I agree with the single design thing for now, because we're trying to do so much, that if we're trying to make a unique, user-friendly, dadada, and it's also multi also multifunctional, um, we're gonna go over budget for one thing. So
+ID: Yeah.
+UI: Yeah. Yeah.
+ID: Yeah. That's true. Yeah.
+PM: Mm-hmm.
+UI: And with this we'll have more room in the budget probably to make a more original design. We'll have more money to go into the design side of it.
+ID: Yeah.
+ME: Mm-hmm.
+PM: Yeah.
+ID: Okay. Yeah.
+PM: Alright. Sounds great.
+[...]
+ME: Yep.
+PM: Yeah.
+UI: Yeah.
+PM: Alright.
+ME: Okay. That's it for the market research.
+PM: Okay. Before we go into uh more discussion on we want this design to look like, I've received some information from the management that will affect some of our decisions. Um, for one thing, because Having controls with D_V_D_, V_C_R_, that sort of thing, would really complicate the design of the remote control. Um, we've decided not to include them and make it a specific, just a specific television um function. Which is good as, as we've sort of decided that we would like to go with that anyway. Um, for many reasons. So um we have that decision sort of made for us. Another thing that might um affect other decisions is that um the management feels that teletext is outdated, because more people are using the internet now. And so uh we won't concern ourselves with um navigating the teletext option. Yep.
+ID: Can I just interrupt?
+ID: Would you like to plug in your Have you got a PowerPoint or not? Okay. Thanks.
+ME: Yeah. Maybe we can do the
+PM: Okay, sure.
+PM: Yeah I do. I'm looking at looking at it right now.",data/interim/transcripts/ES2015a.md;data/interim/transcripts/ES2015b.md,,,,
+h021,E1,,Twenty-five Euros.,I don't have any information about a specific remote control or its selling price. Please provide more context or details so I can assist you better.,"[ES2015a]
+ME: Uh, what do we Oh.
+PM: Do you hear the eraser buzzing while you do that?
+ME: Yes I do.
+PM: Yea
+PM: Right.
+PM: So, now that we know how to use the whiteboard, um, the next, um, thing we need to address is our financial department, to meet our our budget, um or not meet our budget but more, um, like what kind of, uh, selling range we'll be looking at, um, wanna make this um selling price of twenty five Euros. And so we have to, um, come up with a way to, to create a, a uh remote control, where um
+ID: Okay.
+PM: we can like the price to create it will be significantly less. Um, we'd like to, um
+PM: to, uh, make fifty million Euro. I'm assuming that's what the M_ means. Um, and make it for an international market. Um, one thing we'd have to think about internationally is in the design of, um, like different kinds of, uh, V_C_R_s. Things like that, depending on which country you are. Another thing for the design team to think about. Um, we want it to cost, uh, absolute maximum of twelve Euro and fifty cents.
+ME: Okay, so we'll have a hundred percent profit then? Twelve fifty.
+PM: I'm bad at math. 'Kay. Um, so now that, um, that is underway, um",data/interim/transcripts/ES2015a.md,,,,
+h022,E2,Which chip choice was made in the third meeting and reaffirmed during the final cost review?,A regular chip was selected in meeting c and reaffirmed in meeting d.,"The regular chip was chosen in the third meeting and reaffirmed during the final cost review [1][5]. This decision was made to balance the needs of the project, including the interior lighting system, while keeping costs manageable [1][5]. The regular chip was confirmed as the medium option, which aligns with the project's budget and requirements [1][5].","[ES2015c]
+PM: I think we decided on the pushbuttons, right?
+UI: Yeah. I don yeah.
+ID: Uh, so that's the simple.
+ME: Mm-hmm.
+PM: Yeah. Would we need a more advanced one for uh the lighting, the interior lighting system?
+ID: Yeah possibly. So, it's probably gonna be the regular chip that we're going to need. So it's a medium. So regular chip. Regular sorry.
+PM: Yeah?
+PM: Okay. That's called medium, or regular?
+PM: 'Kay.
+ID: Regular chip.
+ME: Oh, is regular not simple?
+
+[ES2015d]
+PM: Um, there we go.
+PM: Okay here we go. So we need to tally up how much our w our product will be costing. So um if you can look up at the screen, um the large screen, oh I guess looking at your own too and telling me which one you think. Okay we're using kinetic which is quite a large expense at three Euros.
+ID: Yeah.
+ID: Yeah.
+UI: Oh right.
+PM: Um we're using a regular chip.
+ID: Yeah.
+PM: Um, it's cur it's double curved, so its curved all around. That's another three. We're already at five. Um, we're using plastic and rubber, so
+ID: Double double-curved yeah.
+ID: Yeah.
+PM: Good thing plastic is free, we're at eight. Um",data/interim/transcripts/ES2015c.md;data/interim/transcripts/ES2015d.md,,,,
+h023,E1,Which feature did management decide to leave out because it was considered outdated?,Teletext navigation was excluded because management considered teletext outdated.,"The management decided to leave out teletext because it was considered outdated [1]. They felt that more people are using the internet now, making teletext unnecessary [1]. This decision was made to focus on current technologies and user preferences.","[ES2015b]
+ME: Yep.
+PM: Yeah.
+UI: Yeah.
+PM: Alright.
+ME: Okay. That's it for the market research.
+PM: Okay. Before we go into uh more discussion on we want this design to look like, I've received some information from the management that will affect some of our decisions. Um, for one thing, because Having controls with D_V_D_, V_C_R_, that sort of thing, would really complicate the design of the remote control. Um, we've decided not to include them and make it a specific, just a specific television um function. Which is good as, as we've sort of decided that we would like to go with that anyway. Um, for many reasons. So um we have that decision sort of made for us. Another thing that might um affect other decisions is that um the management feels that teletext is outdated, because more people are using the internet now. And so uh we won't concern ourselves with um navigating the teletext option. Yep.
+ID: Can I just interrupt?
+ID: Would you like to plug in your Have you got a PowerPoint or not? Okay. Thanks.
+ME: Yeah. Maybe we can do the
+PM: Okay, sure.
+PM: Yeah I do. I'm looking at looking at it right now.",data/interim/transcripts/ES2015b.md,,,,
+h024,E2,Which chip choice was made in the third meeting and reaffirmed during the final cost review?,A regular chip was selected in meeting c and reaffirmed in meeting d.,"The chip choice made in the third meeting was to use a regular chip, and this decision was reaffirmed during the final cost review.","[ES2015c]
+PM: I think we decided on the pushbuttons, right?
+UI: Yeah. I don yeah.
+ID: Uh, so that's the simple.
+ME: Mm-hmm.
+PM: Yeah. Would we need a more advanced one for uh the lighting, the interior lighting system?
+ID: Yeah possibly. So, it's probably gonna be the regular chip that we're going to need. So it's a medium. So regular chip. Regular sorry.
+PM: Yeah?
+PM: Okay. That's called medium, or regular?
+PM: 'Kay.
+ID: Regular chip.
+ME: Oh, is regular not simple?
+
+[ES2015d]
+PM: Um, there we go.
+PM: Okay here we go. So we need to tally up how much our w our product will be costing. So um if you can look up at the screen, um the large screen, oh I guess looking at your own too and telling me which one you think. Okay we're using kinetic which is quite a large expense at three Euros.
+ID: Yeah.
+ID: Yeah.
+UI: Oh right.
+PM: Um we're using a regular chip.
+ID: Yeah.
+PM: Um, it's cur it's double curved, so its curved all around. That's another three. We're already at five. Um, we're using plastic and rubber, so
+ID: Double double-curved yeah.
+ID: Yeah.
+PM: Good thing plastic is free, we're at eight. Um",data/interim/transcripts/ES2015c.md;data/interim/transcripts/ES2015d.md,,,,

@@ -1,0 +1,1664 @@
+{
+  "partition": "development",
+  "reportable": false,
+  "bootstrap": {
+    "n_resamples": 10000,
+    "confidence_level": 0.95,
+    "seed": 42
+  },
+  "combination": "Las corridas de una misma pregunta se promedian por pregunta; la tasa de una celda es el promedio de esos valores y el intervalo bootstrap remuestrea preguntas, no respuestas, porque las corridas de una pregunta no son independientes. Las comparaciones se aparean por pregunta.",
+  "criterion_d16": "Criterio D16 (enmendado, ADR 0010): la hipótesis se respalda si el intervalo bootstrap del 95 % de la diferencia pareada C2 - C1 queda por encima de 0; en otro caso el resultado es no concluyente. La no superposición de los intervalos independientes de C2 y C1 (redacción original) se informa aparte como robustez y no reemplaza al criterio principal. Desde el 2026-11-02 el veredicto exige el mínimo prerregistrado de preguntas juzgadas por condición en el estrato; por debajo se informa insufficient_sample (muestra insuficiente) con las cifras a la vista.",
+  "cells": [
+    {
+      "condition": "C0",
+      "stratum": "E1",
+      "records": 14,
+      "questions": 14,
+      "judge_failures": 0,
+      "errors": 0,
+      "citation_records_v1_excluded": 0,
+      "below_minimum": true,
+      "metrics": {
+        "correct": {
+          "point": 0.14285714285714285,
+          "lower": 0.0,
+          "upper": 0.35714285714285715,
+          "n_questions": 14,
+          "n_records": 14
+        },
+        "evidence_supported": null,
+        "citation_correct": null,
+        "citation_precision": null
+      },
+      "citation_width": null
+    },
+    {
+      "condition": "C0",
+      "stratum": "E2",
+      "records": 2,
+      "questions": 2,
+      "judge_failures": 0,
+      "errors": 0,
+      "citation_records_v1_excluded": 0,
+      "below_minimum": true,
+      "metrics": {
+        "correct": {
+          "point": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "n_questions": 2,
+          "n_records": 2
+        },
+        "evidence_supported": null,
+        "citation_correct": null,
+        "citation_precision": null
+      },
+      "citation_width": null
+    },
+    {
+      "condition": "C0",
+      "stratum": "E3",
+      "records": 1,
+      "questions": 1,
+      "judge_failures": 0,
+      "errors": 0,
+      "citation_records_v1_excluded": 0,
+      "below_minimum": true,
+      "metrics": {
+        "correct": {
+          "point": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "n_questions": 1,
+          "n_records": 1
+        },
+        "evidence_supported": null,
+        "citation_correct": null,
+        "citation_precision": null,
+        "outdated_among_answered": null,
+        "wrong_among_answered": {
+          "point": 1.0,
+          "lower": 1.0,
+          "upper": 1.0,
+          "n_questions": 1,
+          "n_records": 1
+        }
+      },
+      "citation_width": null
+    },
+    {
+      "condition": "C0",
+      "stratum": "E4",
+      "records": 4,
+      "questions": 4,
+      "judge_failures": 0,
+      "errors": 0,
+      "citation_records_v1_excluded": 0,
+      "below_minimum": true,
+      "metrics": {
+        "correct": {
+          "point": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "n_questions": 4,
+          "n_records": 4
+        },
+        "evidence_supported": null,
+        "citation_correct": null,
+        "citation_precision": null,
+        "abstention_correct": {
+          "point": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "n_questions": 4,
+          "n_records": 4
+        }
+      },
+      "citation_width": null
+    },
+    {
+      "condition": "C0",
+      "stratum": "ALL",
+      "records": 21,
+      "questions": 21,
+      "judge_failures": 0,
+      "errors": 0,
+      "citation_records_v1_excluded": 0,
+      "below_minimum": false,
+      "metrics": {
+        "correct": {
+          "point": 0.19047619047619047,
+          "lower": 0.047619047619047616,
+          "upper": 0.38095238095238093,
+          "n_questions": 21,
+          "n_records": 21
+        },
+        "evidence_supported": null,
+        "citation_correct": null,
+        "citation_precision": null
+      },
+      "citation_width": null
+    },
+    {
+      "condition": "C1",
+      "stratum": "E1",
+      "records": 14,
+      "questions": 14,
+      "judge_failures": 0,
+      "errors": 0,
+      "citation_records_v1_excluded": 0,
+      "below_minimum": true,
+      "metrics": {
+        "correct": {
+          "point": 0.7857142857142857,
+          "lower": 0.5714285714285714,
+          "upper": 1.0,
+          "n_questions": 14,
+          "n_records": 14
+        },
+        "evidence_supported": {
+          "point": 0.35714285714285715,
+          "lower": 0.14285714285714285,
+          "upper": 0.6428571428571429,
+          "n_questions": 14,
+          "n_records": 14
+        },
+        "citation_correct": {
+          "point": 0.6153846153846154,
+          "lower": 0.3076923076923077,
+          "upper": 0.8461538461538461,
+          "n_questions": 13,
+          "n_records": 13
+        },
+        "citation_precision": {
+          "point": 0.5641025641025641,
+          "lower": 0.3076923076923077,
+          "upper": 0.8205128205128205,
+          "n_questions": 13,
+          "n_records": 13
+        }
+      },
+      "citation_width": {
+        "answered": 13,
+        "cited_acts_min": 22,
+        "cited_acts_median": 54,
+        "cited_acts_max": 116,
+        "mean_act_coverage": 0.5512820512820513,
+        "source_citations": 0
+      }
+    },
+    {
+      "condition": "C1",
+      "stratum": "E2",
+      "records": 2,
+      "questions": 2,
+      "judge_failures": 0,
+      "errors": 0,
+      "citation_records_v1_excluded": 0,
+      "below_minimum": true,
+      "metrics": {
+        "correct": {
+          "point": 1.0,
+          "lower": 1.0,
+          "upper": 1.0,
+          "n_questions": 2,
+          "n_records": 2
+        },
+        "evidence_supported": {
+          "point": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "n_questions": 2,
+          "n_records": 2
+        },
+        "citation_correct": {
+          "point": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "n_questions": 2,
+          "n_records": 2
+        },
+        "citation_precision": {
+          "point": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "n_questions": 2,
+          "n_records": 2
+        }
+      },
+      "citation_width": {
+        "answered": 2,
+        "cited_acts_min": 56,
+        "cited_acts_median": 72.0,
+        "cited_acts_max": 88,
+        "mean_act_coverage": 0.5,
+        "source_citations": 0
+      }
+    },
+    {
+      "condition": "C1",
+      "stratum": "E3",
+      "records": 1,
+      "questions": 1,
+      "judge_failures": 0,
+      "errors": 0,
+      "citation_records_v1_excluded": 0,
+      "below_minimum": true,
+      "metrics": {
+        "correct": {
+          "point": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "n_questions": 1,
+          "n_records": 1
+        },
+        "evidence_supported": {
+          "point": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "n_questions": 1,
+          "n_records": 1
+        },
+        "citation_correct": {
+          "point": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "n_questions": 1,
+          "n_records": 1
+        },
+        "citation_precision": {
+          "point": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "n_questions": 1,
+          "n_records": 1
+        },
+        "outdated_among_answered": null,
+        "wrong_among_answered": {
+          "point": 1.0,
+          "lower": 1.0,
+          "upper": 1.0,
+          "n_questions": 1,
+          "n_records": 1
+        }
+      },
+      "citation_width": {
+        "answered": 1,
+        "cited_acts_min": 85,
+        "cited_acts_median": 85,
+        "cited_acts_max": 85,
+        "mean_act_coverage": 0.0,
+        "source_citations": 0
+      }
+    },
+    {
+      "condition": "C1",
+      "stratum": "E4",
+      "records": 4,
+      "questions": 4,
+      "judge_failures": 0,
+      "errors": 0,
+      "citation_records_v1_excluded": 0,
+      "below_minimum": true,
+      "metrics": {
+        "correct": {
+          "point": 1.0,
+          "lower": 1.0,
+          "upper": 1.0,
+          "n_questions": 4,
+          "n_records": 4
+        },
+        "evidence_supported": {
+          "point": 1.0,
+          "lower": 1.0,
+          "upper": 1.0,
+          "n_questions": 4,
+          "n_records": 4
+        },
+        "citation_correct": null,
+        "citation_precision": null,
+        "abstention_correct": {
+          "point": 1.0,
+          "lower": 1.0,
+          "upper": 1.0,
+          "n_questions": 4,
+          "n_records": 4
+        }
+      },
+      "citation_width": {
+        "answered": 0,
+        "cited_acts_min": null,
+        "cited_acts_median": null,
+        "cited_acts_max": null,
+        "mean_act_coverage": null,
+        "source_citations": 0
+      }
+    },
+    {
+      "condition": "C1",
+      "stratum": "ALL",
+      "records": 21,
+      "questions": 21,
+      "judge_failures": 0,
+      "errors": 0,
+      "citation_records_v1_excluded": 0,
+      "below_minimum": false,
+      "metrics": {
+        "correct": {
+          "point": 0.8095238095238095,
+          "lower": 0.6190476190476191,
+          "upper": 0.9523809523809523,
+          "n_questions": 21,
+          "n_records": 21
+        },
+        "evidence_supported": {
+          "point": 0.47619047619047616,
+          "lower": 0.2857142857142857,
+          "upper": 0.7142857142857143,
+          "n_questions": 21,
+          "n_records": 21
+        },
+        "citation_correct": {
+          "point": 0.5625,
+          "lower": 0.3125,
+          "upper": 0.8125,
+          "n_questions": 16,
+          "n_records": 16
+        },
+        "citation_precision": {
+          "point": 0.5208333333333334,
+          "lower": 0.2916666666666667,
+          "upper": 0.75,
+          "n_questions": 16,
+          "n_records": 16
+        }
+      },
+      "citation_width": {
+        "answered": 16,
+        "cited_acts_min": 22,
+        "cited_acts_median": 61.5,
+        "cited_acts_max": 116,
+        "mean_act_coverage": 0.5104166666666666,
+        "source_citations": 0
+      }
+    },
+    {
+      "condition": "C2",
+      "stratum": "E1",
+      "records": 14,
+      "questions": 14,
+      "judge_failures": 0,
+      "errors": 0,
+      "citation_records_v1_excluded": 0,
+      "below_minimum": true,
+      "metrics": {
+        "correct": {
+          "point": 0.5714285714285714,
+          "lower": 0.2857142857142857,
+          "upper": 0.8571428571428571,
+          "n_questions": 14,
+          "n_records": 14
+        },
+        "evidence_supported": {
+          "point": 0.35714285714285715,
+          "lower": 0.14285714285714285,
+          "upper": 0.6428571428571429,
+          "n_questions": 14,
+          "n_records": 14
+        },
+        "citation_correct": {
+          "point": 0.4,
+          "lower": 0.1,
+          "upper": 0.7,
+          "n_questions": 10,
+          "n_records": 10
+        },
+        "citation_precision": {
+          "point": 0.25,
+          "lower": 0.05,
+          "upper": 0.5,
+          "n_questions": 10,
+          "n_records": 10
+        }
+      },
+      "citation_width": {
+        "answered": 10,
+        "cited_acts_min": 0,
+        "cited_acts_median": 38.5,
+        "cited_acts_max": 134,
+        "mean_act_coverage": 0.4,
+        "source_citations": 4
+      }
+    },
+    {
+      "condition": "C2",
+      "stratum": "E2",
+      "records": 2,
+      "questions": 2,
+      "judge_failures": 0,
+      "errors": 0,
+      "citation_records_v1_excluded": 0,
+      "below_minimum": true,
+      "metrics": {
+        "correct": {
+          "point": 1.0,
+          "lower": 1.0,
+          "upper": 1.0,
+          "n_questions": 2,
+          "n_records": 2
+        },
+        "evidence_supported": {
+          "point": 1.0,
+          "lower": 1.0,
+          "upper": 1.0,
+          "n_questions": 2,
+          "n_records": 2
+        },
+        "citation_correct": {
+          "point": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "n_questions": 2,
+          "n_records": 2
+        },
+        "citation_precision": {
+          "point": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "n_questions": 2,
+          "n_records": 2
+        }
+      },
+      "citation_width": {
+        "answered": 2,
+        "cited_acts_min": 49,
+        "cited_acts_median": 59.0,
+        "cited_acts_max": 69,
+        "mean_act_coverage": 0.0,
+        "source_citations": 1
+      }
+    },
+    {
+      "condition": "C2",
+      "stratum": "E3",
+      "records": 1,
+      "questions": 1,
+      "judge_failures": 0,
+      "errors": 0,
+      "citation_records_v1_excluded": 0,
+      "below_minimum": true,
+      "metrics": {
+        "correct": {
+          "point": 1.0,
+          "lower": 1.0,
+          "upper": 1.0,
+          "n_questions": 1,
+          "n_records": 1
+        },
+        "evidence_supported": {
+          "point": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "n_questions": 1,
+          "n_records": 1
+        },
+        "citation_correct": {
+          "point": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "n_questions": 1,
+          "n_records": 1
+        },
+        "citation_precision": {
+          "point": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "n_questions": 1,
+          "n_records": 1
+        },
+        "outdated_among_answered": null,
+        "wrong_among_answered": {
+          "point": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "n_questions": 1,
+          "n_records": 1
+        }
+      },
+      "citation_width": {
+        "answered": 1,
+        "cited_acts_min": 171,
+        "cited_acts_median": 171,
+        "cited_acts_max": 171,
+        "mean_act_coverage": 0.0,
+        "source_citations": 0
+      }
+    },
+    {
+      "condition": "C2",
+      "stratum": "E4",
+      "records": 4,
+      "questions": 4,
+      "judge_failures": 0,
+      "errors": 0,
+      "citation_records_v1_excluded": 0,
+      "below_minimum": true,
+      "metrics": {
+        "correct": {
+          "point": 1.0,
+          "lower": 1.0,
+          "upper": 1.0,
+          "n_questions": 4,
+          "n_records": 4
+        },
+        "evidence_supported": {
+          "point": 1.0,
+          "lower": 1.0,
+          "upper": 1.0,
+          "n_questions": 4,
+          "n_records": 4
+        },
+        "citation_correct": null,
+        "citation_precision": null,
+        "abstention_correct": {
+          "point": 1.0,
+          "lower": 1.0,
+          "upper": 1.0,
+          "n_questions": 4,
+          "n_records": 4
+        }
+      },
+      "citation_width": {
+        "answered": 0,
+        "cited_acts_min": null,
+        "cited_acts_median": null,
+        "cited_acts_max": null,
+        "mean_act_coverage": null,
+        "source_citations": 0
+      }
+    },
+    {
+      "condition": "C2",
+      "stratum": "ALL",
+      "records": 21,
+      "questions": 21,
+      "judge_failures": 0,
+      "errors": 0,
+      "citation_records_v1_excluded": 0,
+      "below_minimum": false,
+      "metrics": {
+        "correct": {
+          "point": 0.7142857142857143,
+          "lower": 0.5238095238095238,
+          "upper": 0.9047619047619048,
+          "n_questions": 21,
+          "n_records": 21
+        },
+        "evidence_supported": {
+          "point": 0.5238095238095238,
+          "lower": 0.3333333333333333,
+          "upper": 0.7142857142857143,
+          "n_questions": 21,
+          "n_records": 21
+        },
+        "citation_correct": {
+          "point": 0.3076923076923077,
+          "lower": 0.07692307692307693,
+          "upper": 0.5384615384615384,
+          "n_questions": 13,
+          "n_records": 13
+        },
+        "citation_precision": {
+          "point": 0.19230769230769232,
+          "lower": 0.038461538461538464,
+          "upper": 0.38461538461538464,
+          "n_questions": 13,
+          "n_records": 13
+        }
+      },
+      "citation_width": {
+        "answered": 13,
+        "cited_acts_min": 0,
+        "cited_acts_median": 69,
+        "cited_acts_max": 171,
+        "mean_act_coverage": 0.3076923076923077,
+        "source_citations": 5
+      }
+    },
+    {
+      "condition": "C3",
+      "stratum": "E1",
+      "records": 14,
+      "questions": 14,
+      "judge_failures": 0,
+      "errors": 0,
+      "citation_records_v1_excluded": 0,
+      "below_minimum": true,
+      "metrics": {
+        "correct": {
+          "point": 0.7857142857142857,
+          "lower": 0.5714285714285714,
+          "upper": 1.0,
+          "n_questions": 14,
+          "n_records": 14
+        },
+        "evidence_supported": {
+          "point": 0.5714285714285714,
+          "lower": 0.2857142857142857,
+          "upper": 0.7857142857142857,
+          "n_questions": 14,
+          "n_records": 14
+        },
+        "citation_correct": {
+          "point": 0.7692307692307693,
+          "lower": 0.5384615384615384,
+          "upper": 1.0,
+          "n_questions": 13,
+          "n_records": 13
+        },
+        "citation_precision": {
+          "point": 0.7307692307692307,
+          "lower": 0.5,
+          "upper": 0.9230769230769231,
+          "n_questions": 13,
+          "n_records": 13
+        }
+      },
+      "citation_width": {
+        "answered": 13,
+        "cited_acts_min": 2,
+        "cited_acts_median": 9,
+        "cited_acts_max": 187,
+        "mean_act_coverage": 0.6538461538461539,
+        "source_citations": 5
+      }
+    },
+    {
+      "condition": "C3",
+      "stratum": "E2",
+      "records": 2,
+      "questions": 2,
+      "judge_failures": 0,
+      "errors": 0,
+      "citation_records_v1_excluded": 0,
+      "below_minimum": true,
+      "metrics": {
+        "correct": {
+          "point": 1.0,
+          "lower": 1.0,
+          "upper": 1.0,
+          "n_questions": 2,
+          "n_records": 2
+        },
+        "evidence_supported": {
+          "point": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "n_questions": 2,
+          "n_records": 2
+        },
+        "citation_correct": {
+          "point": 1.0,
+          "lower": 1.0,
+          "upper": 1.0,
+          "n_questions": 2,
+          "n_records": 2
+        },
+        "citation_precision": {
+          "point": 1.0,
+          "lower": 1.0,
+          "upper": 1.0,
+          "n_questions": 2,
+          "n_records": 2
+        }
+      },
+      "citation_width": {
+        "answered": 2,
+        "cited_acts_min": 3,
+        "cited_acts_median": 4.5,
+        "cited_acts_max": 6,
+        "mean_act_coverage": 0.41666666666666663,
+        "source_citations": 2
+      }
+    },
+    {
+      "condition": "C3",
+      "stratum": "E3",
+      "records": 1,
+      "questions": 1,
+      "judge_failures": 0,
+      "errors": 0,
+      "citation_records_v1_excluded": 0,
+      "below_minimum": true,
+      "metrics": {
+        "correct": {
+          "point": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "n_questions": 1,
+          "n_records": 1
+        },
+        "evidence_supported": {
+          "point": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "n_questions": 1,
+          "n_records": 1
+        },
+        "citation_correct": null,
+        "citation_precision": null,
+        "outdated_among_answered": null,
+        "wrong_among_answered": null
+      },
+      "citation_width": {
+        "answered": 0,
+        "cited_acts_min": null,
+        "cited_acts_median": null,
+        "cited_acts_max": null,
+        "mean_act_coverage": null,
+        "source_citations": 0
+      }
+    },
+    {
+      "condition": "C3",
+      "stratum": "E4",
+      "records": 4,
+      "questions": 4,
+      "judge_failures": 0,
+      "errors": 0,
+      "citation_records_v1_excluded": 0,
+      "below_minimum": true,
+      "metrics": {
+        "correct": {
+          "point": 1.0,
+          "lower": 1.0,
+          "upper": 1.0,
+          "n_questions": 4,
+          "n_records": 4
+        },
+        "evidence_supported": {
+          "point": 1.0,
+          "lower": 1.0,
+          "upper": 1.0,
+          "n_questions": 4,
+          "n_records": 4
+        },
+        "citation_correct": null,
+        "citation_precision": null,
+        "abstention_correct": {
+          "point": 1.0,
+          "lower": 1.0,
+          "upper": 1.0,
+          "n_questions": 4,
+          "n_records": 4
+        }
+      },
+      "citation_width": {
+        "answered": 0,
+        "cited_acts_min": null,
+        "cited_acts_median": null,
+        "cited_acts_max": null,
+        "mean_act_coverage": null,
+        "source_citations": 0
+      }
+    },
+    {
+      "condition": "C3",
+      "stratum": "ALL",
+      "records": 21,
+      "questions": 21,
+      "judge_failures": 0,
+      "errors": 0,
+      "citation_records_v1_excluded": 0,
+      "below_minimum": false,
+      "metrics": {
+        "correct": {
+          "point": 0.8095238095238095,
+          "lower": 0.6190476190476191,
+          "upper": 0.9523809523809523,
+          "n_questions": 21,
+          "n_records": 21
+        },
+        "evidence_supported": {
+          "point": 0.6190476190476191,
+          "lower": 0.42857142857142855,
+          "upper": 0.8095238095238095,
+          "n_questions": 21,
+          "n_records": 21
+        },
+        "citation_correct": {
+          "point": 0.8,
+          "lower": 0.6,
+          "upper": 1.0,
+          "n_questions": 15,
+          "n_records": 15
+        },
+        "citation_precision": {
+          "point": 0.7666666666666667,
+          "lower": 0.5333333333333333,
+          "upper": 0.9333333333333333,
+          "n_questions": 15,
+          "n_records": 15
+        }
+      },
+      "citation_width": {
+        "answered": 15,
+        "cited_acts_min": 2,
+        "cited_acts_median": 7,
+        "cited_acts_max": 187,
+        "mean_act_coverage": 0.6222222222222222,
+        "source_citations": 7
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "primary": false,
+      "condition_a": "C2",
+      "condition_b": "C1",
+      "stratum": "E1",
+      "metric": "correct",
+      "n_pairs": 14,
+      "difference": -0.21428571428571427,
+      "difference_lower": -0.5,
+      "difference_upper": 0.07142857142857142,
+      "interval_a": [
+        0.2857142857142857,
+        0.8571428571428571
+      ],
+      "interval_b": [
+        0.5714285714285714,
+        1.0
+      ],
+      "direction": "overlap",
+      "criterion": "insufficient_sample",
+      "nonoverlap_criterion": "insufficient_sample",
+      "descriptive": false,
+      "sample_sufficient": false,
+      "intervals_overlap": true
+    },
+    {
+      "primary": false,
+      "condition_a": "C2",
+      "condition_b": "C1",
+      "stratum": "E1",
+      "metric": "evidence_supported",
+      "n_pairs": 14,
+      "difference": 0.0,
+      "difference_lower": -0.2857142857142857,
+      "difference_upper": 0.2857142857142857,
+      "interval_a": [
+        0.14285714285714285,
+        0.6428571428571429
+      ],
+      "interval_b": [
+        0.14285714285714285,
+        0.6428571428571429
+      ],
+      "direction": "overlap",
+      "criterion": "insufficient_sample",
+      "nonoverlap_criterion": "insufficient_sample",
+      "descriptive": false,
+      "sample_sufficient": false,
+      "intervals_overlap": true
+    },
+    {
+      "primary": false,
+      "condition_a": "C2",
+      "condition_b": "C1",
+      "stratum": "E2",
+      "metric": "correct",
+      "n_pairs": 2,
+      "difference": 0.0,
+      "difference_lower": 0.0,
+      "difference_upper": 0.0,
+      "interval_a": [
+        1.0,
+        1.0
+      ],
+      "interval_b": [
+        1.0,
+        1.0
+      ],
+      "direction": "overlap",
+      "criterion": "insufficient_sample",
+      "nonoverlap_criterion": "insufficient_sample",
+      "descriptive": false,
+      "sample_sufficient": false,
+      "intervals_overlap": true
+    },
+    {
+      "primary": false,
+      "condition_a": "C2",
+      "condition_b": "C1",
+      "stratum": "E2",
+      "metric": "evidence_supported",
+      "n_pairs": 2,
+      "difference": 0.5,
+      "difference_lower": 0.0,
+      "difference_upper": 1.0,
+      "interval_a": [
+        1.0,
+        1.0
+      ],
+      "interval_b": [
+        0.0,
+        1.0
+      ],
+      "direction": "overlap",
+      "criterion": "insufficient_sample",
+      "nonoverlap_criterion": "insufficient_sample",
+      "descriptive": false,
+      "sample_sufficient": false,
+      "intervals_overlap": true
+    },
+    {
+      "primary": true,
+      "condition_a": "C2",
+      "condition_b": "C1",
+      "stratum": "E3",
+      "metric": "correct",
+      "n_pairs": 1,
+      "difference": 1.0,
+      "difference_lower": 1.0,
+      "difference_upper": 1.0,
+      "interval_a": [
+        1.0,
+        1.0
+      ],
+      "interval_b": [
+        0.0,
+        0.0
+      ],
+      "direction": "a_above",
+      "criterion": "insufficient_sample",
+      "nonoverlap_criterion": "insufficient_sample",
+      "descriptive": false,
+      "sample_sufficient": false,
+      "intervals_overlap": false
+    },
+    {
+      "primary": false,
+      "condition_a": "C2",
+      "condition_b": "C1",
+      "stratum": "E3",
+      "metric": "evidence_supported",
+      "n_pairs": 1,
+      "difference": 0.0,
+      "difference_lower": 0.0,
+      "difference_upper": 0.0,
+      "interval_a": [
+        0.0,
+        0.0
+      ],
+      "interval_b": [
+        0.0,
+        0.0
+      ],
+      "direction": "overlap",
+      "criterion": "insufficient_sample",
+      "nonoverlap_criterion": "insufficient_sample",
+      "descriptive": false,
+      "sample_sufficient": false,
+      "intervals_overlap": true
+    },
+    {
+      "primary": false,
+      "condition_a": "C2",
+      "condition_b": "C1",
+      "stratum": "E4",
+      "metric": "correct",
+      "n_pairs": 4,
+      "difference": 0.0,
+      "difference_lower": 0.0,
+      "difference_upper": 0.0,
+      "interval_a": [
+        1.0,
+        1.0
+      ],
+      "interval_b": [
+        1.0,
+        1.0
+      ],
+      "direction": "overlap",
+      "criterion": "insufficient_sample",
+      "nonoverlap_criterion": "insufficient_sample",
+      "descriptive": false,
+      "sample_sufficient": false,
+      "intervals_overlap": true
+    },
+    {
+      "primary": false,
+      "condition_a": "C2",
+      "condition_b": "C1",
+      "stratum": "E4",
+      "metric": "evidence_supported",
+      "n_pairs": 4,
+      "difference": 0.0,
+      "difference_lower": 0.0,
+      "difference_upper": 0.0,
+      "interval_a": [
+        1.0,
+        1.0
+      ],
+      "interval_b": [
+        1.0,
+        1.0
+      ],
+      "direction": "overlap",
+      "criterion": "insufficient_sample",
+      "nonoverlap_criterion": "insufficient_sample",
+      "descriptive": false,
+      "sample_sufficient": false,
+      "intervals_overlap": true
+    },
+    {
+      "primary": false,
+      "condition_a": "C2",
+      "condition_b": "C1",
+      "stratum": "ALL",
+      "metric": "correct",
+      "n_pairs": 21,
+      "difference": -0.09523809523809523,
+      "difference_lower": -0.3333333333333333,
+      "difference_upper": 0.14285714285714285,
+      "interval_a": [
+        0.5238095238095238,
+        0.9047619047619048
+      ],
+      "interval_b": [
+        0.6190476190476191,
+        0.9523809523809523
+      ],
+      "direction": "overlap",
+      "criterion": "insufficient_sample",
+      "nonoverlap_criterion": "insufficient_sample",
+      "descriptive": false,
+      "sample_sufficient": false,
+      "intervals_overlap": true
+    },
+    {
+      "primary": false,
+      "condition_a": "C2",
+      "condition_b": "C1",
+      "stratum": "ALL",
+      "metric": "evidence_supported",
+      "n_pairs": 21,
+      "difference": 0.047619047619047616,
+      "difference_lower": -0.14285714285714285,
+      "difference_upper": 0.23809523809523808,
+      "interval_a": [
+        0.3333333333333333,
+        0.7142857142857143
+      ],
+      "interval_b": [
+        0.2857142857142857,
+        0.7142857142857143
+      ],
+      "direction": "overlap",
+      "criterion": "insufficient_sample",
+      "nonoverlap_criterion": "insufficient_sample",
+      "descriptive": false,
+      "sample_sufficient": false,
+      "intervals_overlap": true
+    },
+    {
+      "primary": false,
+      "condition_a": "C2",
+      "condition_b": "C3",
+      "stratum": "E1",
+      "metric": "correct",
+      "n_pairs": 14,
+      "difference": -0.21428571428571427,
+      "difference_lower": -0.5,
+      "difference_upper": 0.07142857142857142,
+      "interval_a": [
+        0.2857142857142857,
+        0.8571428571428571
+      ],
+      "interval_b": [
+        0.5714285714285714,
+        1.0
+      ],
+      "direction": "overlap",
+      "criterion": "insufficient_sample",
+      "nonoverlap_criterion": "insufficient_sample",
+      "descriptive": false,
+      "sample_sufficient": false,
+      "intervals_overlap": true
+    },
+    {
+      "primary": false,
+      "condition_a": "C2",
+      "condition_b": "C3",
+      "stratum": "E1",
+      "metric": "evidence_supported",
+      "n_pairs": 14,
+      "difference": -0.21428571428571427,
+      "difference_lower": -0.42857142857142855,
+      "difference_upper": 0.0,
+      "interval_a": [
+        0.14285714285714285,
+        0.6428571428571429
+      ],
+      "interval_b": [
+        0.2857142857142857,
+        0.7857142857142857
+      ],
+      "direction": "overlap",
+      "criterion": "insufficient_sample",
+      "nonoverlap_criterion": "insufficient_sample",
+      "descriptive": false,
+      "sample_sufficient": false,
+      "intervals_overlap": true
+    },
+    {
+      "primary": false,
+      "condition_a": "C2",
+      "condition_b": "C3",
+      "stratum": "E2",
+      "metric": "correct",
+      "n_pairs": 2,
+      "difference": 0.0,
+      "difference_lower": 0.0,
+      "difference_upper": 0.0,
+      "interval_a": [
+        1.0,
+        1.0
+      ],
+      "interval_b": [
+        1.0,
+        1.0
+      ],
+      "direction": "overlap",
+      "criterion": "insufficient_sample",
+      "nonoverlap_criterion": "insufficient_sample",
+      "descriptive": false,
+      "sample_sufficient": false,
+      "intervals_overlap": true
+    },
+    {
+      "primary": false,
+      "condition_a": "C2",
+      "condition_b": "C3",
+      "stratum": "E2",
+      "metric": "evidence_supported",
+      "n_pairs": 2,
+      "difference": 0.5,
+      "difference_lower": 0.0,
+      "difference_upper": 1.0,
+      "interval_a": [
+        1.0,
+        1.0
+      ],
+      "interval_b": [
+        0.0,
+        1.0
+      ],
+      "direction": "overlap",
+      "criterion": "insufficient_sample",
+      "nonoverlap_criterion": "insufficient_sample",
+      "descriptive": false,
+      "sample_sufficient": false,
+      "intervals_overlap": true
+    },
+    {
+      "primary": false,
+      "condition_a": "C2",
+      "condition_b": "C3",
+      "stratum": "E3",
+      "metric": "correct",
+      "n_pairs": 1,
+      "difference": 1.0,
+      "difference_lower": 1.0,
+      "difference_upper": 1.0,
+      "interval_a": [
+        1.0,
+        1.0
+      ],
+      "interval_b": [
+        0.0,
+        0.0
+      ],
+      "direction": "a_above",
+      "criterion": "insufficient_sample",
+      "nonoverlap_criterion": "insufficient_sample",
+      "descriptive": false,
+      "sample_sufficient": false,
+      "intervals_overlap": false
+    },
+    {
+      "primary": false,
+      "condition_a": "C2",
+      "condition_b": "C3",
+      "stratum": "E3",
+      "metric": "evidence_supported",
+      "n_pairs": 1,
+      "difference": 0.0,
+      "difference_lower": 0.0,
+      "difference_upper": 0.0,
+      "interval_a": [
+        0.0,
+        0.0
+      ],
+      "interval_b": [
+        0.0,
+        0.0
+      ],
+      "direction": "overlap",
+      "criterion": "insufficient_sample",
+      "nonoverlap_criterion": "insufficient_sample",
+      "descriptive": false,
+      "sample_sufficient": false,
+      "intervals_overlap": true
+    },
+    {
+      "primary": false,
+      "condition_a": "C2",
+      "condition_b": "C3",
+      "stratum": "E4",
+      "metric": "correct",
+      "n_pairs": 4,
+      "difference": 0.0,
+      "difference_lower": 0.0,
+      "difference_upper": 0.0,
+      "interval_a": [
+        1.0,
+        1.0
+      ],
+      "interval_b": [
+        1.0,
+        1.0
+      ],
+      "direction": "overlap",
+      "criterion": "insufficient_sample",
+      "nonoverlap_criterion": "insufficient_sample",
+      "descriptive": false,
+      "sample_sufficient": false,
+      "intervals_overlap": true
+    },
+    {
+      "primary": false,
+      "condition_a": "C2",
+      "condition_b": "C3",
+      "stratum": "E4",
+      "metric": "evidence_supported",
+      "n_pairs": 4,
+      "difference": 0.0,
+      "difference_lower": 0.0,
+      "difference_upper": 0.0,
+      "interval_a": [
+        1.0,
+        1.0
+      ],
+      "interval_b": [
+        1.0,
+        1.0
+      ],
+      "direction": "overlap",
+      "criterion": "insufficient_sample",
+      "nonoverlap_criterion": "insufficient_sample",
+      "descriptive": false,
+      "sample_sufficient": false,
+      "intervals_overlap": true
+    },
+    {
+      "primary": false,
+      "condition_a": "C2",
+      "condition_b": "C3",
+      "stratum": "ALL",
+      "metric": "correct",
+      "n_pairs": 21,
+      "difference": -0.09523809523809523,
+      "difference_lower": -0.3333333333333333,
+      "difference_upper": 0.14285714285714285,
+      "interval_a": [
+        0.5238095238095238,
+        0.9047619047619048
+      ],
+      "interval_b": [
+        0.6190476190476191,
+        0.9523809523809523
+      ],
+      "direction": "overlap",
+      "criterion": "insufficient_sample",
+      "nonoverlap_criterion": "insufficient_sample",
+      "descriptive": false,
+      "sample_sufficient": false,
+      "intervals_overlap": true
+    },
+    {
+      "primary": false,
+      "condition_a": "C2",
+      "condition_b": "C3",
+      "stratum": "ALL",
+      "metric": "evidence_supported",
+      "n_pairs": 21,
+      "difference": -0.09523809523809523,
+      "difference_lower": -0.2857142857142857,
+      "difference_upper": 0.09523809523809523,
+      "interval_a": [
+        0.3333333333333333,
+        0.7142857142857143
+      ],
+      "interval_b": [
+        0.42857142857142855,
+        0.8095238095238095
+      ],
+      "direction": "overlap",
+      "criterion": "insufficient_sample",
+      "nonoverlap_criterion": "insufficient_sample",
+      "descriptive": false,
+      "sample_sufficient": false,
+      "intervals_overlap": true
+    },
+    {
+      "primary": false,
+      "condition_a": "C1",
+      "condition_b": "C0",
+      "stratum": "E1",
+      "metric": "correct",
+      "n_pairs": 14,
+      "difference": 0.6428571428571429,
+      "difference_lower": 0.2857142857142857,
+      "difference_upper": 0.9285714285714286,
+      "interval_a": [
+        0.5714285714285714,
+        1.0
+      ],
+      "interval_b": [
+        0.0,
+        0.35714285714285715
+      ],
+      "direction": "a_above",
+      "criterion": "supported",
+      "nonoverlap_criterion": "supported",
+      "descriptive": true,
+      "sample_sufficient": true,
+      "intervals_overlap": false
+    },
+    {
+      "primary": false,
+      "condition_a": "C1",
+      "condition_b": "C0",
+      "stratum": "E2",
+      "metric": "correct",
+      "n_pairs": 2,
+      "difference": 1.0,
+      "difference_lower": 1.0,
+      "difference_upper": 1.0,
+      "interval_a": [
+        1.0,
+        1.0
+      ],
+      "interval_b": [
+        0.0,
+        0.0
+      ],
+      "direction": "a_above",
+      "criterion": "supported",
+      "nonoverlap_criterion": "supported",
+      "descriptive": true,
+      "sample_sufficient": true,
+      "intervals_overlap": false
+    },
+    {
+      "primary": false,
+      "condition_a": "C1",
+      "condition_b": "C0",
+      "stratum": "E3",
+      "metric": "correct",
+      "n_pairs": 1,
+      "difference": 0.0,
+      "difference_lower": 0.0,
+      "difference_upper": 0.0,
+      "interval_a": [
+        0.0,
+        0.0
+      ],
+      "interval_b": [
+        0.0,
+        0.0
+      ],
+      "direction": "overlap",
+      "criterion": "inconclusive",
+      "nonoverlap_criterion": "inconclusive",
+      "descriptive": true,
+      "sample_sufficient": true,
+      "intervals_overlap": true
+    },
+    {
+      "primary": false,
+      "condition_a": "C1",
+      "condition_b": "C0",
+      "stratum": "E4",
+      "metric": "correct",
+      "n_pairs": 4,
+      "difference": 0.5,
+      "difference_lower": 0.0,
+      "difference_upper": 1.0,
+      "interval_a": [
+        1.0,
+        1.0
+      ],
+      "interval_b": [
+        0.0,
+        1.0
+      ],
+      "direction": "overlap",
+      "criterion": "inconclusive",
+      "nonoverlap_criterion": "inconclusive",
+      "descriptive": true,
+      "sample_sufficient": true,
+      "intervals_overlap": true
+    },
+    {
+      "primary": false,
+      "condition_a": "C1",
+      "condition_b": "C0",
+      "stratum": "ALL",
+      "metric": "correct",
+      "n_pairs": 21,
+      "difference": 0.6190476190476191,
+      "difference_lower": 0.3333333333333333,
+      "difference_upper": 0.8571428571428571,
+      "interval_a": [
+        0.6190476190476191,
+        0.9523809523809523
+      ],
+      "interval_b": [
+        0.047619047619047616,
+        0.38095238095238093
+      ],
+      "direction": "a_above",
+      "criterion": "supported",
+      "nonoverlap_criterion": "supported",
+      "descriptive": true,
+      "sample_sufficient": true,
+      "intervals_overlap": false
+    },
+    {
+      "primary": false,
+      "condition_a": "C2",
+      "condition_b": "C0",
+      "stratum": "E1",
+      "metric": "correct",
+      "n_pairs": 14,
+      "difference": 0.42857142857142855,
+      "difference_lower": 0.07142857142857142,
+      "difference_upper": 0.7142857142857143,
+      "interval_a": [
+        0.2857142857142857,
+        0.8571428571428571
+      ],
+      "interval_b": [
+        0.0,
+        0.35714285714285715
+      ],
+      "direction": "overlap",
+      "criterion": "supported",
+      "nonoverlap_criterion": "inconclusive",
+      "descriptive": true,
+      "sample_sufficient": true,
+      "intervals_overlap": true
+    },
+    {
+      "primary": false,
+      "condition_a": "C2",
+      "condition_b": "C0",
+      "stratum": "E2",
+      "metric": "correct",
+      "n_pairs": 2,
+      "difference": 1.0,
+      "difference_lower": 1.0,
+      "difference_upper": 1.0,
+      "interval_a": [
+        1.0,
+        1.0
+      ],
+      "interval_b": [
+        0.0,
+        0.0
+      ],
+      "direction": "a_above",
+      "criterion": "supported",
+      "nonoverlap_criterion": "supported",
+      "descriptive": true,
+      "sample_sufficient": true,
+      "intervals_overlap": false
+    },
+    {
+      "primary": false,
+      "condition_a": "C2",
+      "condition_b": "C0",
+      "stratum": "E3",
+      "metric": "correct",
+      "n_pairs": 1,
+      "difference": 1.0,
+      "difference_lower": 1.0,
+      "difference_upper": 1.0,
+      "interval_a": [
+        1.0,
+        1.0
+      ],
+      "interval_b": [
+        0.0,
+        0.0
+      ],
+      "direction": "a_above",
+      "criterion": "supported",
+      "nonoverlap_criterion": "supported",
+      "descriptive": true,
+      "sample_sufficient": true,
+      "intervals_overlap": false
+    },
+    {
+      "primary": false,
+      "condition_a": "C2",
+      "condition_b": "C0",
+      "stratum": "E4",
+      "metric": "correct",
+      "n_pairs": 4,
+      "difference": 0.5,
+      "difference_lower": 0.0,
+      "difference_upper": 1.0,
+      "interval_a": [
+        1.0,
+        1.0
+      ],
+      "interval_b": [
+        0.0,
+        1.0
+      ],
+      "direction": "overlap",
+      "criterion": "inconclusive",
+      "nonoverlap_criterion": "inconclusive",
+      "descriptive": true,
+      "sample_sufficient": true,
+      "intervals_overlap": true
+    },
+    {
+      "primary": false,
+      "condition_a": "C2",
+      "condition_b": "C0",
+      "stratum": "ALL",
+      "metric": "correct",
+      "n_pairs": 21,
+      "difference": 0.5238095238095238,
+      "difference_lower": 0.2857142857142857,
+      "difference_upper": 0.7619047619047619,
+      "interval_a": [
+        0.5238095238095238,
+        0.9047619047619048
+      ],
+      "interval_b": [
+        0.047619047619047616,
+        0.38095238095238093
+      ],
+      "direction": "a_above",
+      "criterion": "supported",
+      "nonoverlap_criterion": "supported",
+      "descriptive": true,
+      "sample_sufficient": true,
+      "intervals_overlap": false
+    },
+    {
+      "primary": false,
+      "condition_a": "C1",
+      "condition_b": "C2",
+      "stratum": "E3",
+      "metric": "wrong_among_answered",
+      "n_pairs": 1,
+      "difference": 1.0,
+      "difference_lower": 1.0,
+      "difference_upper": 1.0,
+      "interval_a": [
+        1.0,
+        1.0
+      ],
+      "interval_b": [
+        0.0,
+        0.0
+      ],
+      "direction": "a_above",
+      "criterion": "insufficient_sample",
+      "nonoverlap_criterion": "insufficient_sample",
+      "descriptive": false,
+      "sample_sufficient": false,
+      "intervals_overlap": false
+    }
+  ],
+  "warnings": [
+    "Estrato E1 de C0: 14 preguntas juzgadas, menos del mínimo de 25.",
+    "Estrato E2 de C0: 2 preguntas juzgadas, menos del mínimo de 25.",
+    "Estrato E3 de C0: 1 preguntas juzgadas, menos del mínimo de 25.",
+    "Estrato E4 de C0: 4 preguntas juzgadas, menos del mínimo de 25.",
+    "Estrato E1 de C1: 14 preguntas juzgadas, menos del mínimo de 25.",
+    "Estrato E2 de C1: 2 preguntas juzgadas, menos del mínimo de 25.",
+    "Estrato E3 de C1: 1 preguntas juzgadas, menos del mínimo de 25.",
+    "Estrato E4 de C1: 4 preguntas juzgadas, menos del mínimo de 25.",
+    "Estrato E1 de C2: 14 preguntas juzgadas, menos del mínimo de 25.",
+    "Estrato E2 de C2: 2 preguntas juzgadas, menos del mínimo de 25.",
+    "Estrato E3 de C2: 1 preguntas juzgadas, menos del mínimo de 25.",
+    "Estrato E4 de C2: 4 preguntas juzgadas, menos del mínimo de 25.",
+    "Estrato E1 de C3: 14 preguntas juzgadas, menos del mínimo de 25.",
+    "Estrato E2 de C3: 2 preguntas juzgadas, menos del mínimo de 25.",
+    "Estrato E3 de C3: 1 preguntas juzgadas, menos del mínimo de 25.",
+    "Estrato E4 de C3: 4 preguntas juzgadas, menos del mínimo de 25.",
+    "84 combinaciones pregunta-condición tienen menos de 3 corridas juzgadas.",
+    "3 respuestas E3 respondidas se juzgaron sin el campo outdated (la pregunta no tiene superseded_answer): quedan fuera de H4."
+  ],
+  "h2": {
+    "verdict": "insufficient_sample",
+    "reason": "Muestra insuficiente: menos del mínimo prerregistrado de 25 preguntas juzgadas en C2 en E1 (14), C3 en E1 (14), C2 en E3 (1), C3 en E3 (1).",
+    "gap_e1": 0.21428571428571427,
+    "gap_e3": -1.0,
+    "difference": -1.2142857142857142,
+    "difference_lower": -1.5,
+    "difference_upper": -0.9285714285714286,
+    "n_e1": 14,
+    "n_e3": 1,
+    "note": "H2 (ADR 0018): brecha de corrección C3 - C2 por pregunta (pareada por pregunta) en E3, preguntas de relación, menos la misma brecha en E1, preguntas de decisión. El intervalo bootstrap de la diferencia de brechas remuestrea de forma independiente las preguntas de E1 y de E3. H2 se respalda si el intervalo queda por encima de 0, es contraria si queda por debajo y en otro caso es no concluyente. E2 no entra: pregunta qué versión prevalece, lo que ya requiere la relación entre versiones. Desde el 2026-11-02, con menos del mínimo prerregistrado de preguntas juzgadas en E1 o E3 (en C2 o C3) el veredicto es insufficient_sample (muestra insuficiente) y las cifras se muestran sin veredicto."
+  },
+  "descriptive_note": "C0 (ADR 0019): el mismo generador sin ningún contexto recuperado, referencia sin recuperación. C1 - C0 se lee como el valor de recuperar texto y C2 - C0 como el de la base compilada frente a no recuperar nada; se calculan sobre la corrección, aparean por pregunta y son descriptivas: no deciden D16 ni H1-H4. C0 no cita ni aporta evidencia, así que sus métricas de evidencia y de citación no aplican y se informan como no disponibles; una respuesta de C0 que acierta no prueba conocimiento previo del corpus ni lo descarta."
+}
