@@ -176,7 +176,7 @@ Germán sigue con la estrategia experimental y los modelos.
 
 ### Texto hablado
 
-Gracias, Jason. Soy **Germán Vega**. Cuento cómo separamos los datos y qué modelos elegimos.
+Gracias, Jason. Soy **Germán Vega** y conatre cómo separamos los datos y qué modelos elegimos.
 
 > **▶ Figura 5 — se muestra al decir «Dividimos las 14 series en desarrollo».**
 >
@@ -184,13 +184,13 @@ Gracias, Jason. Soy **Germán Vega**. Cuento cómo separamos los datos y qué mo
 >
 > ![El reparto entre desarrollo y evaluación: 3 series (21,4 %) para elegir y 11 series (78,6 %) para reportar; las reuniones, las frases de decisión (22,4 % y 77,6 %) y los pares candidatos (12,0 % y 88,0 %) siguen el mismo patrón](figuras/modelos-particion-desarrollo-evaluacion.png)
 
-Como no hay entrenamiento, no dividimos en entrenamiento y prueba. Dividimos las 14 series en **desarrollo**, 3 series, y **evaluación**, 11. Desarrollo, cerca del 21 %, sirve para elegir y ajustar. Evaluación, cerca del 79 %, sirve solo para reportar.
+En nuestra tesis, no entrenaremos ningun modelo, por lo tanto no dividimos en entrenamiento y prueba. En cambio, tamaremos nuestro data set de 14 series, dejando 3 series en **desarrollo** y 11 para la **evaluación**. En terminos pocentuales, cerca del 21 %, sirve para elegir y ajustar. Mientras que el 79 %, sirve solo para reportar.
 
-Esas 11 series son nuestro conjunto de prueba: no se leen ni se tocan hasta congelar todo lo ajustado, y se usan una sola vez. Las reuniones se procesan en orden, para que una decisión nunca se extraiga sabiendo lo que se dijo después. Y declaramos una fuga: dos umbrales de troceo de OpenKOS, el programa que construye la base de decisiones, se fijaron con una serie de evaluación. Medían colapsos, no aciertos.
+Las 11 series son nuestro conjunto de prueba: no se leen ni se tocan hasta congelar todo lo parametros, y se usan una sola vez. Las reuniones se procesan en orden, para que una decisión nunca se extraiga sabiendo lo que se dijo después (recordar que cada serie consta de almenos 4 reuniones a->b->c->d). Por ultimom debemos declarar una fuga: una serie de evaluación se usó antes, solo para evitar que el sistema se cayera, no para mejorar sus respuestas.
 
-El análisis exploratorio impuso restricciones. Una serie mide de 1,6 a 2,8 veces la **ventana de contexto** del modelo, lo que puede leer de una vez. Por eso hay que recuperar o compilar. Las decisiones son raras y los turnos muy cortos.
+El análisis exploratorio impuso restricciones. Una serie mide entre 1,6 a 2,8 veces la **ventana de contexto** del modelo, teniendo impacto en lo que puede leer de una vez. Por eso hay que recuperar o compilar. Las decisiones en ocasiones son raras y los turnos muy cortos.
 
-> **▶ Lámina 6 — se muestra al decir «Ahora los modelos, uno por rol».**
+> **▶ Lámina 7 — se muestra al decir «Ahora los modelos, uno por rol».**
 >
 > Título: «Modelos por rol».
 >
@@ -202,9 +202,10 @@ El análisis exploratorio impuso restricciones. Una serie mide de 1,6 a 2,8 vece
 > | Verificación de suficiencia | Solo C2 y C3: ¿alcanza el contexto? | `gemma4:26b-a4b` | No: lo trae OpenKOS |
 > | Juez | Califica cada respuesta | `gpt-oss:20b` | Sí: 3 candidatos |
 
-Ahora los modelos, uno por rol. El **generador**, que redacta la respuesta en todas las condiciones, es `qwen3:8b`: la propuesta exige el mismo modelo y corre en local. Los **embeddings**, números que miden qué tan parecidos son dos textos, son `bge-m3`, multilingüe y fiable con textos largos.
+Los modelos a utilizar los categorizamos por los siguientes roles: Generados de respuestas, Embedding, Extractor del caso 2, Verificador de suficiencia y el Juez.
+El **generador**, que redacta la respuesta en todas las condiciones, es `qwen3:8b` de parametros: la propuesta exige el mismo modelo y corre en local. Los **embeddings**, números que miden qué tan parecidos son dos textos, utilizan el modelo `bge-m3`, multilenguaje, el cual es fiable con textos largos.
 
-> **▶ Lámina 7 — se muestra al decir «El juez sí lo elegimos entre tres candidatos».**
+> **▶ Lámina 8 — se muestra al decir «El juez sí lo elegimos entre tres candidatos».**
 >
 > Título: «Juez: tres candidatos, umbrales fijados antes de correr». Umbrales: kappa ≥ 0,70, consistencia al invertir el orden ≥ 0,90 y sin preferencia por las respuestas largas.
 >
@@ -214,7 +215,7 @@ Ahora los modelos, uno por rol. El **generador**, que redacta la respuesta en to
 > | `atla/selene-mini:q8_0` | 0,485 | 0,738 | 3,0 s | Falla kappa y orden |
 > | **`gpt-oss:20b`** | 0,951 | 0,952 | 3,2 s | Cumple todo; gana por rapidez |
 
-El **juez** sí lo elegimos entre tres candidatos. Acuerdo con personas, medido con **kappa de Cohen**, que descuenta el azar, de al menos 0,70. Consistencia al invertir el orden. Cumplieron `mistral-small3.2:24b` y `gpt-oss:20b`, ambos con kappa de 0,95. Ganó `gpt-oss:20b` por más rápido y por ser de otra familia que Qwen, para que no prefiera sus propias respuestas.
+Elegimos al modelo que actúa como **juez** entre tres alternativas, exigiendo alta coincidencia con criterio humano y consistencia en sus veredictos. Tanto Mistral como GPT-OSS alcanzaron un 95 % de acuerdo con las personas. Seleccionamos gpt-oss:20b por ser el más veloz e independiente: al ser de otra familia que Qwen, evitamos sesgos y aseguramos una evaluación totalmente neutral.
 
 > **▶ Figura 8 — se muestra al decir «El extractor es el modelo que».**
 >
@@ -222,9 +223,10 @@ El **juez** sí lo elegimos entre tres candidatos. Acuerdo con personas, medido 
 >
 > ![F1 frente a segundos por corrida de los cuatro extractores: qwen3:8b es el de menor F1 (cerca de 0,30), qwen3.6:27b el de mayor F1 (cerca de 0,47) y también el más lento (cerca de 700 segundos)](figuras/modelos-screen-extraccion-f1-costo.png)
 
-El **extractor** es el modelo que, en C2, lee las reuniones y construye la base. **OE2**, el segundo objetivo, mide su calidad. Comparamos cuatro: `qwen3:8b`, `qwen3:14b`, `qwen3.6:27b` y `qwen3.6:35b-a3b`, con una regla de descarte escrita antes. El **F1** resume cuántas decisiones reales encuentra y cuántas inventa. `qwen3.6:27b` tiene el mejor F1, pero tarda entre 1,8 y 3,6 veces más. Decidimos **`qwen3:8b`**, el de OpenKOS, con su pasada de decisiones, pensada para reuniones.
+Para construir la base de conocimiento, a partir de lo hablado en las reuniones, usamos un **extractor**, y nuestro segundo objetivo (OE2) fue evaluar su desempeño. Comparamos cuatro variantes de modelos Qwen de distinto tamaño (8b, 14b, 27b y 35b).
+Para calificarlos usamos una métrica de equilibrio: premiar al que detecta más decisiones verdaderas y castigar al que "alucina" o inventa información. Aunque el modelo más grande (qwen3.6:27b) obtuvo el mejor puntaje de calidad, su costo en tiempo fue excesivo, tardando hasta 3,6 veces más. La decisión final fue adoptar qwen3:8b (de OpenKOS): ofrece una excelente calidad, es mucho más eficiente y está diseñado específicamente para la dinámica de las reuniones.
 
-Gustavo sigue con la búsqueda de parámetros y los primeros resultados.
+A continuacion, Gustavo sigue con la búsqueda de parámetros y los primeros resultados.
 
 ---
 
