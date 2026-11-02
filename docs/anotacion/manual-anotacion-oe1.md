@@ -469,12 +469,21 @@ por sitio de grabación (ES2016, IS1003 y TS3005). Para cada serie:
    blocker**.
 
 El recall se reporta **por sitio** (una cifra para ES, IS y TS, cada una con su intervalo
-bootstrap) y **en conjunto**. Así se puede ver si la pérdida es pareja entre sitios o si el
+de Wilson al 95 %) y **en conjunto**. Así se puede ver si la pérdida es pareja entre sitios o si el
 filtro pierde más en uno; IS1004 aporta la cifra del sitio IS junto con IS1003.
 
 La cifra a reportar en la tesis es: *"el blocker con coeficiente de solapamiento ≥ 0,30
-recuperó N de M relaciones en una muestra aleatoria de pares rechazados (IC 95 % por
-bootstrap)."*
+recuperó N de M relaciones en una muestra aleatoria de pares rechazados (IC 95 % de
+Wilson)."*
+
+> **Por qué Wilson y no bootstrap (cambio del 2026-11-01).** La versión anterior de esta
+> sección pedía un intervalo bootstrap. Con 50 pares por serie es esperable no hallar ningún
+> falso negativo, y en ese caso el bootstrap devuelve [0; 0]: afirma que el filtro no pierde
+> nada, una certeza que la muestra no tiene. El intervalo de Wilson da una cota superior
+> honesta aun con cero hallazgos, y es el que el proyecto ya usa para precision y recall. El
+> cambio se decidió con la función ya escrita (#205) y con las cifras preliminares de tres
+> de las cuatro muestras a la vista; el motivo es metodológico (el bootstrap no da intervalo
+> con cero hallazgos) y no depende de esas cifras.
 
 > **Por qué coeficiente de solapamiento y no Jaccard.** Medido en el piloto sobre el par del
 > botón turbo (|A|=14, |B|=5, intersección `{button, turbo}`): Jaccard = 0,118, bajo
