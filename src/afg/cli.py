@@ -232,6 +232,8 @@ typer_rich_utils.ARGUMENTS_PANEL_TITLE = "Argumentos"
 _PANEL_ANNOTATORS = "Para anotadores"
 TAU_PRINCIPAL = 0.70
 """The principal alignment threshold of Experiment A (ADR 0012)."""
+TAU_SENSIBILIDAD = (0.75, 0.80)
+"""The sensitivity thresholds reported beside the principal one (ADR 0012)."""
 
 _PANEL_MAINTENANCE = "Para mantenimiento (mantenedor)"
 
@@ -2911,6 +2913,138 @@ def experiment_a_relations(
     console.print(f"Escrito: {_short(out_path)}.")
     if report["n_errors"]:
         raise typer.Exit(code=1)
+
+
+def _interval_cell(figures: dict[str, Any], metric: str) -> str:
+    low, high = figures["intervals"][metric]
+    return escape(f"{figures[metric]:.2f} [{low:.2f}, {high:.2f}]")
+
+
+@experiment_app.command("a-report")
+def experiment_a_report(
+    c2_extraction: Annotated[
+        str,
+        typer.Option(
+            "--c2-extraction",
+            help="Carpeta de la corrida en `reports/experiment-a/` (`extracciones.jsonl` y "
+            "`manifest.json` de `afg experiment a` o `a-batch`).",
+        ),
+    ],
+    descriptive: Annotated[
+        bool,
+        typer.Option(
+            "--descriptive",
+            help="Vista descriptiva de una corrida de desarrollo: se guarda aparte "
+            "(`informe-descriptivo.json`) y no es reportable (ADR 0005).",
+        ),
+    ] = False,
+) -> None:
+    """Informe del Experimento A sobre una corrida guardada: precision, recall y F1 (OE2).
+
+    Puntúa cada corrida contra la referencia en inglés y agrupa con intervalos por conglomerado
+    de reunión (ADR 0011). Informa la curva completa sobre `tau_grid`, τ = 0,70 como principal
+    y 0,75 y 0,80 como sensibilidades (ADR 0012), el ámbito de la misma reunión con la serie
+    completa al lado, el rol mayoritario con cada rol al lado, el desglose por serie y por
+    corrida, y las relaciones de `relaciones.json` si existe (`afg experiment a-relations`).
+    Se niega a producir un informe reportable con series de desarrollo.
+    """
+    import json
+
+    from rich.table import Table
+
+    from afg.evaluation.scoring import DevelopmentResultError, interval_settings_from_config
+    from afg.experiments.extraction_report import build_extraction_report
+    from afg.experiments.extraction_runs import (
+        MANIFEST_FILENAME,
+        RECORDS_FILENAME,
+        load_extraction_runs,
+    )
+
+    run_dir = EXPERIMENT_A_DIR / c2_extraction
+    if not (run_dir / RECORDS_FILENAME).is_file() or not (run_dir / MANIFEST_FILENAME).is_file():
+        console.print(
+            f"[bold red]No hay una corrida guardada en {_short(run_dir)} "
+            f"({RECORDS_FILENAME} y {MANIFEST_FILENAME}). Corre antes "
+            f"`afg experiment a-batch --run-name {escape(c2_extraction)}`.[/bold red]"
+        )
+        raise typer.Exit(code=1)
+    runs = load_extraction_runs([run_dir])
+    relations_path = run_dir / "relaciones.json"
+    relations = (
+        json.loads(relations_path.read_text(encoding="utf-8")) if relations_path.is_file() else None
+    )
+    reference_kinds: dict[str, str] = {}
+
+    def _reference_of(series_id: str) -> Sequence[ReferenceDecision]:
+        reference = load_series_reference(series_id, language="en")
+        reference_kinds[series_id] = reference.source_kind
+        return reference.decisions
+
+    try:
+        report = build_extraction_report(
+            run_name=c2_extraction,
+            runs=runs,
+            reference_of=_reference_of,
+            similarity=make_alignment_similarity(),
+            settings=interval_settings_from_config(),
+            tau_grid=[float(t) for t in load_experiments_config()["alignment"]["tau_grid"]],
+            tau_principal=TAU_PRINCIPAL,
+            tau_sensitivity=TAU_SENSIBILIDAD,
+            partition_of=configured_partition_of(),
+            descriptive=descriptive,
+            transcripts_dir=TRANSCRIPTS_DIR,
+            reference_kinds=reference_kinds,
+            relations=relations,
+        )
+    except DevelopmentResultError as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+        console.print("Para explorar sin reportar, usar la opción --descriptive.")
+        raise typer.Exit(code=1) from exc
+    except (FileNotFoundError, NotAdjudicatedError, TranslationError) as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    report["reference_kinds"] = dict(reference_kinds)
+
+    label = (
+        "reportable" if report["reportable"] else f"DESCRIPTIVO, partición {report['partition']}"
+    )
+    table = Table(title=f"Experimento A, {c2_extraction} ({label}); misma reunión, IC por reunión")
+    for column in ("τ", "Lectura", "Precision", "Recall", "F1", "F1, serie completa", "Piso nulo"):
+        table.add_column(column)
+    names = {"principal": "principal", "sensitivity": "sensibilidad", None: ""}
+    for entry in report["curve"]:
+        primary = entry["origin_meetings"]["pooled"]
+        wide = entry["series"]["pooled"]
+        floor = entry["null_coverage"]
+        table.add_row(
+            f"{entry['tau']:.2f}",
+            names[entry["role"]],
+            _interval_cell(primary, "precision"),
+            _interval_cell(primary, "recall"),
+            _interval_cell(primary, "f1"),
+            _interval_cell(wide, "f1"),
+            "-" if floor is None else f"{floor:.3f}",
+        )
+    console.print(table)
+    console.print(
+        f"Series: {', '.join(report['series'])}; corridas: {len(report['runs'])}; "
+        f"IC del {report['interval']['confidence_level']:.0%} por conglomerado de reunión."
+    )
+    for warning in report["warnings"]:
+        console.print(f"[yellow]{escape(warning)}[/yellow]")
+    if report["relations"] is None:
+        console.print(
+            "[dim]Sin relaciones: no hay relaciones.json; se genera con "
+            f"`afg experiment a-relations --c2-extraction {escape(c2_extraction)}`.[/dim]"
+        )
+    else:
+        console.print(
+            f"Relaciones incluidas de relaciones.json (τ = {report['relations']['tau']})."
+        )
+
+    target = run_dir / ("informe.json" if report["reportable"] else "informe-descriptivo.json")
+    target.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    console.print(f"Escrito: {_short(target)}.")
 
 
 @c3_app.command("build")
