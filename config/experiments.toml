@@ -7,7 +7,7 @@
 # condition can silently drift from it.
 
 [shared_budget]
-generative_model = "qwen3:8b"        # the model `openkos query` answers with (ADR 0006); pin the exact tag before Experiment A/B (5.8)
+generative_model = "qwen3:8b"        # answering model in C1, C2 and C3 and extraction model of C2/C3: OpenKOS 0.7.0's default `model:` (ADR 0006, ADR 0014, ADR 0015); the exact model fingerprint is recorded in each run manifest
 generative_model_large = "qwen3:32b" # read by the pending Experiment A/B code; keep. Second scale point (H3); an extension, not a committed run -- see docs/avances/03-jss-objetivos.md
 sufficiency_model = "gemma4:26b-a4b" # model OpenKOS uses for its sufficiency check in C2/C3 (openkos.config.DEFAULT_TASK_MODELS["sufficiency"]), left at its packaged default; C1 has no sufficiency check and never reads this key
 embedding_model = "bge-m3"

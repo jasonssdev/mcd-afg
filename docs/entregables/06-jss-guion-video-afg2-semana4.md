@@ -4,11 +4,11 @@
 |---|---|
 | **Entrega** | Video de avance #2 de AFG2 (semana 4) — modelado de datos |
 | **Fecha de envío** | Pendiente |
-| **Versión** | 1.6 |
-| **Construido desde** | `docs/avances/09-jss-modelos-y-justificacion.md` v7.1 (todos los bloques) · `notebooks/19-jss-modelos.ipynb` (fuente principal de las cifras) · `docs/entregables/figuras/modelos-*.png` (seis figuras exportadas por el notebook 19) |
+| **Versión** | 1.7 |
+| **Construido desde** | `docs/avances/09-jss-modelos-y-justificacion.md` v8.0 (todos los bloques) · `notebooks/19-jss-modelos.ipynb` (fuente principal de las cifras) · `docs/entregables/figuras/modelos-*.png` (seis figuras exportadas por el notebook 19) |
 | **Duración objetivo** | 9:57 a 145 palabras por minuto (máximo de la rúbrica: 10:00) |
 | **Formato** | Tres presentadores en cuatro bloques consecutivos, en este orden: Jason, Germán, Gustavo, Jason. Con diapositivas de apoyo |
-| **Extensión hablada** | 1.442 palabras: 393 + 390 + 392 + 267. A 145 palabras por minuto son 9:57; a 140, 10:18 |
+| **Extensión hablada** | 1.443 palabras: 393 + 393 + 392 + 265. A 145 palabras por minuto son 9:57; a 140, 10:18 |
 
 > **Por qué existe este documento.** El profesor evalúa solo el video, así que el trabajo
 > técnico debe verse y oírse en él: cada modelo y cada técnica se nombra, y se explica con
@@ -29,6 +29,7 @@
 | 1.4 | 2026-11-01 | Las cifras de desarrollo de los bloques 1, 3 y 4 pasan a las corridas con el diseño vigente: caso del precio (ahora C1 y C2 aciertan), línea base C0 cerca del 22 %, C1 cerca del 81 % y C2 cerca del 71 % (C2 pierde porque se abstiene más), valores por estrato en el texto alternativo de la figura 10, costo de unos 5 s por respuesta; C1 se nombra como RAG convencional. El bloque 3 se actualiza porque Gustavo lo volverá a grabar. El bloque 4 ya no dice que las cifras sean de la versión anterior; la atribución del error (OE4) se presenta como la de la corrida anterior y el próximo paso es clasificar las fallas nuevas de C2. Se corrigen las fuentes (avance 09 v7.0, filas de la lámina 15, librerías), se unifica la duración en 9:54 y la lámina 5 agrega la verificación de suficiencia. Extensión: 1.435 palabras (386 + 390 + 392 + 267); 9:54 a 145 palabras por minuto. | Corridas de desarrollo del 2026-11-01 con el diseño vigente (documento 09 v7.0, notebook 19) y decisión de volver a grabar el bloque 3. El guion aún no se había enviado. |
 | 1.5 | 2026-11-01 | El bloque 4 presenta la atribución del error (OE4) de la corrida vigente de C2, ya clasificada por una persona: 3 de recuperación, 2 de extracción y 1 de síntesis, de 6 fallas, con un caso de memoria contaminada; la figura 14 pasa a mostrar la corrida vigente. La lámina 15 deja de decir que las fallas nuevas están pendientes y la lámina 16 y la frase final ya no incluyen clasificarlas. Se actualizan la fila de trazabilidad y las fuentes (avance 09 v7.1). Extensión sin cambio: 1.435 palabras (386 + 390 + 392 + 267); 9:54 a 145 palabras por minuto. Los bloques 1 a 3 no cambian. | jss clasificó las seis fallas E1 de la corrida vigente (avance 09 v7.1, notebooks 16 y 19). El guion aún no se había enviado. |
 | 1.6 | 2026-11-01 | El bloque 1 cambia el caso del precio, donde C1 y C2 ya aciertan, por dos casos de la corrida vigente que muestran el valor de compilar y el costo de sus errores: la fuente de energía (C2 acierta, C1 duda) y el costo máximo de producción (C1 acierta, C2 no lo tiene en su base). La lámina 1 pasa a una tabla de dos preguntas, y el bloque 3 nombra los mismos casos al hablar de C0. Extensión: 1.442 palabras (393 + 390 + 392 + 267); 9:57 a 145 palabras por minuto. | Los casos ilustran la lámina 3 (perder una decisión) y el criterio de éxito con datos reales; el guion aún no se había enviado. |
+| 1.7 | 2026-11-01 | El extractor de C2 deja de figurar como decisión pendiente (ADR 0015, issue #143). **Bloque 2 (Germán) cambia**: la lámina 5 y la figura 7 dicen que el extractor es `qwen3:8b`, el de OpenKOS, y la narración lo decide con la pasada de decisiones, que OpenKOS documenta para reuniones; Germán tendrá que grabarlo de nuevo si ya lo grabó. **Bloque 4 (Jason) cambia**: la lámina 15 marca el extractor como resuelto, la narración lo da por decidido y la lámina 16 queda en dos pasos, congelar y evaluar una vez. Los bloques 1 y 3 no cambian. Se actualizan los tiempos, la extensión y las fuentes (avance 09 v8.0). Extensión: 1.443 palabras (393 + 393 + 392 + 265); 9:57 a 145 palabras por minuto. | La decisión del extractor y de la pasada de decisiones quedó registrada en el [ADR 0015](../decisions/0015-adr-modelo-extractor-de-c2.md); el guion aún no se había enviado. |
 
 ## Qué pide el curso y dónde se cubre
 
@@ -58,11 +59,11 @@ finales: importa el proceso de selección y el trabajo inicial.
 | Bloque | Persona | Palabras | Tiempo (145 ppm) | Mensaje central |
 |---|---|---|---|---|
 | El problema en un caso, qué es «el modelo» y qué significa funcionar bien | Jason Sepúlveda | 393 | 0:00 – 2:43 | Dos casos en C0, C1 y C2 (corridas vigentes): la fuente de energía, donde C2 acierta y C1 duda, y el costo máximo, donde C1 acierta y C2 no lo tiene en su base; no se entrena nada, se comparan *pipelines*; el juez es un instrumento; criterio de éxito y costo de los errores |
-| Estrategia experimental y modelos por rol | Germán Vega | 390 | 2:43 – 5:24 | Partición 3 + 11 series con conjunto de prueba bajo llave; fuga declarada; restricciones del análisis exploratorio; generador, *embeddings*, juez (3 candidatos) y extractor (4 candidatos, decisión pendiente) |
-| Búsqueda de parámetros, línea base, primeros resultados y costo | Gustavo Martínez | 392 | 5:24 – 8:06 | *Grid search* y su corrección, ablación, τ; línea base C0 y C1 frente a C2 por estrato, solo desarrollo; límites de C0; costo; librerías |
-| Dificultades, cambios de diseño, limitaciones y próximos pasos | Jason Sepúlveda | 267 | 8:06 – 9:57 | Aprendizajes, atribución del error de C2 (OE4, corrida vigente, 3 de recuperación, 2 de extracción y 1 de síntesis, solo desarrollo; un caso de memoria contaminada), qué cambió (OpenKOS 0.7.0, C1 como RAG convencional) y qué sigue abierto (el extractor), limitaciones y el paso siguiente: congelar y evaluar una vez |
+| Estrategia experimental y modelos por rol | Germán Vega | 393 | 2:43 – 5:25 | Partición 3 + 11 series con conjunto de prueba bajo llave; fuga declarada; restricciones del análisis exploratorio; generador, *embeddings*, juez (3 candidatos) y extractor (4 candidatos; decidido `qwen3:8b`, el de OpenKOS, con la pasada de decisiones) |
+| Búsqueda de parámetros, línea base, primeros resultados y costo | Gustavo Martínez | 392 | 5:25 – 8:07 | *Grid search* y su corrección, ablación, τ; línea base C0 y C1 frente a C2 por estrato, solo desarrollo; límites de C0; costo; librerías |
+| Dificultades, cambios de diseño, limitaciones y próximos pasos | Jason Sepúlveda | 265 | 8:07 – 9:57 | Aprendizajes, atribución del error de C2 (OE4, corrida vigente, 3 de recuperación, 2 de extracción y 1 de síntesis, solo desarrollo; un caso de memoria contaminada), qué cambió (OpenKOS 0.7.0, C1 como RAG convencional) y el extractor ya decidido, limitaciones y el paso siguiente: congelar y evaluar una vez |
 
-Reparto por persona: Jason 653 palabras, Germán 390, Gustavo 392. Jason abre y cierra
+Reparto por persona: Jason 658 palabras, Germán 393, Gustavo 392. Jason abre y cierra
 porque plantea el problema y reúne las decisiones pendientes; Germán concentra la estrategia
 experimental y la elección de modelos; Gustavo, los métodos de búsqueda y los resultados.
 Margen sobre el tope de 10:00: 0:03 a 145 palabras por minuto; a 140 el guion se pasa (10:18), así que el ensayo debe cronometrarse y, si hace falta, recortar según la nota de grabación.
@@ -83,7 +84,7 @@ Margen sobre el tope de 10:00: 0:03 a 145 palabras por minuto; a 140 el guion se
   con lo que debe verse en pantalla.
 - Cronometrar un ensayo completo antes de grabar. Si se pasa de 10:00, recortar primero la
   frase de librerías del bloque 3 y la mención de τ, y no los ejemplos ni los nombres de modelos.
-- Las cifras de este guion salen de `docs/avances/09-jss-modelos-y-justificacion.md` v7.1 y del
+- Las cifras de este guion salen de `docs/avances/09-jss-modelos-y-justificacion.md` v8.0 y del
   notebook 19; son de series de desarrollo. Todas son de las corridas de desarrollo con el diseño vigente. Ninguna se calcula aquí. Los porcentajes dichos en voz son los de la fuente
   redondeados al entero (21 %, 79 %, 22 %, 81 %, 71 %, 57 %, 37 %, 42 %). Las de OE4 se dicen como conteos (3, 2 y 1 de 6, corrida vigente), con la frase «una serie y una persona».
 
@@ -144,7 +145,7 @@ Germán sigue con la estrategia experimental y los modelos.
 
 ---
 
-## Bloque 2 — Germán Vega (2:43 – 5:24)
+## Bloque 2 — Germán Vega (2:43 – 5:25)
 
 ### Texto hablado
 
@@ -170,7 +171,7 @@ El análisis exploratorio también nos impuso restricciones. Una serie completa 
 > |---|---|---|---|
 > | Generador de respuestas | C0, C1, C2 y C3 | `qwen3:8b` | No: modelo compartido |
 > | Embeddings | Recuperación y alineación | `bge-m3` | No: heredado de OpenKOS |
-> | Extractor de C2 | Construye la base de decisiones | `qwen3:8b` hoy; decisión pendiente | Sí: 4 modelos |
+> | Extractor de C2 | Construye la base de decisiones | `qwen3:8b`, el de OpenKOS, con la pasada de decisiones | Sí: 4 modelos |
 > | Verificación de suficiencia | Solo C2 y C3: ¿alcanza el contexto? | `gemma4:26b-a4b` | No: lo trae OpenKOS |
 > | Juez | Califica cada respuesta | `gpt-oss:20b` | Sí: 3 candidatos |
 
@@ -190,17 +191,17 @@ El **juez** sí lo elegimos entre tres candidatos, con umbrales fijados antes de
 
 > **▶ Figura 7 — se muestra al decir «El extractor lo comparamos entre cuatro».**
 >
-> Texto sobrepuesto: «`qwen3.6:27b`: mejor F1, 1,8 a 3,6 veces el tiempo» y «Decisión pendiente».
+> Texto sobrepuesto: «`qwen3.6:27b`: mejor F1, 1,8 a 3,6 veces el tiempo» y «Decidido: `qwen3:8b`, el de OpenKOS».
 >
 > ![F1 frente a segundos por corrida de los cuatro extractores: qwen3:8b es el de menor F1 (cerca de 0,30), qwen3.6:27b el de mayor F1 (cerca de 0,47) y también el más lento (cerca de 700 segundos)](figuras/modelos-screen-extraccion-f1-costo.png)
 
-El **extractor** lo comparamos entre cuatro: `qwen3:8b`, `qwen3:14b`, `qwen3.6:27b` y `qwen3.6:35b-a3b`, con una regla de descarte escrita antes y exigiendo ganar en las dos series de desarrollo. El **F1** resume cuántas decisiones reales encuentra y cuántas inventa. `qwen3.6:27b` tiene el mejor F1, pero tarda entre 1,8 y 3,6 veces más. Son solo dos series de desarrollo: la decisión sigue pendiente.
+El **extractor** lo comparamos entre cuatro: `qwen3:8b`, `qwen3:14b`, `qwen3.6:27b` y `qwen3.6:35b-a3b`, con una regla de descarte escrita antes y exigiendo ganar en las dos series de desarrollo. El **F1** resume cuántas decisiones reales encuentra y cuántas inventa. `qwen3.6:27b` tiene el mejor F1, pero tarda entre 1,8 y 3,6 veces más. Decidimos **`qwen3:8b`**, el de OpenKOS, con su pasada de decisiones, pensada para reuniones.
 
 Gustavo sigue con la búsqueda de parámetros y los primeros resultados.
 
 ---
 
-## Bloque 3 — Gustavo Martínez (5:24 – 8:06)
+## Bloque 3 — Gustavo Martínez (5:25 – 8:07)
 
 ### Texto hablado
 
@@ -261,7 +262,7 @@ Jason cierra con las dificultades y lo que sigue.
 
 ---
 
-## Bloque 4 — Jason Sepúlveda (8:06 – 9:57)
+## Bloque 4 — Jason Sepúlveda (8:07 – 9:57)
 
 ### Texto hablado
 
@@ -300,17 +301,17 @@ Y dónde falla C2, la atribución del error, OE4. De las seis fallas vigentes de
 > | C1 | Redefinida como un RAG convencional, para compararlo con lo que las organizaciones usan hoy |
 > | Cifras de desarrollo | Las mostradas son del diseño nuevo: C1 cerca del 81 %, C2 cerca del 71 % (solo desarrollo) |
 > | Fallas de C2 en E1 (6) | Clasificadas por una persona: 3 de recuperación, 2 de extracción, 1 de síntesis |
-> | Modelo extractor de C2 (issue 143) | Abierta: `qwen3.6:27b` gana en F1 pero tarda más; ¿debe ser el mismo modelo que responde? |
+> | Modelo extractor de C2 (issue 143) | Resuelta: `qwen3:8b`, el de OpenKOS, con la pasada de decisiones; `qwen3.6:27b` gana en F1 pero tarda más |
 
-Esta semana el diseño cambió. Fijamos OpenKOS en la versión 0.7.0, y C2 y C3 lo usan tal como se distribuye. C1 pasa a ser un RAG convencional, para compararlo con lo que se usa hoy. Las cifras que vimos ya son de ese diseño. Sigue abierto el extractor de C2: qué modelo, y si debe ser el que responde.
+Esta semana el diseño cambió. Fijamos OpenKOS en la versión 0.7.0, y C2 y C3 lo usan tal como se distribuye. C1 pasa a ser un RAG convencional, para compararlo con lo que se usa hoy. Las cifras que vimos ya son de ese diseño. También quedó decidido el extractor de C2: `qwen3:8b`, el de OpenKOS, con la pasada de decisiones.
 
 Limitaciones declaradas: una serie, 21 preguntas, un dominio con habla actuada, referencia traducida, y no exploramos la temperatura. Y la diferencia entre C1 y C2 no se reparte entre representación y respuesta. Esperamos la respuesta del tutor sobre nuestro encuadre.
 
 > **▶ Lámina 16 — se muestra al decir «Lo que sigue».**
 >
-> Título: «Próximos pasos». Tres pasos en secuencia: «1. Decidir el extractor de C2» → «2. Congelar modelos, versiones y código» → «3. Evaluar una sola vez». Pie: «Limitaciones: una serie · 21 preguntas · un dominio · referencia traducida».
+> Título: «Próximos pasos». Dos pasos en secuencia: «1. Congelar modelos, versiones y código» → «2. Evaluar una sola vez». Pie: «Limitaciones: una serie · 21 preguntas · un dominio · referencia traducida».
 
-Lo que sigue: decidir el extractor, congelar modelos, versiones y código, y solo entonces correr la evaluación, una única vez. Gracias.
+Lo que sigue: congelar modelos, versiones y código, y solo entonces correr la evaluación, una única vez. Gracias.
 
 ---
 
@@ -325,9 +326,9 @@ Lo que sigue: decidir el extractor, congelar modelos, versiones y código, y sol
 | 14 series: 3 de desarrollo (21,4 %) y 11 de evaluación (78,6 %) | Documento 09, §4.1; notebook 19, §3; figura `modelos-particion-desarrollo-evaluacion.png` |
 | Evaluación no leída, congelar antes de evaluar, orden cronológico, fuga declarada (#145) | Documento 09, §4.2 |
 | Serie completa de 1,6 a 2,8 veces la ventana; decisiones raras; turnos cortos | Documento 09, §3; notebook 19, §2 |
-| Roles y etiquetas: `qwen3:8b`, `bge-m3`, `gpt-oss:20b`, extractor pendiente (#143) | Documento 09, §6 |
+| Roles y etiquetas: `qwen3:8b`, `bge-m3`, `gpt-oss:20b`, extractor `qwen3:8b` con la pasada de decisiones (#143, ADR 0015) | Documento 09 v8.0, §6; ADR 0015 |
 | Juez: tres candidatos, umbral de kappa 0,70, kappa 0,95 de `mistral-small3.2:24b` y `gpt-oss:20b`, `atla/selene-mini` descartado | Documento 09, §6.3; notebook 05 |
-| Extractor: cuatro candidatos, regla prerregistrada, `qwen3.6:27b` con mejor F1 y 1,8 a 3,6 veces el tiempo | Documento 09, §6.2; notebook 15; figura `modelos-screen-extraccion-f1-costo.png` |
+| Extractor: cuatro candidatos, regla prerregistrada, `qwen3.6:27b` con mejor F1 y 1,8 a 3,6 veces el tiempo; decisión: `qwen3:8b`, el de OpenKOS, con la pasada de decisiones | Documento 09 v8.0, §6.2; ADR 0015; notebook 15; figura `modelos-screen-extraccion-f1-costo.png` |
 | *Grid search* de 32 configuraciones; 1600/0/8 (0,642 recuperado, 0,446 entregado) y 1200/1/5 (0,569) | Documento 09, §7.1; ADR 0007; notebook 06 |
 | Ablación: 0,373 BM25, 0,417 denso, 0,569 híbrido | Documento 09, §7.2; figura `modelos-ablacion-recuperacion.png` |
 | τ principal 0,70 con control nulo y juez | Documento 09, §7.3; ADR 0012; notebook 17 |
@@ -339,7 +340,7 @@ Lo que sigue: decidir el extractor, congelar modelos, versiones y código, y sol
 | Juez indulgente con respuestas genéricas; verificación humana del 20 % | Documento 09, §8.3 y §10 |
 | Atribución del error de C2 en E1 (OE4), corrida vigente: 3 de recuperación, 2 de extracción y 1 de síntesis, de 6 fallas; un caso (q017) de memoria contaminada; una serie, una persona, solo desarrollo. La corrida anterior fue 4, 3 y 2 de 9 | Documento 09 v7.1, §8.4; notebook 19, §7.5; notebook 16, sección 10; hoja `reports/experiment-b/humo-c2-es2015-openkos070/oe4-etapa-e1.csv`; figura `modelos-etapas-fallas-c2.png` |
 | Qué cambió: OpenKOS fijado en la 0.7.0 (#94); la verificación de suficiencia con `gemma4:26b-a4b` y las fuentes en bruto (#146) resueltas, con C2 y C3 usando OpenKOS tal como se distribuye; C1 redefinida como un RAG convencional; la diferencia entre C1 y C2 no se reparte entre representación y respuesta | Documento 09 v7.1, §6.5, §8 y §11.1; ADR 0014; ADR 0006 (enmienda del 2026-11-01) |
-| Sigue abierto: modelo extractor de C2 (#143) | Documento 09 v7.1, §11.1 |
+| Resuelto: modelo extractor de C2 (#143), `qwen3:8b` con la pasada de decisiones; sigue congelar y evaluar una vez | Documento 09 v8.0, §11.1 y §11.2; ADR 0015 |
 | Respuesta del tutor pendiente | Documento 09, §1 |
 
 ## Láminas y figuras

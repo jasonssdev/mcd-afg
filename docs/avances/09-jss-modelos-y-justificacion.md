@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 09 — Modelos y su justificación |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 7.1 |
+| **Versión** | 8.0 |
 | **Fecha** | 2026-11-01 |
 | **Estado** | Vigente |
 
@@ -25,6 +25,7 @@
 | 6.0 | 2026-11-01 | C1 pasa a ser un RAG convencional: una sola llamada a `qwen3:8b` con un *prompt* genérico que se abstiene con una frase fija y cita los fragmentos entre corchetes, sin verificación de suficiencia ni copia de componentes de OpenKOS (secciones 5, 5.1, 6.5, 8.2 y 11). C2 y C3 usan OpenKOS 0.7.0 tal como se distribuye: conservan las fuentes en bruto y verifican la suficiencia con `gemma4:26b-a4b` (decisiones abiertas 3 y 4 resueltas). Se declara la limitación de que la diferencia entre C1 y C2/C3 no se reparte entre representación y etapa de respuesta. Las corridas de desarrollo de C1 con el diseño anterior (8.1 a 8.4) quedan como registro de ese diseño y se rehacen antes de decidir sobre ellas. Se actualizan la tabla de roles, la tabla de condiciones, las dificultades 2, 4 y 8 y el estado del congelamiento. | La tesis compara un RAG convencional con OpenKOS como producto: un C1 con piezas de OpenKOS mediría «OpenKOS sin compilación», y quitar las fuentes en bruto o cambiar el modelo de suficiencia mediría algo distinto del producto ([ADR 0014](../decisions/0014-adr-c1-como-rag-convencional.md) y ADR 0006, enmienda del 2026-11-01). Sin cifras nuevas. |
 | 7.0 | 2026-11-01 | Las cifras de desarrollo pasan a las corridas del diseño vigente: C1 como RAG convencional 17 de 21 (81,0 %) y C2 con OpenKOS 0.7.0 15 de 21 (71,4 %), en lugar de 16 de 21 (76,2 %) y 10 de 21 (47,6 %) del diseño anterior (caso de entrada, secciones 8.1, 8.2, 9 y 10). La atribución de las fallas de C2 (OE4, sección 8.4) se presenta como la de la corrida anterior, con su correspondencia pregunta por pregunta con la vigente; clasificar las fallas vigentes queda pendiente de una persona. Se actualizan la extracción de ES2015, la procedencia y el costo a la 0.7.0; la tabla de roles (cinco, con la verificación de suficiencia); la tabla de OpenKOS por tarea; la afirmación sobre qué toma C1 de OpenKOS (solo el método de recorte del presupuesto, no instrucciones ni verificación); las series adjudicadas (6 de 14, 4 de 11 de evaluación) y con referencia en inglés (6); los controles de comparabilidad (huellas ya registradas) y la trazabilidad (ADR 0014 y enmienda del ADR 0006). Las cifras de costo cambian con las corridas vigentes: responder una pregunta tarda unos 5 s en C1 y 14 s en C2, frente a 8,8 s y 10,3 s de las corridas anteriores, y juzgarla unos 4 s y 7 s, frente a 4,2 s en C1. | Corridas de desarrollo del 2026-11-01 con el diseño vigente (`humo-c1-es2015-rag` y `humo-c2-es2015-openkos070`, notebook 19) y verificación de coherencia de los avances con los notebooks. Las cifras salen del [notebook 19](../../notebooks/19-jss-modelos.ipynb) (secciones 7 y 8) y del [notebook 16](../../notebooks/16-jss-c2-fuentes-e1.ipynb) (sección 10). |
 | 7.1 | 2026-11-01 | Se incorpora la clasificación OE4 de las seis fallas E1 de la corrida vigente de C2: 3 de recuperación, 2 de extracción y 1 de síntesis (sección 8.4), con la corrida anterior (4, 3 y 2 de 9) como comparación. Una de las fallas (q017) es un caso de memoria contaminada. La figura de las etapas de las fallas pasa a mostrar la corrida vigente. Se actualizan la dificultad 8, la decisión pendiente sobre fuentes en bruto, la decisión pendiente 10 (resuelta), las limitaciones y la trazabilidad. | jss etiquetó una por una las seis fallas con la evidencia de la base compilada de la corrida vigente (hoja `oe4-etapa-e1.csv`); el documento las declaraba pendientes. Las cifras salen del [notebook 16](../../notebooks/16-jss-c2-fuentes-e1.ipynb) (sección 10) y del [notebook 19](../../notebooks/19-jss-modelos.ipynb) (sección 7.5). |
+| 8.0 | 2026-11-01 | El modelo de extracción de C2 y C3 queda decidido: `qwen3:8b`, el de OpenKOS 0.7.0, con la pasada de decisiones (`transcript_decisions`) activada, que es la única opción de C2 fuera de su valor por defecto (secciones 5, 6, 6.2, 6.4, 9, 10, 11 y 12). La regla del «mismo modelo generativo» se aplica al modelo que responde. `qwen3.6:27b` y `qwen3.6:35b-a3b` se descartan; la decisión 1 de la sección 11.1 pasa a resuelta y el extractor deja de figurar como pendiente en el congelamiento. | [ADR 0015](../decisions/0015-adr-modelo-extractor-de-c2.md), que cierra el issue #143: la épica de OpenKOS jasonssdev/openkos#1556 dejó todas las tareas en `qwen3:8b` salvo los jueces y la verificación de suficiencia, y `qwen3.6:27b`, que gana en F1 del pase de decisiones, tarda de 1,8 a 3,6 veces más y no es el modelo de OpenKOS. Las cifras no cambian: salen del [notebook 15](../../notebooks/15-jss-screen-de-modelos-openkos.ipynb) y del [notebook 19](../../notebooks/19-jss-modelos.ipynb). |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -298,7 +299,7 @@ Anotación humana ─► C3: referencia humana adjudicada ─► consulta ──
 | Paso | C0 (diagnóstico, no es condición) | C1 (línea base) | C2 (la propuesta) | C3 (ground truth humana) |
 |---|---|---|---|---|
 | Material de partida | Ninguno | Transcripciones congeladas de la serie | Transcripciones, procesadas de la reunión a a la d | Anotación humana adjudicada de la serie (OE1) |
-| Preparación | — | Troceo en fragmentos de turnos completos: hasta 1.200 caracteres, 1 turno compartido entre fragmentos | OpenKOS extrae objetos (decisiones, temas, eventos) con un modelo extractor y guarda la fuente en bruto | Objetos equivalentes a los de C2, elaborados desde anotaciones humanas adjudicadas |
+| Preparación | — | Troceo en fragmentos de turnos completos: hasta 1.200 caracteres, 1 turno compartido entre fragmentos | OpenKOS extrae objetos (decisiones, temas, eventos) con `qwen3:8b`, con la pasada de decisiones activada (sección 6.2), y guarda la fuente en bruto | Objetos equivalentes a los de C2, elaborados desde anotaciones humanas adjudicadas |
 | Índice | — | BM25 (léxico) + vectores densos de `bge-m3` | Índice híbrido de OpenKOS con `bge-m3` | Igual que C2 |
 | Recuperación | — | Fusión RRF (k = 60) y los 5 mejores fragmentos | `openkos query --limit 5`, sin modificar | Igual que C2 |
 | Presupuesto de contexto | — | La misma ventana y el mismo método de recorte de OpenKOS; su *prompt* es más corto, de modo que queda algo más de espacio para los fragmentos | El de OpenKOS | Igual que C2 |
@@ -373,7 +374,7 @@ es de esta tesis y cuál viene de OpenKOS.
 |---|---|---|---|
 | **Generador de respuestas** | C0, C1, C2 y C3 | `qwen3:8b` | No: es el modelo compartido de la propuesta. La evidencia viene de OpenKOS (6.4) |
 | **Embeddings** | Recuperación en C1, C2 y C3; alineación del Experimento A | `bge-m3` | No: se hereda de OpenKOS, que lo eligió por fiabilidad |
-| **Extractor de C2** | Construye la base compilada | `qwen3:8b` hoy; **decisión pendiente** (#143) | Sí: *screen* de cuatro modelos (6.2) |
+| **Extractor de C2** | Construye la base compilada | `qwen3:8b`, el de OpenKOS, con la pasada de decisiones activada (ADR 0015) | Sí: *screen* de cuatro modelos (6.2) |
 | **Verificación de suficiencia** | Solo C2 y C3: decide si el contexto alcanza para responder o hay que abstenerse | `gemma4:26b-a4b` (el que OpenKOS 0.7.0 empaqueta) | No: la evidencia viene de OpenKOS (6.4). C1 no tiene este paso |
 | **Juez** | Califica cada respuesta | `gpt-oss:20b` | Sí: calibración de tres candidatos (6.3) |
 
@@ -439,12 +440,24 @@ corridas subestiman la variación y la confirmación con corridas nuevas no es u
 
 ![F1 frente a tiempo de los cuatro modelos extractores](../entregables/figuras/modelos-screen-extraccion-f1-costo.png)
 
-**Esto todavía no es la decisión del extractor.** La ganancia sale de dos series de desarrollo, y
-el puntaje con τ = 0,60 incluye parecido temático (en el control con salidas de otro equipo la
-cobertura es alrededor de 0,3; notebook 15, §6.2). Además, OpenKOS confirmó con 15 corridas a
-`qwen3.6:35b-a3b` y este **no pasa** la regla (margen de F1 de +0,164 frente a 0,192 exigido en
-ES2015, y +0,070 frente a 0,165 en TS3009; issue #1561 de OpenKOS). La elección queda abierta
-(#143, sección 11).
+**Decisión del extractor (ADR 0015).** El extractor de C2 y C3 es `qwen3:8b`, el modelo por defecto
+de OpenKOS, con la pasada de decisiones activada. La ganancia de `qwen3.6:27b` sale de dos series
+de desarrollo, y el puntaje con τ = 0,60 incluye parecido temático (en el control con salidas de
+otro equipo la cobertura es alrededor de 0,3; notebook 15, §6.2). Además, cuesta de 1,8 a 3,6
+veces más tiempo por corrida, no alcanzó el piso de precisión en la extracción de conceptos
+(OpenKOS #1557, notebook 21) y no es el modelo de OpenKOS: usarlo sería modificar el producto
+que se evalúa. OpenKOS confirmó con 15 corridas a `qwen3.6:35b-a3b` y este **no pasa** la regla
+(margen de F1 de +0,164 frente a 0,192 exigido en ES2015, y +0,070 frente a 0,165 en TS3009;
+issue #1561 de OpenKOS). Ambos candidatos quedan descartados.
+
+**La pasada de decisiones.** La opción `transcript_decisions` de OpenKOS agrega a la extracción
+una pregunta específica sobre qué decisiones se tomaron en la reunión y es la que se usa en las
+corridas de C2. OpenKOS la documenta así en su plantilla de configuración: pensada para
+transcripciones de reuniones, con unas 3 veces más decisiones recuperadas con alta precisión,
+pero por debajo de la barra para activarla por defecto. Es la **única opción de C2 que no está en
+su valor por defecto** y se declara. «Tal como se distribuye» (ADR 0014) significa que no se
+cambian el código, los *prompts* ni los modelos de OpenKOS; elegir una opción documentada para el
+dominio de la tesis, reuniones donde lo que importa es la decisión, es parte de usar el producto.
 
 ### 6.3 Juez: calibración de tres candidatos
 
@@ -506,7 +519,7 @@ de OpenKOS y las corridas de esos *screens* no se reprodujeron aquí. Se citan p
 | Jueces internos de **adjudicación** y **contradicción** | `gemma4:26b-a4b` | ADR-0047 (issue #1269): ganó ambos roles en un barrido prerregistrado. Solo actúan al compilar, es decir, afectan a C2 |
 | **Verificación de suficiencia** de `query` | `gemma4:26b-a4b`, empaquetado desde la 0.7.0 (ADR-0076, issue #1560) | No está en la 0.6.0. En el *screen* ganó con +0,096 de diferencia pareada sobre `qwen3:8b` en 96 ítems. Cambia **cómo responde C2** (6.5). C1 no tiene esta verificación |
 | Extracción de conceptos: modelo y tamaño de ventana | `qwen3:8b`, ventana de 4.000 caracteres | Issues #1557 y #1558: sin ganador, no se adopta nada |
-| Pase de decisiones de transcripciones (el que mide la sección 6.2) | `qwen3:8b` | El issue #1561 confirmó con 15 corridas a `qwen3.6:35b-a3b`, que no pasa la regla; tampoco se adopta nada |
+| Pase de decisiones de transcripciones (el que mide la sección 6.2) | `qwen3:8b` | El issue #1561 confirmó con 15 corridas a `qwen3.6:35b-a3b`, que no pasa la regla; tampoco se adopta nada. La tesis usa este modelo y activa la opción `transcript_decisions` (ADR 0015) |
 
 ### 6.5 La verificación de suficiencia y el diseño de C1: resueltos el 2026-11-01
 
@@ -635,7 +648,7 @@ sigue pendiente.
 | Bloques que entrega `openkos query` (C2, C3) | 5 | Valor por defecto de OpenKOS, conservado a propósito | ADR 0007, decisión 5 |
 | Modelo generador | `qwen3:8b` | Fijado por diseño (el mismo en todas las condiciones) | 6.1; ADR 0006 |
 | Modelo de *embeddings* | `bge-m3` | Heredado de OpenKOS | 6.1 |
-| Modelo extractor (C2) | `qwen3:8b` hoy; **pendiente** | *Screen* prerregistrado con reglas de veto | 6.2 |
+| Modelo extractor (C2) | `qwen3:8b`, con la pasada de decisiones activada | *Screen* prerregistrado con reglas de veto; decidido en el ADR 0015 | 6.2; ADR 0015 |
 | Modelo de la verificación de suficiencia (C2, C3) | `gemma4:26b-a4b` | Empaquetado en OpenKOS 0.7.0; no se buscó | 6.4; ADR 0014 |
 | Versión de OpenKOS | 0.7.0 | Fijada por decisión (#94) | ADR 0006, enmienda del 2026-11-01 |
 | Modelo juez | `gpt-oss:20b` | Umbrales prerregistrados sobre 42 ítems | 6.3 |
@@ -851,7 +864,7 @@ verificación de suficiencia con otro modelo). Lo caro es **extraer**:
 Extraer una serie de cuatro reuniones tarda entre 138 s (`qwen3.6:35b-a3b`) y 732 s
 (`qwen3.6:27b`) en el *screen*. Como proyección aritmética (no medición), extraer las 11 series de
 evaluación 3 veces serían unas 2,0 h con `qwen3:8b`, 2,0 h con `qwen3:14b` y 6,7 h con
-`qwen3.6:27b`: de ese costo depende la decisión del extractor (#143). Esos tiempos son solo del
+`qwen3.6:27b`: ese costo es una de las razones por las que no se adoptó `qwen3.6:27b` (ADR 0015). Esos tiempos son solo del
 paso de decisiones de OpenKOS 0.6.0; la extracción completa de una serie con OpenKOS 0.7.0 y
 `qwen3:8b` tardó 24 min por corrida, de modo que el costo total de C2 es mayor. También se ve que
 el juez tarda más en C0 (22 s por respuesta) que en C1 (4 s) y en C2 (7 s); la causa no se investigó. Las cifras
@@ -865,10 +878,10 @@ distinta máquina).
 | 1 | El recorte de contexto de OpenKOS invalidó una medición propia | El primer ajuste de C1 eligió 1600 / 0 / 8 (recall 0,642); al modelo le llegaba 0,446. Se repitió contando el texto entregado y el ganador pasó a 1200 / 1 / 5 | Corregido y documentado como enmienda del ADR 0007, sin borrar el registro original |
 | 2 | La marca de atribución `USED:` se pierde a veces | En 2 de 21 respuestas de C1 (diseño anterior) el modelo escribió `USED:` al final de la frase y OpenKOS solo la reconoce al inicio de línea; se citaron todos los fragmentos y bajó la precision de la citación. Afecta a la citación, no a la corrección | Superada por el ADR 0014: C1 ya no usa `USED:`; cita los bloques como `[n]` y una respuesta sin citas no cita nada |
 | 3 | La regla de citación tuvo que revisarse | La primera versión exigía que todas las citas respaldaran la respuesta y rechazaba 8 de 13 respuestas, 7 de ellas correctas. Se cambió a «al menos una» y la precision se informa aparte | Resuelto (ADR 0009). Abierto: si el tamaño distinto de las citas de C1 y C2 sesga la comparación (#97) |
-| 4 | La versión de OpenKOS estaba sin fijar | Las corridas de extracción usaron la 0.5.5; el *screen* usó el arnés de la 0.6.0; la 0.7.0 cambia el modelo de la verificación de suficiencia (resuelto en 6.5). `pyproject.toml` pedía `openkos>=0.5.5` (un piso, no una versión) | Resuelto (#94, ADR 0006): `openkos==0.7.0` exacta, con Python 3.14 (ADR 0002). Las corridas hechas con la 0.5.5 son registros de esa versión; se rehicieron con la 0.7.0 en desarrollo (la extracción de ES2015 es idéntica con la misma semilla) y queda abierta la decisión del extractor (#143) |
+| 4 | La versión de OpenKOS estaba sin fijar | Las corridas de extracción usaron la 0.5.5; el *screen* usó el arnés de la 0.6.0; la 0.7.0 cambia el modelo de la verificación de suficiencia (resuelto en 6.5). `pyproject.toml` pedía `openkos>=0.5.5` (un piso, no una versión) | Resuelto (#94, ADR 0006): `openkos==0.7.0` exacta, con Python 3.14 (ADR 0002). Las corridas hechas con la 0.5.5 son registros de esa versión; se rehicieron con la 0.7.0 en desarrollo (la extracción de ES2015 es idéntica con la misma semilla) y la decisión del extractor quedó resuelta en el ADR 0015 (#143) |
 | 5 | Cruce de idiomas | La extracción sale en inglés y la ground truth está en español; ni la oración inglesa de origen alcanza una similitud alta contra su propia referencia en español. La cobertura colapsa con τ alto por el idioma, no por los modelos | Mitigado: la ground truth se traduce al inglés para comparar (la traducción nunca es una etiqueta) y τ se calibra después de traducir |
 | 6 | El control nulo del umbral τ tiene un defecto | Al cruzar dos equipos con el mismo encargo, parte del «azar» es la misma decisión de verdad; la regla daba τ = 0,80 y casi no dejaba cobertura real | Desvío declarado: τ principal 0,70 con 0,75 y 0,80 de sensibilidad (ADR 0012). Pendiente: concordancia del juez con una persona sobre 50 pares |
-| 7 | El modelo base es menos fiable de lo que el *screen* mostraba | Con 5 corridas `qwen3:8b` no falló ninguna reunión en TS3009 (0 de 20); con 15 corridas nuevas fallaron 6 de 60 por tope de generación | Aprendizaje: la confirmatoria con corridas nuevas no es un trámite. Alimenta la decisión del extractor (#143) |
+| 7 | El modelo base es menos fiable de lo que el *screen* mostraba | Con 5 corridas `qwen3:8b` no falló ninguna reunión en TS3009 (0 de 20); con 15 corridas nuevas fallaron 6 de 60 por tope de generación | Aprendizaje: la confirmatoria con corridas nuevas no es un trámite. Alimentó la decisión del extractor (ADR 0015) |
 | 8 | C2 pierde en E1 frente a C1 | 8 de 14 frente a 11 de 14 (corridas vigentes). Las 8 abstenciones de C2 las decidió la verificación de suficiencia, un paso que C1 no tiene | OE4 de la corrida vigente, etiquetado por jss: recuperación 3, extracción 2, síntesis 1 (de 6 fallas; la corrida anterior fue 4, 3 y 2 de 9; una serie, una persona). Una falla es de memoria contaminada (q017). Las fuentes en bruto se conservan en C2 (6.5, ADR 0014) |
 | 9 | El cargador de la ground truth no leía TS3009 | Las dos filas compuestas de TS3009 traen vacíos la reunión, la oración y la cita de sus hijas, y el cargador buscaba la transcripción de una reunión vacía | Corregido con prueba: una hija vacía hereda los campos de su fila compuesta (notebook 15) |
 | 10 | El juez es indulgente con una respuesta genérica y estricto con una parcial | Marcó correcta una respuesta sin contexto que no afirma lo que dice la referencia (8.3) y marcó incorrecta una respuesta correcta en lo sustancial por faltarle elementos (q023, 8.4); su calibración pudo quedar algo inflada porque el identificador delataba cómo se generó cada respuesta | Declarado. Mitigación prevista: verificación humana del 20 % de las respuestas del experimento |
@@ -888,7 +901,7 @@ El equivalente a «usar el conjunto de prueba una sola vez» es **congelar todo 
 
 | # | Decisión | Estado y opciones | Qué cambia |
 |---|---|---|---|
-| 1 | Modelo extractor de C2 y alcance de la regla del «mismo modelo» (#143) | `qwen3.6:27b` gana en F1 pero tarda 1,8 a 3,6 veces más; `qwen3:8b` es el más rápido pero falló reuniones en la confirmatoria; `qwen3.6:35b-a3b` es más rápido que el 27b pero no pasa la regla de OpenKOS con 15 corridas. ¿La regla de la propuesta (§5.3) obliga al extractor a ser el mismo modelo que responde, o solo al que responde? | El costo del Experimento A y el sentido de comparar C2 con C1 y C3 |
+| 1 | Modelo extractor de C2 y alcance de la regla del «mismo modelo» (#143) | **Resuelta el 2026-11-01:** el extractor de C2 y C3 es `qwen3:8b`, el de OpenKOS, con la pasada de decisiones activada (la única opción fuera de su valor por defecto); la regla del «mismo modelo generativo» (§5.3) se aplica al modelo que responde; `qwen3.6:27b` y `qwen3.6:35b-a3b` se descartan (ADR 0015) | El costo del Experimento A queda fijado en el de `qwen3:8b`; la escala del modelo queda como extensión opcional (H3, `qwen3:32b`) |
 | 2 | Fijar la versión de OpenKOS (#94) | **Resuelta el 2026-11-01:** `openkos==0.7.0` exacta, enmienda del ADR 0006. Las corridas de desarrollo hechas con la 0.5.5 se rehicieron con la 0.7.0 (secciones 8 y 9) | Ninguna evaluación se corre con otra versión; un cambio de versión exige otra enmienda |
 | 3 | Verificación de suficiencia de C2 y C3 (6.5) | **Resuelta el 2026-11-01:** C2 y C3 usan `gemma4:26b-a4b`, el modelo que trae OpenKOS; C1 no tiene verificación de suficiencia (ADR 0014) | La diferencia entre C1 y C2/C3 incluye la etapa de respuesta y no se reparte entre representación y respuesta |
 | 4 | Fuentes en bruto en C2 (#146) | **Resuelta el 2026-11-01:** C2 conserva `sources/` porque así se distribuye OpenKOS; no se hace la ablación (ADR 0006). Queda la evidencia de OE4 (8.4): recuperación 3, extracción 2, síntesis 1 de 6 fallas de la corrida vigente (4, 3 y 2 de 9 en la anterior), en desarrollo y con una serie | La comparación en E1 mide OpenKOS como producto |
@@ -909,7 +922,7 @@ Los controles 6 a 9 son los que el notebook 19 (sección 5.6) listaba antes de l
 | Ground truth adjudicada de las 11 series de evaluación (OE1) | 6 de 14 series adjudicadas (4 de 11 de evaluación) | Pendiente |
 | Banco de preguntas (al menos 25 por estrato) validado | 0 de 115 filas escritas | Pendiente |
 | C3 ejecutable | Depende de la ground truth; hoy lanza «sin implementar» | Pendiente |
-| Modelos y huellas (generador, verificación de suficiencia, *embeddings*, extractor, juez) | Juez, generador, verificación de suficiencia (`gemma4:26b-a4b`) y *embeddings* definidos; extractor por decidir | Parcial |
+| Modelos y huellas (generador, verificación de suficiencia, *embeddings*, extractor, juez) | Los cinco modelos definidos: generador y extractor `qwen3:8b` (ADR 0015), verificación de suficiencia `gemma4:26b-a4b`, *embeddings* `bge-m3` y juez `gpt-oss:20b`; faltan las huellas de las corridas formales | Parcial |
 | Versión de OpenKOS | `==0.7.0` (#94, ADR 0006) | Congelado |
 | Parámetros de C1 | 1200 / 1 / 5 en `config/experiments.toml`; una prueba verifica que coinciden con el ganador guardado | Congelado |
 | Umbral τ | 0,70 principal; 0,75 y 0,80 de sensibilidad (ADR 0012) | Congelado, con concordancia del juez pendiente |
@@ -919,8 +932,8 @@ Los controles 6 a 9 son los que el notebook 19 (sección 5.6) listaba antes de l
 | Registro del congelamiento | Un ADR que liste modelos, huellas, versión de OpenKOS y *commit* del código antes de la primera corrida | Pendiente |
 
 Lo congelado es lo que se pudo ajustar en desarrollo (C1, τ, los *prompts*, el criterio de
-éxito). Lo pendiente depende de decisiones del equipo (extractor) o de trabajo humano en
-curso (anotación, banco de preguntas). La regla de oro, la misma del ADR 0005: **nada se ajusta
+éxito). Lo pendiente depende de trabajo humano en curso (anotación, banco de preguntas) y del
+registro del congelamiento; ya no queda ninguna decisión de modelo abierta. La regla de oro, la misma del ADR 0005: **nada se ajusta
 ya con las series de evaluación**; si algo debe cambiar, se cambia con un ADR nuevo y sobre
 desarrollo, antes de la primera corrida.
 
@@ -946,7 +959,7 @@ desarrollo, antes de la primera corrida.
 - La temperatura, la semilla, `top_p` y la ventana se fijaron por diseño y **no se exploró** su
   sensibilidad; tampoco se compararon otros generadores de respuestas.
 - La elección del extractor se apoya en dos series de desarrollo y en un puntaje (τ = 0,60) que
-  incluye parecido temático; la decisión final no está tomada.
+  incluye parecido temático; la decisión (ADR 0015) se tomó por consistencia con OpenKOS tal como se distribuye y no por el mejor F1, y la pasada de decisiones es una opción fuera del valor por defecto.
 - El juez se calibró con 42 ítems de una serie, generados por el mismo generador y con un
   identificador que delataba su origen. Su validación con personas sobre el experimento real
   sigue pendiente.
@@ -990,15 +1003,15 @@ Cada sección de este documento se deriva del [notebook 19](../../notebooks/19-j
 | 3. Restricciones del análisis exploratorio | 2 | [documento 07](07-jss-analisis-exploratorio.md); [ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md), [0008](../decisions/0008-adr-fechas-de-reunion-para-openkos.md), [0011](../decisions/0011-adr-alineacion-rol-e-intervalos-del-experimento-a.md); `src/afg/eda/modeling.py` |
 | 4. Estrategia experimental | 3 | [ADR 0005](../decisions/0005-adr-development-evaluation-split.md); [documento 06](06-jss-metodologia.md) §7–8; issue #145; [notebook 14](../../notebooks/14-jss-alineacion-experimento-a.ipynb) |
 | 5. Los *pipelines* | 4 | [ADR 0006](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) (con su enmienda del 2026-11-01), [0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md), [0014](../decisions/0014-adr-c1-como-rag-convencional.md); [`config/experiments.toml`](../../config/experiments.toml) (`[shared_budget]`) |
-| 6.1 a 6.2 Generador, *embeddings*, extractor | 5.1 a 5.3 | [notebook 15](../../notebooks/15-jss-screen-de-modelos-openkos.ipynb); `reports/experiment-a/model-screen-openkos/` |
+| 6.1 a 6.2 Generador, *embeddings*, extractor | 5.1 a 5.3 | [notebook 15](../../notebooks/15-jss-screen-de-modelos-openkos.ipynb); `reports/experiment-a/model-screen-openkos/`; [ADR 0015](../decisions/0015-adr-modelo-extractor-de-c2.md) |
 | 6.3 Juez | 5.4 | [notebook 05](../../notebooks/05-jss-seleccion-juez.ipynb); [`reports/judge-calibration/resultados.json`](../../reports/judge-calibration/resultados.json); [`reports/judge-calibration/acuerdo-humano.json`](../../reports/judge-calibration/acuerdo-humano.json) |
 | 6.4 a 6.5 OpenKOS y suficiencia | 5.5 y 5.6 | Repositorio de OpenKOS (ADR-0001, 0006, 0047, 0076; issues #1556 a #1561); [ADR 0006](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) (enmienda del 2026-11-01) y [ADR 0014](../decisions/0014-adr-c1-como-rag-convencional.md); issue #94 |
 | 7.1 a 7.2 C1 y ablación | 6.1 y 6.2 | [notebook 06](../../notebooks/06-jss-ajuste-c1.ipynb); [`reports/c1-tuning/resultados.json`](../../reports/c1-tuning/resultados.json); `src/afg/conditions/c1_ablation.py` |
 | 7.3 Umbral τ | 6.3 | [notebook 17](../../notebooks/17-jss-tau-referencia-en.ipynb); [ADR 0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md) |
 | 8. Línea base y primeros resultados | 7 | `reports/experiment-b/`; [ADR 0014](../decisions/0014-adr-c1-como-rag-convencional.md); [notebook 07](../../notebooks/07-jss-runner-experimento-b.ipynb) (motor de corrida); [notebook 16](../../notebooks/16-jss-c2-fuentes-e1.ipynb). Las cifras del diseño anterior (C1 16 de 21, C2 10 de 21, OE4 de nueve fallas) están en `reports/experiment-b/humo-c1-es2015/` y `humo-c2-es2015-conceptos/` y en el historial de este documento (versión 6.0) |
 | 9. Variabilidad, reproducibilidad y costo | 8 | `reports/experiment-a/`; `src/afg/experiments/cost_table.py` |
-| 10. Dificultades y aprendizajes | 9 | [ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md), [0009](../decisions/0009-adr-regla-de-citacion-correcta.md), [0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md); issues #87, #94, #97, #143, #146 |
-| 11. Decisiones pendientes y congelamiento | 5.6 y 10 | [ADR 0005](../decisions/0005-adr-development-evaluation-split.md), [0006](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) (enmienda del 2026-11-01), [0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md), [0014](../decisions/0014-adr-c1-como-rag-convencional.md); [notebook 20](../../notebooks/20-gm-mejoras-modelado.ipynb); issues #94 y #146 (cerrados), #143, #205 |
+| 10. Dificultades y aprendizajes | 9 | [ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md), [0009](../decisions/0009-adr-regla-de-citacion-correcta.md), [0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md); issues #87, #94, #97, #143, #146; [ADR 0015](../decisions/0015-adr-modelo-extractor-de-c2.md) |
+| 11. Decisiones pendientes y congelamiento | 5.6 y 10 | [ADR 0005](../decisions/0005-adr-development-evaluation-split.md), [0006](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) (enmienda del 2026-11-01), [0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md), [0014](../decisions/0014-adr-c1-como-rag-convencional.md), [0015](../decisions/0015-adr-modelo-extractor-de-c2.md); [notebook 20](../../notebooks/20-gm-mejoras-modelado.ipynb); issues #94, #143 y #146 (cerrados), #205 |
 | 12. Limitaciones | 11 | [documento 08](08-jss-metricas-y-criterio-de-exito.md); [ADR 0006](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md), [0014](../decisions/0014-adr-c1-como-rag-convencional.md) |
 
 Las cinco figuras de este documento, más la de las etapas de OE4 enlazada en la sección 8.4, están en [`../entregables/figuras/`](../entregables/figuras/) (`modelos-*.png`).
