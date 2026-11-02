@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 09 — Modelos y su justificación |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 7.0 |
+| **Versión** | 7.1 |
 | **Fecha** | 2026-11-01 |
 | **Estado** | Vigente |
 
@@ -24,6 +24,7 @@
 | 5.0 | 2026-11-01 | La versión de OpenKOS queda fijada en `==0.7.0` y el proyecto pasa a Python 3.14 (dificultad 4, decisión pendiente 2, estado del congelamiento y sección 6.5). Las corridas hechas con la 0.5.5 pasan a ser registros de esa versión y se rehacen con la 0.7.0 antes de las decisiones que dependen de ellas. La copia del *prompt* de síntesis de C1 se actualiza a la de la 0.7.0, que escribe la negativa en el idioma de la pregunta. | [ADR 0006](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) (enmienda del 2026-11-01) y [ADR 0002](../decisions/0002-adr-uv-and-src-layout.md) (enmienda del 2026-11-01): con Python 3.14 el *lock* cambia solo `openkos`, las pruebas pasan, el notebook 18 se ejecuta y el adaptador acepta la 0.7.0. |
 | 6.0 | 2026-11-01 | C1 pasa a ser un RAG convencional: una sola llamada a `qwen3:8b` con un *prompt* genérico que se abstiene con una frase fija y cita los fragmentos entre corchetes, sin verificación de suficiencia ni copia de componentes de OpenKOS (secciones 5, 5.1, 6.5, 8.2 y 11). C2 y C3 usan OpenKOS 0.7.0 tal como se distribuye: conservan las fuentes en bruto y verifican la suficiencia con `gemma4:26b-a4b` (decisiones abiertas 3 y 4 resueltas). Se declara la limitación de que la diferencia entre C1 y C2/C3 no se reparte entre representación y etapa de respuesta. Las corridas de desarrollo de C1 con el diseño anterior (8.1 a 8.4) quedan como registro de ese diseño y se rehacen antes de decidir sobre ellas. Se actualizan la tabla de roles, la tabla de condiciones, las dificultades 2, 4 y 8 y el estado del congelamiento. | La tesis compara un RAG convencional con OpenKOS como producto: un C1 con piezas de OpenKOS mediría «OpenKOS sin compilación», y quitar las fuentes en bruto o cambiar el modelo de suficiencia mediría algo distinto del producto ([ADR 0014](../decisions/0014-adr-c1-como-rag-convencional.md) y ADR 0006, enmienda del 2026-11-01). Sin cifras nuevas. |
 | 7.0 | 2026-11-01 | Las cifras de desarrollo pasan a las corridas del diseño vigente: C1 como RAG convencional 17 de 21 (81,0 %) y C2 con OpenKOS 0.7.0 15 de 21 (71,4 %), en lugar de 16 de 21 (76,2 %) y 10 de 21 (47,6 %) del diseño anterior (caso de entrada, secciones 8.1, 8.2, 9 y 10). La atribución de las fallas de C2 (OE4, sección 8.4) se presenta como la de la corrida anterior, con su correspondencia pregunta por pregunta con la vigente; clasificar las fallas vigentes queda pendiente de una persona. Se actualizan la extracción de ES2015, la procedencia y el costo a la 0.7.0; la tabla de roles (cinco, con la verificación de suficiencia); la tabla de OpenKOS por tarea; la afirmación sobre qué toma C1 de OpenKOS (solo el método de recorte del presupuesto, no instrucciones ni verificación); las series adjudicadas (6 de 14, 4 de 11 de evaluación) y con referencia en inglés (6); los controles de comparabilidad (huellas ya registradas) y la trazabilidad (ADR 0014 y enmienda del ADR 0006). Las cifras de costo cambian con las corridas vigentes: responder una pregunta tarda unos 5 s en C1 y 14 s en C2, frente a 8,8 s y 10,3 s de las corridas anteriores, y juzgarla unos 4 s y 7 s, frente a 4,2 s en C1. | Corridas de desarrollo del 2026-11-01 con el diseño vigente (`humo-c1-es2015-rag` y `humo-c2-es2015-openkos070`, notebook 19) y verificación de coherencia de los avances con los notebooks. Las cifras salen del [notebook 19](../../notebooks/19-jss-modelos.ipynb) (secciones 7 y 8) y del [notebook 16](../../notebooks/16-jss-c2-fuentes-e1.ipynb) (sección 10). |
+| 7.1 | 2026-11-01 | Se incorpora la clasificación OE4 de las seis fallas E1 de la corrida vigente de C2: 3 de recuperación, 2 de extracción y 1 de síntesis (sección 8.4), con la corrida anterior (4, 3 y 2 de 9) como comparación. Una de las fallas (q017) es un caso de memoria contaminada. La figura de las etapas de las fallas pasa a mostrar la corrida vigente. Se actualizan la dificultad 8, la decisión pendiente sobre fuentes en bruto, la decisión pendiente 10 (resuelta), las limitaciones y la trazabilidad. | jss etiquetó una por una las seis fallas con la evidencia de la base compilada de la corrida vigente (hoja `oe4-etapa-e1.csv`); el documento las declaraba pendientes. Las cifras salen del [notebook 16](../../notebooks/16-jss-c2-fuentes-e1.ipynb) (sección 10) y del [notebook 19](../../notebooks/19-jss-modelos.ipynb) (sección 7.5). |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -738,41 +739,60 @@ el piso de C0 y obliga a que la verificación humana del 20 % mire justo este ti
 
 La pérdida de C2 frente a C1 en E1 es el hallazgo más fuerte de las corridas de humo. El notebook
 16 miró qué texto recuperó C2 en cada pregunta y dejó una hoja para que una persona clasifique
-cada falla según la etapa donde nació: extracción (el hecho no quedó bien en la base),
-recuperación (estaba y no se recuperó) o síntesis (se recuperó y la respuesta lo contradice).
-**Esa clasificación se hizo sobre la corrida anterior de C2** (OpenKOS 0.5.5, nueve fallas en E1);
-la de la corrida vigente, con seis fallas, **está pendiente de una persona (jss)** y no se asigna
-por máquina. La regla automática atribuyó una sola de las nueve fallas de la corrida anterior
-(`q003`, síntesis); las otras ocho las etiquetó una persona (jss) con la base compilada a la
-vista. Con las dos fuentes juntas:
+cada falla según la etapa donde nació. Las tres etapas, en palabras llanas:
 
-| Etapa donde nació el error (corrida anterior) | Fallas | Preguntas |
+- **Recuperación:** el hecho sí está en la base de conocimiento y el sistema no lo encontró; trajo
+  otra cosa.
+- **Extracción:** el hecho nunca quedó bien guardado en la base (no se compiló, o se guardó un
+  dato cercano o a medias), así que no había nada que encontrar.
+- **Síntesis:** la información correcta llegó al modelo y aun así la respuesta salió mal.
+
+Jss clasificó una por una las **seis fallas E1 de la corrida vigente** (C2 con OpenKOS 0.7.0), con
+la base compilada a la vista; ninguna se atribuyó por máquina. El reparto es:
+
+| Etapa donde nació el error (corrida vigente) | Fallas | Preguntas |
 |---|---|---|
-| Recuperación | 4 | q002, q006, q017, q020 |
-| Extracción | 3 | q004, q011, q026 |
-| Síntesis | 2 | q003 (por regla), q023 (etiqueta de jss) |
+| Recuperación | 3 | q003, q017, q020 |
+| Extracción | 2 | q004, q026 |
+| Síntesis | 1 | q010 |
 
-La tabla siguiente cruza, pregunta por pregunta, las dos corridas de C2 con esa clasificación
-(notebook 19, sección 7.5; notebook 16, sección 10):
+**Cómo se lee.** La mayoría de las fallas (tres de seis) son de recuperación: la respuesta correcta
+estaba en la base y el sistema no la trajo. En q020 el paso que verifica si el contexto basta
+rechazó, con razón, lo recibido. Las dos de extracción (q004 y q026) son hechos que nunca se
+compilaron: el tope de 12,50 euros y la forma de doble curva aparecen solo en la transcripción en
+bruto. La de síntesis (q010) recibió el sistema de alarma, pero la respuesta mezcló detalles de una
+reunión posterior y omitió el sonido. Para comparar, la corrida anterior (OpenKOS 0.5.5, nueve
+fallas) tuvo 4 de recuperación, 3 de extracción y 2 de síntesis: en las dos pesa más la
+recuperación.
+
+**Un caso de memoria contaminada (q017).** La extracción guardó como decisión una propuesta que el
+equipo había descartado (botones de desplazamiento); esa entrada se recuperó, se citó y desplazó a
+la decisión correcta (botones de presión). Es evidencia concreta del riesgo que describe la
+propuesta (§1.3): una base que guarda como decidido lo que fue descartado puede responder peor que
+no tener base.
+
+La tabla siguiente cruza, pregunta por pregunta, las dos corridas de C2 con la etapa que jss asignó
+en cada una (notebook 19, sección 7.5; notebook 16, sección 10):
 
 | Pregunta | Corrida anterior | Etapa (corrida anterior) | Corrida vigente | Etapa (corrida vigente) |
 |---|---|---|---|---|
 | q002 | abstención | recuperación | correcta | — |
-| q003 | respuesta falsa | síntesis (por regla) | abstención | pendiente (jss) |
-| q004 | abstención | extracción | abstención | pendiente (jss) |
+| q003 | respuesta falsa | síntesis (por regla) | abstención | recuperación |
+| q004 | abstención | extracción | abstención | extracción |
 | q006 | abstención | recuperación | correcta | — |
-| q010 | correcta | — | respuesta falsa | pendiente (jss) |
+| q010 | correcta | — | respuesta falsa | síntesis |
 | q011 | respuesta falsa | extracción | correcta | — |
-| q017 | respuesta falsa | recuperación | respuesta falsa | pendiente (jss) |
-| q020 | abstención | recuperación | abstención | pendiente (jss) |
+| q017 | respuesta falsa | recuperación | respuesta falsa | recuperación |
+| q020 | abstención | recuperación | abstención | recuperación |
 | q023 | respuesta falsa | síntesis | correcta | — |
-| q026 | respuesta falsa | extracción | abstención | pendiente (jss) |
+| q026 | respuesta falsa | extracción | abstención | extracción |
 
 Cinco preguntas fallan en las dos corridas (q003, q004, q017, q020 y q026), cuatro que fallaban
 ahora se responden bien (q002, q006, q011 y q023) y una falla ahora sin haber fallado antes (q010).
-La etapa de la corrida anterior es una pista para las que siguen fallando, no una etiqueta de la
-vigente: la base y la consulta cambiaron (OpenKOS 0.7.0, con su verificación de suficiencia y sus
-fuentes en bruto).
+La etapa de la corrida anterior no se hereda: la base y la consulta cambiaron (OpenKOS 0.7.0, con su
+verificación de suficiencia y sus fuentes en bruto). En q004, q017, q020 y q026 la etapa coincide;
+en q003 la regla automática la había atribuido a síntesis en la corrida anterior y jss la
+clasificó como recuperación en la vigente al abrir la base.
 
 Lo que dicen las notas de quien etiquetó la corrida anterior:
 
@@ -780,16 +800,13 @@ Lo que dicen las notas de quien etiquetó la corrida anterior:
   sobre DVD y VCR del mismo tramo de la reunión en lugar de la exclusión del teletexto, que sí
   estaba en la base.
 - **Los resúmenes de tema llegan recortados y pierden el dato clave** (q017 y q023).
-- **Propuesta descartada en la base compilada (q017).** La extracción guardó como decisión una propuesta descartada
-  (botones de desplazamiento) y esa entrada engañó al modelo frente a la decisión correcta
-  (botones de presión).
 - **El juez es estricto con las respuestas parciales** (q011 y q023). En q023 la granada sí aparece
   en la reunión y en el resumen recuperado; la respuesta es correcta en lo sustancial y el juez
   la marcó incorrecta (falso negativo).
 
-Son nueve fallas de una sola serie de desarrollo, etiquetadas por una persona: indican una
-dirección (en esta serie pesaba más la recuperación que la síntesis) y no son un resultado de la
-tesis. El reparto de la corrida anterior se grafica en [`modelos-etapas-fallas-c2.png`](../entregables/figuras/modelos-etapas-fallas-c2.png) (sección 7.5 del notebook 19). El [notebook 20](../../notebooks/20-gm-mejoras-modelado.ipynb) complementa esta sección con la revisión del modelado hecha por otro integrante del equipo.
+Son seis fallas (y nueve de la corrida anterior) de una sola serie de desarrollo, etiquetadas por
+una persona: indican una dirección (en esta serie pesa más la recuperación que la síntesis) y no son
+un resultado de la tesis. El reparto de la corrida vigente se grafica en [`modelos-etapas-fallas-c2.png`](../entregables/figuras/modelos-etapas-fallas-c2.png) (sección 7.5 del notebook 19). El [notebook 20](../../notebooks/20-gm-mejoras-modelado.ipynb) complementa esta sección con la revisión del modelado hecha por otro integrante del equipo.
 
 ## 9. Variabilidad, reproducibilidad y costo
 
@@ -852,7 +869,7 @@ distinta máquina).
 | 5 | Cruce de idiomas | La extracción sale en inglés y la ground truth está en español; ni la oración inglesa de origen alcanza una similitud alta contra su propia referencia en español. La cobertura colapsa con τ alto por el idioma, no por los modelos | Mitigado: la ground truth se traduce al inglés para comparar (la traducción nunca es una etiqueta) y τ se calibra después de traducir |
 | 6 | El control nulo del umbral τ tiene un defecto | Al cruzar dos equipos con el mismo encargo, parte del «azar» es la misma decisión de verdad; la regla daba τ = 0,80 y casi no dejaba cobertura real | Desvío declarado: τ principal 0,70 con 0,75 y 0,80 de sensibilidad (ADR 0012). Pendiente: concordancia del juez con una persona sobre 50 pares |
 | 7 | El modelo base es menos fiable de lo que el *screen* mostraba | Con 5 corridas `qwen3:8b` no falló ninguna reunión en TS3009 (0 de 20); con 15 corridas nuevas fallaron 6 de 60 por tope de generación | Aprendizaje: la confirmatoria con corridas nuevas no es un trámite. Alimenta la decisión del extractor (#143) |
-| 8 | C2 pierde en E1 frente a C1 | 8 de 14 frente a 11 de 14 (corridas vigentes). Las 8 abstenciones de C2 las decidió la verificación de suficiencia, un paso que C1 no tiene | OE4 de la corrida anterior, etiquetado por jss: recuperación 4, extracción 3, síntesis 2 (de 9 fallas; una serie, una persona). Pendiente: clasificar las 6 fallas de la corrida vigente. Las fuentes en bruto se conservan en C2 (6.5, ADR 0014) |
+| 8 | C2 pierde en E1 frente a C1 | 8 de 14 frente a 11 de 14 (corridas vigentes). Las 8 abstenciones de C2 las decidió la verificación de suficiencia, un paso que C1 no tiene | OE4 de la corrida vigente, etiquetado por jss: recuperación 3, extracción 2, síntesis 1 (de 6 fallas; la corrida anterior fue 4, 3 y 2 de 9; una serie, una persona). Una falla es de memoria contaminada (q017). Las fuentes en bruto se conservan en C2 (6.5, ADR 0014) |
 | 9 | El cargador de la ground truth no leía TS3009 | Las dos filas compuestas de TS3009 traen vacíos la reunión, la oración y la cita de sus hijas, y el cargador buscaba la transcripción de una reunión vacía | Corregido con prueba: una hija vacía hereda los campos de su fila compuesta (notebook 15) |
 | 10 | El juez es indulgente con una respuesta genérica y estricto con una parcial | Marcó correcta una respuesta sin contexto que no afirma lo que dice la referencia (8.3) y marcó incorrecta una respuesta correcta en lo sustancial por faltarle elementos (q023, 8.4); su calibración pudo quedar algo inflada porque el identificador delataba cómo se generó cada respuesta | Declarado. Mitigación prevista: verificación humana del 20 % de las respuestas del experimento |
 
@@ -874,13 +891,13 @@ El equivalente a «usar el conjunto de prueba una sola vez» es **congelar todo 
 | 1 | Modelo extractor de C2 y alcance de la regla del «mismo modelo» (#143) | `qwen3.6:27b` gana en F1 pero tarda 1,8 a 3,6 veces más; `qwen3:8b` es el más rápido pero falló reuniones en la confirmatoria; `qwen3.6:35b-a3b` es más rápido que el 27b pero no pasa la regla de OpenKOS con 15 corridas. ¿La regla de la propuesta (§5.3) obliga al extractor a ser el mismo modelo que responde, o solo al que responde? | El costo del Experimento A y el sentido de comparar C2 con C1 y C3 |
 | 2 | Fijar la versión de OpenKOS (#94) | **Resuelta el 2026-11-01:** `openkos==0.7.0` exacta, enmienda del ADR 0006. Las corridas de desarrollo hechas con la 0.5.5 se rehicieron con la 0.7.0 (secciones 8 y 9) | Ninguna evaluación se corre con otra versión; un cambio de versión exige otra enmienda |
 | 3 | Verificación de suficiencia de C2 y C3 (6.5) | **Resuelta el 2026-11-01:** C2 y C3 usan `gemma4:26b-a4b`, el modelo que trae OpenKOS; C1 no tiene verificación de suficiencia (ADR 0014) | La diferencia entre C1 y C2/C3 incluye la etapa de respuesta y no se reparte entre representación y respuesta |
-| 4 | Fuentes en bruto en C2 (#146) | **Resuelta el 2026-11-01:** C2 conserva `sources/` porque así se distribuye OpenKOS; no se hace la ablación (ADR 0006). Queda la evidencia de OE4 (8.4): recuperación 4, extracción 3, síntesis 2 de 9 fallas, en desarrollo y con una serie | La comparación en E1 mide OpenKOS como producto |
+| 4 | Fuentes en bruto en C2 (#146) | **Resuelta el 2026-11-01:** C2 conserva `sources/` porque así se distribuye OpenKOS; no se hace la ablación (ADR 0006). Queda la evidencia de OE4 (8.4): recuperación 3, extracción 2, síntesis 1 de 6 fallas de la corrida vigente (4, 3 y 2 de 9 en la anterior), en desarrollo y con una serie | La comparación en E1 mide OpenKOS como producto |
 | 5 | Concordancia del juez de τ con una persona | 50 pares de la muestra juzgada; sin anotador asignado (ADR 0012) | Si es baja, el ADR 0012 se reemplaza con otro |
 | 6 | Huella del generador en cada corrida | Los manifiestos de las corridas vigentes de C1 y C2 registran la huella del `qwen3:8b` (9); falta confirmar que coincide en las corridas formales | Sin esto, «el mismo generador» solo se sostiene por el nombre |
 | 7 | Versión y huella de los *embeddings* | `bge-m3` está declarado como compartido y su huella ya se registra en el manifiesto; falta confirmar que coincide en las corridas formales | Sin esto, la recuperación de C1 y C2 podría diferir sin que se note |
 | 8 | Texto efectivo entregado, no solo K | Comparar lo que realmente llega al generador en C1 y en C2 tras el recorte de contexto (ADR 0007), y no únicamente K o el límite nominal | Sin esto, la comparación puede favorecer a la condición que recibe más texto |
 | 9 | Instrucciones de respuesta de C1 | **Resuelta el 2026-11-01:** C1 usa un *prompt* genérico propio y ya no copia las instrucciones de OpenKOS (ADR 0014) | La redacción de la respuesta es parte de cada sistema y se declara como tal |
-| 10 | Clasificación OE4 de la corrida vigente de C2 | Las 6 fallas E1 esperan la etapa que asigna una persona (jss); la clasificación existente es la de la corrida anterior (8.4) | Fija cuánto del error de C2 nace en la extracción, la cifra principal de OE4 |
+| 10 | Clasificación OE4 de la corrida vigente de C2 | **Resuelta el 2026-11-01:** jss clasificó las 6 fallas E1 (recuperación 3, extracción 2, síntesis 1; 8.4) | Fija cuánto del error de C2 nace en la extracción, la cifra principal de OE4 |
 | 11 | *Recall* del filtro léxico (#205) | Las muestras de la Tarea C de ES2016, IS1003 y TS3005 están anotadas (50 pares cada una); faltan la de IS1004 (#203) y la función que calcula el *recall* con ellas | Sin el *recall* no se puede acotar cuántas relaciones se le escapan al filtro (documento 08) |
 
 Los controles 6 a 9 son los que el notebook 19 (sección 5.6) listaba antes de la corrida formal; las huellas de los modelos ya se registran en los manifiestos, la copia de instrucciones quedó resuelta con el ADR 0014, y por comprobar quedan el texto efectivo entregado y el formato distinto de las citas (#97). El [notebook 20](../../notebooks/20-gm-mejoras-modelado.ipynb) los ordena junto con los de las secciones 4, 8.2, 9 y 11 en una tabla de referencia.
@@ -937,7 +954,7 @@ desarrollo, antes de la primera corrida.
   se compromete (C0, q008) y estricto con una respuesta parcial correcta en lo sustancial (C2,
   q023, un falso negativo; también q011). Infla el piso de C0, puede subestimar a C2 y es una razón
   más para la verificación humana del 20 %.
-- Las nueve etapas de OE4 de la corrida anterior las atribuyó una sola persona, sobre una serie de desarrollo; las de la corrida vigente no se han clasificado.
+- Las etapas de OE4 (seis fallas de la corrida vigente y nueve de la anterior) las atribuyó una sola persona, sobre una serie de desarrollo.
 - La citación se mide con una regla determinista aparte; queda abierto si el tamaño distinto de
   las citas de C1 y C2 sesga la comparación (#97).
 

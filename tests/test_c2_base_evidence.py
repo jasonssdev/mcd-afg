@@ -161,6 +161,15 @@ def test_worksheet_lists_only_unlabeled_e1_failures(
     assert row["pista_automatica"]
 
 
+def test_worksheet_can_include_failures_the_rule_attributes(
+    bundle: Path, scenario: tuple[list[dict[str, Any]], dict[str, Question]]
+) -> None:
+    records, questions = scenario
+    rows = oe4_worksheet_rows(records, questions, bundle, include_rule_attributed=True)
+    assert [r["pregunta_id"] for r in rows] == ["ES2015.q1", "ES2015.q2"]
+    assert all(r["etapa_humana"] == "" and r["nota"] == "" for r in rows)
+
+
 def test_worksheet_never_fills_the_label(
     bundle: Path, scenario: tuple[list[dict[str, Any]], dict[str, Question]]
 ) -> None:
