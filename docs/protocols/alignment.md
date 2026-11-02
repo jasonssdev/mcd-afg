@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | Protocolo de alineación |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 3.0 |
-| **Fecha** | 2026-10-19 |
+| **Versión** | 3.1 |
+| **Fecha** | 2026-11-02 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -16,6 +16,7 @@
 | 1.1 | 2026-10-15 | Se agrega la cabecera de versión y se usa la terminología estándar en la prosa («ground truth» y «τ»); los identificadores de código y de configuración (`tau`, `tau_grid`) no cambian. No cambia el procedimiento. | Auditoría de gobernanza del 2026-10-15: este protocolo no llevaba versión y mezclaba términos con los avances. |
 | 2.0 | 2026-10-19 | El texto de referencia que se compara con las extracciones es la traducción automática al inglés de `final_object` y `final_content` (`data/processed/decisions/<SERIE>.reference-en.csv`, issue #141). Las etiquetas humanas siguen en español y son el ground truth: la traducción no cambia ningún estado ni etiqueta. El procedimiento (pasos 1 a 4) no cambia, y tampoco se fija τ, que corresponde al issue #142. | La extracción sale en el idioma original de las transcripciones (inglés) y la referencia está en español; comparar entre idiomas pone un techo artificial a la similitud: en el [notebook 15](../../notebooks/15-jss-screen-de-modelos-openkos.ipynb) (§6.4) la mediana es 0,689 en ES2015 y 0,724 en TS3009, y solo 3 de 27 y 3 de 21 decisiones llegan a 0,80. |
 | 3.0 | 2026-10-19 | Se fija el umbral τ del Experimento A: **τ principal = 0,70**, con **0,75 y 0,80 como análisis de sensibilidad** y la curva completa sobre `tau_grid` siempre al lado (paso 4). Se declara que el juez automático (`gpt-oss:20b`, prompt `same-decision-v1`) **complementa** la validación manual del paso 3 y no la sustituye, y que una comprobación de concordancia juez–persona sobre 50 pares de la muestra juzgada queda pendiente. El procedimiento (pasos 1 a 4) y el tamaño mínimo de la validación manual (100 pares) no cambian. Se aparta de la regla prerregistrada `max(τ_nulo, τ_juez)` = 0,80. | El control nulo cruza dos equipos con el mismo encargo de diseño, así que parte de sus coincidencias son la misma decisión y el piso de azar está sobrestimado; el desvío responde a ese defecto del control, no a la cobertura que resulta. Cifras: cobertura nula 0,138, 0,053 y 0,015 con τ = 0,70, 0,75 y 0,80; proporción de «sí» del juez a lo más 0,32 por debajo de 0,70 y al menos 0,76 en cada bin desde 0,70 ([ADR 0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md), [notebook 17](../../notebooks/17-jss-tau-referencia-en.ipynb)). |
+| 3.1 | 2026-11-02 | Se registra el resultado de la comprobación de concordancia juez–persona que la versión 3.0 dejó pendiente: acuerdo de 43 de 50 pares (86 %) y kappa de Cohen de 0,716 (IC 95 % de 0,520 a 0,880); los 7 desacuerdos son del juez en «no» y la persona en «sí». Se mantiene τ = 0,70 y el juez como complemento. Se declara que, como el juez es más estricto que una persona, las cifras de alineación con τ = 0,70 son un **piso conservador** (sesgo en contra del sistema evaluado). El procedimiento (pasos 1 a 4) y los umbrales no cambian. | Cierra el punto pendiente de la versión 3.0. Por debajo de 0,70 el juez dice «sí» en el 21 % de los pares y la persona en el 42 % (24 pares); desde 0,70, 81 % y 88 % (26 pares). Evidencia limitada: una sola persona, que además adjudica y mantiene el proyecto, y solo ES2015 y TS3009 ([ADR 0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md), [notebook 17](../../notebooks/17-jss-tau-referencia-en.ipynb) §8). |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -73,9 +74,15 @@ cada τ y la proporción de pares que un juez automático llama «la misma decis
 porque el control nulo cruza dos equipos con el mismo encargo de diseño y sobrestima el azar; el
 desvío y su evidencia están en el [ADR 0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md).
 
-El juez es un modelo: **complementa** la validación manual del paso 3 y no la reemplaza. La
-comprobación de su concordancia con una persona, sobre 50 pares de la muestra que juzgó, está
-**pendiente** (sin anotador asignado).
+El juez es un modelo: **complementa** la validación manual del paso 3 y no la reemplaza. Su
+concordancia con una persona, sobre 50 pares de la muestra que juzgó, se midió el 2026-11-02: acuerdo
+de 43 de 50 (86 %) y kappa de Cohen de 0,716 (IC 95 % de 0,520 a 0,880), sustancial. El juez es más
+estricto que una persona (los 7 desacuerdos son del juez en «no» y la persona en «sí»; por debajo de
+0,70 dice «sí» en el 21 % de los pares y la persona en el 42 %), de modo que el emparejamiento con
+τ = 0,70 probablemente deja fuera coincidencias reales: las cifras de alineación son un **piso
+conservador**, un sesgo en contra del sistema evaluado. Se mantiene τ = 0,70. La evidencia es limitada
+(24 pares por debajo de 0,70, una sola persona que además adjudica y mantiene el proyecto, y solo las
+series de desarrollo ES2015 y TS3009).
 
 ## Métricas explícitamente rechazadas
 

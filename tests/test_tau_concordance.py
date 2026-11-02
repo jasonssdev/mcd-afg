@@ -22,8 +22,11 @@ from afg.experiments.tau_concordance import (
     SHEET_COLUMNS,
     ConcordanceError,
     ConcordanceSheetLabeledError,
+    concordance_tables,
     draw_concordance_sample,
     load_concordance_config,
+    load_concordance_result,
+    save_concordance_result,
     score_concordance,
     write_concordance_files,
 )
@@ -357,3 +360,36 @@ def test_cli_score_reports_unlabeled_sheet(cli_paths: dict[str, Path]) -> None:
     result = _invoke("tau-concordance-score")
     assert result.exit_code == 1
     assert not cli_paths["result"].exists()
+
+
+# --- loader and tables for the notebook ---------------------------------------------------------
+
+
+def _scored(tmp_path: Path) -> dict[str, Any]:
+    out = _write(tmp_path)
+    _label(out["sheet"], {j.pair.id: "si" if j.same else "no" for j in out["sample"]})
+    return _score(out)
+
+
+def test_load_concordance_result_roundtrips_a_saved_score(tmp_path: Path) -> None:
+    result = _scored(tmp_path)
+    path = tmp_path / "concordancia.json"
+    save_concordance_result(path, result)
+    assert load_concordance_result(path) == json.loads(json.dumps(result))
+
+
+def test_load_concordance_result_rejects_a_file_that_is_not_a_score(tmp_path: Path) -> None:
+    path = tmp_path / "concordancia.json"
+    path.write_text(json.dumps({"n": 3}), encoding="utf-8")
+    with pytest.raises(ConcordanceError):
+        load_concordance_result(path)
+
+
+def test_concordance_tables_are_plain_rows_in_bin_order(tmp_path: Path) -> None:
+    result = _scored(tmp_path)
+    tables = concordance_tables(result)
+    assert [r["juez"] for r in tables["confusion"]] == ["juez sí", "juez no"]
+    assert sum(r["n"] for r in tables["by_bin"]) == result["n"]
+    bins = [r["bin"] for r in tables["by_bin"]]
+    assert bins == sorted(bins)
+    assert [r["region"] for r in tables["by_region"]] == ["below", "above"]

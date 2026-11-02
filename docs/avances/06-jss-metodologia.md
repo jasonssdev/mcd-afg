@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 06 — Metodología |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 9.0 |
+| **Versión** | 9.1 |
 | **Fecha** | 2026-11-02 |
 | **Estado** | Vigente |
 
@@ -38,7 +38,7 @@
 | 8.0 | 2026-11-02 | Se registra la puntuación de las relaciones temporales de OE2 (§1): tipo con «revierte» y «reemplaza» como una clase, dirección derivada de las fechas con la desconocida como error, «introduce» sin enlace, y valor principal de extremo a extremo con una segunda cifra condicionada a la alineación; cada una con su sensibilidad. Se agrega la medición de desarrollo: ES2015 (tres corridas) y TS3009 (una); IS1004 sin puntuar (se puntúa desde la versión 8.1). | [ADR 0016](../decisions/0016-adr-relaciones-temporales-de-openkos.md) (issue #96) y [notebook 22](../../notebooks/22-jss-relaciones-temporales-openkos.ipynb). La métrica de OE2 sobre relaciones existía sin una forma de obtener las relaciones de la máquina; las hipótesis H2 y H3 se refieren a ellas. |
 | 8.1 | 2026-11-02 | La medición de las relaciones temporales (§1) incorpora IS1004, que antes no se había puntuado: su referencia es la de su único anotador y se compara con una traducción automática al inglés. Con ello la medición de desarrollo cubre las tres series y 9 relaciones de oro; en IS1004 ningún enlace de la máquina cae sobre decisiones alineadas y el enlace de oro con ambas decisiones alineadas no se encontró. | Issue #229 (la alineación acepta la referencia de un solo anotador), issue #204 (traducción de IS1004) y [notebook 22](../../notebooks/22-jss-relaciones-temporales-openkos.ipynb). |
 | 9.0 | 2026-11-02 | El ajuste de C1 (§3–4) se repite sobre el cuerpo Markdown de la transcripción, que C1 corta con un divisor de texto genérico (sin la estructura de turnos): el resultado pasa de fragmentos de 1.200 caracteres con 1 turno de solapamiento y K = 5 a **fragmentos de 1.200 caracteres, sin solapamiento, y K = 5** (cambia la segmentación; el K se mantiene). El espacio de C1 para los fragmentos se calcula con la sobrecarga de instrucciones de OpenKOS, de modo que es casi igual al de C2 (unos 8.700 frente a 8.300 caracteres). | Decisión del autor del proyecto del 2026-11-02: C1 recibe el mismo documento que OpenKOS, como un RAG convencional. Evidencia: [ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md) (enmienda del 2026-11-02), [ADR 0014](../decisions/0014-adr-c1-como-rag-convencional.md) (enmienda del 2026-11-02) y [notebook 06](../../notebooks/06-jss-ajuste-c1.ipynb). |
-
+| 9.1 | 2026-11-02 | Se registra el resultado de la concordancia del juez de τ con una persona sobre 50 pares (§1, §5–6), que la versión 6.0 dejó pendiente: acuerdo sustancial, juez más estricto que la persona, y por eso las cifras de alineación del Experimento A con τ = 0,70 son un piso conservador. Se mantiene τ = 0,70 y no cambian otros umbrales ni cifras. | Acuerdo de 43 de 50 pares (86 %), kappa 0,716 (IC 95 % de 0,520 a 0,880); los 7 desacuerdos son del juez en «no» y la persona en «sí»; por debajo de 0,70 el juez dice «sí» en el 21 % de los pares y la persona en el 42 % ([ADR 0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md), [notebook 17](../../notebooks/17-jss-tau-referencia-en.ipynb) §8). Evidencia limitada: 24 pares bajo el umbral, una sola persona que además adjudica y mantiene el proyecto, y solo ES2015 y TS3009. Protocolo [`../protocols/alignment.md`](../protocols/alignment.md) 3.1. |
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
 > la evidencia que lo motivó**. El historial nunca se reescribe: se agrega una fila.
@@ -337,7 +337,7 @@ todas las decisiones a la vez, en lugar de asignar cada una a su vecina más par
 dejar que las últimas se queden sin pareja; (3) validación contra emparejamiento manual
 sobre al menos 100 pares, con concordancia reportada; (4) todos los F1 se reportan como
 **curva sobre τ**, no en un único punto, porque elegir un único τ permitiría escoger el que
-dé mejor resultado. El τ principal es 0,70, con 0,75 y 0,80 como sensibilidad, y la curva completa siempre al lado ([ADR 0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md)); el juez automático complementa la validación manual del paso (3), no la sustituye. Se descartan PR-AUC y matrices de confusión como métricas principales
+dé mejor resultado. El τ principal es 0,70, con 0,75 y 0,80 como sensibilidad, y la curva completa siempre al lado ([ADR 0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md)); el juez automático complementa la validación manual del paso (3), no la sustituye. Su concordancia con una persona sobre 50 pares fue sustancial (86 % de acuerdo, kappa 0,716); como el juez es más estricto que una persona, las cifras de alineación con τ = 0,70 son un piso conservador, que subestima lo que el sistema evaluado acierta. Se descartan PR-AUC y matrices de confusión como métricas principales
 porque el sistema emite conjuntos en lenguaje natural, no puntajes sobre clases fijas;
 Recall@K se conserva sólo para la etapa de recuperación dentro de C1 y C2.
 
