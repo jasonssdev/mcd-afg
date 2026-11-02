@@ -36,6 +36,7 @@ intervals of C2 and C1, computed independently, do not overlap) is kept as a rob
 
 from __future__ import annotations
 
+import random
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import asdict, dataclass
 from typing import Any
@@ -47,6 +48,7 @@ from afg.experiments.summary import CitationWidthSummary, citation_width_summary
 
 __all__ = [
     "ALL_STRATA",
+    "H2_NOTE",
     "H4_METRIC",
     "H4_METRICS",
     "H4_NOTE",
@@ -97,6 +99,17 @@ H4_NOTE = (
     "C1 - C2 y C1 - C3 se aparean por pregunta respondida en ambas y H4 se respalda si el "
     "intervalo de la diferencia queda por encima de 0. La tasa de respuestas incorrectas entre "
     "las respondidas se informa como cota superior, no como H4."
+)
+
+H2_RELATION_STRATUM = "E3"
+H2_DECISION_STRATUM = "E1"
+H2_NOTE = (
+    "H2 (ADR 0018): brecha de corrección C3 - C2 por pregunta (pareada por pregunta) en E3, "
+    "preguntas de relación, menos la misma brecha en E1, preguntas de decisión. El intervalo "
+    "bootstrap de la diferencia de brechas remuestrea de forma independiente las preguntas de "
+    "E1 y de E3. H2 se respalda si el intervalo queda por encima de 0, es contraria si queda "
+    "por debajo y en otro caso es no concluyente. E2 no entra: pregunta qué versión prevalece, "
+    "lo que ya requiere la relación entre versiones."
 )
 
 Record = Mapping[str, Any]
@@ -161,6 +174,22 @@ class Comparison:
 
 
 @dataclass(frozen=True, slots=True)
+class H2Result:
+    """H2: the C3 - C2 correctness gap on E3 (relations) minus the gap on E1 (decisions)."""
+
+    verdict: str
+    """``supported`` / ``contrary`` / ``inconclusive`` / ``not_computable``."""
+    reason: str | None
+    gap_e1: float | None
+    gap_e3: float | None
+    difference: float | None
+    difference_lower: float | None
+    difference_upper: float | None
+    n_e1: int
+    n_e3: int
+
+
+@dataclass(frozen=True, slots=True)
 class AnalysisReport:
     partition: str
     reportable: bool
@@ -168,6 +197,7 @@ class AnalysisReport:
     cells: tuple[CellSummary, ...]
     comparisons: tuple[Comparison, ...]
     warnings: tuple[str, ...]
+    h2: H2Result
 
 
 # --- extraction -------------------------------------------------------------------------------
@@ -455,6 +485,7 @@ def analyze_runs(
         cells=tuple(cells),
         comparisons=tuple(comparisons),
         warnings=tuple(warnings),
+        h2=_h2(scores_by_cell, settings),
     )
 
 
@@ -496,6 +527,66 @@ def _compare(
             if h4 is not None:
                 results.append(h4)
     return results
+
+
+def _gap_differences(
+    scores_by_cell: Mapping[tuple[str, str, str], dict[str, tuple[float, int]]], stratum: str
+) -> list[float]:
+    """Per question of ``stratum``, C3 minus C2 correctness (questions judged under both)."""
+    c3 = scores_by_cell.get(("C3", stratum, "correct"), {})
+    c2 = scores_by_cell.get(("C2", stratum, "correct"), {})
+    return [c3[q][0] - c2[q][0] for q in sorted(set(c3) & set(c2))]
+
+
+def _h2(
+    scores_by_cell: Mapping[tuple[str, str, str], dict[str, tuple[float, int]]],
+    settings: IntervalSettings,
+) -> H2Result:
+    """H2 of ADR 0018: percentile bootstrap of ``mean(E3 gaps) - mean(E1 gaps)``.
+
+    E1 and E3 questions are resampled independently, with the seed, resamples and level of
+    ``[evaluation]`` / ``[shared_budget]`` (the same machinery as every other interval).
+    """
+    e1 = _gap_differences(scores_by_cell, H2_DECISION_STRATUM)
+    e3 = _gap_differences(scores_by_cell, H2_RELATION_STRATUM)
+    if not e1 or not e3:
+        missing = [
+            name
+            for name, gaps in ((H2_DECISION_STRATUM, e1), (H2_RELATION_STRATUM, e3))
+            if not gaps
+        ]
+        return H2Result(
+            verdict="not_computable",
+            reason=f"Sin preguntas juzgadas en C3 y C2 a la vez en {', '.join(missing)}.",
+            gap_e1=_mean(e1) if e1 else None,
+            gap_e3=_mean(e3) if e3 else None,
+            difference=None,
+            difference_lower=None,
+            difference_upper=None,
+            n_e1=len(e1),
+            n_e3=len(e3),
+        )
+    rng = random.Random(settings.seed)
+    resampled = sorted(
+        _mean([e3[rng.randrange(len(e3))] for _ in e3])
+        - _mean([e1[rng.randrange(len(e1))] for _ in e1])
+        for _ in range(settings.n_resamples)
+    )
+    alpha = 1.0 - settings.confidence_level
+    lower = resampled[max(0, int((alpha / 2) * settings.n_resamples))]
+    upper = resampled[min(settings.n_resamples - 1, int((1 - alpha / 2) * settings.n_resamples))]
+    verdict = "supported" if lower > 0.0 else ("contrary" if upper < 0.0 else "inconclusive")
+    return H2Result(
+        verdict=verdict,
+        reason=None,
+        gap_e1=_mean(e1),
+        gap_e3=_mean(e3),
+        difference=_mean(e3) - _mean(e1),
+        difference_lower=lower,
+        difference_upper=upper,
+        n_e1=len(e1),
+        n_e3=len(e3),
+    )
 
 
 def _paired(
@@ -554,4 +645,5 @@ def report_to_dict(report: AnalysisReport) -> dict[str, Any]:
             {**asdict(c), "intervals_overlap": c.intervals_overlap} for c in report.comparisons
         ],
         "warnings": list(report.warnings),
+        "h2": {**asdict(report.h2), "note": H2_NOTE},
     }

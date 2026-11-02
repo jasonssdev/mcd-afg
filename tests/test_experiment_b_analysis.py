@@ -476,3 +476,80 @@ def test_h4_is_inconclusive_when_the_interval_includes_zero() -> None:
 def test_warning_when_answered_e3_records_lack_the_outdated_flag() -> None:
     report = analyze_runs(_outdated_bank("C1", [None, True]), settings=SETTINGS, min_questions=1)
     assert any("outdated" in w for w in report.warnings)
+
+
+# --- H2 (ADR 0018): the C3 - C2 correctness gap on E3 against E1 ---------------------------------
+
+
+def _h2_records(e1: list[tuple[bool, bool]], e3: list[tuple[bool, bool]]) -> list[dict[str, Any]]:
+    """``(c3_correct, c2_correct)`` per question, one run, for the E1 and E3 strata."""
+    records: list[dict[str, Any]] = []
+    for stratum, pairs in (("E1_fact", e1), ("E3_evolution", e3)):
+        for q, (c3, c2) in enumerate(pairs):
+            for condition, ok in (("C3", c3), ("C2", c2)):
+                records.append(
+                    _record(f"{stratum[:2]}q{q:02d}", condition, 0, stratum=stratum, correct=ok)
+                )
+    return records
+
+
+def test_h2_supported_when_the_e3_gap_clearly_exceeds_the_e1_gap() -> None:
+    records = _h2_records([(True, True)] * 8, [(True, False)] * 8)
+
+    h2 = analyze_runs(records, settings=SETTINGS, min_questions=1).h2
+
+    assert h2.verdict == "supported"
+    assert h2.gap_e1 == pytest.approx(0.0)
+    assert h2.gap_e3 == pytest.approx(1.0)
+    assert h2.difference == pytest.approx(1.0)
+    assert h2.difference_lower > 0
+    assert (h2.n_e1, h2.n_e3) == (8, 8)
+
+
+def test_h2_contrary_when_the_e1_gap_exceeds_the_e3_gap() -> None:
+    records = _h2_records([(True, False)] * 8, [(True, True)] * 8)
+
+    assert analyze_runs(records, settings=SETTINGS, min_questions=1).h2.verdict == "contrary"
+
+
+def test_h2_inconclusive_when_the_interval_contains_zero() -> None:
+    mixed = [(True, False), (True, True)] * 4
+    records = _h2_records(mixed, mixed)
+
+    h2 = analyze_runs(records, settings=SETTINGS, min_questions=1).h2
+
+    assert h2.verdict == "inconclusive"
+    assert h2.difference_lower < 0 < h2.difference_upper
+
+
+def test_h2_pairs_c3_and_c2_by_question() -> None:
+    records = _h2_records([(True, False)] * 4, [(True, False)] * 4)
+    records.append(_record("E3q99", "C3", 0, stratum="E3_evolution", correct=True))
+
+    h2 = analyze_runs(records, settings=SETTINGS, min_questions=1).h2
+
+    assert h2.n_e3 == 4
+
+
+def test_h2_is_not_computable_without_c3_or_a_stratum() -> None:
+    no_c3 = [
+        r for r in _h2_records([(True, True)] * 3, [(True, False)] * 3) if r["condition"] != "C3"
+    ]
+    no_e1 = [
+        r for r in _h2_records([(True, True)] * 3, [(True, False)] * 3) if r["stratum"] != "E1_fact"
+    ]
+
+    for records in (no_c3, no_e1):
+        h2 = analyze_runs(records, settings=SETTINGS, min_questions=1).h2
+        assert h2.verdict == "not_computable"
+        assert h2.difference is None
+        assert h2.reason
+
+
+def test_h2_is_in_the_serialized_report() -> None:
+    records = _h2_records([(True, True)] * 3, [(True, False)] * 3)
+
+    data = report_to_dict(analyze_runs(records, settings=SETTINGS, min_questions=1))
+
+    assert data["h2"]["verdict"] == "supported"
+    assert "ADR 0018" in data["h2"]["note"]

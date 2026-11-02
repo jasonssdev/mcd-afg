@@ -3053,6 +3053,12 @@ def experiment_a_report(
         console.print(
             f"Relaciones incluidas de relaciones.json (τ = {report['relations']['tau']})."
         )
+        gap = report["hypotheses"]["extraction_gap_relations_vs_decisions"]
+        h3 = report["hypotheses"]["h3"]
+        console.print(
+            f"Brecha de extracción, relaciones frente a decisiones (complementaria, no es H2): "
+            f"{gap['verdict']}; H3 (la dirección como modo de falla dominante): {h3['verdict']}."
+        )
 
     target = run_dir / ("informe.json" if report["reportable"] else "informe-descriptivo.json")
     target.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -3849,6 +3855,22 @@ def _print_h4(report: Any) -> None:
     console.print(f"[dim]{H4_NOTE}[/dim]")
 
 
+def _print_h2(report: Any) -> None:
+    """H2 line of ``b-report``: the C3 - C2 gap on E3 minus the one on E1 (ADR 0018)."""
+    from afg.experiments.analysis import H2_NOTE
+
+    h2 = report.h2
+    if h2.difference is None:
+        console.print(f"[bold]H2[/bold]: no calculable. {escape(h2.reason or '')}")
+    else:
+        console.print(
+            f"[bold]H2[/bold] brecha C3 - C2 en E3 ({h2.gap_e3:+.2f}, {h2.n_e3} preguntas) menos "
+            f"la de E1 ({h2.gap_e1:+.2f}, {h2.n_e1} preguntas): {h2.difference:+.2f} "
+            f"[{h2.difference_lower:+.2f}, {h2.difference_upper:+.2f}]: {h2.verdict}."
+        )
+    console.print(f"[dim]{H2_NOTE}[/dim]")
+
+
 @experiment_app.command("b-report")
 def experiment_b_report(
     run_name: Annotated[
@@ -3965,6 +3987,7 @@ def experiment_b_report(
             )
     console.print(f"[dim]{CRITERION_NOTE}[/dim]")
     _print_h4(report)
+    _print_h2(report)
     for warning in report.warnings:
         console.print(f"[yellow]{escape(warning)}[/yellow]")
 
