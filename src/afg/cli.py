@@ -173,6 +173,7 @@ from afg.extraction.openkos.commands import OpenKosError, SubprocessRunner
 from afg.extraction.openkos.gold_bundle import (
     GoldWorkspaceExistsError,
     build_gold_workspace,
+    gold_relations_kind,
     load_gold_relations,
 )
 from afg.extraction.openkos.settings import openkos_run_settings
@@ -781,7 +782,7 @@ def gold_evidencia(
         str | None,
         typer.Option(
             "--decision",
-            help="Decisión ya adjudicada (p. ej. ES2015a.d01): su evidencia lista para pegar.",
+            help="Decisión de la referencia (p. ej. ES2015a.d01): su evidencia lista para pegar.",
         ),
     ] = None,
 ) -> None:
@@ -794,7 +795,7 @@ def gold_evidencia(
        --turnos 40-46 para ver un tramo).
     2. Banco de preguntas, para llenar `reference_evidence`: cada turno
        trae quién habló, el texto y el valor para pegar en la celda.
-       Si la decisión ya está adjudicada, --decision ES2015a.d01 lo da
+       Si la decisión ya está en la referencia, --decision ES2015a.d01 lo da
        directo.
 
     Necesita las transcripciones: `uv run afg gold setup`.
@@ -865,18 +866,24 @@ def _evidencia_por_decision(decision: str) -> None:
         DecisionNotFoundError,
         NotAdjudicatedError,
         adjudicated_decision_evidence,
+        resolve_reference,
     )
 
     meeting_id, _, _ = decision.partition(".")
     series = meeting_id[:-1]
-    path = GOLD_DECISIONS_DIR / f"{series}.decisions.adjudicated.csv"
-    if not path.is_file():
+    try:
+        path = resolve_reference(series, GOLD_DECISIONS_DIR).path
+    except FileNotFoundError:
         console.print(
-            f"[bold red]La serie {series} aún no tiene decisiones adjudicadas "
-            f"({_short(path)}).[/bold red] Mientras tanto busca en la transcripción: "
-            f'`uv run afg gold evidencia --meeting {meeting_id} --term "palabra"`.'
+            f"[bold red]La serie {series} aún no tiene referencia de decisiones: ni "
+            f"`{series}.decisions.adjudicated.csv` ni un único `{series}.decisions.<ini>.csv` "
+            f"en {_short(GOLD_DECISIONS_DIR)}.[/bold red] Mientras tanto busca en la "
+            f'transcripción: `uv run afg gold evidencia --meeting {meeting_id} --term "palabra"`.'
         )
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None
+    except NotAdjudicatedError as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+        raise typer.Exit(code=1) from exc
     if not (AMI_DIR.exists() and TRANSCRIPTS_DIR.exists()):
         console.print(
             "[bold red]Falta el corpus o las transcripciones.[/bold red] "
@@ -890,7 +897,7 @@ def _evidencia_por_decision(decision: str) -> None:
         )
         if info.final_status != "decision":
             console.print(
-                f"[bold red]{decision} quedó adjudicada como `{info.final_status}`, no como "
+                f"[bold red]{decision} quedó en la referencia como `{info.final_status}`, no como "
                 "decisión:[/bold red] no sirve de base para una pregunta."
             )
             raise typer.Exit(code=1)
@@ -2816,7 +2823,12 @@ def c3_build(
         except (FileNotFoundError, NotAdjudicatedError, TranslationError) as exc:
             console.print(f"[bold red]{escape(str(exc))}[/bold red]")
             raise typer.Exit(code=1) from exc
-        relations = load_gold_relations(series_id)
+        try:
+            relations = load_gold_relations(series_id)
+            relations_kind = gold_relations_kind(series_id)
+        except NotAdjudicatedError as exc:
+            console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+            raise typer.Exit(code=1) from exc
         for run in range(n_runs):
             try:
                 result = build_gold_workspace(
@@ -2827,6 +2839,7 @@ def c3_build(
                     target=OPENKOS_C3_WORKSPACES_DIR / c2_extraction / series_id / f"run-{run}",
                     reference=reference,
                     relations=relations,
+                    relations_kind=relations_kind,
                     runner=runner,
                     executable=executable,
                     transcripts_dir=TRANSCRIPTS_DIR,

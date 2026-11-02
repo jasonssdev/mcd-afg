@@ -59,6 +59,7 @@ def env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
     monkeypatch.setattr(
         afg_cli, "load_gold_relations", lambda series: (GoldRelation("a", "b", "refina"),)
     )
+    monkeypatch.setattr(afg_cli, "gold_relations_kind", lambda series: "single:gv")
     return {"c3": c3_base, "runner": runner, "c2": c2_base}
 
 
@@ -86,6 +87,8 @@ def test_builds_one_workspace_per_series_and_run(env: dict[str, Any]) -> None:
         assert not (workspace / "bundle" / "decisions" / "old.md").exists()
         manifest = json.loads((workspace / "c3-manifest.json").read_text(encoding="utf-8"))
         assert manifest["run"] == run and manifest["decisions_written"] == 1
+        assert manifest["relations_reference_kind"] == "single:gv"
+        assert manifest["decisions_reference_kind"] == "adjudicated"
     reindexed = [cwd for argv, cwd in env["runner"].calls if argv[1:2] == ("reindex",)]
     assert len(reindexed) == 2
     assert "ES2015 run-0: 1 decisión" in _out(result)

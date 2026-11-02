@@ -19,7 +19,8 @@ citation exactly as it maps a C2 one:
   the evidence of a C3 citation is the whole turn, exactly the granularity C2 has;
 * a gold decision without evidence that can be located in the transcript cannot be a citable
   concept: it is dropped and listed with the reason in the manifest, never silently;
-* the adjudicated cross-meeting relations are links under ``## Related`` on both decisions,
+* the gold cross-meeting relations (adjudicated, or the only single-annotator file of the
+  series, issue #229) are links under ``## Related`` on both decisions,
   with the relation type as the link description;
 * ``generated.by`` is :data:`GOLD_GENERATOR`, so a file can never pass for an OpenKOS one.
 """
@@ -37,7 +38,7 @@ from pathlib import Path
 import yaml
 
 from afg.conditions.c1_chunking import FrozenTurn
-from afg.evaluation.reference import ReferenceDecision, ReferenceSet
+from afg.evaluation.reference import ReferenceDecision, ReferenceSet, resolve_series_file
 from afg.extraction.openkos.bundle_reader import DECISIONS_DIRNAME
 from afg.extraction.openkos.capabilities import parse_version
 from afg.extraction.openkos.commands import CommandRunner, OpenKosError
@@ -113,22 +114,53 @@ class _GoldFile:
     quotes: tuple[str, ...]
 
 
+def _relations_source(series_id: str, relations_dir: Path) -> tuple[Path, str] | None:
+    """The Task-B file of ``series_id`` and its kind, or ``None`` when the series has none.
+
+    A series without a relations file is a valid state (Task B not done yet): C3 is then built
+    with no links. Two single-annotator files and no adjudication raise
+    :class:`~afg.evaluation.reference.AmbiguousReferenceError`.
+    """
+    try:
+        found = resolve_series_file(series_id, relations_dir, "candidates")
+    except FileNotFoundError:
+        return None
+    return found.path, found.kind
+
+
+def gold_relations_kind(series_id: str, *, relations_dir: Path = GOLD_RELATIONS_DIR) -> str:
+    """``"adjudicated"``, ``"single:<ini>"`` or ``"none"`` (no file), for the manifest."""
+    source = _relations_source(series_id, relations_dir)
+    return "none" if source is None else source[1]
+
+
 def load_gold_relations(
     series_id: str, *, relations_dir: Path = GOLD_RELATIONS_DIR
 ) -> tuple[GoldRelation, ...]:
-    """The accepted pairs of ``<series_id>.candidates.adjudicated.csv`` (none if no file).
+    """The accepted pairs of the series' Task-B file (none if it has no file).
 
-    Accepted means a final relation other than ``no_relacionada`` whose direction was confirmed
-    (``final_direction_ok == si``); anything unadjudicated is left out.
+    The file is ``<series_id>.candidates.adjudicated.csv`` (``final_relation`` /
+    ``final_direction_ok``) or, without it, the only ``<series_id>.candidates.<ini>.csv``
+    (``relation`` / ``direction_ok``). Accepted means a relation other than ``no_relacionada``
+    whose direction was confirmed (``si``); anything unadjudicated is left out.
+
+    Raises:
+        AmbiguousReferenceError: two or more single-annotator files and no adjudication.
     """
-    path = relations_dir / f"{series_id}.candidates.adjudicated.csv"
-    if not path.is_file():
+    source = _relations_source(series_id, relations_dir)
+    if source is None:
         return ()
+    path, kind = source
+    relation_col, direction_col = (
+        ("final_relation", "final_direction_ok")
+        if kind == "adjudicated"
+        else ("relation", "direction_ok")
+    )
     accepted: list[GoldRelation] = []
     with open_csv_reader(path) as handle:
         for row in csv.DictReader(handle):
-            relation = (row.get("final_relation") or "").strip()
-            direction = (row.get("final_direction_ok") or "").strip()
+            relation = (row.get(relation_col) or "").strip()
+            direction = (row.get(direction_col) or "").strip()
             earlier = (row.get("earlier_decision_id") or "").strip()
             later = (row.get("later_decision_id") or "").strip()
             if not (relation and earlier and later) or relation == _NO_RELATION:
@@ -284,12 +316,16 @@ def build_gold_workspace(
     reference: ReferenceSet,
     relations: Sequence[GoldRelation],
     runner: CommandRunner,
+    relations_kind: str = "unspecified",
     executable: str,
     transcripts_dir: Path = TRANSCRIPTS_DIR,
     overwrite: bool = False,
     generated_at: str | None = None,
 ) -> GoldBuildResult:
     """Write the C3 workspace ``target`` from ``c2_workspace`` and the gold ``reference``.
+
+    ``relations_kind`` (``adjudicated``, ``single:<ini>`` or ``none``; see
+    :func:`gold_relations_kind`) and ``reference.source_kind`` go to the manifest.
 
     Raises:
         FileNotFoundError: ``c2_workspace`` has no bundle.
@@ -361,6 +397,8 @@ def build_gold_workspace(
         "evidence_partial": inexact,
         "relations_written": len(linked),
         "relations_dropped": list(relations_dropped),
+        "decisions_reference_kind": reference.source_kind,
+        "relations_reference_kind": relations_kind,
     }
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     return GoldBuildResult(
