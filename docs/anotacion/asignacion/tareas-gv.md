@@ -9,34 +9,26 @@
 > documento dice **qué te toca y cómo lo entregas**; los criterios de etiquetado están allí y
 > solo allí.
 
-## Próximos pasos (estado al 2026-10-13)
+## Próximos pasos (estado al 2026-11-02)
 
-ES2015 ya está adjudicada. Lo que sigue, en este orden:
+Las Fases 1 y 2 están cerradas (todas las series de doble anotación, adjudicadas) y la Fase 3
+está abierta: tus cinco series ya figuran en `released_series`. IS1004 e IS1006 están
+entregadas. Lo que te toca ahora:
 
-1. **Sesión conjunta sobre ES2015** con `jss` y gm
-   ([`../calibracion/ES2015-sesion-conjunta.md`](../calibracion/ES2015-sesion-conjunta.md)).
-   Se habla **solo de ES2015**: no leas ni anotes TS3009 antes.
-2. **`jss` ya abrió TS3009**: la anotas ahora (recalibración):
+1. **Series de la Fase 3 que faltan: IS1009, TS3003 y ES2002** (issues #197, #198 y #199).
+   Son anotación individual: no aplica la regla de independencia ni hay adjudicación
+   posterior, pero sí la anti-fuga (§4). Una serie por PR, con la receta de §9:
    ```bash
    git switch main && git pull
-   git switch -c data/anotacion-TS3009-gv
-   uv run afg gold setup --annotator gv
+   git switch -c data/anotacion-<ID>-gv
+   uv run afg gold prepare --annotator gv
+   uv run afg gold validate --annotator gv --series <ID>
    ```
-   Abre `data/processed/decisions/TS3009.decisions.gv.csv` (Tarea A) y luego
-   `data/processed/relations/TS3009.candidates.gv.csv` (Tarea B), en orden de reunión
-   `a → b → c → d`. Aplica la regla de oro nueva (manual §2): si `evidence_text` no alcanza,
-   lee la transcripción de **la misma reunión**. Al terminar:
-   ```bash
-   uv run afg gold validate --annotator gv --series TS3009
-   ```
-   y entrega con la convención de §9 (rama `data/anotacion-TS3009-gv`, commit
-   `data(anotacion): tareas A y B de TS3009 (gv)`, un PR). El issue de recalibración de
-   TS3009 asignado a ti (#78) sigue ese avance.
-3. **Independencia:** no abras el PR, la rama ni el CSV de Gustavo, ni comenten casos de
-   TS3009, hasta que `jss` anuncie la adjudicación de TS3009.
-4. **Espera la adjudicación de TS3009.** Después sigue ES2016 con la misma receta (§9).
-   Cuando ES2016, IS1003 y TS3005 queden adjudicadas, haces además la Tarea C de cada una (§7),
-   en PR aparte.
+2. **Tarea C de IS1004** (issue #203): la cuarta y última muestra de recall (§7), en la rama
+   `data/anotacion-recall-IS1004` y en un PR aparte. Con ella `jss` calcula el recall del
+   bloqueador por sitio y en total (#205).
+3. **Validación del banco de preguntas** (issue #33, §8): empieza cuando Gustavo entregue
+   preguntas. No escribes ninguna; en las E3 revisas también la columna `superseded_answer`.
 
 ---
 
