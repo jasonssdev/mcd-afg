@@ -170,6 +170,20 @@ from afg.experiments.runner import (
     default_excerpt_for,
     run_experiment_b,
 )
+from afg.experiments.tau_calibration import JudgmentStore, load_stored_judgments
+from afg.experiments.tau_concordance import (
+    CONCORDANCE_KEY_PATH,
+    CONCORDANCE_RESULT_PATH,
+    CONCORDANCE_SHEET_PATH,
+    TAU_CALIBRATION_DIR,
+    ConcordanceError,
+    ConcordanceSheetLabeledError,
+    draw_concordance_sample,
+    load_concordance_config,
+    save_concordance_result,
+    score_concordance,
+    write_concordance_files,
+)
 from afg.extraction.openkos.commands import OpenKosError, SubprocessRunner
 from afg.extraction.openkos.gold_bundle import (
     GoldWorkspaceExistsError,
@@ -180,6 +194,7 @@ from afg.extraction.openkos.gold_bundle import (
 from afg.extraction.openkos.settings import openkos_run_settings
 from afg.extraction.openkos_adapter import OpenKosAdapter
 from afg.shared.config import Settings, get_settings, load_corpus_config, load_experiments_config
+from afg.shared.csvio import CsvFormatError
 from afg.shared.logging import configure_logging, get_logger, quiet_http_logs
 from afg.shared.paths import (
     AMI_DIR,
@@ -2105,6 +2120,104 @@ def judge_calibration_agreement(
         if item.disagreements:
             console.print(f"    discrepancias: {', '.join(item.disagreements)}")
     console.print(f"Guardado en {_short(AGREEMENT_PATH)}.")
+
+
+@judge_app.command("tau-concordance-sheet")
+def judge_tau_concordance_sheet(
+    force: bool = typer.Option(
+        False, "--force", help="Sobrescribe aunque la hoja ya tenga etiquetas."
+    ),
+) -> None:
+    """Crea la hoja ciega de 50 pares para medir el acuerdo juez-persona (ADR 0012).
+
+    Muestra estratificada por tramo de similitud, con semilla fija y orden barajado. La hoja
+    solo lleva los dos textos; la similitud, el tramo y el veredicto del juez quedan en el
+    archivo de claves, que quien etiqueta no abre. Si la hoja ya tiene etiquetas, no se toca
+    salvo con `--force`.
+    """
+    # Reads only the stored judgments: no model call, so no pinned-environment guard.
+    store = JudgmentStore(TAU_CALIBRATION_DIR)
+    if not store.judgments_path.is_file():
+        console.print(f"[bold red]No existe {_short(store.judgments_path)}.[/bold red]")
+        raise typer.Exit(code=1)
+    cfg = load_concordance_config()
+    try:
+        sample = draw_concordance_sample(
+            load_stored_judgments(store),
+            sample_size=cfg.sample_size,
+            per_bin=cfg.per_bin,
+            seed=cfg.seed,
+        )
+        write_concordance_files(
+            sample,
+            sheet_path=CONCORDANCE_SHEET_PATH,
+            key_path=CONCORDANCE_KEY_PATH,
+            source_path=store.judgments_path,
+            seed=cfg.seed,
+            per_bin=cfg.per_bin,
+            force=force,
+        )
+    except ConcordanceSheetLabeledError as exc:
+        console.print(
+            f"[bold red]{_short(CONCORDANCE_SHEET_PATH)} ya tiene etiquetas; no se sobrescribió "
+            "nada.[/bold red] Usa `--force` solo si se quiere descartarlas."
+        )
+        raise typer.Exit(code=1) from exc
+    except (ConcordanceError, CsvFormatError) as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    console.print(
+        f"Escrito {_short(CONCORDANCE_SHEET_PATH)} con {len(sample)} pares sin etiquetas y "
+        f"{_short(CONCORDANCE_KEY_PATH)} (no abrir hasta terminar). Se llena `same` con si/no. "
+        "Luego: `uv run afg judge tau-concordance-score`."
+    )
+
+
+@judge_app.command("tau-concordance-score")
+def judge_tau_concordance_score() -> None:
+    """Calcula el acuerdo juez-persona de la hoja llena: acuerdo, kappa con IC 95 %, matriz.
+
+    Exige las 50 etiquetas si/no. No define umbral: un acuerdo bajo reabre el ADR 0012. Guarda
+    el resultado en `reports/experiment-a/tau-calibration/concordancia.json`.
+    """
+    for needed in (CONCORDANCE_SHEET_PATH, CONCORDANCE_KEY_PATH):
+        if not needed.exists():
+            console.print(
+                f"[bold red]No existe {_short(needed)}.[/bold red] Créala con "
+                "`uv run afg judge tau-concordance-sheet`."
+            )
+            raise typer.Exit(code=1)
+    config = load_experiments_config()
+    cfg = load_concordance_config()
+    try:
+        result = score_concordance(
+            CONCORDANCE_SHEET_PATH,
+            CONCORDANCE_KEY_PATH,
+            tau_split=cfg.tau_split,
+            n_resamples=int(config["evaluation"]["bootstrap_resamples"]),
+            seed=int(config["shared_budget"]["seed"]),
+            level=float(config["evaluation"]["bootstrap_confidence_level"]),
+        )
+    except (ConcordanceError, CsvFormatError) as exc:
+        console.print(f"[bold red]{exc}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    save_concordance_result(CONCORDANCE_RESULT_PATH, result)
+    kappa, ci = result["kappa"], result["kappa_ci"]
+    kappa_text = "indefinido" if kappa is None else f"{kappa:.3f}"
+    if ci is not None:
+        kappa_text += f" (IC {ci['level']:.0%}: {ci['lower']:.3f} a {ci['upper']:.3f})"
+    console.print(
+        f"Acuerdo juez-persona: {result['n_agree']}/{result['n']} "
+        f"({result['observed_agreement']:.1%}), kappa {kappa_text}."
+    )
+    for name, region in result["yes_rate_by_tau_region"].items():
+        judge_rate, person_rate = region["judge_yes_rate"], region["person_yes_rate"]
+        if judge_rate is not None and person_rate is not None:
+            console.print(
+                f"  {name} τ={result['tau_split']:.2f}: «sí» del juez {judge_rate:.0%}, "
+                f"de la persona {person_rate:.0%} ({region['n']} pares)."
+            )
+    console.print(f"Guardado en {_short(CONCORDANCE_RESULT_PATH)}.")
 
 
 # --- experiment (OE2/OE3) ------------------------------------------------------------------

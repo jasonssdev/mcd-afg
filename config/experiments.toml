@@ -78,6 +78,17 @@ k = 5                                # chunks sent to the answer prompt
 tau_grid = [0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90]
 manual_validation_sample_size = 100  # minimum sample for automatic-vs-manual concordance
 
+[alignment.concordance]
+# Judge-person concordance on the tau-calibration judgments (ADR 0012, pending item). Fixed
+# BEFORE any label exists. The sample is stratified by the 0.05 similarity bins: `per_bin` pairs
+# per bin plus random extras from the rest up to `sample_size`; the order is shuffled. The report
+# is kappa + agreement with a bootstrap CI (resamples and level from [evaluation], seed from
+# [shared_budget]); there is no pass/fail threshold, a low agreement reopens ADR 0012.
+sample_size = 50
+per_bin = 6
+seed = 42                             # sampling and order shuffle
+tau_split = 0.70                      # judge vs person yes-rate is also reported below / above this
+
 [question_bank]
 # Thesis section 5.5: four strata, each with at least 25 questions.
 strata = ["E1_point_fact", "E2_current_state", "E3_evolution", "E4_unanswerable"]
