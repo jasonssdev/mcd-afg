@@ -3823,6 +3823,32 @@ def _width_cells(width: Any) -> tuple[str, str, str]:
     )
 
 
+def _print_h4(report: Any) -> None:
+    """H4 lines of ``b-report``: outdated answers among the answered E3 questions (ADR 0017)."""
+    from afg.experiments.analysis import H4_METRIC, H4_NOTE, H4_UPPER_BOUND_METRIC
+
+    heads = {H4_METRIC: "H4", H4_UPPER_BOUND_METRIC: "Cota superior de H4"}
+    kinds = {H4_METRIC: "desactualizadas", H4_UPPER_BOUND_METRIC: "incorrectas"}
+    for cell in report.cells:
+        for metric, head in heads.items():
+            est = cell.metrics.get(metric)
+            if est is not None:
+                console.print(
+                    f"[bold]{head}[/bold] {cell.condition} en E3: {kinds[metric]} entre las "
+                    f"respondidas {est.point:.2f} [{est.lower:.2f}, {est.upper:.2f}] "
+                    f"({est.n_questions} preguntas)."
+                )
+    for cmp in report.comparisons:
+        if cmp.metric in heads:
+            console.print(
+                f"[bold]{heads[cmp.metric]}[/bold] {cmp.condition_a} frente a {cmp.condition_b}: "
+                f"diferencia {cmp.difference:+.2f} [{cmp.difference_lower:+.2f}, "
+                f"{cmp.difference_upper:+.2f}] sobre {cmp.n_pairs} preguntas respondidas por "
+                f"ambas: {cmp.criterion}."
+            )
+    console.print(f"[dim]{H4_NOTE}[/dim]")
+
+
 @experiment_app.command("b-report")
 def experiment_b_report(
     run_name: Annotated[
@@ -3938,6 +3964,7 @@ def experiment_b_report(
                 f"{comparison.nonoverlap_criterion}."
             )
     console.print(f"[dim]{CRITERION_NOTE}[/dim]")
+    _print_h4(report)
     for warning in report.warnings:
         console.print(f"[yellow]{escape(warning)}[/yellow]")
 
@@ -3998,6 +4025,7 @@ def experiment_b_sample(
             seed=int(config["shared_budget"]["seed"]),
             reference_answers={q.id: q.reference_answer or "" for q in bank},
             context_for=context_for,
+            superseded_answers={q.id: q.superseded_answer or "" for q in bank},
         )
         write_human_sample(
             run_dir / HUMAN_SHEET_FILE, run_dir / HUMAN_KEY_FILE, sample, force=force
@@ -4069,6 +4097,16 @@ def experiment_b_human_check(
         )
     console.print(f"[bold]{check.decision}[/bold]")
     console.print(f"[bold]{check.evidence_decision}[/bold]")
+    if check.outdated is not None:
+        kappa = "indefinido" if check.outdated.kappa is None else f"{check.outdated.kappa:.3f}"
+        console.print(
+            f"  outdated (H4, filas E3 que el juez marcó): acuerdo observado "
+            f"{check.outdated.n_agree}/{check.outdated.n_items} "
+            f"({check.outdated.observed_agreement:.0%}), kappa {kappa}; prevalencia de «sí»: "
+            f"juez {check.outdated.judge_positive_rate:.0%}, "
+            f"personas {check.outdated.human_positive_rate:.0%}"
+        )
+        console.print(f"[bold]{check.outdated_decision}[/bold]")
     console.print(f"Guardado en {_short(run_dir / HUMAN_CHECK_FILE)}.")
 
 

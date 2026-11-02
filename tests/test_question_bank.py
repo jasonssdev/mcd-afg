@@ -17,7 +17,7 @@ from afg.experiments.questions import QuestionBankError, load_experiment_questio
 
 HEADER = (
     "id,series_id,stratum,text,reference_answer,reference_evidence,author,validated_by,"
-    "validation_notes\n"
+    "validation_notes,superseded_answer\n"
 )
 SERIES = frozenset({"ES2015", "IS1004"})
 LETTERS = ("a", "b", "c", "d")
@@ -233,7 +233,7 @@ def test_blank_rows_beyond_the_minimum_are_optional_and_do_not_block_complete(
         tmp_path,
         GOOD_E1,
         "q002,ES2015,E2_current_state,Now?,A,ES2015a:d1,gm,gv,",
-        "q003,ES2015,E3_evolution,Changed?,A,ES2015a:d1;d2,gm,gv,",
+        "q003,ES2015,E3_evolution,Changed?,A,ES2015a:d1;d2,gm,gv,,Old",
         "q004,IS1004,E4_unanswerable,Weather?,,,gm,gv,",
         "q005,,E3_evolution,,,,gm,,",
     )
@@ -360,3 +360,46 @@ def test_missing_transcripts_give_one_warning_not_a_crash(tmp_path: Path) -> Non
     warnings = [m for _, s, m in problems(report) if s is Severity.WARNING]
     assert len(warnings) == 1
     assert "uv run afg gold setup" in warnings[0]
+
+
+# --- superseded_answer: the earlier state an E3 answer replaces (H4, issue #241) ----------------
+
+GOOD_E3 = "q010,ES2015,E3_evolution,Changed?,Yes,ES2015a:d1|ES2015b:d2,gm,gv,,Plain chip"
+
+
+def test_e3_question_carries_its_superseded_answer(tmp_path: Path) -> None:
+    report = load(write(tmp_path, GOOD_E3))
+    assert report.issues == ()
+    assert report.usable[0].superseded_answer == "Plain chip"
+
+
+def test_e3_without_superseded_answer_is_blocking(tmp_path: Path) -> None:
+    row = "q010,ES2015,E3_evolution,Changed?,Yes,ES2015a:d1|ES2015b:d2,gm,gv,,"
+    report = load(write(tmp_path, row))
+    assert report.usable == ()
+    assert any("superseded_answer" in m for _, sev, m in problems(report) if sev is Severity.ERROR)
+
+
+@pytest.mark.parametrize(
+    "row",
+    [
+        "q001,ES2015,E1_point_fact,Q?,A,ES2015a:d1,gm,gv,,Old",
+        "q002,IS1004,E4_unanswerable,Q?,,,gm,gv,,Old",
+    ],
+)
+def test_other_strata_must_leave_superseded_answer_empty(tmp_path: Path, row: str) -> None:
+    report = load(write(tmp_path, row))
+    assert report.usable == ()
+    assert any("superseded_answer" in m for _, sev, m in problems(report) if sev is Severity.ERROR)
+
+
+def test_pending_e3_row_is_not_asked_for_superseded_answer(tmp_path: Path) -> None:
+    report = load(write(tmp_path, "q010,,E3_evolution,,,,gm,,,"))
+    assert not report.has_errors
+
+
+def test_a_bank_without_the_superseded_answer_column_is_refused(tmp_path: Path) -> None:
+    path = tmp_path / "banco.csv"
+    path.write_text(HEADER.replace(",superseded_answer", "") + GOOD_E1 + "\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="superseded_answer"):
+        load(path)

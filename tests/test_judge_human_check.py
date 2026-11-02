@@ -30,16 +30,21 @@ def _record(
     supported: bool = True,
     judge_failure: str | None = None,
     error: str | None = None,
+    outdated: bool | None = None,
+    abstained: bool = False,
 ) -> dict[str, Any]:
     judged = judge_failure is None and error is None
+    verdict = {"correct": correct, "evidence_supported": supported}
+    if outdated is not None:
+        verdict["outdated"] = outdated
     return {
         "question_id": f"ES2015.q{q:03d}",
         "condition": condition,
         "run": run,
         "stratum": stratum,
         "trace": {"question": f"Question {q}?"},
-        "answer": {"text": f"answer {condition} {q} {run}", "abstained": False},
-        "verdict": {"correct": correct, "evidence_supported": supported} if judged else None,
+        "answer": {"text": f"answer {condition} {q} {run}", "abstained": abstained},
+        "verdict": verdict if judged else None,
         "judge_failure": judge_failure,
         "error": error,
     }
@@ -359,3 +364,113 @@ def test_saved_check_carries_the_label_level_verdicts(tmp_path: Path) -> None:
         "kappa",
         "passes",
     }
+
+
+# --- outdated: judge-human agreement of the H4 flag on E3 rows (issue #241, ADR 0017) -----------
+
+
+def _outdated_records() -> list[dict[str, Any]]:
+    return [
+        _record(q, c, 0, stratum="E3_evolution", outdated=q % 2 == 0)
+        for c in ("C1", "C2")
+        for q in range(10)
+    ] + [_record(50, "C1", 0, stratum="E1_point_fact")]
+
+
+def test_sheet_shows_the_superseded_answer_and_an_empty_outdated_label_for_e3_rows() -> None:
+    superseded = {f"ES2015.q{q:03d}": f"old state {q}" for q in range(10)}
+    sample = select_human_sample(
+        _outdated_records(), fraction=1.0, seed=1, superseded_answers=superseded
+    )
+    e3 = [r for r in sample.sheet_rows if r["stratum"] == "E3"]
+    assert e3 and all(r["respuesta_superada"].startswith("old state") for r in e3)
+    assert all(r["outdated"] == "" for r in sample.sheet_rows)
+    e1 = [r for r in sample.sheet_rows if r["stratum"] == "E1"]
+    assert e1 and all(r["respuesta_superada"] == "" for r in e1)
+
+
+def test_key_carries_the_judge_outdated_label_only_for_flagged_answered_rows() -> None:
+    records = [
+        *_outdated_records(),
+        _record(60, "C1", 0, stratum="E3_evolution", outdated=True, abstained=True),
+    ]
+    sample = select_human_sample(records, fraction=1.0, seed=1)
+    by_q = {k["question_id"]: k["judge_outdated"] for k in sample.key_rows}
+    assert by_q["ES2015.q000"] == "si" and by_q["ES2015.q001"] == "no"
+    assert by_q["ES2015.q050"] == ""  # E1: the flag does not apply
+    assert by_q["ES2015.q060"] == ""  # abstained: out of H4
+
+
+def test_written_sheet_has_the_outdated_columns_and_protects_its_labels(tmp_path: Path) -> None:
+    sample = select_human_sample(_outdated_records(), fraction=1.0, seed=1)
+    sheet, key = tmp_path / "hoja.csv", tmp_path / "clave.csv"
+    write_human_sample(sheet, key, sample)
+    rows = read_csv_rows(sheet)
+    assert {"respuesta_superada", "outdated"} <= set(rows[0])
+    rows[0]["outdated"] = "si"
+    with sheet.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=SHEET_COLUMNS)
+        writer.writeheader()
+        writer.writerows(rows)
+    with pytest.raises(SecondSheetLabeledError):
+        write_human_sample(sheet, key, sample)
+
+
+def _outdated_key(n: int, judge: list[str]) -> list[dict[str, str]]:
+    return [
+        {**row, "judge_outdated": judge[i]} for i, row in enumerate(_key(n, [("si", "si")] * n))
+    ]
+
+
+def _outdated_sheet(key: list[dict[str, str]], human: list[str]) -> list[dict[str, str]]:
+    return [
+        {"id": k["id"], "correct": k["judge_correct"], "evidence_supported": "si", "outdated": h}
+        for k, h in zip(key, human, strict=True)
+    ]
+
+
+def test_outdated_agreement_uses_the_same_threshold_and_does_not_gate_correct() -> None:
+    judge = ["si", "no"] * 10
+    key = _outdated_key(20, judge)
+    ok = check_judge_against_humans(key, _outdated_sheet(key, judge), min_kappa=0.70)
+    assert ok.outdated is not None and ok.outdated.passes
+    assert ok.outdated_reliable is True
+    bad = check_judge_against_humans(key, _outdated_sheet(key, ["no"] * 20), min_kappa=0.70)
+    assert bad.outdated_reliable is False
+    assert "outdated no confiable" in bad.outdated_decision
+    assert bad.keep_automatic_judging is not None
+    assert len(bad.columns) == 2  # the two original labels keep their shape
+
+
+def test_outdated_is_compared_only_on_rows_the_judge_flagged() -> None:
+    judge = ["si", "no", "", "si", "no", ""] * 4
+    key = _outdated_key(24, judge)
+    human = [j for j in judge]
+    check = check_judge_against_humans(key, _outdated_sheet(key, human), min_kappa=0.70)
+    assert check.outdated is not None and check.outdated.n_items == 16
+
+
+def test_missing_outdated_label_on_a_flagged_row_is_an_error() -> None:
+    key = _outdated_key(4, ["si", "no", "si", "no"])
+    sheet = _outdated_sheet(key, ["si", "", "si", "no"])
+    with pytest.raises(AgreementError, match="h001"):
+        check_judge_against_humans(key, sheet, min_kappa=0.7)
+
+
+def test_a_key_without_outdated_rows_gives_no_outdated_verdict() -> None:
+    key = _key(4, [("si", "si")] * 4)
+    sheet = _labelled(key, {k["id"]: ("si", "si") for k in key})
+    check = check_judge_against_humans(key, sheet, min_kappa=0.7)
+    assert check.outdated is None and check.outdated_reliable is None
+
+
+def test_saved_check_carries_the_outdated_verdict(tmp_path: Path) -> None:
+    judge = ["si", "no"] * 10
+    key = _outdated_key(20, judge)
+    check = check_judge_against_humans(key, _outdated_sheet(key, judge), min_kappa=0.70)
+    path = tmp_path / "juez-humano.json"
+    save_judge_human_check(path, check)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    assert payload["outdated_reliable"] is True
+    assert payload["outdated"]["column"] == "outdated"
+    assert payload["outdated"]["kappa"] == pytest.approx(1.0)

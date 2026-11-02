@@ -1154,6 +1154,24 @@ class TestQuestionBank:
         position = _QUESTION_COLUMNS.index("validated_by")
         assert _QUESTION_COLUMNS[position + 1] == "validation_notes"
 
+    def test_template_has_the_empty_superseded_answer_column_last(
+        self, paths: WorkspacePaths
+    ) -> None:
+        out_path = write_question_bank_template(paths.questions_dir / "banco-preguntas.csv")
+        rows = list(csv.DictReader(out_path.open(newline="", encoding="utf-8")))
+        assert _QUESTION_COLUMNS[-1] == "superseded_answer"
+        assert all(row["superseded_answer"] == "" for row in rows)
+
+    def test_bank_with_only_a_superseded_answer_is_not_empty(self, paths: WorkspacePaths) -> None:
+        out_path = write_question_bank_template(paths.questions_dir / "banco-preguntas.csv")
+        rows = list(csv.DictReader(out_path.open(newline="", encoding="utf-8")))
+        rows[0]["superseded_answer"] = "A plain chip."
+        with out_path.open("w", newline="", encoding="utf-8") as handle:
+            writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+            writer.writeheader()
+            writer.writerows(rows)
+        assert question_bank_is_empty(out_path) is False
+
     def test_bank_with_only_a_validation_note_is_not_empty(self, paths: WorkspacePaths) -> None:
         out_path = write_question_bank_template(paths.questions_dir / "banco-preguntas.csv")
         rows = list(csv.DictReader(out_path.open(newline="", encoding="utf-8")))

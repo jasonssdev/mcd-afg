@@ -9,6 +9,7 @@ low, automatic judging is discarded in favor of the human subsample alone.
 
 from __future__ import annotations
 
+import hashlib
 import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
@@ -38,6 +39,9 @@ class JudgeVerdict:
     evidence_supported: bool
     citation_correct: bool | None
     rationale: str
+    outdated: bool | None = None
+    """The answer states the superseded version as current; ``None`` when the question has no
+    superseded answer (judge prompt version 1)."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -104,6 +108,33 @@ class _JudgeOutput(BaseModel):
     correct: bool
     evidence_supported: bool
     rationale: str
+
+
+class _OutdatedJudgeOutput(_JudgeOutput):
+    """The verdict of prompt version 2, for questions that carry a superseded answer."""
+
+    outdated: bool
+
+
+JUDGE_PROMPT_VERSION = 2
+"""Current judge prompt (``prompts/judge_outdated.md``): version 1 plus ``outdated``. Version 1
+(``prompts/judge.md``) still judges the questions without a superseded answer."""
+_PROMPT_FILES = {1: "judge.md", 2: "judge_outdated.md"}
+
+
+def judge_prompt_version(question: Question) -> int:
+    """Prompt version that judges ``question``: 2 when it has a superseded answer, else 1."""
+    return JUDGE_PROMPT_VERSION if question.superseded_answer else 1
+
+
+def _prompt_text(version: int) -> str:
+    path = resources.files("afg.evaluation") / "prompts" / _PROMPT_FILES[version]
+    return path.read_bytes().decode("utf-8")
+
+
+def judge_prompt_sha256(version: int) -> str:
+    """SHA-256 of the prompt file of ``version``, pinned in every record of the run."""
+    return hashlib.sha256(_prompt_text(version).encode("utf-8")).hexdigest()
 
 
 class JudgeBackend(Protocol):
@@ -203,8 +234,7 @@ def missing_models(wanted: Sequence[str], installed: Sequence[str]) -> list[str]
 
 def judge_system_prompt() -> str:
     """The judge instructions (``prompts/judge.md``), the same for every candidate."""
-    path = resources.files("afg.evaluation") / "prompts" / "judge.md"
-    return path.read_bytes().decode("utf-8")
+    return _prompt_text(1)
 
 
 def _user_prompt(
@@ -231,6 +261,8 @@ def _user_prompt(
     excerpt = (transcript_excerpt or "").strip() or _NO_REFERENCE_TEXT
     parts = [f"Question:\n{question.text}", f"Transcript excerpt:\n{excerpt}"]
     parts.extend(f"{title}:\n{body}" for title, body in blocks[order])
+    if question.superseded_answer:
+        parts.append(f"Superseded answer (earlier state):\n{question.superseded_answer}")
     return "\n\n".join(parts)
 
 
@@ -273,16 +305,18 @@ def judge_answer(
             f"question {question.id!r} is answerable and has reference evidence, but no "
             "transcript excerpt was given; the judge cannot check evidence_supported."
         )
+    version = judge_prompt_version(question)
+    output_model: type[_JudgeOutput] = _OutdatedJudgeOutput if version == 2 else _JudgeOutput
     raw = backend.complete(
-        judge_system_prompt(),
+        _prompt_text(version),
         _user_prompt(question, answer, order, transcript_excerpt),
         model=judge_model,
         seed=seed,
         temperature=temperature,
-        format_schema=_JudgeOutput.model_json_schema(),
+        format_schema=output_model.model_json_schema(),
     )
     try:
-        parsed = _JudgeOutput.model_validate(json.loads(raw))
+        parsed = output_model.model_validate(json.loads(raw))
     except json.JSONDecodeError:
         return JudgeFailure(question.id, answer.condition, "invalid_json", raw)
     except ValidationError:
@@ -294,4 +328,5 @@ def judge_answer(
         evidence_supported=parsed.evidence_supported,
         citation_correct=None,
         rationale=parsed.rationale,
+        outdated=parsed.outdated if isinstance(parsed, _OutdatedJudgeOutput) else None,
     )

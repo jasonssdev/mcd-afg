@@ -62,6 +62,7 @@ _BANK_COLUMNS = (
     "author",
     "validated_by",
     "validation_notes",
+    "superseded_answer",
 )
 
 

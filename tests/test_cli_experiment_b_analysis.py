@@ -51,6 +51,7 @@ def _bank() -> list[Any]:
             text="t",
             reference_answer=f"ref {q}",
             reference_evidence=(EvidenceSpan(meeting_id="ES2015a", dialogue_act_ids=("d",)),),
+            superseded_answer=f"old {q}",
         )
         for q in range(10)
     ]
@@ -195,3 +196,47 @@ def test_sample_passes_the_judge_passage_for_each_question(out: Path, tmp_path: 
         assert row["pasaje_transcripcion"] == f"P-{keys[row['id']]['question_id']}"
         assert row["archivos_transcripcion"] == "t/ES2015a.md"
         assert row["reference_answer"].startswith("ref ")
+
+
+def test_report_prints_h4_and_its_upper_bound(out: Path) -> None:
+    run = _write_run(out, "ev", "evaluation")
+    lines = [json.loads(x) for x in (run / "respuestas.jsonl").read_text().splitlines()]
+    for line in lines:
+        line["stratum"] = "E3_evolution"
+        line["verdict"]["outdated"] = line["condition"] == "C1"
+    (run / "respuestas.jsonl").write_text(
+        "\n".join(json.dumps(x) for x in lines) + "\n", encoding="utf-8"
+    )
+    result = _invoke_wide("b-report", "--run-name", "ev", "--questions", "q.csv")
+    assert result.exit_code == 0, result.output
+    assert "H4 C1 en E3: desactualizadas entre las respondidas 1.00" in result.output
+    assert "H4 C1 frente a C2: diferencia +1.00" in result.output
+    assert "Cota superior de H4 C1 frente a C2" in result.output
+
+
+def test_sample_and_human_check_cover_the_outdated_label(out: Path) -> None:
+    run = _write_run(out, "ev", "evaluation")
+    lines = [json.loads(x) for x in (run / "respuestas.jsonl").read_text().splitlines()]
+    for line in lines:
+        line["verdict"]["outdated"] = line["question_id"].endswith(("0", "2", "4"))
+    (run / "respuestas.jsonl").write_text(
+        "\n".join(json.dumps(x) for x in lines) + "\n", encoding="utf-8"
+    )
+    assert _invoke("b-sample", "--run-name", "ev", "--questions", "q.csv").exit_code == 0
+    sheet, key = run / "muestra-juez.csv", run / "muestra-juez.clave.csv"
+    rows = list(csv.DictReader(sheet.open(encoding="utf-8")))
+    keys = {k["id"]: k for k in csv.DictReader(key.open(encoding="utf-8"))}
+    assert all(row["respuesta_superada"].startswith("old ") for row in rows)
+    for row in rows:
+        row["correct"] = keys[row["id"]]["judge_correct"]
+        row["evidence_supported"] = keys[row["id"]]["judge_evidence_supported"]
+        row["outdated"] = keys[row["id"]]["judge_outdated"]
+    with sheet.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
+    checked = _invoke_wide("b-human-check", "--run-name", "ev")
+    assert checked.exit_code == 0, checked.output
+    assert "outdated (H4" in checked.output
+    payload = json.loads((run / "juez-humano.json").read_text(encoding="utf-8"))
+    assert payload["outdated_reliable"] is True

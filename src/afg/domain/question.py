@@ -46,6 +46,11 @@ class Question(BaseModel):
         "(unanswerable) questions, where the reference is the absence of an answer.",
     )
     reference_evidence: tuple[EvidenceSpan, ...] = Field(default_factory=tuple)
+    superseded_answer: str | None = Field(
+        default=None,
+        description="E3 only: the earlier state of the decision that the reference answer "
+        "replaces. An answer that presents it as the current state is outdated (H4).",
+    )
     author: str | None = Field(
         default=None, description="Person who wrote the question (must differ from the validator)."
     )

@@ -146,6 +146,7 @@ _QUESTION_COLUMNS = (
     "author",
     "validated_by",
     "validation_notes",
+    "superseded_answer",
 )
 
 # The one human column `prepare` fills in, and the one it therefore ignores when deciding
@@ -1181,6 +1182,7 @@ def question_bank_is_empty(path: Path) -> bool:
         "validated_by",
         "validation_notes",
         "series_id",
+        "superseded_answer",
     )
     return not any(row.get(column, "").strip() for row in rows for column in human)
 
@@ -1245,6 +1247,7 @@ def write_question_bank_template(
                     "author": author,
                     "validated_by": "",
                     "validation_notes": "",
+                    "superseded_answer": "",
                 }
             )
     return _write_rows(out_path, _QUESTION_COLUMNS, rows)

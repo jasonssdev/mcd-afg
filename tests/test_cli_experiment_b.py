@@ -300,7 +300,7 @@ def test_missing_questions_file_is_reported(env: dict[str, Any]) -> None:
 
 _BANK_HEADER = (
     "id,series_id,stratum,text,reference_answer,reference_evidence,author,validated_by,"
-    "validation_notes\n"
+    "validation_notes,superseded_answer\n"
 )
 _BANK_OK = "q001,ES2016,E1_point_fact,How much?,Twelve,ES2016a:ES2016a.A.dialog-act.x.1,gm,gv,\n"
 _BANK_PENDING = "q002,,E2_current_state,,,,gm,,\n"

@@ -44,10 +44,12 @@ from typing import Any
 from afg.domain.decision import EvidenceSpan
 from afg.domain.question import Question
 from afg.evaluation.judge_calibration_agreement import (
+    LABEL_COLUMNS,
     SECOND_SHEET_COLUMNS,
     AgreementError,
+    SecondSheetLabeledError,
+    compute_column_agreement,
     compute_human_agreement,
-    write_second_sheet,
 )
 from afg.shared.csvio import read_rows
 
@@ -55,6 +57,7 @@ __all__ = [
     "EVIDENCE_COLUMN",
     "GATING_COLUMN",
     "KEY_COLUMNS",
+    "OUTDATED_COLUMN",
     "SHEET_COLUMNS",
     "HumanSample",
     "JudgeHumanCheck",
@@ -67,7 +70,10 @@ __all__ = [
     "write_human_sample",
 ]
 
-SHEET_COLUMNS: tuple[str, ...] = SECOND_SHEET_COLUMNS
+OUTDATED_COLUMN = "outdated"
+SUPERSEDED_COLUMN = "respuesta_superada"
+SHEET_COLUMNS: tuple[str, ...] = (*SECOND_SHEET_COLUMNS, SUPERSEDED_COLUMN, OUTDATED_COLUMN)
+LABELED_COLUMNS: tuple[str, ...] = (*LABEL_COLUMNS, OUTDATED_COLUMN)
 KEY_COLUMNS: tuple[str, ...] = (
     "id",
     "question_id",
@@ -76,6 +82,7 @@ KEY_COLUMNS: tuple[str, ...] = (
     "stratum",
     "judge_correct",
     "judge_evidence_supported",
+    "judge_outdated",
 )
 GATING_COLUMN = "correct"
 EVIDENCE_COLUMN = "evidence_supported"
@@ -97,6 +104,14 @@ EVIDENCE_RELIABLE_DECISION = (
 EVIDENCE_UNRELIABLE_DECISION = (
     "evidence_supported no confiable: el acuerdo juez-humano no alcanza el umbral; esa métrica "
     "se reporta solo con evaluación humana o marcada como no confiable."
+)
+OUTDATED_RELIABLE_DECISION = (
+    "outdated es confiable: el acuerdo juez-humano alcanza el umbral y H4 puede reportarse con "
+    "el juicio automático."
+)
+OUTDATED_UNRELIABLE_DECISION = (
+    "outdated no confiable: el acuerdo juez-humano no alcanza el umbral; H4 se reporta solo con "
+    "evaluación humana o marcada como no confiable."
 )
 POSITIVE_LABELS = frozenset({"si", "sí", "true", "1", "yes"})
 
@@ -178,6 +193,11 @@ class JudgeHumanCheck:
     evidence_supported_reliable: bool
     """``evidence_supported`` reaches the threshold; otherwise the report marks it as such."""
     evidence_decision: str
+    outdated: LabelVerdict | None = None
+    """Agreement on the H4 flag over the E3 rows the judge flagged; ``None`` when there are none."""
+    outdated_reliable: bool | None = None
+    """``outdated`` reaches the threshold; otherwise H4 is reported only with human evaluation."""
+    outdated_decision: str = ""
 
 
 def _stratum(record: Record) -> str:
@@ -196,6 +216,14 @@ def _yes_no(value: Any) -> str:
     return "si" if value else "no"
 
 
+def _judge_outdated(record: Record) -> str:
+    """The judge's H4 label of an answered record, blank when it does not apply."""
+    flag = record["verdict"].get("outdated")
+    if flag is None or (record.get("answer") or {}).get("abstained"):
+        return ""
+    return _yes_no(flag)
+
+
 def select_human_sample(
     records: Iterable[Record],
     *,
@@ -203,6 +231,7 @@ def select_human_sample(
     seed: int,
     reference_answers: Mapping[str, str] | None = None,
     context_for: ContextFor | None = None,
+    superseded_answers: Mapping[str, str] | None = None,
 ) -> HumanSample:
     """The seeded, stratified sample for the human check: one judged run per (question, condition).
 
@@ -253,6 +282,7 @@ def select_human_sample(
             pasaje_transcripcion=passage,
             archivos_transcripcion=files,
         )
+        sheet[SUPERSEDED_COLUMN] = (superseded_answers or {}).get(str(record["question_id"]), "")
         sheet_rows.append(sheet)
         verdict = record["verdict"]
         key_rows.append(
@@ -264,6 +294,7 @@ def select_human_sample(
                 "stratum": _stratum(record),
                 "judge_correct": _yes_no(verdict.get("correct")),
                 "judge_evidence_supported": _yes_no(verdict.get("evidence_supported")),
+                "judge_outdated": _judge_outdated(record),
             }
         )
     return HumanSample(
@@ -278,12 +309,27 @@ def write_human_sample(
     sheet_path: Path, key_path: Path, sample: HumanSample, *, force: bool = False
 ) -> None:
     """Write the blind sheet and the key; refuse to erase a sheet that already has labels."""
-    write_second_sheet(sheet_path, sample.sheet_rows, force=force)
+    if sheet_path.exists() and not force:
+        labeled = [
+            row["id"]
+            for row in read_rows(sheet_path)
+            if any(row.get(column, "").strip() for column in LABELED_COLUMNS)
+        ]
+        if labeled:
+            raise SecondSheetLabeledError(
+                f"{sheet_path.name} already has labels ({len(labeled)} item(s)); "
+                "use force to overwrite."
+            )
+    sheet_path.parent.mkdir(parents=True, exist_ok=True)
+    with sheet_path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=SHEET_COLUMNS)
+        writer.writeheader()
+        writer.writerows(sample.sheet_rows)
     key_path.parent.mkdir(parents=True, exist_ok=True)
     with key_path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=KEY_COLUMNS)
-        writer.writeheader()
-        writer.writerows(sample.key_rows)
+        key_writer = csv.DictWriter(handle, fieldnames=KEY_COLUMNS)
+        key_writer.writeheader()
+        key_writer.writerows(sample.key_rows)
 
 
 def read_csv_rows(path: Path) -> list[dict[str, str]]:
@@ -335,6 +381,7 @@ def check_judge_against_humans(
     )
     gating = next(c for c in columns if c.column == GATING_COLUMN)
     evidence = next(c for c in columns if c.column == EVIDENCE_COLUMN)
+    outdated = _outdated_verdict(key_rows, sheet_rows, min_kappa)
     return JudgeHumanCheck(
         n_items=len(sheet_rows),
         min_kappa=min_kappa,
@@ -347,6 +394,44 @@ def check_judge_against_humans(
             EVIDENCE_RELIABLE_DECISION if evidence.passes else EVIDENCE_UNRELIABLE_DECISION
         )
         + (UNDEFINED_KAPPA_NOTE if evidence.kappa is None else ""),
+        outdated=outdated,
+        outdated_reliable=None if outdated is None else outdated.passes,
+        outdated_decision=(
+            ""
+            if outdated is None
+            else (OUTDATED_RELIABLE_DECISION if outdated.passes else OUTDATED_UNRELIABLE_DECISION)
+            + (UNDEFINED_KAPPA_NOTE if outdated.kappa is None else "")
+        ),
+    )
+
+
+def _outdated_verdict(
+    key_rows: Sequence[Mapping[str, str]],
+    sheet_rows: Sequence[Mapping[str, str]],
+    min_kappa: float,
+) -> LabelVerdict | None:
+    """Agreement on ``outdated`` over the rows the judge flagged (E3, answered); same threshold."""
+    flagged = {
+        row["id"]: {"id": row["id"], OUTDATED_COLUMN: row["judge_outdated"]}
+        for row in key_rows
+        if row.get("judge_outdated", "").strip()
+    }
+    if not flagged:
+        return None
+    human = [row for row in sheet_rows if row["id"] in flagged]
+    agreement = compute_column_agreement(OUTDATED_COLUMN, flagged, human, min_kappa=min_kappa)
+    ids = [row["id"] for row in human]
+    human_by_id = {row["id"]: row for row in human}
+    return LabelVerdict(
+        column=OUTDATED_COLUMN,
+        n_items=agreement.n_items,
+        n_agree=agreement.n_agree,
+        observed_agreement=agreement.n_agree / agreement.n_items,
+        kappa=agreement.kappa,
+        judge_positive_rate=_positive_rate(flagged, ids, OUTDATED_COLUMN),
+        human_positive_rate=_positive_rate(human_by_id, ids, OUTDATED_COLUMN),
+        disagreements=agreement.disagreements,
+        passes=agreement.passes,
     )
 
 
@@ -354,6 +439,20 @@ def _positive_rate(rows: Mapping[str, Mapping[str, str]], ids: Sequence[str], co
     """Share of positive labels among the sampled items (labels were validated upstream)."""
     positives = sum(rows[i][column].strip().lower() in POSITIVE_LABELS for i in ids)
     return positives / len(ids)
+
+
+def _label_payload(c: LabelVerdict) -> dict[str, Any]:
+    return {
+        "column": c.column,
+        "n_items": c.n_items,
+        "n_agree": c.n_agree,
+        "observed_agreement": c.observed_agreement,
+        "judge_positive_rate": c.judge_positive_rate,
+        "human_positive_rate": c.human_positive_rate,
+        "kappa": c.kappa,
+        "disagreements": list(c.disagreements),
+        "passes": c.passes,
+    }
 
 
 def save_judge_human_check(path: Path, check: JudgeHumanCheck) -> None:
@@ -366,20 +465,10 @@ def save_judge_human_check(path: Path, check: JudgeHumanCheck) -> None:
         "decision": check.decision,
         "evidence_supported_reliable": check.evidence_supported_reliable,
         "evidence_decision": check.evidence_decision,
-        "columns": [
-            {
-                "column": c.column,
-                "n_items": c.n_items,
-                "n_agree": c.n_agree,
-                "observed_agreement": c.observed_agreement,
-                "judge_positive_rate": c.judge_positive_rate,
-                "human_positive_rate": c.human_positive_rate,
-                "kappa": c.kappa,
-                "disagreements": list(c.disagreements),
-                "passes": c.passes,
-            }
-            for c in check.columns
-        ],
+        "outdated_reliable": check.outdated_reliable,
+        "outdated_decision": check.outdated_decision,
+        "outdated": None if check.outdated is None else _label_payload(check.outdated),
+        "columns": [_label_payload(c) for c in check.columns],
     }
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")

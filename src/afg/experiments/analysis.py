@@ -47,6 +47,10 @@ from afg.experiments.summary import CitationWidthSummary, citation_width_summary
 
 __all__ = [
     "ALL_STRATA",
+    "H4_METRIC",
+    "H4_METRICS",
+    "H4_NOTE",
+    "H4_UPPER_BOUND_METRIC",
     "AnalysisReport",
     "CellSummary",
     "Comparison",
@@ -65,6 +69,11 @@ PRIMARY_BASELINE = "C1"
 PRIMARY_STRATUM = "E3"
 PRIMARY_METRIC = "correct"
 COMPARED_METRICS: tuple[str, ...] = ("correct", "evidence_supported")
+H4_METRIC = "outdated_among_answered"
+H4_UPPER_BOUND_METRIC = "wrong_among_answered"
+H4_METRICS: tuple[str, ...] = (H4_METRIC, H4_UPPER_BOUND_METRIC)
+H4_STRATUM = "E3"
+H4_PAIRS: tuple[tuple[str, str], ...] = (("C1", "C2"), ("C1", "C3"))
 SECONDARY_PAIRS: tuple[tuple[str, str], ...] = (("C2", "C1"), ("C2", "C3"))
 CITATION_SCHEMA_VERSION = 2
 
@@ -79,6 +88,15 @@ CRITERION_NOTE = (
     "95 % de la diferencia pareada C2 - C1 queda por encima de 0; en otro caso el resultado es no "
     "concluyente. La no superposición de los intervalos independientes de C2 y C1 (redacción "
     "original) se informa aparte como robustez y no reemplaza al criterio principal."
+)
+
+H4_NOTE = (
+    "H4 (ADR 0017): proporción de preguntas E3 respondidas (sin abstención) cuya respuesta el "
+    "juez marca como desactualizada, es decir, que presenta como vigente el estado anterior de "
+    "la decisión (columna superseded_answer del banco). Por condición con su intervalo; "
+    "C1 - C2 y C1 - C3 se aparean por pregunta respondida en ambas y H4 se respalda si el "
+    "intervalo de la diferencia queda por encima de 0. La tasa de respuestas incorrectas entre "
+    "las respondidas se informa como cota superior, no como H4."
 )
 
 Record = Mapping[str, Any]
@@ -216,12 +234,38 @@ def _abstention_correct(record: Record) -> float | None:
     return float(_abstained(record))
 
 
+def _outdated_among_answered(record: Record) -> float | None:
+    """H4: 1 when a judged, non-abstaining answer states the superseded version as current.
+
+    Abstentions never enter the denominator (ADR 0014) and a record judged without the flag
+    (prompt version 1: the question has no superseded answer) has no value (ADR 0017).
+    """
+    if _abstained(record):
+        return None
+    return _verdict_flag("outdated")(record)
+
+
+def _wrong_among_answered(record: Record) -> float | None:
+    """Upper bound of H4: 1 when a judged, non-abstaining answer is incorrect, 0 when correct.
+
+    The judge of the correctness does not say WHY an answer is wrong, so this counts every
+    incorrect answered E3 question: it bounds the outdated rate from above (an outdated answer
+    is also incorrect against the reference) and is reported next to it, never in its place.
+    """
+    if _abstained(record):
+        return None
+    correct = _verdict_flag("correct")(record)
+    return None if correct is None else 1.0 - correct
+
+
 EXTRACTORS: dict[str, Extractor] = {
     "correct": _verdict_flag("correct"),
     "evidence_supported": _verdict_flag("evidence_supported"),
     "citation_correct": _citation_correct,
     "citation_precision": _citation_precision,
     "abstention_correct": _abstention_correct,
+    "outdated_among_answered": _outdated_among_answered,
+    "wrong_among_answered": _wrong_among_answered,
 }
 
 
@@ -336,6 +380,8 @@ def analyze_runs(
             for name, extract in EXTRACTORS.items():
                 if name == "abstention_correct" and stratum != E4:
                     continue
+                if name in H4_METRICS and stratum != H4_STRATUM:
+                    continue
                 scores = _question_scores(subset, extract)
                 scores_by_cell[(condition, stratum, name)] = scores
                 metrics[name] = _estimate(scores, settings)
@@ -388,6 +434,19 @@ def analyze_runs(
             "juzgadas."
         )
 
+    unflagged = sum(
+        1
+        for r in latest
+        if _label(r) == H4_STRATUM
+        and _is_judged(r)
+        and not _abstained(r)
+        and r["verdict"].get("outdated") is None
+    )
+    if unflagged:
+        warnings.append(
+            f"{unflagged} respuestas E3 respondidas se juzgaron sin el campo outdated (la "
+            "pregunta no tiene superseded_answer): quedan fuera de H4."
+        )
     comparisons = _compare(cells, scores_by_cell, strata, settings, warnings)
     return AnalysisReport(
         partition=partition,
@@ -428,6 +487,14 @@ def _compare(
                 )
                 if comparison is not None:
                     results.append(comparison)
+    for a, b in H4_PAIRS:
+        cell_a, cell_b = by_key.get((a, H4_STRATUM)), by_key.get((b, H4_STRATUM))
+        if cell_a is None or cell_b is None:
+            continue
+        for metric in H4_METRICS:
+            h4 = _paired(a, b, H4_STRATUM, metric, cell_a, cell_b, scores_by_cell, settings)
+            if h4 is not None:
+                results.append(h4)
     return results
 
 
