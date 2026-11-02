@@ -89,6 +89,17 @@ per_bin = 6
 seed = 42                             # sampling and order shuffle
 tau_split = 0.70                      # judge vs person yes-rate is also reported below / above this
 
+[alignment.manual_validation]
+# Step 3 of the alignment protocol (automatic alignment vs manual matching). Fixed BEFORE any
+# label exists; the sample size is `manual_validation_sample_size` above. The sample is
+# stratified: `matched_share` of the pairs are pairs the automatic alignment keeps at the main
+# tau, the rest are same-meeting pairs it does not keep but whose similarity is at least
+# `similarity_floor` (the near misses where the automatic alignment could be wrong). The order is
+# shuffled. No pass/fail threshold is defined.
+seed = 42                             # sampling and order shuffle
+matched_share = 0.5                   # share of the sample drawn from the automatic matches
+similarity_floor = 0.50               # non-matched pairs below this are not candidates
+
 [question_bank]
 # Thesis section 5.5: four strata, each with at least 25 questions.
 strata = ["E1_point_fact", "E2_current_state", "E3_evolution", "E4_unanswerable"]

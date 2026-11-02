@@ -160,6 +160,18 @@ from afg.experiments.freeze import (
     gate_partition,
     write_freeze_record,
 )
+from afg.experiments.manual_validation import (
+    VALIDATION_DIR,
+    ManualValidationError,
+    ManualValidationSheetLabeledError,
+    candidate_pairs,
+    draw_validation_sample,
+    load_run_decisions,
+    load_validation_config,
+    score_validation,
+    source_sha256,
+    write_validation_files,
+)
 from afg.experiments.pinned_environment import PinnedEnvironmentError, check_pinned_environment
 from afg.experiments.provenance import LiveProbe, ProvenanceProbe, collect_provenance
 from afg.experiments.question_bank import (
@@ -3336,6 +3348,180 @@ def freeze_write(
         f"Registro de congelamiento (ADR {escape(adr)}, {len(chosen)} series) escrito en "
         f"{_short(output)}. Revísalo y súbelo junto con el ADR."
     )
+
+
+def _validation_inputs(run_name: str, serie: str | None) -> tuple[Path, str]:
+    """The run directory and the series of the manual validation (manifest series by default)."""
+    import json
+
+    run_dir = EXPERIMENT_A_DIR / run_name
+    if not (run_dir / "manifest.json").is_file():
+        console.print(f"[bold red]No existe la corrida {_short(run_dir)}.[/bold red]")
+        raise typer.Exit(code=1)
+    if serie is None:
+        listed = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8")).get("series")
+        serie = listed if isinstance(listed, str) else None
+        if serie is None:
+            console.print("[bold red]La corrida tiene varias series: indica `--serie`.[/bold red]")
+            raise typer.Exit(code=1)
+    _require_series_gate([serie])
+    return run_dir, serie
+
+
+def _validation_paths(
+    run_name: str, serie: str, hoja: Path | None, clave: Path | None
+) -> tuple[Path, Path]:
+    return (
+        hoja or VALIDATION_DIR / f"{run_name}.{serie}.manual.csv",
+        clave or EXPERIMENT_A_DIR / run_name / f"validacion-manual-{serie}-clave.json",
+    )
+
+
+@experiment_app.command("a-validacion-hoja")
+def experiment_a_validacion_hoja(
+    run_name: Annotated[
+        str, typer.Option("--run-name", help="Corrida guardada en reports/experiment-a/.")
+    ],
+    serie: Annotated[
+        str | None,
+        typer.Option("--serie", help="Serie de desarrollo (por defecto, la del manifiesto)."),
+    ] = None,
+    corrida: Annotated[int, typer.Option("--corrida", min=0, help="Repetición de la corrida.")] = 0,
+    tau: Annotated[
+        float,
+        typer.Option("--tau", min=0.0, max=1.0, help="Umbral de la alineación automática."),
+    ] = TAU_PRINCIPAL,
+    hoja: Annotated[
+        Path | None, typer.Option("--hoja", help="Dónde escribir la hoja ciega.")
+    ] = None,
+    clave: Annotated[Path | None, typer.Option("--clave", help="Dónde escribir la clave.")] = None,
+    force: Annotated[
+        bool, typer.Option("--force", help="Sobrescribe aunque la hoja ya tenga etiquetas.")
+    ] = False,
+) -> None:
+    """Crea la hoja ciega de validación manual de la alineación (paso 3 del protocolo, issue #240).
+
+    Toma una corrida guardada del Experimento A y la referencia en inglés de la serie, alinea
+    con τ (0,70 por defecto) y arma una muestra de pares (decisión extraída, decisión de
+    referencia) de la misma reunión: la mitad son pares que la alineación automática empareja y
+    la otra mitad, pares cercanos que descarta. Tamaño, semilla y reparto salen de
+    `config/experiments.toml`. La hoja no muestra similitud ni qué decidió la alineación; eso queda
+    en la clave. Calcula embeddings, no llama al modelo generativo. Solo series de desarrollo.
+    """
+    run_dir, serie = _validation_inputs(run_name, serie)
+    sheet_path, key_path = _validation_paths(run_name, serie, hoja, clave)
+    cfg = load_validation_config()
+    try:
+        predicted = load_run_decisions(run_dir, series=serie, run=corrida)
+        reference = load_series_reference(serie, language="en").decisions
+        require_pinned_environment([configured_embedding_model()], needs_openkos=False)
+        pairs = candidate_pairs(
+            reference, predicted, make_alignment_similarity(), tau=tau, floor=cfg.similarity_floor
+        )
+        sample = draw_validation_sample(
+            pairs, sample_size=cfg.sample_size, matched_share=cfg.matched_share, seed=cfg.seed
+        )
+        records = run_dir / "extracciones.jsonl"
+        write_validation_files(
+            sample,
+            sheet_path=sheet_path,
+            key_path=key_path,
+            source={
+                "run_name": run_name,
+                "series": serie,
+                "run": corrida,
+                "records": records.name,
+                "sha256": source_sha256(records),
+                "n_candidate_pairs": len(pairs),
+                "n_automatic_matches": sum(p.auto_match for p in pairs),
+            },
+            tau=tau,
+            seed=cfg.seed,
+            force=force,
+        )
+    except ManualValidationSheetLabeledError as exc:
+        console.print(
+            f"[bold red]{_short(sheet_path)} ya tiene etiquetas; no se sobrescribió nada."
+            "[/bold red] Usa `--force` solo si se quiere descartarlas."
+        )
+        raise typer.Exit(code=1) from exc
+    except (
+        ManualValidationError,
+        NotAdjudicatedError,
+        TranslationError,
+        CsvFormatError,
+        FileNotFoundError,
+    ) as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    console.print(
+        f"Escrito {_short(sheet_path)} con {len(sample)} pares sin etiquetas y "
+        f"{_short(key_path)} (no abrir hasta terminar). Se llena `same` con si/no. Luego: "
+        f"`uv run afg experiment a-validacion-puntaje --run-name {escape(run_name)}`."
+    )
+
+
+@experiment_app.command("a-validacion-puntaje")
+def experiment_a_validacion_puntaje(
+    run_name: Annotated[
+        str | None, typer.Option("--run-name", help="Corrida guardada en reports/experiment-a/.")
+    ] = None,
+    serie: Annotated[
+        str | None,
+        typer.Option("--serie", help="Serie de desarrollo (por defecto, la del manifiesto)."),
+    ] = None,
+    hoja: Annotated[Path | None, typer.Option("--hoja", help="Hoja llena.")] = None,
+    clave: Annotated[Path | None, typer.Option("--clave", help="Clave de la hoja.")] = None,
+    salida: Annotated[
+        Path | None, typer.Option("--salida", help="Dónde guardar el resultado (JSON).")
+    ] = None,
+) -> None:
+    """Calcula la concordancia entre la alineación automática y la manual (paso 3, issue #240).
+
+    Exige todas las etiquetas si/no. Reporta la concordancia del protocolo
+    (`alignment.concordance`: pares coincidentes entre las dos alineaciones sobre su unión), el
+    acuerdo observado, la matriz de confusión y cuántos pares confirmó la persona en cada
+    grupo. No define umbral de aprobación.
+    """
+    import json
+
+    if run_name is None and (hoja is None or clave is None or salida is None):
+        console.print(
+            "[bold red]Indica `--run-name`, o bien `--hoja`, `--clave` y `--salida`.[/bold red]"
+        )
+        raise typer.Exit(code=1)
+    sheet_path, key_path, out_path = hoja, clave, salida
+    if run_name is not None:
+        _, serie = _validation_inputs(run_name, serie)
+        sheet_path, key_path = _validation_paths(run_name, serie, hoja, clave)
+        out_path = salida or EXPERIMENT_A_DIR / run_name / f"validacion-manual-{serie}.json"
+    assert sheet_path is not None and key_path is not None and out_path is not None
+    for needed in (sheet_path, key_path):
+        if not needed.exists():
+            console.print(
+                f"[bold red]No existe {_short(needed)}.[/bold red] Créala con "
+                "`uv run afg experiment a-validacion-hoja`."
+            )
+            raise typer.Exit(code=1)
+    try:
+        result = score_validation(sheet_path, key_path)
+    except (ManualValidationError, CsvFormatError) as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    confirmed, missed = result["automatic_confirmed"], result["automatic_missed"]
+    console.print(
+        f"Concordancia automática-manual (τ = {result['tau']}): {result['concordance']:.3f} "
+        f"sobre {result['n']} pares; acuerdo {result['n_agree']}/{result['n']} "
+        f"({result['observed_agreement']:.1%})."
+    )
+    console.print(
+        f"  Emparejados por la alineación: {confirmed['n_manual_yes']}/{confirmed['n']} "
+        f"confirmados a mano. No emparejados: {missed['n_manual_yes']}/{missed['n']} "
+        "que la persona sí empareja."
+    )
+    console.print(f"Guardado en {_short(out_path)}.")
 
 
 @experiment_app.command("b")
