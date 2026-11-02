@@ -4,11 +4,11 @@
 |---|---|
 | **Entrega** | Video de avance #2 de AFG2 (semana 4) — modelado de datos |
 | **Fecha de envío** | Pendiente |
-| **Versión** | 2.0 |
+| **Versión** | 2.1 |
 | **Construido desde** | `docs/avances/03-jss-objetivos.md` v5.0 (objetivos e hipótesis) · `docs/avances/09-jss-modelos-y-justificacion.md` v12.0 (todos los bloques) · [ADR 0019](../decisions/0019-adr-c0-en-la-corrida-formal-del-experimento-b.md) (C0 en la corrida formal) · `notebooks/19-jss-modelos.ipynb` (fuente principal de las cifras) · `docs/entregables/figuras/modelos-*.png` (seis figuras exportadas por el notebook 19) |
-| **Duración objetivo** | 9:58 a 145 palabras por minuto (máximo de la rúbrica: 10:00) |
+| **Duración objetivo** | 10:38 a 145 palabras por minuto, sobre el máximo de la rúbrica (10:00): el video se acelera en la edición |
 | **Formato** | Tres presentadores en cuatro bloques consecutivos, en este orden: Jason, Germán, Gustavo, Jason. Con diapositivas de apoyo |
-| **Extensión hablada** | 1.446 palabras: 414 + 357 + 370 + 305. A 145 palabras por minuto son 9:58; a 140, 10:20 |
+| **Extensión hablada** | 1.541 palabras: 414 + 452 + 370 + 305. A 145 palabras por minuto son 10:38; a 140, 11:00 |
 
 > **Por qué existe este documento.** El profesor evalúa solo el video, así que el trabajo
 > técnico debe verse y oírse en él: cada modelo y cada técnica se nombra, y se explica con
@@ -34,6 +34,7 @@
 | 1.7 | 2026-11-01 | El extractor de C2 deja de figurar como decisión pendiente (ADR 0015, issue #143). **Bloque 2 (Germán) cambia**: la lámina 5 y la figura 7 dicen que el extractor es `qwen3:8b`, el de OpenKOS, y la narración lo decide con la pasada de decisiones, que OpenKOS documenta para reuniones; Germán tendrá que grabarlo de nuevo si ya lo grabó. **Bloque 4 (Jason) cambia**: la lámina 15 marca el extractor como resuelto, la narración lo da por decidido y la lámina 16 queda en dos pasos, congelar y evaluar una vez. Los bloques 1 y 3 no cambian. Se actualizan los tiempos, la extensión y las fuentes (avance 09 v8.0). Extensión: 1.443 palabras (393 + 393 + 392 + 265); 9:57 a 145 palabras por minuto. | La decisión del extractor y de la pasada de decisiones quedó registrada en el [ADR 0015](../decisions/0015-adr-modelo-extractor-de-c2.md); el guion aún no se había enviado. |
 | 1.8 | 2026-11-02 | C1 pasa a leer el mismo texto que OpenKOS (cuerpo Markdown de la transcripción) y a cortarlo con un divisor de texto genérico, y se rehízo el ajuste y la corrida de desarrollo, con el espacio de C1 para los fragmentos igual al de C2. **Bloque 1 (Jason) cambia**: el caso de la fuente de energía deja de servir (C1 ahora acierta) y se reemplaza por el del alcance del control entre la primera y la segunda reunión (q028: C1 no lo encuentra, C2 acierta); cambian la lámina 1 y una frase hablada, y se quitan unas palabras para mantener la extensión. **Bloque 3 (Gustavo) cambia**: la lámina 8 y la narración del *grid search* (ganadora 1.200 caracteres, sin solape y 5 fragmentos), la ablación de la figura 9 (52 %, 31 % y 46 %) y la frase sobre C0, que ahora cita el costo máximo y el alcance; Gustavo tendrá que grabarlo de nuevo. Los bloques 2 y 4 no cambian. Las cifras por estrato (C0 22 %, C1 81 %, C2 71 %) no cambian, aunque C1 acierta otras preguntas. Se actualizan la trazabilidad y las fuentes (avance 09 v10.0). Extensión: 1.443 palabras (393 + 393 + 392 + 265). | Decisión del autor del proyecto del 2026-11-02 sobre la lectura de C1 ([ADR 0014](../decisions/0014-adr-c1-como-rag-convencional.md) y [ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md), enmiendas del 2026-11-02); el guion aún no se había enviado. |
 | 2.0 | 2026-11-02 | Reescritura para claridad de los cuatro bloques. **Bloque 1**: abre con el problema y los cuatro objetivos (OE1 a OE4), una oración llana cada uno, y presenta las condiciones C0 a C3 antes de los casos; se agrega la lámina 1 («El problema y los cuatro objetivos») y las láminas y figuras siguientes suben un número (17 en total); el caso del alcance se identifica como la única pregunta de evolución; el criterio de éxito se nombra como D16 y se liga a la hipótesis H1. **Bloque 2**: el extractor se liga a C2 y a OE2; se recortan frases para mantener la extensión. **Bloque 3**: C1 se describe con el texto, el divisor y el espacio igual al de C2; τ se liga a OE2 y suma la concordancia del juez con una persona (50 pares, kappa 0,716, τ se mantiene); C0 se presenta como referencia descriptiva de la corrida formal (ADR 0019); se corrige la configuración que pierde evidencia por el recorte (1200 / 200 / 10, la del avance 09, §7.1; el notebook 06 da las mismas cifras con K = 8 y K = 10). **Bloque 4**: se reescribe en torno a OE4 (qué es, por qué importa, qué se hizo, qué muestra, con los casos del costo máximo y de los botones), qué cambió esta semana (C1 sobre el mismo texto y con el mismo espacio, C0 en la corrida formal, OpenKOS y extractor fijados) y qué sigue (congelar y una corrida formal; la evaluación sigue bloqueada hasta el congelamiento). Ninguna cifra nueva: todas salen del avance 09 v12.0 y de sus notebooks. Extensión: 1.446 palabras (414 + 357 + 370 + 305); 9:58 a 145 palabras por minuto. | Retroalimentación del equipo del 2026-11-02: el bloque 4 no se entendía y hablaba de «OE4» sin que la audiencia supiera que es uno de los objetivos del proyecto. Nadie había grabado aún, así que todos los bloques podían cambiar. |
+| 2.1 | 2026-11-02 | El bloque 2 queda con el texto que Germán grabó (PR #259): 452 palabras en vez de 357. Se corrige solo la ortografía de ese texto (contaré, ningún, tomaremos, porcentuales, parámetros, al menos, último, generador, continuación), se devuelve la numeración de las láminas a la del guion (6 y 7) y las marcas ▶ citan las frases grabadas. Se actualizan la extensión (1.541 palabras), los tiempos de los bloques 2 a 4 y la duración (10:38 a 145 palabras por minuto, sobre el tope; el video se acelera en la edición). Lo hablado difiere de las fuentes en tres puntos, y en pantalla rigen las cifras de las láminas: el acuerdo del juez es kappa 0,951, no «95 % de acuerdo»; `qwen3:8b` tiene el F1 más bajo de los cuatro extractores y se eligió por costo y por ser el de OpenKOS, y lo pensado para reuniones es la pasada de decisiones, no el modelo; y el modelo más grande es `qwen3.6:35b-a3b`, no `qwen3.6:27b`. | El bloque 2 ya estaba grabado y no se volverá a grabar; el guion debe registrar lo que se dijo. |
 
 ## Qué pide el curso y dónde se cubre
 
@@ -64,14 +65,14 @@ finales: importa el proceso de selección y el trabajo inicial.
 | Bloque | Persona | Palabras | Tiempo (145 ppm) | Mensaje central |
 |---|---|---|---|---|
 | El problema, los cuatro objetivos, dos casos, qué es «el modelo» y qué significa funcionar bien | Jason Sepúlveda | 414 | 0:00 – 2:51 | El problema en dos oraciones; OE1 a OE4 en una oración cada uno; las condiciones C0 a C3; dos casos de la corrida vigente (el alcance, la única pregunta de evolución, donde C2 acierta y C1 no; el costo máximo, donde C1 acierta y C2 no lo tiene en su base); no se entrena nada, se comparan *pipelines*; el juez es un instrumento; criterio D16 e hipótesis H1; costo de los errores |
-| Estrategia experimental y modelos por rol | Germán Vega | 357 | 2:51 – 5:19 | Partición 3 + 11 series con conjunto de prueba bajo llave; fuga declarada; restricciones del análisis exploratorio; generador, *embeddings*, juez (3 candidatos) y extractor de C2, cuya calidad mide OE2 (4 candidatos; decidido `qwen3:8b`, el de OpenKOS, con la pasada de decisiones) |
-| Búsqueda de parámetros, línea base, primeros resultados y costo | Gustavo Martínez | 370 | 5:19 – 7:52 | *Grid search* de C1 (mismo texto y mismo espacio que C2) y su corrección, ablación, τ de OE2 con su concordancia humana; C0 como referencia descriptiva y C1 frente a C2 por estrato, solo desarrollo; límites de C0; costo; librerías |
-| Aprendizajes, dónde falla C2 (OE4), qué cambió, limitaciones y próximos pasos | Jason Sepúlveda | 305 | 7:52 – 9:58 | Dos aprendizajes; OE4 explicado desde cero: qué pide, por qué importa, las tres etapas, la clasificación humana de las 6 fallas de C2 (3 de recuperación, 2 de extracción, 1 de síntesis), el costo máximo como falla de extracción y los botones como memoria contaminada; qué cambió esta semana; limitaciones; congelar y una sola corrida formal |
+| Estrategia experimental y modelos por rol | Germán Vega | 452 | 2:51 – 5:58 | Partición 3 + 11 series con conjunto de prueba bajo llave; fuga declarada; restricciones del análisis exploratorio; generador, *embeddings*, juez (3 candidatos) y extractor de C2, cuya calidad mide OE2 (4 candidatos; decidido `qwen3:8b`, el de OpenKOS, con la pasada de decisiones) |
+| Búsqueda de parámetros, línea base, primeros resultados y costo | Gustavo Martínez | 370 | 5:58 – 8:31 | *Grid search* de C1 (mismo texto y mismo espacio que C2) y su corrección, ablación, τ de OE2 con su concordancia humana; C0 como referencia descriptiva y C1 frente a C2 por estrato, solo desarrollo; límites de C0; costo; librerías |
+| Aprendizajes, dónde falla C2 (OE4), qué cambió, limitaciones y próximos pasos | Jason Sepúlveda | 305 | 8:31 – 10:38 | Dos aprendizajes; OE4 explicado desde cero: qué pide, por qué importa, las tres etapas, la clasificación humana de las 6 fallas de C2 (3 de recuperación, 2 de extracción, 1 de síntesis), el costo máximo como falla de extracción y los botones como memoria contaminada; qué cambió esta semana; limitaciones; congelar y una sola corrida formal |
 
-Reparto por persona: Jason 719 palabras, Germán 357, Gustavo 370. Jason abre y cierra
+Reparto por persona: Jason 719 palabras, Germán 452, Gustavo 370. Jason abre y cierra
 porque plantea el problema y reúne lo que sigue; Germán concentra la estrategia
 experimental y la elección de modelos; Gustavo, los métodos de búsqueda y los resultados.
-Margen sobre el tope de 10:00: 0:02 a 145 palabras por minuto; a 140 el guion se pasa (10:20), así que el ensayo debe cronometrarse y, si hace falta, recortar según la nota de grabación.
+Desde la versión 2.1 el guion supera el tope de 10:00: 10:38 a 145 palabras por minuto y 11:00 a 140. La grabación no se repite: el video se acelera en la edición (alrededor de un 6 % a 145 palabras por minuto) para quedar bajo 10:00.
 
 ## Notas de grabación
 
@@ -172,25 +173,25 @@ Germán sigue con la estrategia experimental y los modelos.
 
 ---
 
-## Bloque 2 — Germán Vega (2:51 – 5:19)
+## Bloque 2 — Germán Vega (2:51 – 5:58)
 
 ### Texto hablado
 
-Gracias, Jason. Soy **Germán Vega** y conatre cómo separamos los datos y qué modelos elegimos.
+Gracias, Jason. Soy **Germán Vega** y contaré cómo separamos los datos y qué modelos elegimos.
 
-> **▶ Figura 5 — se muestra al decir «Dividimos las 14 series en desarrollo».**
+> **▶ Figura 5 — se muestra al decir «tomaremos nuestro data set de 14 series».**
 >
 > Texto sobrepuesto: «3 series de desarrollo · 11 de evaluación» y «Evaluación: bajo llave hasta congelar».
 >
 > ![El reparto entre desarrollo y evaluación: 3 series (21,4 %) para elegir y 11 series (78,6 %) para reportar; las reuniones, las frases de decisión (22,4 % y 77,6 %) y los pares candidatos (12,0 % y 88,0 %) siguen el mismo patrón](figuras/modelos-particion-desarrollo-evaluacion.png)
 
-En nuestra tesis, no entrenaremos ningun modelo, por lo tanto no dividimos en entrenamiento y prueba. En cambio, tamaremos nuestro data set de 14 series, dejando 3 series en **desarrollo** y 11 para la **evaluación**. En terminos pocentuales, cerca del 21 %, sirve para elegir y ajustar. Mientras que el 79 %, sirve solo para reportar.
+En nuestra tesis, no entrenaremos ningún modelo, por lo tanto no dividimos en entrenamiento y prueba. En cambio, tomaremos nuestro data set de 14 series, dejando 3 series en **desarrollo** y 11 para la **evaluación**. En términos porcentuales, cerca del 21 %, sirve para elegir y ajustar. Mientras que el 79 %, sirve solo para reportar.
 
-Las 11 series son nuestro conjunto de prueba: no se leen ni se tocan hasta congelar todo lo parametros, y se usan una sola vez. Las reuniones se procesan en orden, para que una decisión nunca se extraiga sabiendo lo que se dijo después (recordar que cada serie consta de almenos 4 reuniones a->b->c->d). Por ultimom debemos declarar una fuga: una serie de evaluación se usó antes, solo para evitar que el sistema se cayera, no para mejorar sus respuestas.
+Las 11 series son nuestro conjunto de prueba: no se leen ni se tocan hasta congelar todos los parámetros, y se usan una sola vez. Las reuniones se procesan en orden, para que una decisión nunca se extraiga sabiendo lo que se dijo después (recordar que cada serie consta de al menos 4 reuniones a->b->c->d). Por último debemos declarar una fuga: una serie de evaluación se usó antes, solo para evitar que el sistema se cayera, no para mejorar sus respuestas.
 
 El análisis exploratorio impuso restricciones. Una serie mide entre 1,6 a 2,8 veces la **ventana de contexto** del modelo, teniendo impacto en lo que puede leer de una vez. Por eso hay que recuperar o compilar. Las decisiones en ocasiones son raras y los turnos muy cortos.
 
-> **▶ Lámina 7 — se muestra al decir «Ahora los modelos, uno por rol».**
+> **▶ Lámina 6 — se muestra al decir «Los modelos a utilizar los categorizamos».**
 >
 > Título: «Modelos por rol».
 >
@@ -202,10 +203,10 @@ El análisis exploratorio impuso restricciones. Una serie mide entre 1,6 a 2,8 v
 > | Verificación de suficiencia | Solo C2 y C3: ¿alcanza el contexto? | `gemma4:26b-a4b` | No: lo trae OpenKOS |
 > | Juez | Califica cada respuesta | `gpt-oss:20b` | Sí: 3 candidatos |
 
-Los modelos a utilizar los categorizamos por los siguientes roles: Generados de respuestas, Embedding, Extractor del caso 2, Verificador de suficiencia y el Juez.
-El **generador**, que redacta la respuesta en todas las condiciones, es `qwen3:8b` de parametros: la propuesta exige el mismo modelo y corre en local. Los **embeddings**, números que miden qué tan parecidos son dos textos, utilizan el modelo `bge-m3`, multilenguaje, el cual es fiable con textos largos.
+Los modelos a utilizar los categorizamos por los siguientes roles: Generador de respuestas, Embedding, Extractor del caso 2, Verificador de suficiencia y el Juez.
+El **generador**, que redacta la respuesta en todas las condiciones, es `qwen3:8b` de parámetros: la propuesta exige el mismo modelo y corre en local. Los **embeddings**, números que miden qué tan parecidos son dos textos, utilizan el modelo `bge-m3`, multilenguaje, el cual es fiable con textos largos.
 
-> **▶ Lámina 8 — se muestra al decir «El juez sí lo elegimos entre tres candidatos».**
+> **▶ Lámina 7 — se muestra al decir «Elegimos al modelo que actúa como juez».**
 >
 > Título: «Juez: tres candidatos, umbrales fijados antes de correr». Umbrales: kappa ≥ 0,70, consistencia al invertir el orden ≥ 0,90 y sin preferencia por las respuestas largas.
 >
@@ -217,7 +218,7 @@ El **generador**, que redacta la respuesta en todas las condiciones, es `qwen3:8
 
 Elegimos al modelo que actúa como **juez** entre tres alternativas, exigiendo alta coincidencia con criterio humano y consistencia en sus veredictos. Tanto Mistral como GPT-OSS alcanzaron un 95 % de acuerdo con las personas. Seleccionamos gpt-oss:20b por ser el más veloz e independiente: al ser de otra familia que Qwen, evitamos sesgos y aseguramos una evaluación totalmente neutral.
 
-> **▶ Figura 8 — se muestra al decir «El extractor es el modelo que».**
+> **▶ Figura 8 — se muestra al decir «Para construir la base de conocimiento».**
 >
 > Texto sobrepuesto: «`qwen3.6:27b`: mejor F1, 1,8 a 3,6 veces el tiempo» y «Decidido: `qwen3:8b`, el de OpenKOS».
 >
@@ -226,11 +227,11 @@ Elegimos al modelo que actúa como **juez** entre tres alternativas, exigiendo a
 Para construir la base de conocimiento, a partir de lo hablado en las reuniones, usamos un **extractor**, y nuestro segundo objetivo (OE2) fue evaluar su desempeño. Comparamos cuatro variantes de modelos Qwen de distinto tamaño (8b, 14b, 27b y 35b).
 Para calificarlos usamos una métrica de equilibrio: premiar al que detecta más decisiones verdaderas y castigar al que "alucina" o inventa información. Aunque el modelo más grande (qwen3.6:27b) obtuvo el mejor puntaje de calidad, su costo en tiempo fue excesivo, tardando hasta 3,6 veces más. La decisión final fue adoptar qwen3:8b (de OpenKOS): ofrece una excelente calidad, es mucho más eficiente y está diseñado específicamente para la dinámica de las reuniones.
 
-A continuacion, Gustavo sigue con la búsqueda de parámetros y los primeros resultados.
+A continuación, Gustavo sigue con la búsqueda de parámetros y los primeros resultados.
 
 ---
 
-## Bloque 3 — Gustavo Martínez (5:19 – 7:52)
+## Bloque 3 — Gustavo Martínez (5:58 – 8:31)
 
 ### Texto hablado
 
@@ -291,7 +292,7 @@ Jason cierra con las dificultades y lo que sigue.
 
 ---
 
-## Bloque 4 — Jason Sepúlveda (7:52 – 9:58)
+## Bloque 4 — Jason Sepúlveda (8:31 – 10:38)
 
 ### Texto hablado
 
