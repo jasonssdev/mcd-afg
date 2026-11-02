@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 04 — Bibliografía |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.5 |
-| **Fecha** | 2026-10-15 |
+| **Versión** | 1.6 |
+| **Fecha** | 2026-11-01 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -18,6 +18,7 @@
 | 1.3 | 2026-10-15 | Se agrega la sección «Trabajos relacionados y su vínculo con el proyecto»: análisis de cuatro grupos de trabajos ya incluidos en la bibliografía (GraphRAG; detección de decisiones en AMI; auditoría de decisiones; modelos de lenguaje como jueces), con lo que el proyecto toma de cada uno y el vacío que aborda frente a él. No se agrega ni se modifica ninguna entrada bibliográfica. | La rúbrica de la presentación final de AFG2 pide al menos dos trabajos relacionados, con un análisis claro de cómo se relacionan con el proyecto y lo complementan. |
 | 1.4 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (LLM-as-a-judge). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
 | 1.5 | 2026-10-15 | Se actualiza la nota de ConsistencyGate al estado cerrado: el trabajo fue leído (2026-10-07) y no acota la afirmación de novedad (`propuesta.md` §9). Se corrigen las referencias de numeración a las secciones reales de este documento (1 a 7). Las entradas bibliográficas no cambian. | Auditoría de gobernanza del 2026-10-15: la nota seguía pidiendo una lectura ya hecha y citaba secciones 8.x que no existen en este documento. |
+| 1.6 | 2026-11-01 | La condición C3 se describe sin decir que la distancia entre C1 y C3 mide «el valor de la estructura»: con C1 como RAG convencional, esa distancia estima el valor del sistema compilado frente a un RAG convencional, y la de C3 a C2, el costo de construir la base con una máquina. Las referencias al documento 09 (el LLM-as-a-judge) pasan de §4 a §6.3, su numeración actual. Las entradas bibliográficas no cambian. | Decisión del 2026-11-01 ([ADR 0014](../decisions/0014-adr-c1-como-rag-convencional.md)) y renumeración del documento 09. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -399,8 +400,8 @@ condición C2 (documento 03, OE3).
 con índice responde mejor, no se sabe cuánto de la mejora viene de tener el índice y cuánto
 del modelo que lo construyó (documento 01, §2). El proyecto complementa ese trabajo con la
 condición C3, la misma base construida desde la anotación humana: la distancia entre C1 y C3
-mide el valor de la estructura, y la distancia entre C3 y C2 mide el costo de construirla con
-una máquina que se equivoca. GraphRAG es además un preprint sin revisión por pares, por lo que
+estima el valor del sistema compilado frente a un RAG convencional, y la distancia entre C3 y C2
+mide el costo de construirla con una máquina que se equivoca. GraphRAG es además un preprint sin revisión por pares, por lo que
 se lo usa como antecedente y no como evidencia concluyente.
 
 ### Detección de decisiones en AMI: Hsueh y Moore (2007a) y Fernández et al. (2008)
@@ -443,12 +444,12 @@ un modelo tiende a favorecer sus propias respuestas (sección 4).
 
 *Qué toma el proyecto.* Ambas lecciones. Califica las unas 900 respuestas del Experimento B un
 LLM-as-a-judge (`gpt-oss:20b`), de una familia de modelos distinta de la del modelo que
-extrae, y una persona verifica al menos el 20 % de sus veredictos (documento 09, §4).
+extrae, y una persona verifica al menos el 20 % de sus veredictos (documento 09, §6.3).
 
 *Qué vacío aborda.* Ningún banco público mide la tarea de calificar respuestas sobre
-decisiones de reuniones (documento 09, §4), así que el proyecto calibra su propio LLM-as-a-judge con 42
+decisiones de reuniones (documento 09, §6.3), así que el proyecto calibra su propio LLM-as-a-judge con 42
 respuestas etiquetadas a mano, con seis requisitos fijados antes de ver resultados (kappa
-0,951), y declara la limitación de esa calibración (documento 09, §4).
+0,951), y declara la limitación de esa calibración (documento 09, §6.3).
 
 ---
 
@@ -460,4 +461,4 @@ respuestas etiquetadas a mano, con seis requisitos fijados antes de ver resultad
 | Verificación contra fuente primaria | [`../../bibliography/refs.bib`](../../bibliography/refs.bib), cabecera del archivo |
 | Preprints marcados: Edge et al. 2024, Cai & O'Connor 2025, Zhang & Li 2026, Bohnet et al. 2022 | [`../../bibliography/refs.bib`](../../bibliography/refs.bib), campo `keywords` |
 | Página de licencia AMI como fuente de datos pública | [`../../config/corpus.toml`](../../config/corpus.toml) |
-| Sección «Trabajos relacionados»: cifras de Hsueh y Moore / Fernández et al. y del LLM-as-a-judge | [`01-jss-problema.md`](01-jss-problema.md) §2–3; [`09-jss-modelos-y-justificacion.md`](09-jss-modelos-y-justificacion.md) §4 |
+| Sección «Trabajos relacionados»: cifras de Hsueh y Moore / Fernández et al. y del LLM-as-a-judge | [`01-jss-problema.md`](01-jss-problema.md) §2–3; [`09-jss-modelos-y-justificacion.md`](09-jss-modelos-y-justificacion.md) §6.3 |

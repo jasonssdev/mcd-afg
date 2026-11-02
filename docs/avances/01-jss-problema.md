@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 01 — Problema |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.3 |
-| **Fecha** | 2026-10-15 |
+| **Versión** | 1.4 |
+| **Fecha** | 2026-11-01 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -16,6 +16,7 @@
 | 1.1 | 2026-09-20 | Citas Hsueh & Moore 2007a/2007b; enlace a la propuesta renombrado. | Corrección bibliográfica y renombre de archivo. |
 | 1.2 | 2026-10-01 | Reescritura completa de la redacción: el problema se cuenta desde un caso real del corpus, cada término técnico se explica al aparecer y se agrega un glosario breve. Las cifras, las referencias y la formulación del problema no cambian. | Retroalimentación de la revisión entre equipos de la semana 8: el problema y la metodología no se entendían, menos aún para una audiencia no técnica. |
 | 1.3 | 2026-10-15 | Se agrega a la lista de referencias Hsueh y Moore (2007b), que el historial de la versión 1.1 ya citaba, y se ordena la lista alfabéticamente; se elimina un párrafo que describía la versión 1.2 en pasado. No cambia ninguna cifra ni la formulación del problema. | Auditoría de gobernanza del 2026-10-15: la lista de referencias estaba incompleta respecto del historial y desordenada. |
+| 1.4 | 2026-11-01 | La formulación del problema (§5) se alinea con la de la propuesta (§1.5): lo que se separa es el valor de un sistema que compila las decisiones en una base persistente y estructurada frente a un RAG convencional, el costo de los errores de su extracción automática y la contribución de representar la evolución temporal; antes decía «el valor de mantener una representación persistente», sin nombrar la comparación con un RAG convencional. No cambia ninguna cifra. | Decisión del 2026-11-01 ([ADR 0014](../decisions/0014-adr-c1-como-rag-convencional.md)): C1 es un RAG convencional y la pregunta es si compilar conviene frente a lo que las organizaciones usan hoy. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -146,16 +147,16 @@ conecta una decisión con su revisión en una reunión posterior de la misma ser
 
 ## 5. El problema, en una frase
 
-> Falta una medición controlada que separe el valor de mantener una representación
-> persistente y estructurada de decisiones, el costo de los errores de su extracción
-> automática, y la contribución específica de representar la evolución de una decisión a
-> través de una serie de reuniones — frente a consultar directamente las transcripciones con
-> RAG.
+> Falta una medición controlada que separe el valor de un sistema que compila las decisiones
+> en una base persistente y estructurada, frente a un RAG convencional; el costo de los errores
+> que introduce su extracción automática; y la contribución específica de representar la
+> evolución temporal de una decisión a lo largo de una serie de reuniones.
 
-Dicho de otro modo: se quiere medir, con todo lo demás igual, tres cosas que hoy están
-mezcladas. Cuánto ayuda tener una base de decisiones en lugar de buscar en las
-transcripciones. Cuánto cuesta que esa base la construya una máquina y se equivoque. Y
-cuánto aporta, dentro de esa base, registrar que una decisión cambió con el tiempo.
+Dicho de otro modo: se quiere medir, de forma controlada, tres cosas que hoy están
+mezcladas. Cuánto vale tener una base de decisiones frente a buscar en las transcripciones con
+un RAG convencional, que es lo que las organizaciones usan hoy. Cuánto cuesta que esa base la
+construya una máquina y se equivoque. Y cuánto aporta, dentro de esa base, registrar que una
+decisión cambió con el tiempo.
 
 ## Glosario breve
 

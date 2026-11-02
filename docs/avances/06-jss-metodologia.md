@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 06 — Metodología |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 6.1 |
+| **Versión** | 7.0 |
 | **Fecha** | 2026-11-01 |
 | **Estado** | Vigente |
 
@@ -34,6 +34,7 @@
 | 5.0 | 2026-10-19 | Se declara, como elección metodológica y limitación (§1), que el texto de referencia que se compara con las extracciones del Experimento A es una traducción automática al inglés de las etiquetas humanas. Las etiquetas siguen siendo las humanas, en español; la traducción no cambia ningún estado ni etiqueta. No cambian cifras ni umbrales, y no se fija τ. | Issue #141. La extracción sale en inglés, el idioma original de las transcripciones, y la referencia está en español: la similitud entre una frase en inglés de AMI y su propia anotación en español tiene mediana 0,69 (ES2015) y 0,72 (TS3009), y solo 3 de 27 y 3 de 21 llegan a 0,80 ([notebook 15](../../notebooks/15-jss-screen-de-modelos-openkos.ipynb), §6.4). Método: [`../anotacion/traduccion-referencia.md`](../anotacion/traduccion-referencia.md); protocolo: [`../protocols/alignment.md`](../protocols/alignment.md) 2.0. |
 | 6.0 | 2026-10-19 | Se fija el umbral τ del Experimento A (§1, §5–6): **τ principal = 0,70**, con 0,75 y 0,80 como análisis de sensibilidad y la curva completa siempre al lado. Se aparta de la regla fijada antes de ver los resultados (`max(τ_nulo, τ_juez)`, que daba 0,80), porque el control nulo cruza dos equipos de AMI con el mismo encargo de diseño y por eso sobrestima el azar; el desvío responde a ese defecto del control, no a la cobertura que resulta. El juez automático complementa la validación manual del protocolo y no la sustituye; la concordancia del juez con una persona sobre 50 pares queda pendiente. No cambian otros umbrales ni cifras. | Issue #142. Cobertura nula 0,138, 0,053 y 0,015 con τ = 0,70, 0,75 y 0,80; proporción de «sí» del juez a lo más 0,32 por debajo de 0,70 y al menos 0,76 en cada bin desde 0,70 ([ADR 0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md), [notebook 17](../../notebooks/17-jss-tau-referencia-en.ipynb)); protocolo [`../protocols/alignment.md`](../protocols/alignment.md) 3.0. |
 | 6.1 | 2026-11-01 | Cambio de redacción en la descripción de las condiciones (§3): C1 se presenta como un RAG convencional y la comparación con C2 y C3 como la del sistema compilado frente a ese RAG, no como el efecto de la representación aislada. No cambia ninguna cifra ni el procedimiento de ajuste de C1. | Decisión del 2026-11-01 ([ADR 0014](../decisions/0014-adr-c1-como-rag-convencional.md)); el detalle está en el [documento 09](09-jss-modelos-y-justificacion.md). |
+| 7.0 | 2026-11-01 | El «Riesgo de C2» (§7–8) deja de decir que la versión de OpenKOS está abierta y que la medición se repite con la que se fije: la versión está fijada en la 0.7.0 y, con ella, la extracción de ES2015 da entre 69 y 71 decisiones por corrida frente a 27 de la referencia adjudicada (el riesgo observado pasa de la pérdida de decisiones, 4 objetos con la 0.5.2, a las decisiones de más). Se corrigen las referencias al documento 09 (§5 a §7 para las condiciones y los parámetros, §6.3 para el juez), se agrega el documento 10 a los documentos relacionados y el kappa de «respaldada» se escribe 0,865 como en el documento 09 (antes 0,87). | Fijación de la versión (ADR 0006, enmienda del 2026-11-01) y extracción repetida con la 0.7.0 (69, 69 y 71 decisiones; [notebook 19](../../notebooks/19-jss-modelos.ipynb), §1.4 y §8.1). Las referencias seguían la numeración anterior del documento 09. Además, las menciones a «todo lo demás igual» (§3 y glosario) pasan a nombrar lo que se mantiene igual entre condiciones, porque la etapa de respuesta ya no lo es (ADR 0014). |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -41,7 +42,7 @@
 
 ## Documentos relacionados
 
-Este documento fija el diseño completo. Tres documentos posteriores desarrollan partes de él
+Este documento fija el diseño completo. Cuatro documentos posteriores desarrollan partes de él
 con más detalle y con las cifras ya medidas:
 
 - [Documento 07, análisis exploratorio](07-jss-analisis-exploratorio.md): la calidad de los
@@ -50,6 +51,8 @@ con más detalle y con las cifras ya medidas:
   mide en cada objetivo, con qué umbral o intervalo, y el criterio D16 (§6).
 - [Documento 09, modelos y su justificación](09-jss-modelos-y-justificacion.md): las tres
   condiciones, el LLM-as-a-judge (un segundo modelo que califica las respuestas) y los parámetros, con su evidencia.
+- [Documento 10, confiabilidad de la referencia](10-jss-confiabilidad-de-la-referencia.md): el
+  kappa de existencia, tipo y dirección de las fases 1 y 2 de la anotación, y su lectura.
 
 ## El experimento en una página
 
@@ -239,9 +242,9 @@ relaciones que existen en el corpus. La evidencia está en
 
 ## 3–4. Diseño analítico y baselines
 
-*Fase 3: las tres condiciones y la regla de "todo lo demás igual".*
+*Fase 3: las tres condiciones y lo que se mantiene igual entre ellas.*
 
-*Más detalle:* cada condición, sus técnicas y sus parámetros, con la evidencia de cada elección, en el [documento 09](09-jss-modelos-y-justificacion.md) (§2 y §3).
+*Más detalle:* cada condición, sus técnicas y sus parámetros, con la evidencia de cada elección, en el [documento 09](09-jss-modelos-y-justificacion.md) (§5 a §7).
 
 **Tres condiciones**, mismo modelo generativo, mismo modelo de *embeddings*, mismo hardware y
 mismo presupuesto de contexto. Un modelo de *embeddings* convierte texto en números para
@@ -298,7 +301,7 @@ el piloto; con el mínimo añadido, 92 (3,0 %, ≈2,3 h), sin perder el caso de 
 *Fases 1 y 2: con qué modelos se extrae, cómo se decide si acertaron y por qué la referencia
 la hacen personas.*
 
-*Más detalle:* la elección y la calibración del LLM-as-a-judge, en el [documento 09](09-jss-modelos-y-justificacion.md) (§4); la cuenta de parámetros, en su §5.
+*Más detalle:* la elección y la calibración del LLM-as-a-judge, en el [documento 09](09-jss-modelos-y-justificacion.md) (§6.3); la cuenta de parámetros, en su §7.
 
 **Modelos.** Modelos generativos de ejecución local (familia Qwen o equivalente, en escalas
 contrastables) y un modelo de *embeddings* multilingüe. "Ejecución local" significa que
@@ -385,7 +388,7 @@ segundos por respuesta frente a 5,5. `atla/selene-mini`, un modelo pequeño entr
 cambiaba de veredicto según el orden de presentación. Para comprobar que las etiquetas humanas
 son confiables, una segunda persona etiquetó 15 de las respuestas por separado: coincidieron en
 15 de 15 sobre si la respuesta es correcta (kappa 1,00) y en 14 de 15 sobre si está respaldada
-(kappa 0,87).
+(kappa 0,865).
 
 La calibración tiene una limitación que se declara: el identificador de cada respuesta dejaba
 ver cómo se había generado (con o sin la evidencia), de modo que quienes etiquetaron podían
@@ -431,22 +434,25 @@ resumen abstractivo de AMI afirma una eliminación que la transcripción contrad
 conversación) predijo el error antes de leer la transcripción, lo que respalda exigir
 evidencia obligatoria como parte de la definición de decisión (§1).
 
-**Riesgo de C2: la extracción de OpenKOS aún no alcanza para E2 y E3.** Una prueba sobre la
-serie de desarrollo ES2015 con OpenKOS 0.5.2 (modelo local qwen3:8b) extrajo 4 objetos
+**Riesgo de C2: la extracción de OpenKOS puede no alcanzar para E2 y E3.** Una primera prueba
+sobre la serie de desarrollo ES2015 con OpenKOS 0.5.2 (modelo local qwen3:8b) extrajo 4 objetos
 Decision para toda la serie, frente a 29 decisiones con acuerdo evaluado en la anotación adjudicada del equipo (27 son decisiones finales; el archivo adjudicado tiene 34 filas).
-Las decisiones extraídas agrupan temas completos y su cuerpo es un extracto de la
-transcripción; OpenKOS ordena las decisiones solo por fecha de calendario, y las cuatro
-reuniones de ES2015 comparten la misma fecha; y aplicar una revisión detectada exige una
-confirmación humana por cada par. Con esa versión, C2 no podría responder E2 ni E3, y la
-comparación C2 frente a C3 mediría sobre todo decisiones ausentes. Es una serie y una
-corrida, con la versión 0.5.2; la medición se repite con la versión que finalmente se
-fije. La versión a fijar queda abierta mientras OpenKOS se corrige. El plan: corregir OpenKOS
-(extracción a nivel de decisión, orden dentro de un mismo día, aplicación automática opcional
-de revisiones dirigidas, y la pérdida de la marca de atribución `USED:` cuando se escribe al
-final de una oración, que afecta solo la tasa de citación; `jasonssdev/openkos#1348`,
-`#1349`, `#1350` y `#1384`), medir cada corrección sobre series de desarrollo contra la
-anotación adjudicada y fijar una versión publicada antes de tocar cualquier serie de
-evaluación, registrándola en cada corrida (coherente con los ADR 0005 y 0006).
+Las decisiones extraídas agrupaban temas completos y su cuerpo era un extracto de la
+transcripción; OpenKOS ordenaba las decisiones solo por fecha de calendario, y las cuatro
+reuniones de ES2015 comparten la misma fecha; y aplicar una revisión detectada exigía una
+confirmación humana por cada par. Con esa versión, C2 no habría podido responder E2 ni E3. La
+versión quedó fijada en la 0.7.0 (ADR 0006, enmienda del 2026-11-01) y la medición se repitió con
+ella: en ES2015 extrae entre 69 y 71 decisiones por corrida, frente a 27 de la referencia
+adjudicada, de modo que el riesgo observado ya no es la pérdida de decisiones sino las decisiones
+de más (valoraciones o datos tomados por decisiones), que bajan la precision. Es una serie y un
+modelo; si la extracción alcanza para E2 y E3 lo medirá el Experimento B, y la calidad de lo
+extraído, el Experimento A. Del plan que había (corregir OpenKOS a nivel de decisión, el orden dentro de un mismo día, la
+aplicación automática opcional de revisiones dirigidas y la pérdida de la marca de atribución
+`USED:`; `jasonssdev/openkos#1348`, `#1349`, `#1350` y `#1384`), la extracción a nivel de decisión
+ya se observa con la versión fijada, y el orden dentro de un mismo día se resolvió del lado del
+proyecto (a continuación). El proyecto usa OpenKOS tal como se distribuye (ADR 0003 y 0014) y no
+depende de correcciones pendientes. La versión se registra en cada corrida (coherente con los
+ADR 0005 y 0006).
 
 El orden dentro de un mismo día ya tiene una solución en el lado del proyecto. Importa porque
 de él depende qué decisión se considera posterior a cuál, es decir, cuál reemplaza a cuál, y
@@ -525,7 +531,7 @@ no el esfuerzo; si se queda corto de 40, se declara como limitación de potencia
 
 | Término | Qué significa en este documento |
 |---|---|
-| Condición (C1, C2, C3) | Cada una de las tres maneras de responder preguntas que se comparan con todo lo demás igual. |
+| Condición (C1, C2, C3) | Cada una de las tres maneras de responder preguntas que se comparan con los mismos componentes compartidos (generador, *embeddings*, hardware y ventana de contexto). |
 | Baseline | El punto de comparación (C1). Debe ser lo mejor que se pueda hacer con la práctica actual, no una versión débil. |
 | Ground truth | Las decisiones y relaciones marcadas a mano, contra las que se mide la máquina. |
 | Filtro léxico | Filtro (*blocking*) que reduce los 3.071 pares posibles a los 92 que las personas revisan. |
@@ -575,8 +581,8 @@ desde `src/afg/` a través de un notebook, no entra en la tesis.
 | Ratificación del ámbito de alineación y del rol, e intervalo principal por reuniones del Experimento A | [`../decisions/0011-adr-alineacion-rol-e-intervalos-del-experimento-a.md`](../decisions/0011-adr-alineacion-rol-e-intervalos-del-experimento-a.md); [`../../notebooks/14-jss-alineacion-experimento-a.ipynb`](../../notebooks/14-jss-alineacion-experimento-a.ipynb); `src/afg/evaluation/scoring.py` (`meeting_cluster_intervals`, `pool_scores`) |
 | Ajuste de C1: 1.200 caracteres, 1 turno de solapamiento, K = 5; contexto de unos 7.400 caracteres | [`../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md`](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md) (enmienda 2026-10-15); [`../../notebooks/06-jss-ajuste-c1.ipynb`](../../notebooks/06-jss-ajuste-c1.ipynb) |
 | Fechas de reunión: hora real en 6 de 14 series, sintética en 8 | [`../decisions/0008-adr-fechas-de-reunion-para-openkos.md`](../decisions/0008-adr-fechas-de-reunion-para-openkos.md); [`../../notebooks/08-jss-fechas-de-reunion.ipynb`](../../notebooks/08-jss-fechas-de-reunion.ipynb) |
-| Riesgo de C2 (4 extraídas frente a 29 decisiones con acuerdo evaluado en ES2015; 27 finales, 34 filas) | [`../../data/processed/decisions/ES2015.decisions.adjudicated.csv`](../../data/processed/decisions/ES2015.decisions.adjudicated.csv); `jasonssdev/openkos#1348`, `#1349`, `#1350`, `#1384`; [`../decisions/0005-adr-development-evaluation-split.md`](../decisions/0005-adr-development-evaluation-split.md); [`../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md`](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) |
+| Riesgo de C2 (4 extraídas con la 0.5.2 y de 69 a 71 con la 0.7.0, frente a 29 decisiones con acuerdo evaluado en ES2015; 27 finales, 34 filas) | [`../../data/processed/decisions/ES2015.decisions.adjudicated.csv`](../../data/processed/decisions/ES2015.decisions.adjudicated.csv); [`../../notebooks/19-jss-modelos.ipynb`](../../notebooks/19-jss-modelos.ipynb) §1.4; `jasonssdev/openkos#1348`, `#1349`, `#1350`, `#1384`; [`../decisions/0005-adr-development-evaluation-split.md`](../decisions/0005-adr-development-evaluation-split.md); [`../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md`](../decisions/0006-adr-c1-rag-separado-con-respuesta-de-openkos.md) |
 | Umbrales de troceo de OpenKOS fijados con TS3005 (18.000 y 12.000 caracteres) | OpenKOS, `src/openkos/extraction/concept.py` en los commits `58b9e699` y `2bc2c8fe`; historial `578dea3d` y `0c96ad9c`; issue #145; [`../decisions/0005-adr-development-evaluation-split.md`](../decisions/0005-adr-development-evaluation-split.md) |
 | Calibración: kappa 0,094 en ES2015, guía corregida y recalibración sobre TS3009 | [`../../notebooks/04-jss-anotacion-f1-calibracion.ipynb`](../../notebooks/04-jss-anotacion-f1-calibracion.ipynb); [`../anotacion/manual-anotacion-oe1.md`](../anotacion/manual-anotacion-oe1.md) §2 y §6; [`../anotacion/asignacion/README.md`](../anotacion/asignacion/README.md) (Fase 1) |
-| LLM-as-a-judge: `gpt-oss:20b`, kappa 0,95; acuerdo humano 1,00 y 0,87; limitación del identificador | [`../../notebooks/05-jss-seleccion-juez.ipynb`](../../notebooks/05-jss-seleccion-juez.ipynb); [`../../config/experiments.toml`](../../config/experiments.toml), sección `[judge]`; [`../anotacion/calibracion-juez.md`](../anotacion/calibracion-juez.md) |
+| LLM-as-a-judge: `gpt-oss:20b`, kappa 0,95; acuerdo humano 1,00 y 0,865; limitación del identificador | [`../../notebooks/05-jss-seleccion-juez.ipynb`](../../notebooks/05-jss-seleccion-juez.ipynb); [`../../config/experiments.toml`](../../config/experiments.toml), sección `[judge]`; [`../anotacion/calibracion-juez.md`](../anotacion/calibracion-juez.md) |
 | Las cuatro fases y su aporte | [`03-jss-objetivos.md`](03-jss-objetivos.md), objetivos específicos OE1–OE4 |

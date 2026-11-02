@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 08 — Métricas y criterio de éxito |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 3.0 |
+| **Versión** | 4.0 |
 | **Fecha** | 2026-11-01 |
 | **Estado** | Vigente |
 
@@ -18,6 +18,7 @@
 | 1.3 | 2026-10-15 | La sección E de decisiones abiertas pasa a resuelta: la función `agreement_meets_threshold` se eliminó del código. No cambia ninguna cifra ni métrica. | Corrección de código del 2026-10-15 (rama `fix/auditoria-codigo`): el código sugería un umbral de kappa que el diseño rechaza. |
 | 2.0 | 2026-11-01 | §4.1 y la tabla de métricas pasan de «series de control pendientes» a los kappas medidos de la Fase 2: existencia 0,783 (37 pares), tipo 0,554 (18 pares), dirección indefinida (acuerdo total). | Las cuatro series de control quedaron adjudicadas (notebook 18, §6.1; `reports/tables/agreement-pooled.csv`). Detalle en el [documento 10](10-jss-confiabilidad-de-la-referencia.md). |
 | 3.0 | 2026-11-01 | C1 pasa a ser un RAG convencional, así que el contraste C1 frente a C2/C3 se lee como el valor del sistema compilado frente a un RAG convencional, que no puede repartirse entre representación y etapa de respuesta. La tasa de respuestas confiadas pero desactualizadas (H4) se mide entre las preguntas que cada condición responde, y la abstención se reporta aparte como corrección del rechazo. No cambian el criterio de éxito (D16/D17), las métricas ni las cifras. | Decisión del 2026-11-01 ([ADR 0014](../decisions/0014-adr-c1-como-rag-convencional.md)). |
+| 4.0 | 2026-11-01 | Se corrigen cuatro afirmaciones que habían quedado atrás. (1) τ sí tiene regla de selección: el ADR 0012 lo fijó el 2026-10-19 (principal 0,70; 0,75 y 0,80 de sensibilidad), y lo que sigue sin existir es un criterio de éxito para OE1 y OE2 (§4.3 y decisión abierta A, que cambia de título). (2) La versión de OpenKOS está fijada en la 0.7.0, así que el riesgo observado en la extracción (§4.3) se actualiza: con la 0.7.0 la máquina extrae entre 69 y 71 decisiones por corrida en ES2015 frente a 27 de la referencia adjudicada, lo que anticipa una precision baja más que un recall bajo (antes: 4 objetos con la 0.5.2). (3) La muestra de *recall* del filtro léxico (§4.2 y tabla de métricas) ya no está «sin anotar»: tres de las cuatro muestras (ES2016, IS1003 y TS3005, 50 pares cada una) tienen anotación y falta la de IS1004 (#203) y la función que calcula el *recall* (#205). (4) Las referencias al documento 09 siguen su numeración actual (§5 a §7 para las condiciones, §6.3 para el LLM-as-a-judge). | ADR 0012 (τ) y ADR 0006, enmienda del 2026-11-01 (versión); extracción repetida con la 0.7.0 ([notebook 19](../../notebooks/19-jss-modelos.ipynb), §1.4); archivos `data/processed/relations/*.recall-sample.gv.csv` de ES2016, IS1003 y TS3005. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -45,13 +46,13 @@ para reportar) y simulaciones con datos sintéticos. Cada una está marcada como
 - **C1, C2 y C3.** Las tres condiciones que se comparan. C1 busca fragmentos de texto y
   redacta con ellos, con una instrucción genérica y una sola llamada (un RAG convencional); C2
   consulta una base de decisiones construida por la máquina; C3
-  consulta la misma base construida por personas ([documento 09](09-jss-modelos-y-justificacion.md), §3).
+  consulta la misma base construida por personas ([documento 09](09-jss-modelos-y-justificacion.md), §5).
 - **Estrato.** Grupo de preguntas del mismo tipo: E1 (hecho puntual), E2 (estado vigente), E3
   (evolución de una decisión, el que prueba la tesis) y E4 (sin respuesta en el material).
 - **τ (tau).** Umbral de similitud a partir del cual una decisión extraída por la máquina y una
   de la referencia se consideran candidatas a ser la misma (§4.3).
 - **OpenKOS.** Motor de código abierto con el que se construye y consulta la base de decisiones
-  de C2 y C3 ([documento 09](09-jss-modelos-y-justificacion.md), §3.2).
+  de C2 y C3 ([documento 09](09-jss-modelos-y-justificacion.md), §6.4).
 
 ## 1. Un caso concreto: qué es "una respuesta correcta"
 
@@ -166,7 +167,7 @@ implementada y además tener una cifra preliminar sobre desarrollo.
 | Métrica | Qué mide (en simple) | Se aplica a | Cómo se calcula | Umbral / intervalo / regla de lectura | Dónde está definida | Estado |
 |---|---|---|---|---|---|---|
 | **Kappa de anotación** (existencia, tipo, dirección) | Cuánto coinciden dos personas al marcar si dos decisiones se relacionan, cómo y en qué sentido | Series de control con doble anotación (4 de las 11 series de evaluación, 36,4 %; más 2 series de calibración de desarrollo) | Kappa de Cohen, un valor por cada uno de los tres ejes, nunca combinados | **Sin umbral de aceptación, por diseño.** Se reporta tal como salga; un kappa bajo es un hallazgo | Doc. 06 §1 y §5–6; manual de anotación §6; `annotation/agreement.py` | Medida en las cuatro series de control (Fase 2): existencia 0,783 (37 pares), tipo 0,554 (18 pares), dirección indefinida por acuerdo total (notebook 18, §6.1; documento 10) |
-| **Recall del filtro léxico** (*blocking*) | Qué parte de las relaciones reales deja pasar el filtro que decide qué pares se anotan | 200 pares rechazados (50 por serie × IS1004, ES2016, IS1003, TS3005) | Relaciones reales halladas entre los rechazados, sobre el total muestreado; por sitio y en conjunto, con IC bootstrap | **Sin umbral.** Se reporta la cifra y su intervalo | Doc. 06 §2; manual de anotación §5; `annotation/blocking.py`; `config/annotation.toml` `[annotation.recall_sample]` | Muestra generada, sin anotar. Pendiente |
+| **Recall del filtro léxico** (*blocking*) | Qué parte de las relaciones reales deja pasar el filtro que decide qué pares se anotan | 200 pares rechazados (50 por serie × IS1004, ES2016, IS1003, TS3005) | Relaciones reales halladas entre los rechazados, sobre el total muestreado; por sitio y en conjunto, con IC bootstrap | **Sin umbral.** Se reporta la cifra y su intervalo | Doc. 06 §2; manual de anotación §5; `annotation/blocking.py`; `config/annotation.toml` `[annotation.recall_sample]` | Muestras generadas; anotadas las de ES2016, IS1003 y TS3005 (50 pares cada una); faltan la de IS1004 (#203) y la función del cálculo (#205). Pendiente |
 | **Precision, recall y F1** (OE2) | Qué tan bien la máquina encuentra las decisiones de la referencia | Decisiones extraídas por la máquina frente a las 343 de la referencia | Conteos de aciertos, sobras y faltantes tras el alineamiento (§4.3); F1 como **curva sobre τ** | Sin umbral ni criterio de éxito; curva con τ de 0,50 a 0,90 en pasos de 0,05 | Propuesta §5.4 y §5.6; [`docs/protocols/alignment.md`](../protocols/alignment.md); [`config/experiments.toml`](../../config/experiments.toml) `[alignment]` | Implementada. Pendiente de medir (no hay extracción real de evaluación) |
 | **Accuracy de tipo y de dirección** (OE2) | Si la máquina acierta qué relación hay entre dos decisiones y cuál revisa a cuál | Relaciones entre decisiones | Fracción de relaciones con etiqueta (o sentido) igual a la referencia; se reportan por separado | Sin umbral | Propuesta §5.6; `evaluation/metrics.py` | Implementada. Pendiente |
 | **Concordancia del alineamiento** | Si la regla automática que empareja decisiones coincide con el emparejamiento manual | Muestra de al menos 100 pares | Pares coincidentes entre ambos emparejamientos sobre la unión de pares emparejados | **≥ 0,80**; si no, se revisa la grilla de τ y se repite | Doc. 06 §1; [`docs/protocols/alignment.md`](../protocols/alignment.md); `evaluation/alignment.py` (`concordance`) | Implementada. Pendiente de medir |
@@ -178,7 +179,7 @@ implementada y además tener una cifra preliminar sobre desarrollo.
 | **Recall@K de recuperación** | Si entre los K fragmentos recuperados está la evidencia | Solo la etapa de recuperación de C1 y C2 | Fracción de la evidencia de referencia que aparece entre los K recuperados | Sin umbral; se usa para ajustar C1 sobre ES2015 con una regla fijada antes de correr | Propuesta §5.4; [ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md); `config/experiments.toml` `[retrieval.tuning]` | Implementada y usada en desarrollo ([notebook 06](../../notebooks/06-jss-ajuste-c1.ipynb)) |
 | **Atribución del error** (OE4) | En qué etapa nació cada respuesta fallida de C2 | Respuestas fallidas de C2 | Reglas fijas en orden: extracción, luego recuperación, luego síntesis | Cada error cae en una y solo una categoría; la proporción atribuible a extracción es la cifra principal | Doc. 03 (OE4); doc. 06 §7–8; `evaluation/attribution.py` | Implementada. Pendiente |
 | **Concordancia LLM-as-a-judge–humano** | Si el LLM-as-a-judge coincide con las personas | 20 % de las respuestas juzgadas (una corrida sorteada por pregunta y condición), por etiqueta | Kappa de Cohen; siempre se informan también el acuerdo observado y la prevalencia | **Kappa ≥ 0,70** por etiqueta; kappa indefinido cuenta como «no cumple» | Doc. 06 §1 y §5–6; [ADR 0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md); `evaluation/judge_human_check.py` | Implementada. Pendiente sobre el Experimento B |
-| **Calibración del LLM-as-a-judge** | Si un modelo candidato sirve de LLM-as-a-judge | 42 respuestas etiquetadas a mano sobre ES2015 | Kappa y otras cinco comprobaciones ([documento 09](09-jss-modelos-y-justificacion.md), §4) | Seis requisitos fijados antes de correr ([`config/experiments.toml`](../../config/experiments.toml) `[judge.calibration]`) | Doc. 06 §5–6; [notebook 05](../../notebooks/05-jss-seleccion-juez.ipynb) | **Medida**: `gpt-oss:20b` cumple todos; kappa 0,951 |
+| **Calibración del LLM-as-a-judge** | Si un modelo candidato sirve de LLM-as-a-judge | 42 respuestas etiquetadas a mano sobre ES2015 | Kappa y otras cinco comprobaciones ([documento 09](09-jss-modelos-y-justificacion.md), §6.3) | Seis requisitos fijados antes de correr ([`config/experiments.toml`](../../config/experiments.toml) `[judge.calibration]`) | Doc. 06 §5–6; [notebook 05](../../notebooks/05-jss-seleccion-juez.ipynb) | **Medida**: `gpt-oss:20b` cumple todos; kappa 0,951 |
 | **Viabilidad de E3** | Si habrá suficientes relaciones reales para sostener el estrato que prueba la tesis | 11 pares candidatos adjudicados de desarrollo | Proporción de relaciones reales; IC de Wilson; proyección a evaluación | E3 exige ≥ 25 preguntas. Provisional | Doc. 06 §7–8; D12; [notebook 01](../../notebooks/01-jss-viabilidad-e3.ipynb) | **Medida**: 45,5 % (5/11), IC [21,3 – 72,0 %]; proyección ≈ 37 relaciones, IC [17 – 58] |
 | **Potencia del criterio D16** | Con 25 preguntas, qué tan seguido el criterio detecta una mejora real | Simulación con datos sintéticos | 1.000 experimentos simulados por escenario | Informativa; no es un umbral | D17; [ADR 0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md); [notebook 10](../../notebooks/10-jss-potencia-criterio-d16.ipynb); `experiments/power.py` | **Medida** (sintética): 57,5 % para +0,15 y 79,5 % para +0,20 (n = 25, base 0,5) |
 
@@ -233,8 +234,10 @@ anotación, §5).
 pareja entre sitios; una pérdida alta no invalida el ground truth, pero obliga a
 declararlo como limitación.
 
-**Estado.** La muestra está generada y **sin anotar**; no hay cifra. En el código existe el
-muestreo, y el cálculo del recall se hará con el intervalo bootstrap general.
+**Estado.** Las cuatro muestras están generadas. Tres (ES2016, IS1003 y TS3005, 50 pares cada
+una) ya tienen anotación; falta la de IS1004 (#203) y la función que calcula el recall con ellas
+(#205), así que todavía no hay cifra. En el código existe el muestreo, y el cálculo del recall se
+hará con el intervalo bootstrap general.
 
 ### 4.3 OE2: la extracción automática
 
@@ -254,11 +257,14 @@ del hablante) se confirmarán con la primera extracción real (documento 06, §1
 **Cómo leer el resultado.** Se leen la curva completa y si el orden entre condiciones cambia a
 lo largo de τ; si cambia, se declara. Cada corrida se repite al menos tres veces y se reporta
 media y dispersión, porque la extracción con un modelo de lenguaje no es determinista. **No
-existe un criterio de éxito ni una regla para elegir τ** (ver decisión abierta A).
+existe un criterio de éxito para OE2** (ver decisión abierta A); τ sí está fijado: 0,70 como valor
+principal, con 0,75 y 0,80 de sensibilidad ([ADR 0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md)).
 
-Un riesgo ya observado: en una prueba sobre ES2015 con OpenKOS 0.5.2, la máquina extrajo 4
-objetos Decision frente a 29 en la anotación adjudicada. Es una serie y una corrida con una
-versión que se está corrigiendo (documento 06, §7–8), pero anticipa un recall bajo.
+Un riesgo ya observado: una primera prueba sobre ES2015 con OpenKOS 0.5.2 extrajo 4 objetos
+Decision frente a 29 en la anotación adjudicada. Con la versión fijada (0.7.0), la máquina extrae
+entre 69 y 71 decisiones por corrida frente a 27 de la referencia adjudicada ([notebook 19](../../notebooks/19-jss-modelos.ipynb),
+§1.4). Es una serie y un modelo, pero anticipa una precision baja (decisiones de más) más que un
+recall bajo.
 
 ### 4.4 OE3: la utilidad funcional (Experimento B)
 
@@ -273,7 +279,7 @@ condiciones × 3 corridas; hasta 115 preguntas si E3 llega a 40) las califica un
 etiquetadas a mano, con seis requisitos fijados antes de correr (acuerdo con las personas,
 estabilidad ante cambios de orden y de semilla, accuracy en E4, formato válido y no premiar la
 verbosidad); cumplió todos (kappa 0,951). El detalle de la elección está en el
-[documento 09](09-jss-modelos-y-justificacion.md), §4. Como protección adicional, una persona
+[documento 09](09-jss-modelos-y-justificacion.md), §6.3. Como protección adicional, una persona
 vuelve a juzgar el 20 % de las respuestas del experimento y la concordancia debe alcanzar
 kappa ≥ 0,70 **por etiqueta**:
 
@@ -301,7 +307,7 @@ métricas secundarias son descriptivas: ninguna decide el éxito.
 
 La limitación de la calibración del LLM-as-a-judge (el identificador de cada respuesta dejaba ver cómo
 se había generado, así que el acuerdo podría estar algo inflado) se declara en el
-[documento 09](09-jss-modelos-y-justificacion.md), §4; la verificación humana del 20 % es la
+[documento 09](09-jss-modelos-y-justificacion.md), §6.3; la verificación humana del 20 % es la
 salvaguarda.
 
 ### 4.5 OE4: la atribución del error
@@ -371,18 +377,18 @@ compensa un resultado no concluyente en E3, ni al revés.
 **Condiciones previas para que el veredicto cuente.** Que el kappa de corrección de respuesta
 entre el LLM-as-a-judge y las personas alcance 0,70 (si no, ese veredicto se reporta solo con evaluación
 humana); que E3 alcance el tamaño mínimo (ver decisión abierta C); y que se fije una versión
-publicada de OpenKOS antes de tocar una serie de evaluación (documento 06, §7–8).
+publicada de OpenKOS antes de tocar una serie de evaluación (cumplido: `==0.7.0`; documento 06, §7–8).
 
 ## 7. Decisiones abiertas
 
 Lo que sigue **se declara, no se decide**: son puntos que el equipo debe resolver. Para cada
 uno se indica dónde se manifiesta, las opciones con su contrapartida y qué bloquea.
 
-### A. No hay criterio de éxito para OE1 y OE2, ni regla para elegir τ
+### A. No hay criterio de éxito para OE1 y OE2
 
 - **Dónde se ve.** D16 define el éxito solo para OE3/E3. En OE1 el kappa se reporta "sin
   umbral por diseño" (documento 06, §1); en OE2 el F1 es una curva sobre τ sin regla de
-  lectura ni de selección (propuesta §5.4; documento 03, criterio de cumplimiento de OE2:
+  lectura (τ sí está fijado, ADR 0012; propuesta §5.4; documento 03, criterio de cumplimiento de OE2:
   "reportados como curva sobre τ").
 - **Opciones.**
   1. *Dejarlo descriptivo* (estado actual). Evita fijar umbrales sin datos, pero el lector
@@ -390,8 +396,9 @@ uno se indica dónde se manifiesta, las opciones con su contrapartida y qué blo
   2. *Fijar rangos de lectura antes de ver resultados* (por ejemplo, bandas de F1 o el
      criterio de Landis y Koch). Da una referencia, a costa de introducir cortes arbitrarios.
   3. *Fijar una regla de selección de τ* (por ejemplo, reportar el τ de máximo F1 y declararlo
-     optimista, o el τ que maximiza la concordancia con el emparejamiento manual). Da un número
-     único comparable, pero es la elección que la curva buscaba evitar.
+     optimista, o el τ que maximiza la concordancia con el emparejamiento manual). **Ya resuelta:**
+     el ADR 0012 fijó τ principal = 0,70, con 0,75 y 0,80 de sensibilidad y la curva completa
+     siempre al lado.
 - **Qué bloquea.** No bloquea correr nada. Afecta cómo se resume OE2 en el informe y qué se
   responde si se pregunta "¿la extracción fue buena?".
 
