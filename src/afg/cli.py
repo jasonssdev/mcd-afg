@@ -220,6 +220,7 @@ from afg.shared.paths import (
     AMI_DIR,
     EXPERIMENT_A_DIR,
     EXPERIMENT_B_DIR,
+    FIGURES_DIR,
     GOLD_DECISIONS_DIR,
     GOLD_RELATIONS_DIR,
     OPENKOS_C3_WORKSPACES_DIR,
@@ -3996,6 +3997,76 @@ def experiment_b_report(
         json.dumps(report_to_dict(report), indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
     console.print(f"Guardado en {_short(target)}.")
+
+
+@experiment_app.command("final-tables")
+def experiment_final_tables(
+    name: Annotated[
+        str, typer.Option("--name", help="Nombre del conjunto: prefijo de los archivos escritos.")
+    ],
+    b_runs: Annotated[
+        list[str],
+        typer.Option("--b-run", help="Corrida en reports/experiment-b/ (repetible)."),
+    ],
+    a_run: Annotated[
+        str | None,
+        typer.Option("--a-run", help="Corrida en reports/experiment-a/ (informe del A)."),
+    ] = None,
+    descriptive: Annotated[
+        bool,
+        typer.Option(
+            "--descriptive",
+            help="Admite corridas de desarrollo; cada tabla y figura lleva "
+            "'desarrollo — no reportable' (ADR 0005).",
+        ),
+    ] = False,
+    out_dir: Annotated[
+        Path | None,
+        typer.Option(
+            "--out-dir", help="Carpeta única para tablas y figuras (por defecto reports/)."
+        ),
+    ] = None,
+) -> None:
+    """Tablas y figuras finales del informe, solo desde resultados guardados.
+
+    Lee `informe.json` (A), `analisis.json` y los registros (B) y `oe4-resumen.json`; escribe CSV
+    y Markdown en `reports/tables/` y PNG en `reports/figures/` con el prefijo `--name`. No
+    calcula estadística nueva ni llama a ningún modelo. Falta un informe: corre `a-report` o
+    `b-report` antes.
+    """
+    from afg.evaluation.scoring import DevelopmentResultError
+    from afg.experiments.final_tables import (
+        build_final_tables,
+        load_final_inputs,
+        write_final_tables,
+    )
+
+    try:
+        inputs = load_final_inputs(
+            a_run=a_run,
+            b_runs=b_runs,
+            a_dir=EXPERIMENT_A_DIR,
+            b_dir=EXPERIMENT_B_DIR,
+            descriptive=descriptive,
+        )
+        final = build_final_tables(inputs, descriptive=descriptive)
+    except DevelopmentResultError as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+        console.print("Para explorar sin reportar, usar la opción --descriptive.")
+        raise typer.Exit(code=1) from exc
+    except (FileNotFoundError, ValueError) as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    files = write_final_tables(
+        final,
+        name,
+        tables_dir=out_dir or TABLES_DIR,
+        figures_dir=out_dir or FIGURES_DIR,
+    )
+    for path in files:
+        console.print(f"Escrito: {_short(path)}.")
+    if final.stamped:
+        console.print("[yellow]Desarrollo — no reportable: cada archivo lleva la marca.[/yellow]")
 
 
 HUMAN_SHEET_FILE = "muestra-juez.csv"
