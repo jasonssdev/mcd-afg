@@ -4,11 +4,11 @@
 |---|---|
 | **Entrega** | Video de avance #2 de AFG2 (semana 4) — modelado de datos |
 | **Fecha de envío** | Pendiente |
-| **Versión** | 1.3 |
-| **Construido desde** | `docs/avances/09-jss-modelos-y-justificacion.md` v4.2 (bloques 1 a 3 y cifras de desarrollo) y v6.0 (bloque 4: decisiones y diseño de C1) · `notebooks/19-jss-modelos.ipynb` (fuente principal de las cifras) · `docs/entregables/figuras/modelos-*.png` (seis figuras exportadas por el notebook 19) |
-| **Duración objetivo** | 9:58 a 145 palabras por minuto (máximo de la rúbrica: 10:00) |
+| **Versión** | 1.4 |
+| **Construido desde** | `docs/avances/09-jss-modelos-y-justificacion.md` v7.0 (todos los bloques) · `notebooks/19-jss-modelos.ipynb` (fuente principal de las cifras) · `docs/entregables/figuras/modelos-*.png` (seis figuras exportadas por el notebook 19) |
+| **Duración objetivo** | 9:54 a 145 palabras por minuto (máximo de la rúbrica: 10:00) |
 | **Formato** | Tres presentadores en cuatro bloques consecutivos, en este orden: Jason, Germán, Gustavo, Jason. Con diapositivas de apoyo |
-| **Extensión hablada** | 1.448 palabras: 392 + 390 + 392 + 274. A 145 palabras por minuto son 9:59; a 140, 10:21 |
+| **Extensión hablada** | 1.435 palabras: 386 + 390 + 392 + 267. A 145 palabras por minuto son 9:54; a 140, 10:15 |
 
 > **Por qué existe este documento.** El profesor evalúa solo el video, así que el trabajo
 > técnico debe verse y oírse en él: cada modelo y cada técnica se nombra, y se explica con
@@ -26,6 +26,7 @@
 | 1.1 | 2026-10-27 | Se agrega al bloque 4 la atribución del error (OE4) de las fallas de C2 en E1, con una figura nueva (la 14) y unas 57 palabras habladas; las láminas 14 y 15 pasan a ser la 15 y la 16. Se actualizan extensión, tiempos del bloque 4 y fuentes (documento 09 v4.1). | El guion se construyó con el documento 09 v3.0 y no decía dónde nace el error de C2; el PR #187 incorporó el reparto por etapa (4 recuperación, 3 extracción, 2 síntesis) y la figura `modelos-etapas-fallas-c2.png`. El guion aún no se había enviado. |
 | 1.2 | 2026-10-28 | Se ajusta el alcance de C0, la descripción de C3 y la interpretación de C1/C2; se conservan cifras y estructura. Extensión: 1.444 palabras (392 + 390 + 392 + 270). | Coherencia con el avance 09 v4.2. |
 | 1.3 | 2026-11-01 | Se actualiza el bloque 4: la lámina 15 pasa de «Decisiones pendientes» a «Qué cambió y qué sigue abierto» y la narración explica que OpenKOS quedó fijado en la 0.7.0, que la verificación de suficiencia y las fuentes en bruto quedaron resueltas (C2 y C3 usan OpenKOS tal como se distribuye), que C1 se redefine como un RAG convencional, que las cifras de desarrollo mostradas son de la versión anterior y se repiten antes de congelar, y que la diferencia entre C1 y C2 no se puede repartir entre representación y respuesta. Solo queda abierto el extractor de C2 (#143). Se ajusta la lámina 16 y, en el bloque 1, una frase del caso del precio. El bloque 3 no cambia. Extensión: 1.448 palabras (392 + 390 + 392 + 274). | Decisión del 2026-11-01 ([ADR 0014](../decisions/0014-adr-c1-como-rag-convencional.md)) y avance 09 v6.0. Las cifras de los bloques 1 a 3 son del diseño anterior de C1 y se conservan como registro. El guion aún no se había enviado. |
+| 1.4 | 2026-11-01 | Las cifras de desarrollo de los bloques 1, 3 y 4 pasan a las corridas con el diseño vigente: caso del precio (ahora C1 y C2 aciertan), línea base C0 cerca del 22 %, C1 cerca del 81 % y C2 cerca del 71 % (C2 pierde porque se abstiene más), valores por estrato en el texto alternativo de la figura 10, costo de unos 5 s por respuesta; C1 se nombra como RAG convencional. El bloque 3 se actualiza porque Gustavo lo volverá a grabar. El bloque 4 ya no dice que las cifras sean de la versión anterior; la atribución del error (OE4) se presenta como la de la corrida anterior y el próximo paso es clasificar las fallas nuevas de C2. Se corrigen las fuentes (avance 09 v7.0, filas de la lámina 15, librerías), se unifica la duración en 9:54 y la lámina 5 agrega la verificación de suficiencia. Extensión: 1.435 palabras (386 + 390 + 392 + 267); 9:54 a 145 palabras por minuto. | Corridas de desarrollo del 2026-11-01 con el diseño vigente (documento 09 v7.0, notebook 19) y decisión de volver a grabar el bloque 3. El guion aún no se había enviado. |
 
 ## Qué pide el curso y dónde se cubre
 
@@ -54,15 +55,15 @@ finales: importa el proceso de selección y el trabajo inicial.
 
 | Bloque | Persona | Palabras | Tiempo (145 ppm) | Mensaje central |
 |---|---|---|---|---|
-| El problema en un caso, qué es «el modelo» y qué significa funcionar bien | Jason Sepúlveda | 392 | 0:00 – 2:42 | El precio de venta en C0, C1 y C2; no se entrena nada, se comparan *pipelines*; el juez es un instrumento; criterio de éxito y costo de los errores |
-| Estrategia experimental y modelos por rol | Germán Vega | 390 | 2:42 – 5:24 | Partición 3 + 11 series con conjunto de prueba bajo llave; fuga declarada; restricciones del análisis exploratorio; generador, *embeddings*, juez (3 candidatos) y extractor (4 candidatos, decisión pendiente) |
-| Búsqueda de parámetros, línea base, primeros resultados y costo | Gustavo Martínez | 392 | 5:24 – 8:06 | *Grid search* y su corrección, ablación, τ; línea base C0 y C1 frente a C2 por estrato, solo desarrollo; límites de C0; costo; librerías |
-| Dificultades, cambios de diseño, limitaciones y próximos pasos | Jason Sepúlveda | 274 | 8:06 – 9:59 | Aprendizajes, atribución del error de C2 (OE4, solo desarrollo), qué cambió (OpenKOS 0.7.0, C1 como RAG convencional) y qué sigue abierto (el extractor), limitaciones y el paso siguiente: repetir las corridas, congelar y evaluar una vez |
+| El problema en un caso, qué es «el modelo» y qué significa funcionar bien | Jason Sepúlveda | 386 | 0:00 – 2:40 | El precio de venta en C0, C1 y C2 (corridas vigentes: C0 no sabe, C1 y C2 aciertan); no se entrena nada, se comparan *pipelines*; el juez es un instrumento; criterio de éxito y costo de los errores |
+| Estrategia experimental y modelos por rol | Germán Vega | 390 | 2:40 – 5:21 | Partición 3 + 11 series con conjunto de prueba bajo llave; fuga declarada; restricciones del análisis exploratorio; generador, *embeddings*, juez (3 candidatos) y extractor (4 candidatos, decisión pendiente) |
+| Búsqueda de parámetros, línea base, primeros resultados y costo | Gustavo Martínez | 392 | 5:21 – 8:03 | *Grid search* y su corrección, ablación, τ; línea base C0 y C1 frente a C2 por estrato, solo desarrollo; límites de C0; costo; librerías |
+| Dificultades, cambios de diseño, limitaciones y próximos pasos | Jason Sepúlveda | 267 | 8:03 – 9:54 | Aprendizajes, atribución del error de C2 (OE4, corrida anterior, solo desarrollo), qué cambió (OpenKOS 0.7.0, C1 como RAG convencional) y qué sigue abierto (el extractor), limitaciones y el paso siguiente: clasificar las fallas nuevas, congelar y evaluar una vez |
 
-Reparto por persona: Jason 666 palabras, Germán 390, Gustavo 392. Jason abre y cierra
+Reparto por persona: Jason 653 palabras, Germán 390, Gustavo 392. Jason abre y cierra
 porque plantea el problema y reúne las decisiones pendientes; Germán concentra la estrategia
 experimental y la elección de modelos; Gustavo, los métodos de búsqueda y los resultados.
-Margen sobre el tope de 10:00: 0:01 a 145 palabras por minuto; a 140 el guion se pasa (10:21), así que el ensayo debe cronometrarse y, si hace falta, recortar según la nota de grabación.
+Margen sobre el tope de 10:00: 0:06 a 145 palabras por minuto; a 140 el guion se pasa (10:15), así que el ensayo debe cronometrarse y, si hace falta, recortar según la nota de grabación.
 
 ## Notas de grabación
 
@@ -80,13 +81,13 @@ Margen sobre el tope de 10:00: 0:01 a 145 palabras por minuto; a 140 el guion se
   con lo que debe verse en pantalla.
 - Cronometrar un ensayo completo antes de grabar. Si se pasa de 10:00, recortar primero la
   frase de librerías del bloque 3 y la mención de τ, y no los ejemplos ni los nombres de modelos.
-- Las cifras de este guion salen de `docs/avances/09-jss-modelos-y-justificacion.md` v4.2 y del
-  notebook 19; son de series de desarrollo con el diseño anterior de C1 (el bloque 4 lo dice). Lo que cambió desde entonces sale de la v6.0. Ninguna se calcula aquí. Los porcentajes dichos en voz son los de la fuente
-  redondeados al entero (21 %, 79 %, 22 %, 76 %, 48 %, 57 %, 37 %, 42 %). Las de OE4 se dicen como conteos (4, 3 y 2 de 9), con la frase «una serie y una persona».
+- Las cifras de este guion salen de `docs/avances/09-jss-modelos-y-justificacion.md` v7.0 y del
+  notebook 19; son de series de desarrollo. Todas son de las corridas de desarrollo con el diseño vigente. Ninguna se calcula aquí. Los porcentajes dichos en voz son los de la fuente
+  redondeados al entero (21 %, 79 %, 22 %, 81 %, 71 %, 57 %, 37 %, 42 %). Las de OE4 se dicen como conteos (4, 3 y 2 de 9), con la frase «una serie y una persona».
 
 ---
 
-## Bloque 1 — Jason Sepúlveda (0:00 – 2:42)
+## Bloque 1 — Jason Sepúlveda (0:00 – 2:40)
 
 ### Texto hablado
 
@@ -102,9 +103,9 @@ Empiezo con un caso real. En una serie de cuatro reuniones, un equipo diseña un
 > |---|---|---|---|
 > | C0 | Responde sin ningún texto de apoyo | No tiene información sobre ese control remoto ni su precio | No |
 > | C1 | Busca fragmentos de la transcripción y responde con ellos | Veinticinco euros | Sí |
-> | C2 | Responde desde una base de decisiones construida antes | Encontró conceptos relacionados, pero ninguno responde | No |
+> | C2 | Responde desde una base de decisiones construida antes | Veinticinco euros | Sí |
 
-**C0** responde sin ningún texto de apoyo, solo con lo que el modelo ya sabe: dice que no tiene información. Se equivoca. **C1** busca fragmentos de la transcripción y responde con ellos: veinticinco euros. Acierta. **C2** responde desde una base de decisiones que otro proceso construyó antes: dice que ninguno de los conceptos encontrados responde. Se equivoca. El precio sí está en la reunión. C1 lo recuperó y C2 no; queremos comprobar, con una medición controlada, si esa diferencia persiste o no.
+**C0** responde sin ningún texto de apoyo, solo con lo que el modelo ya sabe: dice que no tiene información. Se equivoca. **C1** busca fragmentos de la transcripción y responde con ellos: veinticinco euros. Acierta. **C2** responde desde una base de decisiones que otro proceso construyó antes: veinticinco euros. Acierta. El precio sí está en la reunión y los dos sistemas lo encuentran; queremos comprobar, con una medición controlada, si eso se mantiene en muchas preguntas.
 
 Ahora, ¿cuál es nuestro «modelo»? El curso entiende por modelo un algoritmo que se entrena con datos. Nosotros **no entrenamos nada**. Usamos **LLM**, modelos de lenguaje ya entrenados, que corren en nuestros computadores con **Ollama**. Lo que comparamos son ***pipelines***: cada condición completa, desde el texto hasta la respuesta. C1 busca fragmentos; C2 usa la base construida por la máquina; C3, una base de referencia construida con anotaciones humanas. El **juez**, otro LLM que califica las respuestas, es un instrumento de medida, no un modelo bajo prueba.
 
@@ -141,7 +142,7 @@ Germán sigue con la estrategia experimental y los modelos.
 
 ---
 
-## Bloque 2 — Germán Vega (2:42 – 5:24)
+## Bloque 2 — Germán Vega (2:40 – 5:21)
 
 ### Texto hablado
 
@@ -168,6 +169,7 @@ El análisis exploratorio también nos impuso restricciones. Una serie completa 
 > | Generador de respuestas | C0, C1, C2 y C3 | `qwen3:8b` | No: modelo compartido |
 > | Embeddings | Recuperación y alineación | `bge-m3` | No: heredado de OpenKOS |
 > | Extractor de C2 | Construye la base de decisiones | `qwen3:8b` hoy; decisión pendiente | Sí: 4 modelos |
+> | Verificación de suficiencia | Solo C2 y C3: ¿alcanza el contexto? | `gemma4:26b-a4b` | No: lo trae OpenKOS |
 > | Juez | Califica cada respuesta | `gpt-oss:20b` | Sí: 3 candidatos |
 
 Ahora los modelos, uno por rol. El **generador**, que redacta la respuesta en todas las condiciones, es `qwen3:8b`: la propuesta exige el mismo modelo y corre en local. Los **embeddings**, números que miden qué tan parecidos son dos textos, son `bge-m3`, multilingüe y fiable con documentos largos.
@@ -196,7 +198,7 @@ Gustavo sigue con la búsqueda de parámetros y los primeros resultados.
 
 ---
 
-## Bloque 3 — Gustavo Martínez (5:24 – 8:06)
+## Bloque 3 — Gustavo Martínez (5:21 – 8:03)
 
 ### Texto hablado
 
@@ -223,23 +225,23 @@ Segundo método, la **ablación**: quitar una pieza para ver cuánto aportaba. E
 
 Tercero, el umbral **τ**, que decide cuándo una decisión extraída es «la misma» que la de referencia. Lo calibramos con un control nulo y con el juez, y lo fijamos en 0,70. Cuarto, la regla de descarte del extractor y los umbrales del juez que ya conté.
 
-Ahora la línea base. El curso pide siempre una simple. Tenemos dos: C0, el modelo sin texto de apoyo, y C1, un **RAG**: recupera los pasajes más relacionados con la pregunta y se los entrega al modelo.
+Ahora la línea base. El curso pide siempre una simple. Tenemos dos: C0, el modelo sin texto de apoyo, y C1, un **RAG** convencional: recupera los pasajes más relacionados con la pregunta y se los entrega al modelo.
 
 > **▶ Figura 10 — se muestra al decir «Esto es solo desarrollo».**
 >
 > Rótulo bien visible sobre la figura: «Solo desarrollo · una serie · 21 preguntas».
 >
-> ![Respuestas correctas por estrato en desarrollo, ES2015, 21 preguntas: C0 sin contexto 19,0 % en E1 y 50 % en E4; C1 71,4 % en E1, 100 % en E2 y 100 % en E4; C2 35,7 % en E1, 50 % en E2 y 100 % en E4; E3 en 0 % para las tres con un solo caso](figuras/modelos-baseline-por-estrato.png)
+> ![Respuestas correctas por estrato en desarrollo, ES2015, 21 preguntas: C0 sin contexto 19,0 % en E1 y 50 % en E4; C1 78,6 % en E1, 100 % en E2 y 100 % en E4; C2 57,1 % en E1, 100 % en E2 y 100 % en E4; E3 con un solo caso: 0 % en C0 y C1, 100 % en C2](figuras/modelos-baseline-por-estrato.png)
 
-Esto es **solo desarrollo**: una serie, 21 preguntas, una corrida. Sin contexto, el modelo acierta cerca del 22 %. Con C1, cerca del 76 %. Con C2, cerca del 48 %. C2 pierde sobre todo en preguntas de un hecho puntual, porque contesta algo equivocado más que callar. Y hay un solo caso de evolución, así que no podemos decir nada de lo que la tesis quiere probar. C0 falló el precio y el costo máximo en las tres corridas. Eso no descarta que el modelo haya visto AMI durante su entrenamiento.
+Esto es **solo desarrollo**: una serie, 21 preguntas, una corrida. Sin contexto, el modelo acierta cerca del 22 %. Con C1, cerca del 81 %. Con C2, cerca del 71 %. C2 pierde sobre todo en preguntas de un hecho puntual, porque se abstiene más que C1. Y hay un solo caso de evolución, así que no podemos decir nada de lo que la tesis quiere probar. C0 falló el precio y el costo máximo en las tres corridas. Eso no descarta que el modelo haya visto AMI durante su entrenamiento.
 
 > **▶ Figura 11 — se muestra al decir «Costo: responder tarda».**
 >
 > Sin texto sobrepuesto adicional.
 >
-> ![Tiempo medio por unidad en escala logarítmica: responder una pregunta con qwen3:8b 9 s, juzgar con gpt-oss:20b 4 s, extraer una serie entre 2,3 min (qwen3.6:35b-a3b) y 12,2 min (qwen3.6:27b)](figuras/modelos-costo-latencia-por-rol.png)
+> ![Tiempo medio por unidad en escala logarítmica: responder una pregunta con qwen3:8b 5 s, juzgar con gpt-oss:20b 4 s, extraer una serie entre 2,3 min (qwen3.6:35b-a3b) y 12,2 min (qwen3.6:27b)](figuras/modelos-costo-latencia-por-rol.png)
 
-Costo: responder tarda unos 9 segundos y juzgar 4. Lo caro es extraer: entre 2 y 12 minutos por serie, según el modelo.
+Costo: responder tarda unos 5 segundos y juzgar 4. Lo caro es extraer: entre 2 y 12 minutos por serie, según el modelo.
 
 > **▶ Lámina 12 — se muestra al decir «Las librerías».**
 >
@@ -257,7 +259,7 @@ Jason cierra con las dificultades y lo que sigue.
 
 ---
 
-## Bloque 4 — Jason Sepúlveda (8:06 – 9:58)
+## Bloque 4 — Jason Sepúlveda (8:03 – 9:54)
 
 ### Texto hablado
 
@@ -274,15 +276,15 @@ Gracias, Gustavo. Cierro con lo que aprendimos y lo que falta.
 > | El juez es indulgente con respuestas genéricas | Una persona revisa el 20 % de las respuestas |
 > | El control nulo de τ tenía un defecto | Desvío declarado: τ = 0,70 |
 
-Dejo dos aprendizajes. Primero, **medir lo que de verdad llega al modelo**: el recorte de contexto invalidó una medición nuestra. Segundo, **desconfiar de las muestras pequeñas**: con cinco corridas, `qwen3:8b` no falló ninguna reunión en una serie; con quince corridas nuevas, falló 6 de 60. El juez es indulgente con respuestas genéricas, así que una persona revisará el 20 %. Y el control nulo de τ tenía un defecto: declaramos el desvío.
+Dejo dos aprendizajes. Primero, **medir lo que de verdad llega al modelo**: el recorte de contexto invalidó una medición nuestra. Segundo, **desconfiar de las muestras pequeñas**: con cinco corridas, `qwen3:8b` no falló ninguna reunión; con quince, falló 6 de 60. El juez es indulgente con lo genérico: una persona revisará el 20 %. Y el control nulo de τ tenía un defecto: declaramos el desvío.
 
 > **▶ Figura 14 — se muestra al decir «Y un resultado sobre dónde falla C2».**
 >
-> Texto sobrepuesto: «Solo desarrollo · ES2015 · 9 fallas · una persona».
+> Texto sobrepuesto: «Solo desarrollo · ES2015 · corrida anterior · 9 fallas · una persona».
 >
 > ![Etapa probable de las nueve fallas de C2 en E1, desarrollo, ES2015: recuperación 4 de 9 (44,4 %), extracción 3 de 9 (33,3 %) y síntesis 2 de 9 (22,2 %)](figuras/modelos-etapas-fallas-c2.png)
 
-Y un resultado sobre dónde falla C2, la atribución del error, OE4. De las nueve fallas de C2 en desarrollo, en cuatro el dato estaba en la base pero no llegó al modelo: es **recuperación**. Tres nacieron en la extracción y dos al redactar la respuesta. Es una serie y una persona: una dirección, no un resultado.
+Y dónde falla C2, la atribución del error, OE4. De las nueve fallas de C2 en la corrida anterior, en cuatro el dato estaba en la base pero no llegó al modelo: es **recuperación**. Tres nacieron en la extracción y dos al redactar la respuesta. Es una serie y una persona: una dirección, no un resultado.
 
 > **▶ Lámina 15 — se muestra al decir «Desde que preparamos estas cifras».**
 >
@@ -291,20 +293,22 @@ Y un resultado sobre dónde falla C2, la atribución del error, OE4. De las nuev
 > | Tema | Estado |
 > |---|---|
 > | Versión de OpenKOS (issue 94) | Resuelta: fijada en la 0.7.0 |
-> | Verificación de suficiencia y fuentes en bruto (issue 146) | Resueltas: C2 y C3 usan OpenKOS tal como se distribuye |
+> | Verificación de suficiencia | Resuelta: C2 y C3 usan `gemma4:26b-a4b`, el modelo que trae OpenKOS |
+> | Fuentes en bruto (issue 146) | Resuelta: C2 y C3 las conservan, tal como se distribuye OpenKOS |
 > | C1 | Redefinida como un RAG convencional, para compararlo con lo que las organizaciones usan hoy |
-> | Cifras de desarrollo | Son de la versión anterior; se repiten antes de congelar |
+> | Cifras de desarrollo | Las mostradas son del diseño nuevo: C1 cerca del 81 %, C2 cerca del 71 % (solo desarrollo) |
+> | Fallas nuevas de C2 en E1 (6) | Pendientes de clasificar por una persona |
 > | Modelo extractor de C2 (issue 143) | Abierta: `qwen3.6:27b` gana en F1 pero tarda más; ¿debe ser el mismo modelo que responde? |
 
-Desde que preparamos estas cifras, el diseño cambió. Fijamos OpenKOS en la versión 0.7.0, y C2 y C3 lo usan tal como se distribuye. C1 pasa a ser un RAG convencional, para compararlo con lo que se usa hoy. Por eso repetiremos las corridas de desarrollo antes de congelar. Sigue abierto el extractor de C2: qué modelo, y si debe ser el que responde.
+Esta semana el diseño cambió. Fijamos OpenKOS en la versión 0.7.0, y C2 y C3 lo usan tal como se distribuye. C1 pasa a ser un RAG convencional, para compararlo con lo que se usa hoy. Las cifras que vimos ya son de ese diseño, y las fallas nuevas de C2 aún no están clasificadas. Sigue abierto el extractor de C2: qué modelo, y si debe ser el que responde.
 
-Limitaciones declaradas: una serie, 21 preguntas, un dominio con habla actuada, referencia traducida, y no exploramos la temperatura ni otros generadores. Además, la diferencia entre C1 y C2 no se puede repartir entre representación y respuesta. Esperamos la respuesta del tutor sobre nuestro encuadre.
+Limitaciones declaradas: una serie, 21 preguntas, un dominio con habla actuada, referencia traducida, y no exploramos la temperatura. Y la diferencia entre C1 y C2 no se reparte entre representación y respuesta. Esperamos la respuesta del tutor sobre nuestro encuadre.
 
 > **▶ Lámina 16 — se muestra al decir «Lo que sigue».**
 >
-> Título: «Próximos pasos». Tres pasos en secuencia: «1. Decidir el extractor y repetir las corridas de desarrollo» → «2. Congelar modelos, versiones y código» → «3. Evaluar una sola vez». Pie: «Limitaciones: una serie · 21 preguntas · un dominio · referencia traducida».
+> Título: «Próximos pasos». Tres pasos en secuencia: «1. Decidir el extractor y clasificar las fallas nuevas de C2» → «2. Congelar modelos, versiones y código» → «3. Evaluar una sola vez». Pie: «Limitaciones: una serie · 21 preguntas · un dominio · referencia traducida».
 
-Lo que sigue: decidir el extractor, repetir las corridas de desarrollo, congelar modelos, versiones y código, y solo entonces correr la evaluación, una única vez. Gracias.
+Lo que sigue: decidir el extractor, clasificar las fallas nuevas, congelar modelos, versiones y código, y solo entonces correr la evaluación, una única vez. Gracias.
 
 ---
 
@@ -312,7 +316,7 @@ Lo que sigue: decidir el extractor, repetir las corridas de desarrollo, congelar
 
 | Cifra o afirmación | Fuente |
 |---|---|
-| Caso del precio: respuesta de referencia «veinticinco euros»; C0 sin información (incorrecta), C1 acierta, C2 no encuentra (incorrecta) | `docs/avances/09-jss-modelos-y-justificacion.md` v4.2, «Un caso para entrar en materia»; notebook 19, mismo apartado |
+| Caso del precio (q002): respuesta de referencia «veinticinco euros»; C0 sin información (incorrecta), C1 acierta, C2 acierta | `reports/experiment-b/` (`diagnostico-sin-contexto-es2015`, `humo-c1-es2015-rag`, `humo-c2-es2015-openkos070`), pregunta q002; notebook 19, sección 7.4 (tabla por pregunta). Con el diseño anterior C2 se abstenía: notebook 16, sección 3 |
 | No se entrena ningún modelo; Ollama local; el juez es instrumento; C1, C2 y C3 | Documento 09, §1 y §5; ADR 0005 |
 | Criterio de éxito: diferencia pareada C2 − C1 en E3, intervalo bootstrap por encima de 0 | Documento 09, §2.1 (ADR 0010, D16/D17) |
 | Costo de los errores; precision y recall por separado | Documento 09, §2.2 |
@@ -325,15 +329,15 @@ Lo que sigue: decidir el extractor, repetir las corridas de desarrollo, congelar
 | *Grid search* de 32 configuraciones; 1600/0/8 (0,642 recuperado, 0,446 entregado) y 1200/1/5 (0,569) | Documento 09, §7.1; ADR 0007; notebook 06 |
 | Ablación: 0,373 BM25, 0,417 denso, 0,569 híbrido | Documento 09, §7.2; figura `modelos-ablacion-recuperacion.png` |
 | τ principal 0,70 con control nulo y juez | Documento 09, §7.3; ADR 0012; notebook 17 |
-| Línea base: 22,2 % (C0), 76,2 % (C1), 47,6 % (C2); pérdida de C2 en E1 por respuestas equivocadas; un solo caso de E3 | Documento 09, §8.1 y §8.2; figura `modelos-baseline-por-estrato.png` |
+| Línea base: 22,2 % (C0), 81,0 % (C1), 71,4 % (C2); pérdida de C2 en E1 (8 de 14 frente a 11 de 14) por abstenciones; un solo caso de E3 | Documento 09 v7.0, §8.1 y §8.2; notebook 19, secciones 7.2 y 7.3; figura `modelos-baseline-por-estrato.png` |
 | C0: precio y costo máximo fallan en 3 corridas; no se descarta exposición previa a AMI | Documento 09, §8.3 |
-| Costo: unos 9 s por respuesta, 4 s por juicio, entre 2 y 12 minutos por serie al extraer | Documento 09, §9; figura `modelos-costo-latencia-por-rol.png` |
-| Librerías: Ollama, OpenKOS, sentence-transformers, scikit-learn, scipy, pandas; BM25 propio | Documento 09, §5; `pyproject.toml`; `src/afg/conditions/c1_retrieval.py` |
+| Costo: unos 5 s por respuesta de C1, 4 s por juicio, entre 2 y 12 minutos por serie al extraer | Documento 09 v7.0, §9; figura `modelos-costo-latencia-por-rol.png` |
+| Librerías: Ollama, OpenKOS, sentence-transformers, scikit-learn, scipy, pandas; BM25 propio | `pyproject.toml` (dependencias y extras `instrument`, `llm` y `embeddings`); `src/afg/conditions/c1_retrieval.py` (BM25 propio); documento 09, §5 |
 | `qwen3:8b`: 0 de 20 reuniones fallidas con 5 corridas y 6 de 60 con 15 corridas nuevas | Documento 09, §6.2 y dificultad 7 |
 | Juez indulgente con respuestas genéricas; verificación humana del 20 % | Documento 09, §8.3 y §10 |
-| Atribución del error de C2 en E1 (OE4): 4 de recuperación, 3 de extracción y 2 de síntesis, de 9 fallas; una serie, una persona, solo desarrollo | Documento 09, §8.4; notebook 19, §7.5; figura `modelos-etapas-fallas-c2.png` |
-| Qué cambió: OpenKOS fijado en la 0.7.0 (#94); verificación de suficiencia y fuentes en bruto resueltas, con C2 y C3 usando OpenKOS tal como se distribuye (#146); C1 redefinida como un RAG convencional; las cifras de desarrollo mostradas son de la versión anterior y se repiten antes de congelar; la diferencia entre C1 y C2 no se reparte entre representación y respuesta | Documento 09 v6.0, §6.5 y §11.1; ADR 0014; ADR 0006 (enmienda del 2026-11-01) |
-| Sigue abierto: modelo extractor de C2 (#143) | Documento 09 v6.0, §11.1 |
+| Atribución del error de C2 en E1 (OE4), corrida anterior: 4 de recuperación, 3 de extracción y 2 de síntesis, de 9 fallas; una serie, una persona, solo desarrollo. Las 6 fallas de la corrida vigente esperan clasificación | Documento 09 v7.0, §8.4; notebook 19, §7.5; notebook 16, sección 10; figura `modelos-etapas-fallas-c2.png` |
+| Qué cambió: OpenKOS fijado en la 0.7.0 (#94); la verificación de suficiencia con `gemma4:26b-a4b` y las fuentes en bruto (#146) resueltas, con C2 y C3 usando OpenKOS tal como se distribuye; C1 redefinida como un RAG convencional; la diferencia entre C1 y C2 no se reparte entre representación y respuesta | Documento 09 v7.0, §6.5, §8 y §11.1; ADR 0014; ADR 0006 (enmienda del 2026-11-01) |
+| Sigue abierto: modelo extractor de C2 (#143) | Documento 09 v7.0, §11.1 |
 | Respuesta del tutor pendiente | Documento 09, §1 |
 
 ## Láminas y figuras

@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 03 — Objetivos |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 4.0 |
+| **Versión** | 5.0 |
 | **Fecha** | 2026-11-01 |
 | **Estado** | Vigente |
 
@@ -21,6 +21,7 @@
 | 3.0 | 2026-10-15 | Cambia un criterio: el criterio de éxito del experimento (D16) se enuncia con la regla de decisión enmendada por D17, que es el intervalo bootstrap del 95 % de la **diferencia pareada** C2 − C1 en E3 por encima de 0, y ya no la no superposición de los intervalos independientes (que queda como cifra de robustez). Además: OE2 se mide sobre las 11 series de evaluación (ADR 0005) y no sobre las 14; la escala grande del instrumento se nombra como ≈32B (`qwen3:32b`); se elimina un párrafo que describía la versión 2.2 en pasado. | Enmienda D17 ([ADR 0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md)), hecha el 2026-10-15 antes de cualquier corrida de evaluación, con simulación de potencia en el [notebook 10](../../notebooks/10-jss-potencia-criterio-d16.ipynb); el alcance de OE2 sigue el ADR 0005 y el modelo grande sale de `config/experiments.toml`. |
 | 3.1 | 2026-11-01 | Se agrega, en OE1, una remisión al [documento 10](10-jss-confiabilidad-de-la-referencia.md), que reporta los resultados de confiabilidad. El objetivo, los criterios, las hipótesis y las cifras no cambian. | Los resultados de la Fase 2 de OE1 ya existen y tienen su propio documento. |
 | 4.0 | 2026-11-01 | Cambia un objetivo y la forma de leer las hipótesis: C1 pasa a ser un RAG convencional (ya no responde con la etapa de respuesta de OpenKOS), de modo que lo que se mide es el valor del sistema compilado frente a un RAG convencional, y no el valor de la representación aislada. Se actualizan el objetivo general, OE3 y H1. H4 se mide entre las preguntas que cada condición responde, y se declara la limitación de que la diferencia entre C1 y C2/C3 no se reparte entre representación y etapa de respuesta. El costo de los errores de extracción (C3 frente a C2), OE1, OE2 y OE4 no cambian. | Decisión del 2026-11-01 ([ADR 0014](../decisions/0014-adr-c1-como-rag-convencional.md)): la pregunta del proyecto es si conviene el sistema compilado frente al RAG que se usa hoy, y una línea base con piezas de OpenKOS no la responde. |
+| 5.0 | 2026-11-01 | Se corrigen dos afirmaciones que habían quedado atrás. (1) OE2: τ sí está fijado (0,70 como valor principal, con 0,75 y 0,80 de sensibilidad, [ADR 0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md)); lo que no existe es un criterio de éxito para OE2. (2) H3: la observación informal que la motiva se hizo a dos escalas, de 8B a 27B según la propuesta (§4), y no «≈8B y ≈32B» como decía la versión 3.0; la segunda escala prevista para el proyecto, como extensión, sí es `qwen3:32b` (≈32B), según la configuración. Son dos cosas distintas y se escriben por separado. (3) «Un experimento con todo lo demás igual» pasa a nombrar lo que se mantiene igual (generador, *embeddings*, hardware y ventana), porque la etapa de respuesta ya no es igual entre C1 y C2/C3. | La propuesta (§4) fija la observación de H3 en 8B y 27B y no tiene registro en este repositorio; el modelo grande previsto sale de `config/experiments.toml` (`shared_budget.generative_model_large = "qwen3:32b"`). El ADR 0012 fijó τ el 2026-10-19. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -33,7 +34,7 @@ varias reuniones, ¿conviene construir una base donde cada decisión quede regis
 historia, o basta con buscar en las transcripciones cada vez que alguien pregunta? Y si
 conviene construirla, ¿cuánto se pierde cuando la construye una máquina que se equivoca?
 
-Para responder hace falta un experimento con todo lo demás igual. Este documento fija qué
+Para responder hace falta un experimento controlado, con el mismo generador, los mismos *embeddings*, el mismo hardware y la misma ventana de contexto. Este documento fija qué
 se va a medir, en qué orden, qué se considera cumplido en cada paso y qué se espera
 encontrar. Está escrito antes de ejecutar nada, a propósito: así los resultados no pueden
 reinterpretarse después para que parezcan lo que se buscaba.
@@ -161,9 +162,10 @@ no se detecte diferencia.
 **Cómo se mide.** Precision, recall y F1 tras emparejar decisiones con una regla fija, con el
 F1 reportado como curva sobre τ (de 0,50 a 0,90) y cada corrida repetida al menos tres veces.
 La accuracy de tipo y de dirección se reportan por separado. Por ahora no existe un criterio
-de éxito para OE2 ni una regla para elegir τ; el documento 08 lo declara como decisión abierta
+de éxito para OE2 (el documento 08 lo declara como decisión abierta); τ está fijado en 0,70, con 0,75 y 0,80 de
+sensibilidad ([ADR 0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md))
 ([§4.3](08-jss-metricas-y-criterio-de-exito.md#43-oe2-la-extracción-automática) y
-[§7, A](08-jss-metricas-y-criterio-de-exito.md#a-no-hay-criterio-de-éxito-para-oe1-y-oe2-ni-regla-para-elegir-τ)).
+[§7, A](08-jss-metricas-y-criterio-de-exito.md#a-no-hay-criterio-de-éxito-para-oe1-y-oe2)).
 
 ### OE3 — Medir la utilidad funcional en tres condiciones (Experimento B)
 
@@ -303,7 +305,7 @@ contradice, el resultado igual vale, y se dice.
 |---|---|---|
 | **H1** | C2 y C3 superarán a C1 en preguntas de evolución (E3), con diferencia pequeña o nula en hecho puntual (E1) | La ventaja del sistema compilado es relacional |
 | **H2** | La brecha C3 − C2 será mayor en relaciones temporales que en identificación de decisiones | Extraer que algo se decidió es más fácil que extraer correctamente que una decisión reemplaza a otra |
-| **H3** | La dirección de las relaciones temporales será un modo de falla dominante, sin mejora proporcional al tamaño del modelo | Observación informal en el instrumento a dos escalas (≈8B y ≈32B, `qwen3:32b`): alrededor de un 25 % de direcciones invertidas, sin mejora clara con la escala. Es una observación previa, no una medición del proyecto; la segunda escala es una extensión. |
+| **H3** | La dirección de las relaciones temporales será un modo de falla dominante, sin mejora proporcional al tamaño del modelo | Observación informal en el instrumento a dos escalas (de 8B a 27B, según la propuesta §4): alrededor de un 25 % de direcciones invertidas, sin mejora clara con la escala. Es una observación previa, no una medición del proyecto. La segunda escala prevista para el proyecto es una extensión y es otra: `qwen3:32b` (≈32B). |
 | **H4** | Entre las preguntas de evolución que efectivamente responde, C1 mostrará mayor tasa de respuestas confiadas pero desactualizadas que C2 y C3 | Consistente con lo reportado en la literatura de recuperación insuficiente. Se mide entre las respondidas para que la verificación de suficiencia de C2 y C3 no decida el resultado; cuando una condición se abstiene se reporta aparte (E4) |
 
 En palabras llanas: se espera que la base de decisiones ayude sobre todo cuando la pregunta
