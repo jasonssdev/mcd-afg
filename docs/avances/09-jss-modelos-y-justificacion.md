@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 09 — Modelos y su justificación |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 11.1 |
+| **Versión** | 12.0 |
 | **Fecha** | 2026-11-02 |
 | **Estado** | Vigente |
 
@@ -31,6 +31,7 @@
 | 10.0 | 2026-11-02 | C1 pasa a leer el mismo cuerpo Markdown de la transcripción que OpenKOS y a cortarlo con un divisor de texto genérico, sin la estructura de turnos. Se repitió el ajuste de C1 (sección 7): la configuración ganadora pasa de 1.200 caracteres, 1 turno de solape y K = 5 a **1.200 caracteres, sin solape y K = 5** (recall entregado 0,520; antes 0,569, con otra segmentación y otro criterio de entrega). El espacio de C1 para los fragmentos se calcula ahora con la sobrecarga de instrucciones de OpenKOS, de modo que es casi igual al de C2 (unos 8.700 frente a 8.300 caracteres); una primera repetición con el espacio que daba la instrucción más corta de C1 (K = 8) se descartó. La ablación pasa a 0,520 (híbrido), 0,456 (denso) y 0,314 (léxico). Se rehízo la corrida de desarrollo de C1 (`humo-c1-es2015-md`): acierta 17 de 21 (81,0 %), igual que la anterior, con otro reparto de errores (cuatro veredictos cambian, dos en cada sentido; secciones 8.1 y 8.2). Cambian además la descripción del pipeline de C1 (sección 6), la dificultad 1, el estado del congelamiento y las limitaciones. | Decisión del autor del proyecto del 2026-11-02: un RAG convencional recibe el documento y lo corta, no la estructura de turnos. Evidencia: [notebook 06](../../notebooks/06-jss-ajuste-c1.ipynb), [notebook 19](../../notebooks/19-jss-modelos.ipynb) (secciones 6 y 7), [ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md) (enmienda del 2026-11-02) y [ADR 0014](../decisions/0014-adr-c1-como-rag-convencional.md) (enmienda del 2026-11-02). |
 | 11.0 | 2026-11-02 | Las huellas de los modelos y las versiones de Ollama y OpenKOS quedan fijadas en `[pinned_environment]` de `config/experiments.toml`, y los comandos que llaman a modelos se niegan a correr, antes de la primera llamada, si lo instalado difiere de lo fijado. Los controles 6 (huella del generador) y 7 (versión y huella de los *embeddings*) de la sección 11.1 pasan a resueltos, y la fila «Modelos y huellas» de la sección 11.2 pasa de parcial a congelada. Cada manifiesto de corrida registra `pinned_environment_ok` y los valores fijados. La verificación vale para las corridas de desarrollo ya hechas: sus huellas coinciden con las fijadas. | Verificado el 2026-11-02: los manifiestos de las corridas de desarrollo (C1 `humo-c1-es2015-md`, C2 `humo-c2-es2015-openkos070` y las extracciones de ES2015, TS3009 e IS1004) comparten las huellas de `qwen3:8b`, `gpt-oss:20b`, `gemma4:26b-a4b` y `bge-m3` y las versiones de Ollama 0.32.9 y OpenKOS 0.7.0, iguales a las instaladas. Antes las huellas solo se registraban: una actualización de un modelo habría cambiado la corrida formal sin aviso. |
 | 11.1 | 2026-11-02 | Se cierra la decisión pendiente sobre la concordancia del juez de τ con una persona (secciones 7.3, 11.1 y resumen de dificultades): acuerdo sustancial, juez más estricto que la persona, τ = 0,70 se mantiene y las cifras de alineación son un piso conservador. | Acuerdo de 43 de 50 pares (86 %), kappa 0,716 (IC 95 % de 0,520 a 0,880); los 7 desacuerdos son del juez en «no» y la persona en «sí»; por debajo de 0,70 el juez dice «sí» en el 21 % de los pares y la persona en el 42 % ([ADR 0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md), [notebook 17](../../notebooks/17-jss-tau-referencia-en.ipynb) §8). Evidencia limitada: 24 pares bajo el umbral, una sola persona que además adjudica y mantiene el proyecto, y solo ES2015 y TS3009. |
+| 12.0 | 2026-11-02 | C0 deja de ser un diagnóstico solo de desarrollo y entra en la corrida formal del Experimento B (`afg experiment b --conditions c0`) como referencia sin recuperación, con el mismo banco, generador, juez, semillas, bloqueo de congelamiento y entorno fijado que C1, C2 y C3 (secciones 4, 5, 5.1, 6.3 y 8). Se agregan comparaciones descriptivas C1 − C0 y C2 − C0; no cambian el criterio D16 ni las hipótesis, y las cifras de desarrollo de la sección 8 siguen siendo las mismas. | Decisión del autor del proyecto del 2026-11-02, registrada en el [ADR 0019](../decisions/0019-adr-c0-en-la-corrida-formal-del-experimento-b.md). La versión anterior decía que C0 se usaba solo en desarrollo. |
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
 > la evidencia que lo motivó**. El historial nunca se reescribe: se agrega una fila.
@@ -55,7 +56,7 @@ respondió cada uno en la serie de desarrollo:
 
 | Sistema | Qué hace | Respuesta (resumida) | ¿Correcta? |
 |---|---|---|---|
-| **C0** | Responde sin ningún texto de apoyo, solo con lo que el modelo ya sabe | Dice que no tiene información sobre el costo máximo de ese control remoto | No |
+| **C0** | Responde sin ningún texto de apoyo, solo con lo que el modelo ya sabe (referencia sin recuperación) | Dice que no tiene información sobre el costo máximo de ese control remoto | No |
 | **C1** | Busca fragmentos de la transcripción y responde con ellos (un RAG convencional) | Doce euros con cincuenta, citando el fragmento | Sí |
 | **C2** | Responde desde una base de decisiones que otro proceso construyó antes a partir de la transcripción | Dice que encontró conceptos relacionados, pero ninguno responde la pregunta | No |
 
@@ -88,7 +89,7 @@ siguiente es el eje de todo el documento:
 | **Validación cruzada o temporal** | Como no hay entrenamiento no hay *folds*. La variabilidad se mide con 3 corridas con semilla, **bootstrap** por reuniones y un tamizaje de modelos que exige ganar en las dos series de desarrollo | 7 y 9 |
 | **Hiperparámetros** | Modelo elegido, `temperature`, `top_p`, ventana de contexto, tamaño de fragmento, número de fragmentos recuperados (K) y el umbral de alineación τ. Los *prompts* quedan **fijos a propósito** | 7 |
 | **Método de búsqueda** de hiperparámetros | ***Grid search*** (C1, 32 configuraciones), **tamizaje prerregistrado** con reglas de veto (extractor), **umbrales prerregistrados** (juez) y **ablación** (canales de recuperación) | 7 |
-| **Línea base** simple | **C1** (RAG convencional, ajustado con honestidad) y el diagnóstico sin contexto **C0** | 8 |
+| **Línea base** simple | **C1** (RAG convencional, ajustado con honestidad) y la referencia sin recuperación **C0** | 8 |
 | **Métrica de éxito** desde los objetivos | Una métrica por objetivo y el criterio D16/D17 | 2 |
 | **Costo de los errores** | Qué cuesta responder mal, abstenerse, extraer una decisión falsa o perder una | 2 |
 | **Restricciones del análisis exploratorio** | Largo de las transcripciones frente a la ventana, decisiones raras, series temporales, idioma | 3 |
@@ -297,10 +298,10 @@ Transcripción ─► C1: fragmentos ─► BM25 + vectores ─► fusión RRF �
 Transcripción ─► C2: OpenKOS (modelo extractor) ─► base compilada ─► consulta ─────┤                                              ├─► juez
                                                                                    ├─► C2 y C3: ¿alcanza el contexto? ─► respuesta + fuentes ─┘
 Anotación humana ─► C3: referencia humana adjudicada ─► consulta ──────┘
-(C0, diagnóstico: la pregunta va directo al modelo generador, sin ningún texto de apoyo)
+(C0, referencia sin recuperación: la pregunta va directo al modelo generador, sin ningún texto de apoyo)
 ```
 
-| Paso | C0 (diagnóstico, no es condición) | C1 (línea base) | C2 (la propuesta) | C3 (ground truth humana) |
+| Paso | C0 (referencia sin recuperación) | C1 (línea base) | C2 (la propuesta) | C3 (ground truth humana) |
 |---|---|---|---|---|
 | Material de partida | Ninguno | Cuerpo Markdown de las transcripciones congeladas de la serie (el mismo texto que lee OpenKOS) | Transcripciones, procesadas de la reunión a a la d | Anotación humana adjudicada de la serie (OE1) |
 | Preparación | — | Troceo con un divisor de texto genérico (`RecursiveCharacterTextSplitter`): hasta 1.200 caracteres, sin caracteres compartidos entre fragmentos; no conoce los turnos | OpenKOS extrae objetos (decisiones, temas, eventos) con `qwen3:8b`, con la pasada de decisiones activada (sección 6.2), y guarda la fuente en bruto | Objetos equivalentes a los de C2, elaborados desde anotaciones humanas adjudicadas |
@@ -341,10 +342,16 @@ automáticamente, considerando también la fiabilidad de la referencia humana. P
 se puede ejecutar**: depende de la anotación humana de las series y hoy lanza un error
 explícito de «sin implementar»; no hay ninguna cifra de C3 en este documento.
 
-**C0: diagnóstico sin contexto.** El generador responde sin evidencia recuperada. Se usa
-solo en desarrollo, como referencia sin recuperación y para explorar posibles señales de
-conocimiento previo del corpus AMI. No demuestra ni descarta contaminación del entrenamiento
-(sección 8.3).
+**C0: referencia sin recuperación.** El generador responde sin evidencia recuperada. Desde el
+2026-11-02 forma parte de la corrida formal del Experimento B ([ADR 0019](../decisions/0019-adr-c0-en-la-corrida-formal-del-experimento-b.md)), con el mismo
+banco de preguntas, generador, juez, semillas, bloqueo de congelamiento y entorno fijado que
+C1, C2 y C3. No es una cuarta condición de la comparación principal: el criterio D16 y las
+hipótesis H1 a H4 se leen igual que antes. Sirve para ver cuánto aporta recuperar texto (C1
+frente a C0) y cuánto la base compilada frente a no recuperar nada (C2 frente a C0); esas dos
+diferencias son descriptivas y no deciden ninguna hipótesis. Como C0 no cita ni aporta
+evidencia, no se informan sus métricas de evidencia ni de citación. En desarrollo también sirve
+para explorar posibles señales de conocimiento previo del corpus AMI, pero no demuestra ni
+descarta contaminación del entrenamiento (sección 8.3).
 
 ### 5.1 Lo que se comparte entre condiciones (§5.3 de la propuesta)
 
@@ -465,8 +472,8 @@ dominio de la tesis, reuniones donde lo que importa es la decisión, es parte de
 
 ### 6.3 Juez: calibración de tres candidatos
 
-El Experimento B genera unas 900 respuestas (100 preguntas como mínimo × 3 condiciones × 3
-corridas, notebook 07). Calificarlas a mano es inviable para un equipo de tres personas, así que
+El Experimento B genera unas 1.200 respuestas (100 preguntas como mínimo × 4 condiciones,
+con C0, × 3 corridas; el cálculo del notebook 07 contaba tres condiciones). Calificarlas a mano es inviable para un equipo de tres personas, así que
 las califica un **LLM-as-a-judge**: un segundo modelo que lee la pregunta, la respuesta de
 referencia, la respuesta del sistema y el pasaje de la transcripción donde está la evidencia.
 Como es la regla de medir y no un modelo bajo prueba, se lo valida contra personas antes de

@@ -402,3 +402,46 @@ def test_cli_reports_a_missing_stored_analysis(
     result = CliRunner().invoke(afg_cli.app, [*_args(tmp_path / "o"), "--descriptive"])
     assert result.exit_code == 1
     assert "b-report" in result.output
+
+
+def test_c0_cells_and_descriptive_comparisons_reach_the_final_tables() -> None:
+    analysis = b_analysis()
+    c0_cell = {
+        "condition": "C0",
+        "stratum": "E3",
+        "records": 15,
+        "questions": 5,
+        "judge_failures": 0,
+        "errors": 0,
+        "below_minimum": False,
+        "metrics": {
+            "correct": _est(0.1),
+            "evidence_supported": None,
+            "abstention_correct": None,
+            "citation_correct": None,
+            "outdated_among_answered": _est(0.4),
+            "wrong_among_answered": _est(0.9),
+        },
+    }
+    analysis["cells"].append(c0_cell)
+    analysis["comparisons"].append(
+        {
+            **analysis["comparisons"][0],
+            "primary": False,
+            "descriptive": True,
+            "condition_a": "C1",
+            "condition_b": "C0",
+        }
+    )
+    cells = b_cells_table([("run-x", analysis)])
+    row = cells[cells["condition"] == "C0"].iloc[0]
+    assert row["correct"] == pytest.approx(0.1) and pd.isna(row["citation_correct"])
+    assert row["outdated_among_answered"] == pytest.approx(0.4)
+    paired = b_paired_table([("run-x", analysis)])
+    assert list(paired["descriptive"]) == [False, False, True]
+    assert paired[paired["descriptive"]].iloc[0]["condition_b"] == "C0"
+
+
+def test_c0_latency_is_costed_per_condition() -> None:
+    tables = cost_tables([b_run("r", "C0", 3.0)], {})
+    assert "C0" in " ".join(tables["cost_latency"]["activity"].astype(str))

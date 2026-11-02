@@ -344,6 +344,19 @@ def test_bank_with_evaluation_series_is_refused_without_a_freeze_record(
     assert not env["out"].exists()
 
 
+def test_c0_is_refused_on_evaluation_series_without_a_freeze_record(
+    env: dict[str, Any],
+) -> None:
+    _bank(env, _BANK_OK)
+    env["monkeypatch"].setattr(
+        afg_cli, "list_installed_models", lambda: pytest.fail("Ollama queried before the gate")
+    )
+    result = _invoke(env, "--conditions", "c0", "--run-name", "nofreeze-c0")
+    assert result.exit_code == 1
+    assert "congelamiento" in _out(result) and "ES2016" in _out(result)
+    assert not env["out"].exists()
+
+
 def test_bank_with_evaluation_series_is_refused_when_it_differs_from_the_frozen_one(
     env: dict[str, Any], tmp_path: Path
 ) -> None:

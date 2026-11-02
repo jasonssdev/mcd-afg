@@ -553,3 +553,108 @@ def test_h2_is_in_the_serialized_report() -> None:
 
     assert data["h2"]["verdict"] == "supported"
     assert "ADR 0018" in data["h2"]["note"]
+
+
+# --- C0, the closed-book reference without retrieval (ADR 0019, issue #252) -----------------------
+
+
+def _c0_records() -> list[dict[str, Any]]:
+    """C0 as the runner stores it: no citations, so the deterministic fields read false and 0."""
+    records = [
+        _record(
+            f"E3q{q:02d}",
+            "C0",
+            r,
+            correct=False,
+            supported=False,
+            citation=False,
+            precision=0.0,
+        )
+        for q in range(3)
+        for r in range(2)
+    ]
+    for record in records:
+        record["answer"] = {
+            "question_id": record["question_id"],
+            "condition": "C0",
+            "text": "I do not know.",
+            "cited_evidence": [],
+            "abstained": False,
+        }
+    return records
+
+
+def test_c0_reports_correctness_abstention_and_h4_like_any_condition() -> None:
+    records = (
+        _c0_records()
+        + _bank("C0", [[False, True]] * 3, stratum="E4_abstention", abstained=True)
+        + _outdated_bank("C0", [True, False, None])
+    )
+    report = analyze_runs(records, settings=SETTINGS, min_questions=1)
+    assert _cell(report, "C0", "E3").metrics["correct"] is not None
+    assert _cell(report, "C0", "E4").metrics["abstention_correct"].point == pytest.approx(1.0)
+    assert _cell(report, "C0", "E3").metrics["outdated_among_answered"] is not None
+    assert _cell(report, "C0", "E3").metrics["wrong_among_answered"] is not None
+
+
+def test_c0_has_no_citation_or_evidence_metrics_because_it_retrieves_nothing() -> None:
+    questions = _width_questions("E3q00", "E3q01", "E3q02")
+    report = analyze_runs(_c0_records(), settings=SETTINGS, min_questions=1, questions=questions)
+    cell = _cell(report, "C0", "E3")
+    assert cell.metrics["citation_correct"] is None
+    assert cell.metrics["citation_precision"] is None
+    assert cell.metrics["evidence_supported"] is None
+    assert cell.citation_width is None
+
+
+def test_retrieval_and_compiled_base_are_compared_with_c0_as_descriptive_secondaries() -> None:
+    records = (
+        _bank("C0", [[False]] * 4)
+        + _bank("C1", [[True]] * 4)
+        + _bank("C2", [[True], [True], [False], [True]])
+        + _bank("C0", [[False]] * 4, stratum="E1_point_fact")
+        + _bank("C1", [[True]] * 4, stratum="E1_point_fact")
+        + _bank("C2", [[True]] * 4, stratum="E1_point_fact")
+    )
+    report = analyze_runs(records, settings=SETTINGS, min_questions=1)
+    against_c0 = [c for c in report.comparisons if c.condition_b == "C0"]
+    assert {(c.condition_a, c.stratum, c.metric) for c in against_c0} == {
+        (a, s, "correct") for a in ("C1", "C2") for s in ("E1", "E3", "ALL")
+    }
+    assert all(c.descriptive and not c.primary for c in against_c0)
+    c1_e3 = next(c for c in against_c0 if (c.condition_a, c.stratum) == ("C1", "E3"))
+    assert c1_e3.difference == pytest.approx(1.0) and c1_e3.n_pairs == 4
+    assert c1_e3.difference_lower > 0
+
+
+def test_c0_does_not_change_the_primary_comparison_or_the_other_secondaries() -> None:
+    base = _bank("C1", [[False, True]] * 6) + _bank("C2", [[True, True]] * 6)
+    without = analyze_runs(base, settings=SETTINGS, min_questions=1)
+    with_c0 = analyze_runs(
+        base + _bank("C0", [[False, False]] * 6), settings=SETTINGS, min_questions=1
+    )
+    keep = [c for c in with_c0.comparisons if "C0" not in (c.condition_a, c.condition_b)]
+    assert keep == list(without.comparisons)
+    assert [c.descriptive for c in keep] == [False] * len(keep)
+    assert _primary(with_c0) == _primary(without)
+    assert with_c0.h2 == without.h2
+
+
+def test_no_c0_comparison_without_c0_and_h4_pairs_exclude_it() -> None:
+    report = analyze_runs(
+        _bank("C1", [[True]] * 3) + _bank("C2", [[True]] * 3), settings=SETTINGS, min_questions=1
+    )
+    assert not any(c.descriptive for c in report.comparisons)
+    with_c0 = analyze_runs(
+        _bank("C0", [[True]] * 3) + _bank("C1", [[True]] * 3), settings=SETTINGS, min_questions=1
+    )
+    h4 = [c for c in with_c0.comparisons if c.metric.endswith("_among_answered")]
+    assert h4 == []
+
+
+def test_descriptive_flag_is_serialised() -> None:
+    report = analyze_runs(
+        _bank("C0", [[False]] * 3) + _bank("C1", [[True]] * 3), settings=SETTINGS, min_questions=1
+    )
+    dumped = report_to_dict(report)["comparisons"]
+    assert any(c["descriptive"] and c["condition_b"] == "C0" for c in dumped)

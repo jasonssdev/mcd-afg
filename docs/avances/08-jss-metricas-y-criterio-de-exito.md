@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 08 — Métricas y criterio de éxito |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 7.0 |
+| **Versión** | 8.0 |
 | **Fecha** | 2026-11-02 |
 | **Estado** | Vigente |
 
@@ -25,6 +25,7 @@
 | 5.2 | 2026-11-02 | Se registra la concordancia del juez de τ con una persona (50 pares) y su consecuencia para leer las métricas de alineación del Experimento A: con τ = 0,70 son un piso conservador. Se mantiene τ = 0,70; no cambian umbrales ni criterios de éxito. | Acuerdo de 43 de 50 pares (86 %), kappa 0,716 (IC 95 % de 0,520 a 0,880); los 7 desacuerdos son del juez en «no» y la persona en «sí»; por debajo de 0,70 el juez dice «sí» en el 21 % de los pares y la persona en el 42 % ([ADR 0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md), [notebook 17](../../notebooks/17-jss-tau-referencia-en.ipynb) §8). Evidencia limitada: 24 pares bajo el umbral, una sola persona que además adjudica y mantiene el proyecto, y solo ES2015 y TS3009. |
 | 6.0 | 2026-11-02 | La tasa de respuestas confiadas pero desactualizadas (H4) recibe su definición operativa: entre las preguntas E3 respondidas (sin abstención), la proporción cuya respuesta el juez marca como desactualizada, es decir, que presenta como vigente el estado anterior de la decisión, declarado por quien escribe la pregunta en la columna nueva `superseded_answer` del banco. La comparación es la diferencia pareada C1 − C2 y C1 − C3, y H4 se respalda si el intervalo bootstrap del 95 % de la diferencia queda por encima de 0. La tasa de respuestas incorrectas entre las respondidas se informa como cota superior. El campo del juez se valida con el acuerdo juez-humano, con el mismo umbral de kappa que la corrección. No cambian el criterio de éxito (D16/D17) ni las demás métricas. | Decisión del 2026-11-02 ([ADR 0017](../decisions/0017-adr-medicion-de-h4.md), issue #241): los documentos fijaban el denominador de H4 pero no cómo reconocer una respuesta desactualizada, y ni el juez ni el banco lo distinguían. |
 | 7.0 | 2026-11-02 | H2 y H3 reciben su definición operativa y sus reglas de lectura, fijadas antes de los resultados de evaluación. H2 se mide en el Experimento B: la diferencia entre la brecha de corrección C3 − C2 en E3 (relaciones) y en E1 (decisiones; E2 no entra), con bootstrap independiente por estrato; se respalda si el intervalo del 95 % queda por encima de 0, es contraria si queda por debajo y no es calculable sin C3, C2 o alguno de los estratos. La brecha de extracción del Experimento A (1 menos el recall de relaciones frente a la de decisiones) queda como cifra complementaria y declarada sesgada. H3 se mide en el Experimento A entre los enlaces detectados (error de dirección frente a error de tipo, con intervalos que no se solapan); su cláusula de escala de modelo no se mide. Antes la lectura de H2 que sugería el §4.3 era la cifra condicionada del Experimento A. No cambian el criterio de éxito (D16/D17) ni las demás métricas. | Decisión del 2026-11-02 ([ADR 0018](../decisions/0018-adr-medicion-de-h2-y-h3.md), issue #242): los documentos nombraban las hipótesis pero no decían sobre qué datos se calcula la brecha ni cuándo se respaldan. C3 y C2 son condiciones del Experimento B, y la brecha es el costo de los errores de extracción. |
+| 8.0 | 2026-11-02 | La corrida formal del Experimento B incluye a C0 (el mismo generador sin ningún texto de apoyo) como referencia sin recuperación. Se informan su corrección, su abstención en E4 y sus tasas de H4 con la cota superior, y dos comparaciones descriptivas: C1 − C0 (valor de la recuperación) y C2 − C0 (valor de la base compilada frente a no recuperar). No se informan para C0 las métricas de evidencia ni de citación. No cambian el criterio D16 ni las reglas de H1 a H4. | Decisión del autor del proyecto del 2026-11-02, registrada en el [ADR 0019](../decisions/0019-adr-c0-en-la-corrida-formal-del-experimento-b.md). La versión anterior solo contaba tres condiciones en el Experimento B. |
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
 > la evidencia que lo motivó**. El historial nunca se reescribe: se agrega una fila.
@@ -48,6 +49,9 @@ para reportar) y simulaciones con datos sintéticos. Cada una está marcada como
   construye el ground truth (la referencia de decisiones marcadas a mano), anotado por personas. OE2 mide qué tan bien extrae
   decisiones la máquina (Experimento A). OE3 compara la utilidad de tres condiciones al
   responder preguntas (Experimento B). OE4 atribuye cada error a su etapa.
+- **C0.** Referencia sin recuperación: el mismo generador respondiendo sin ningún texto de
+  apoyo. Corre en el Experimento B, pero no es una de las tres condiciones de la comparación
+  principal; sus diferencias con C1 y con C2 son descriptivas ([ADR 0019](../decisions/0019-adr-c0-en-la-corrida-formal-del-experimento-b.md)).
 - **C1, C2 y C3.** Las tres condiciones que se comparan. C1 busca fragmentos de texto y
   redacta con ellos, con una instrucción genérica y una sola llamada (un RAG convencional); C2
   consulta una base de decisiones construida por la máquina; C3
@@ -287,13 +291,13 @@ recall bajo.
 
 ### 4.4 OE3: la utilidad funcional (Experimento B)
 
-**Qué se mide.** Las tres condiciones responden el mismo banco de preguntas, en cuatro
+**Qué se mide.** Las tres condiciones, y la referencia sin recuperación C0, responden el mismo banco de preguntas, en cuatro
 estratos: E1 (hecho puntual, donde se espera paridad), E2 (estado vigente), E3 (evolución de
 una decisión: el estrato que prueba la tesis) y E4 (sin respuesta en el material). El mínimo
 es de 25 preguntas por estrato; E3 admite hasta 40.
 
-**Cómo se mide.** Las respuestas (al menos unas 900: 100 preguntas como mínimo × 3
-condiciones × 3 corridas; hasta 115 preguntas si E3 llega a 40) las califica un LLM-as-a-judge,
+**Cómo se mide.** Las respuestas (al menos unas 1.200: 100 preguntas como mínimo × 4
+condiciones, con C0, × 3 corridas; hasta 115 preguntas si E3 llega a 40) las califica un LLM-as-a-judge,
 `gpt-oss:20b`. Se eligió con una prueba propia sobre 42 respuestas de ES2015
 etiquetadas a mano, con seis requisitos fijados antes de correr (acuerdo con las personas,
 estabilidad ante cambios de orden y de semilla, accuracy en E4, formato válido y no premiar la
@@ -331,6 +335,13 @@ Las métricas secundarias se leen así:
   saber qué versión prevalece. El intervalo remuestrea por separado las preguntas de cada
   estrato; H2 se respalda si queda por encima de 0 y es contraria si queda por debajo
   ([ADR 0018](../decisions/0018-adr-medicion-de-h2-y-h3.md)).
+- **Referencia sin recuperación (C0)**: del mismo modo que las demás condiciones se informan su
+  corrección por estrato, su abstención en E4 y su tasa de H4 con la cota superior. Se agregan
+  dos comparaciones descriptivas sobre la corrección, apareadas por pregunta: C1 − C0 (qué aporta
+  recuperar texto) y C2 − C0 (qué aporta la base compilada frente a no recuperar nada). No
+  deciden D16 ni H1 a H4. Como C0 no cita ni aporta evidencia, su soporte de evidencia y su
+  citación no se informan. Que C0 acierte una pregunta no prueba conocimiento previo del corpus
+  ni lo descarta ([ADR 0019](../decisions/0019-adr-c0-en-la-corrida-formal-del-experimento-b.md)).
 - **Costo amortizado**: ¿a partir de cuántas consultas se recupera la inversión de construir
   la base?
 

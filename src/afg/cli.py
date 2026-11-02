@@ -3219,8 +3219,10 @@ C2_EXTRACTION_REQUIRED = (
     "`afg c3 build`)."
 )
 
-EXPERIMENT_B_CONDITIONS: tuple[str, ...] = ("c1", "c2", "c3")
-"""Condition ids ``--conditions`` knows; only those in :func:`make_experiment_b_condition` run."""
+EXPERIMENT_B_CONDITIONS: tuple[str, ...] = ("c0", "c1", "c2", "c3")
+"""Condition ids ``--conditions`` knows; C0 (closed-book, no retrieval) joined the formal run by
+ADR 0019 and is the reference without retrieval, not one of the three conditions of the main
+comparison."""
 
 
 def experiment_b_settings(runs: int | None) -> RunSettings:
@@ -3290,11 +3292,13 @@ def make_c3_condition(extraction_run: str) -> CompiledGoldCondition:
 def make_experiment_b_condition(
     condition_id: str, *, c2_extraction: str | None = None
 ) -> Condition:
-    """The condition ``condition_id`` wired from the config (C1, C2 and C3).
+    """The condition ``condition_id`` wired from the config (C0, C1, C2 and C3).
 
     ``c2_extraction`` is the ``--run-name`` of the ``afg experiment a`` run C2 queries and the
     one the C3 workspaces derive from.
     """
+    if condition_id == "c0":
+        return make_closed_book_condition()
     if condition_id == "c1":
         return make_c1_condition()
     if condition_id == "c2":
@@ -3547,8 +3551,8 @@ def experiment_b(
         str,
         typer.Option(
             "--conditions",
-            help="Condiciones separadas por coma: `c1`, `c2` y `c3` (C3 consulta las bases que "
-            "construye `afg c3 build`).",
+            help="Condiciones separadas por coma: `c0` (sin recuperación), `c1`, `c2` y `c3` "
+            "(C3 consulta las bases que construye `afg c3 build`).",
         ),
     ] = "c1",
     c2_extraction: Annotated[
@@ -3583,7 +3587,9 @@ def experiment_b(
     se reintentan. La semilla de generación de la corrida r es `seed + r`. C2 responde con
     `openkos query` sobre el espacio de trabajo `run-r` que `afg experiment a` compiló para la
     serie de la pregunta y rechaza el espacio cuya semilla no sea `seed + r`. C3 consulta del
-    mismo modo la base que `afg c3 build` derivó de esa corrida, con las decisiones de oro.
+    mismo modo la base que `afg c3 build` derivó de esa corrida, con las decisiones de oro. C0
+    responde sin ningún contexto recuperado, con el mismo generador, ajustes, semillas y juez
+    (ADR 0019): es la referencia sin recuperación y no necesita `--c2-extraction`.
     """
     from datetime import UTC, datetime
 
@@ -3624,7 +3630,7 @@ def experiment_b(
         needed = [
             settings.generative_model,
             settings.judge_model,
-            sufficiency_model,
+            *([sufficiency_model] if {"c2", "c3"} & set(wanted) else []),
             configured_embedding_model(),
         ]
         absent = missing_models(needed, list_installed_models())
@@ -3728,12 +3734,13 @@ def experiment_b_closed_book(
         ),
     ] = CLOSED_BOOK_RUN_NAME,
 ) -> None:
-    """Diagnóstico de desarrollo: el modelo de C1 responde sin ningún contexto recuperado.
+    """Atajo de desarrollo: C0 (el modelo de C1 sin ningún contexto recuperado) sobre ES2015.
 
-    Mide el punto de partida más simple y cuánto del escenario AMI ya conoce el modelo. No es una
-    condición de la tesis (C1, C2, C3): solo corre sobre series de desarrollo (ADR 0005), con el
-    mismo modelo, ajustes, semillas (`seed + r`) y juez que el Experimento B, y escribe en
-    `reports/experiment-b/<run-name>/` con el mismo formato. Repetir el nombre reanuda.
+    Mide el punto de partida más simple y cuánto del escenario AMI ya conoce el modelo. La corrida
+    formal de C0 es `afg experiment b --conditions c0` (ADR 0019); este comando se conserva como
+    atajo de desarrollo: solo corre sobre series de desarrollo (ADR 0005), no pide OpenKOS ni el
+    modelo de suficiencia, y usa el mismo modelo, ajustes, semillas (`seed + r`) y juez, con el
+    mismo formato en `reports/experiment-b/<run-name>/`. Repetir el nombre reanuda.
     """
     quiet_http_logs()
     try:
@@ -3856,6 +3863,23 @@ def _print_h4(report: Any) -> None:
     console.print(f"[dim]{H4_NOTE}[/dim]")
 
 
+def _print_closed_book(report: Any) -> None:
+    """Descriptive comparisons against C0 (ADR 0019): secondary, never the D16 verdict."""
+    from afg.experiments.analysis import ALL_STRATA, DESCRIPTIVE_NOTE
+
+    shown = [c for c in report.comparisons if c.descriptive]
+    for cmp in shown:
+        where = "el total" if cmp.stratum == ALL_STRATA else cmp.stratum
+        console.print(
+            f"[bold]Secundaria descriptiva (ADR 0019)[/bold] {cmp.condition_a} frente a "
+            f"{cmp.condition_b} en {where}: diferencia {cmp.difference:+.2f} "
+            f"[{cmp.difference_lower:+.2f}, {cmp.difference_upper:+.2f}] sobre {cmp.n_pairs} "
+            "preguntas."
+        )
+    if shown:
+        console.print(f"[dim]{DESCRIPTIVE_NOTE}[/dim]")
+
+
 def _print_h2(report: Any) -> None:
     """H2 line of ``b-report``: the C3 - C2 gap on E3 minus the one on E1 (ADR 0018)."""
     from afg.experiments.analysis import H2_NOTE
@@ -3898,8 +3922,10 @@ def experiment_b_report(
     """Análisis del Experimento B: tasas, intervalos bootstrap y comparación D16 (OE3).
 
     Agrega por condición y estrato con intervalos que remuestrean preguntas, y compara C2 con
-    C1 en E3 (criterio principal D16) y C2 con C3 (secundario). Se niega a producir tablas
-    reportables con registros de desarrollo o mixtos.
+    C1 en E3 (criterio principal D16) y C2 con C3 (secundario). Si la corrida incluye C0 (sin
+    recuperación), la agrega y suma las comparaciones descriptivas C1 y C2 frente a C0 (ADR 0019),
+    que no deciden ninguna hipótesis. Se niega a producir tablas reportables con registros de
+    desarrollo o mixtos.
     """
     import json
 
@@ -3987,6 +4013,7 @@ def experiment_b_report(
                 f"{comparison.nonoverlap_criterion}."
             )
     console.print(f"[dim]{CRITERION_NOTE}[/dim]")
+    _print_closed_book(report)
     _print_h4(report)
     _print_h2(report)
     for warning in report.warnings:
