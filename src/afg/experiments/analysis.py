@@ -38,7 +38,7 @@ from __future__ import annotations
 
 import random
 from collections.abc import Callable, Iterable, Mapping, Sequence
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from typing import Any
 
 from afg.domain.question import Question
@@ -48,6 +48,7 @@ from afg.experiments.summary import CitationWidthSummary, citation_width_summary
 
 __all__ = [
     "ALL_STRATA",
+    "CLOSED_BOOK",
     "H2_NOTE",
     "H4_METRIC",
     "H4_METRICS",
@@ -77,6 +78,11 @@ H4_METRICS: tuple[str, ...] = (H4_METRIC, H4_UPPER_BOUND_METRIC)
 H4_STRATUM = "E3"
 H4_PAIRS: tuple[tuple[str, str], ...] = (("C1", "C2"), ("C1", "C3"))
 SECONDARY_PAIRS: tuple[tuple[str, str], ...] = (("C2", "C1"), ("C2", "C3"))
+CLOSED_BOOK = "C0"
+DESCRIPTIVE_PAIRS: tuple[tuple[str, str], ...] = (("C1", CLOSED_BOOK), ("C2", CLOSED_BOOK))
+"""ADR 0019: C1 - C0 is the value of retrieval and C2 - C0 that of the compiled base, over the
+answer correctness only. Descriptive: they decide none of H1-H4 nor D16."""
+DESCRIPTIVE_METRICS: tuple[str, ...] = ("correct",)
 CITATION_SCHEMA_VERSION = 2
 
 COMBINATION_NOTE = (
@@ -99,6 +105,15 @@ H4_NOTE = (
     "C1 - C2 y C1 - C3 se aparean por pregunta respondida en ambas y H4 se respalda si el "
     "intervalo de la diferencia queda por encima de 0. La tasa de respuestas incorrectas entre "
     "las respondidas se informa como cota superior, no como H4."
+)
+
+DESCRIPTIVE_NOTE = (
+    "C0 (ADR 0019): el mismo generador sin ningún contexto recuperado, referencia sin "
+    "recuperación. C1 - C0 se lee como el valor de recuperar texto y C2 - C0 como el de la base "
+    "compilada frente a no recuperar nada; se calculan sobre la corrección, aparean por pregunta "
+    "y son descriptivas: no deciden D16 ni H1-H4. C0 no cita ni aporta evidencia, así que sus "
+    "métricas de evidencia y de citación no aplican y se informan como no disponibles; una "
+    "respuesta de C0 que acierta no prueba conocimiento previo del corpus ni lo descarta."
 )
 
 H2_RELATION_STRATUM = "E3"
@@ -167,6 +182,8 @@ class Comparison:
     """Primary verdict: ``supported`` only when the paired difference interval is above 0."""
     nonoverlap_criterion: str
     """Robustness: ``supported`` only when ``a_above``; every other outcome is ``inconclusive``."""
+    descriptive: bool = False
+    """A comparison against C0 (ADR 0019): secondary, it never decides D16 or H1-H4."""
 
     @property
     def intervals_overlap(self) -> bool:
@@ -231,6 +248,8 @@ def _verdict_flag(name: str) -> Extractor:
     def extract(record: Record) -> float | None:
         if not _is_judged(record):
             return None
+        if name == "evidence_supported" and record.get("condition") == CLOSED_BOOK:
+            return None
         value = record["verdict"].get(name)
         return None if value is None else float(bool(value))
 
@@ -239,7 +258,8 @@ def _verdict_flag(name: str) -> Extractor:
 
 def _citation_usable(record: Record) -> bool:
     return (
-        not _is_error(record)
+        record.get("condition") != CLOSED_BOOK
+        and not _is_error(record)
         and not _abstained(record)
         and _label(record) != E4
         and int(record.get("schema_version") or 1) >= CITATION_SCHEMA_VERSION
@@ -441,7 +461,9 @@ def analyze_runs(
                     below_minimum=below,
                     metrics=metrics,
                     citation_width=(
-                        None if questions is None else citation_width_summary(subset, questions)
+                        None
+                        if questions is None or condition == CLOSED_BOOK
+                        else citation_width_summary(subset, questions)
                     ),
                 )
             )
@@ -518,6 +540,17 @@ def _compare(
                 )
                 if comparison is not None:
                     results.append(comparison)
+    for a, b in DESCRIPTIVE_PAIRS:
+        if a not in present or b not in present:
+            continue
+        for stratum in (*strata, ALL_STRATA):
+            cell_a, cell_b = by_key.get((a, stratum)), by_key.get((b, stratum))
+            if cell_a is None or cell_b is None:
+                continue
+            for metric in DESCRIPTIVE_METRICS:
+                reference = _paired(a, b, stratum, metric, cell_a, cell_b, scores_by_cell, settings)
+                if reference is not None:
+                    results.append(replace(reference, descriptive=True))
     for a, b in H4_PAIRS:
         cell_a, cell_b = by_key.get((a, H4_STRATUM)), by_key.get((b, H4_STRATUM))
         if cell_a is None or cell_b is None:
@@ -646,4 +679,5 @@ def report_to_dict(report: AnalysisReport) -> dict[str, Any]:
         ],
         "warnings": list(report.warnings),
         "h2": {**asdict(report.h2), "note": H2_NOTE},
+        "descriptive_note": DESCRIPTIVE_NOTE,
     }

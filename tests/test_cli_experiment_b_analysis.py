@@ -249,3 +249,27 @@ def test_report_prints_h2_as_not_computable_without_c3(out: Path) -> None:
     assert "H2: no calculable" in result.output
     data = json.loads((out / "ev" / "analisis.json").read_text())
     assert data["h2"]["verdict"] == "not_computable"
+
+
+def test_report_includes_c0_and_labels_its_comparisons_as_secondary(out: Path) -> None:
+    run = _write_run(out, "ev", "evaluation")
+    lines = (run / "respuestas.jsonl").read_text(encoding="utf-8").splitlines()
+    for q in range(10):
+        for r in range(3):
+            c0 = _record(q, "C0", r, partition="evaluation")
+            c0["answer"]["cited_evidence"] = []
+            c0["verdict"] = {"correct": False, "evidence_supported": False}
+            c0["citation_correct"], c0["citation_precision"] = False, 0.0
+            lines.append(json.dumps(c0))
+    (run / "respuestas.jsonl").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    result = _invoke_wide("b-report", "--run-name", "ev", "--questions", "q.csv")
+
+    assert result.exit_code == 0, result.output
+    assert "C0" in result.output
+    assert "Secundaria descriptiva (ADR 0019) C1 frente a C0 en E3" in result.output
+    assert "Secundaria descriptiva (ADR 0019) C2 frente a C0 en E3" in result.output
+    assert "Principal (D16) C2 frente a C1 en E3" in result.output
+    payload = json.loads((run / "analisis.json").read_text(encoding="utf-8"))
+    assert [c["primary"] for c in payload["comparisons"] if c["condition_b"] == "C0"] == [False] * 4
+    assert "descriptive_note" in payload

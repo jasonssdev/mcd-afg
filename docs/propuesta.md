@@ -98,6 +98,8 @@ Comparar el desempeño frente a un mismo banco de preguntas estratificado bajo t
 | **C2** | Base estructurada construida automáticamente (OpenKOS tal como se distribuye) | **La propuesta bajo evaluación** |
 | **C3** | Base estructurada construida desde la anotación de OE1 | **Referencia superior** — la misma representación sin errores de extracción |
 
+La corrida formal agrega una condición descriptiva, **C0**: el mismo modelo responde solo con la pregunta, sin recuperar nada. No entra en las hipótesis; sirve para medir cuánto aporta recuperar texto (C1 − C0) o consultar la base compilada (C2 − C0) ([ADR 0019](decisions/0019-adr-c0-en-la-corrida-formal-del-experimento-b.md)).
+
 C1 se compara contra C2 y C3 como sistemas completos de consulta, cada uno con su propia etapa de respuesta (§5.3); la comparación C2 contra C3 sigue aislando, con el mismo sistema, el efecto de los errores de extracción.
 
 - **Calidad:** corrección de la respuesta y **soporte de evidencia** (si cada afirmación es atribuible a una fuente identificada, en la línea de Rashkin et al., 2023), más **corrección del rechazo**: qué hace cada condición ante una pregunta que el material no puede responder.
@@ -182,6 +184,8 @@ Las tres comparten **el mismo modelo generativo de respuesta, el mismo modelo de
 - **C1 — RAG convencional.** Transcripciones segmentadas, indexadas y recuperadas por búsqueda híbrida (léxica + densa), con una sola llamada de generación y un *prompt* genérico adaptado de una plantilla de RAG de uso extendido (`rlm/rag-prompt`): responde solo con el contexto recuperado, se abstiene con una frase fija cuando no lo encuentra y cita los fragmentos entre corchetes. No tiene verificación de suficiencia separada ni copia de componentes de OpenKOS. Debe ser una línea base **honesta**: parámetros de segmentación y número de fragmentos recuperados ajustados sobre un conjunto de desarrollo separado, no fijados arbitrariamente. Una línea base debilitada invalida el experimento completo.
 - **C2 — Compilación automática.** Extracción con modelo local, persistencia con procedencia, consulta sobre los objetos compilados. Se usa OpenKOS 0.7.0 tal como se distribuye: recuperación sobre la base compilada y sus fuentes, y verificación de suficiencia con el modelo que el producto incluye.
 - **C3 — Compilación desde la referencia.** Idéntica a C2 salvo que los objetos provienen de la anotación de OE1.
+
+**C0 — Sin recuperación (descriptiva).** El mismo modelo de respuesta contesta con la pregunta sola, sin contexto. No participa en las hipótesis H1 a H4; sus comparaciones con C1 y C2 se informan como descriptivas ([ADR 0019](decisions/0019-adr-c0-en-la-corrida-formal-del-experimento-b.md)). Como no recupera nada, la citación y el respaldo en evidencia no se le aplican.
 
 ### 5.4 Protocolo de alineamiento
 

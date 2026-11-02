@@ -1,11 +1,14 @@
-"""C0 -- closed-book diagnostic (development only; NOT a thesis condition).
+"""C0 -- closed-book reference, without retrieval (a condition of the formal Experiment B).
 
 C0 answers each question with NO retrieved context, using the generative model and the
-sampling settings of C1 (``[shared_budget]``). It exists to (1) give the simplest possible
-baseline and (2) measure whether the model already knows the AMI scenario (contamination).
-It is not part of the C1/C2/C3 set of thesis section 5.3: it is kept out of
-``EXPERIMENT_B_CONDITIONS``, so ``afg experiment b`` cannot run it, and it only runs on
-development series (ADR 0005).
+sampling settings of C1 (``[shared_budget]``). It gives the simplest possible reference (what the
+model does on its own) and lets the analysis read the value of retrieval (C1 - C0) and of the
+compiled base (C2 - C0). Since 2026-11-02 (ADR 0019) it runs in the formal
+``afg experiment b --conditions c0``, with the same bank, generator, judge, seeds, freeze gate and
+pinned environment as C1, C2 and C3. It is NOT one of the three conditions of the main
+comparison (thesis section 5.3: D16 and H1-H4 are unchanged) and it has no citations, so its
+evidence and citation metrics do not apply. ``afg experiment b-closed-book`` stays as a
+development shortcut that only runs on development series (ADR 0005).
 
 Prompt choice. C1 answers with ``prompts/c1/answer.md``, which tells the model to answer from
 the numbered context, to reply "I don't know." when the context lacks the answer and to cite

@@ -88,10 +88,82 @@ def test_evaluation_series_are_refused_before_writing(
     assert not env["out"].exists()
 
 
-def test_the_thesis_command_still_refuses_c0(env: dict[str, Any]) -> None:
+@pytest.fixture
+def formal(env: dict[str, Any], monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
+    """The env of ``afg experiment b``: it also checks the embedding model, not the sufficiency."""
+    monkeypatch.setattr(
+        afg_cli, "list_installed_models", lambda: ["qwen3:8b", "gpt-oss:20b", "bge-m3"]
+    )
+    return env
+
+
+def test_the_thesis_command_now_runs_c0_with_the_same_wiring(
+    formal: dict[str, Any], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    env = formal
+    monkeypatch.setattr(afg_cli, "make_c1_condition", lambda: pytest.fail("C1 not requested"))
+    argv = ["experiment", "b", "--questions", str(env["questions"]), "--conditions", "c0"]
+    result = CliRunner().invoke(afg_cli.app, [*argv, "--runs", "2", "--run-name", "formal"])
+    assert result.exit_code == 0, result.output
+    run_dir = env["out"] / "formal"
+    records = [
+        json.loads(line)
+        for line in (run_dir / "respuestas.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    assert len(records) == 3 * 2
+    assert {r["condition"] for r in records} == {"C0"}
+    assert {r["seed"] for r in records} == {42, 43}
+    assert env["condition"].seeds == [42, 43]
+    manifest = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["conditions"] == ["C0"]
+    assert manifest["pinned_environment_ok"] is True
+
+
+def test_c0_needs_no_extraction_run_and_rejects_the_option_alone(env: dict[str, Any]) -> None:
+    argv = ["experiment", "b", "--questions", str(env["questions"]), "--conditions", "c0"]
+    result = CliRunner().invoke(afg_cli.app, [*argv, "--c2-extraction", "x"])
+    assert result.exit_code == 1
+    assert not env["out"].exists()
+
+
+def test_c0_can_run_beside_c1_in_one_run(
+    formal: dict[str, Any], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    env = formal
+    monkeypatch.setattr(
+        afg_cli,
+        "list_installed_models",
+        lambda: ["qwen3:8b", "gpt-oss:20b", "bge-m3"],
+    )
+    from tests.test_cli_experiment_b import FakeC1
+
+    c1 = FakeC1()
+    monkeypatch.setattr(afg_cli, "make_c1_condition", lambda: c1)
+    argv = ["experiment", "b", "--questions", str(env["questions"]), "--conditions", "c0,c1"]
+    result = CliRunner().invoke(afg_cli.app, [*argv, "--runs", "1", "--run-name", "both"])
+    assert result.exit_code == 0, result.output
+    manifest = json.loads((env["out"] / "both" / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["conditions"] == ["C0", "C1"]
+
+
+def test_make_experiment_b_condition_builds_c0() -> None:
+    from afg.conditions.c0_closed_book import ClosedBookCondition
+
+    assert isinstance(afg_cli.make_experiment_b_condition("c0"), ClosedBookCondition)
+
+
+def test_c0_pinned_environment_guard_covers_the_formal_command(
+    formal: dict[str, Any], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    env = formal
+    from tests.pinned_guard import tripwire
+
+    calls = tripwire(monkeypatch)
     argv = ["experiment", "b", "--questions", str(env["questions"]), "--conditions", "c0"]
     result = CliRunner().invoke(afg_cli.app, argv)
     assert result.exit_code == 1
+    assert calls == [(["qwen3:8b", "gpt-oss:20b", "bge-m3"], True)]
+    assert env["condition"].seeds == []
     assert not env["out"].exists()
 
 

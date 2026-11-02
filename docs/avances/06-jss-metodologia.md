@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 06 — Metodología |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 9.1 |
+| **Versión** | 10.0 |
 | **Fecha** | 2026-11-02 |
 | **Estado** | Vigente |
 
@@ -39,6 +39,7 @@
 | 8.1 | 2026-11-02 | La medición de las relaciones temporales (§1) incorpora IS1004, que antes no se había puntuado: su referencia es la de su único anotador y se compara con una traducción automática al inglés. Con ello la medición de desarrollo cubre las tres series y 9 relaciones de oro; en IS1004 ningún enlace de la máquina cae sobre decisiones alineadas y el enlace de oro con ambas decisiones alineadas no se encontró. | Issue #229 (la alineación acepta la referencia de un solo anotador), issue #204 (traducción de IS1004) y [notebook 22](../../notebooks/22-jss-relaciones-temporales-openkos.ipynb). |
 | 9.0 | 2026-11-02 | El ajuste de C1 (§3–4) se repite sobre el cuerpo Markdown de la transcripción, que C1 corta con un divisor de texto genérico (sin la estructura de turnos): el resultado pasa de fragmentos de 1.200 caracteres con 1 turno de solapamiento y K = 5 a **fragmentos de 1.200 caracteres, sin solapamiento, y K = 5** (cambia la segmentación; el K se mantiene). El espacio de C1 para los fragmentos se calcula con la sobrecarga de instrucciones de OpenKOS, de modo que es casi igual al de C2 (unos 8.700 frente a 8.300 caracteres). | Decisión del autor del proyecto del 2026-11-02: C1 recibe el mismo documento que OpenKOS, como un RAG convencional. Evidencia: [ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md) (enmienda del 2026-11-02), [ADR 0014](../decisions/0014-adr-c1-como-rag-convencional.md) (enmienda del 2026-11-02) y [notebook 06](../../notebooks/06-jss-ajuste-c1.ipynb). |
 | 9.1 | 2026-11-02 | Se registra el resultado de la concordancia del juez de τ con una persona sobre 50 pares (§1, §5–6), que la versión 6.0 dejó pendiente: acuerdo sustancial, juez más estricto que la persona, y por eso las cifras de alineación del Experimento A con τ = 0,70 son un piso conservador. Se mantiene τ = 0,70 y no cambian otros umbrales ni cifras. | Acuerdo de 43 de 50 pares (86 %), kappa 0,716 (IC 95 % de 0,520 a 0,880); los 7 desacuerdos son del juez en «no» y la persona en «sí»; por debajo de 0,70 el juez dice «sí» en el 21 % de los pares y la persona en el 42 % ([ADR 0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md), [notebook 17](../../notebooks/17-jss-tau-referencia-en.ipynb) §8). Evidencia limitada: 24 pares bajo el umbral, una sola persona que además adjudica y mantiene el proyecto, y solo ES2015 y TS3009. Protocolo [`../protocols/alignment.md`](../protocols/alignment.md) 3.1. |
+| 10.0 | 2026-11-02 | C0, el mismo generador respondiendo sin ningún texto de apoyo, deja de ser solo un diagnóstico de desarrollo y entra en la corrida formal del Experimento B como referencia sin recuperación (§3–4, fase 3 y tamaño de la corrida). Las tres condiciones de la comparación principal no cambian, ni el criterio D16 ni las hipótesis. | Decisión del autor del proyecto del 2026-11-02, registrada en el [ADR 0019](../decisions/0019-adr-c0-en-la-corrida-formal-del-experimento-b.md). El avance anterior solo describía a C0 como diagnóstico de desarrollo. |
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
 > la evidencia que lo motivó**. El historial nunca se reescribe: se agrega una fila.
@@ -70,6 +71,13 @@ puede leer de una vez. Se llaman **condiciones**:
 | **C2** | Base construida por la máquina | Un modelo de lenguaje lee las transcripciones, extrae las decisiones y las guarda en una base con sus relaciones. Es la propuesta. | Lo que se evalúa. |
 | **C3** | Base construida por personas | La misma base de C2, pero llenada con la anotación humana del ground truth (las decisiones marcadas a mano). Sin errores de extracción. | Separa dos cosas: la distancia C1→C3 es el valor del sistema compilado frente a un RAG convencional; la distancia C3→C2 es el costo de los errores de la máquina. |
 
+Además de las tres condiciones, la corrida formal incluye una **referencia sin recuperación,
+C0**: el mismo modelo respondiendo sin ningún texto de apoyo, solo con lo que ya sabe. No es una
+cuarta condición de la comparación principal: sirve para ver cuánto aporta recuperar texto
+(C1 frente a C0) y cuánto aporta la base compilada frente a no recuperar nada (C2 frente a C0),
+y esas diferencias se leen como descriptivas, sin decidir ninguna hipótesis. C0 no cita
+fragmentos, así que sus métricas de evidencia y de citación no aplican.
+
 Sin C3 no se podría distinguir si una mala respuesta de C2 se debe a que la idea de la base
 no sirve o a que la máquina la llenó mal. Esa es la limitación de los trabajos previos que
 se señala en el documento 01, y la razón de ser de este diseño.
@@ -81,7 +89,8 @@ El trabajo se organiza en **cuatro fases**, en orden, porque cada una necesita l
    todo lo demás; sin él, ninguna otra fase mide nada.
 2. **La extracción automática.** Se mide qué tan bien la máquina encuentra esas mismas
    decisiones y relaciones. Aporta el costo de construir la base automáticamente.
-3. **La utilidad funcional.** Las tres condiciones responden el mismo banco de preguntas.
+3. **La utilidad funcional.** Las tres condiciones, y la referencia sin recuperación C0,
+   responden el mismo banco de preguntas.
    Aporta el valor de la base, ya con sus errores incluidos.
 4. **La atribución de error.** Para cada respuesta equivocada de C2 se determina dónde nació
    el error. Aporta saber en qué conviene invertir.
@@ -260,6 +269,10 @@ por el modelo. Lo que sí varía entre condiciones es todo el sistema de consult
 y la etapa de respuesta propia de cada una. Por eso la diferencia entre C1 y C2/C3 no se puede
 repartir entre ambas (documento 09, §6.5).
 
+- **C0 — referencia sin recuperación.** El mismo modelo generativo, con los mismos ajustes,
+  semillas y juez, responde la pregunta sin ningún texto de apoyo. Corre en la misma corrida
+  formal que las demás, con el mismo banco y el mismo bloqueo de congelamiento. Se compara
+  con C1 y con C2 solo de forma descriptiva (documento 09, §5 y ADR 0019).
 - **C1 — RAG convencional.** Transcripciones segmentadas en fragmentos e indexadas con
   búsqueda híbrida (léxica, por palabras exactas, y densa, por parecido de significado).
   **Baseline honesto:** un baseline es el punto de comparación, y un baseline
@@ -378,7 +391,7 @@ con la guía corregida, y solo después comienzan las series de control. TS3009 
 ground truth, ahora con doble anotación; las series doblemente anotadas pasan de
 cinco a seis, y la proporción de doble anotación sobre la evaluación (36,4 %) no cambia.
 
-**El LLM-as-a-judge, elegido con evidencia propia.** El Experimento B produce unas 900
+**El LLM-as-a-judge, elegido con evidencia propia.** El Experimento B produce unas 1.200
 respuestas, demasiadas para calificarlas a mano. Las califica un LLM-as-a-judge: un segundo
 modelo que lee la pregunta, la respuesta de referencia, la respuesta del sistema y el pasaje de
 la transcripción donde está la evidencia, y decide si la respuesta es correcta y si cada

@@ -145,7 +145,7 @@ def b_cells_table(analyses: Sequence[tuple[str, Mapping[str, Any]]]) -> pd.DataF
 
 
 def b_paired_table(analyses: Sequence[tuple[str, Mapping[str, Any]]]) -> pd.DataFrame:
-    """Stored paired comparisons (D16, secondary and H4 with its upper bound)."""
+    """Stored paired comparisons (D16, secondary, H4 with its upper bound and the C0 ones)."""
     rows = []
     for run, analysis in analyses:
         for c in analysis["comparisons"]:
@@ -153,6 +153,7 @@ def b_paired_table(analyses: Sequence[tuple[str, Mapping[str, Any]]]) -> pd.Data
                 {
                     "run": run,
                     "primary": bool(c["primary"]),
+                    "descriptive": bool(c.get("descriptive", False)),
                     "condition_a": c["condition_a"],
                     "condition_b": c["condition_b"],
                     "stratum": c["stratum"],
