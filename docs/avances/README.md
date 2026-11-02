@@ -21,6 +21,7 @@ modelos.
 | [`08-jss-metricas-y-criterio-de-exito.md`](08-jss-metricas-y-criterio-de-exito.md) | Qué se mide, sobre qué, con qué umbral, y cómo se decide si el experimento tuvo éxito |
 | [`09-jss-modelos-y-justificacion.md`](09-jss-modelos-y-justificacion.md) | Qué es «el modelo» en una tesis sin entrenamiento: los *pipelines* comparados, los modelos por rol, la búsqueda de parámetros, la línea base y las limitaciones (v8.0) |
 | [`10-jss-confiabilidad-de-la-referencia.md`](10-jss-confiabilidad-de-la-referencia.md) | Resultados de confiabilidad de OE1 (fases 1 y 2): kappa de existencia, tipo y dirección, y su lectura |
+| [`informes/`](informes/) | Los informes del curso como documentos vivos (pre-informe de AFG2 y, después, informe final de AFG3), armados a partir de estos avances |
 
 ## De dónde sale el contenido
 
