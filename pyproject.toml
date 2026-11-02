@@ -36,7 +36,9 @@ dependencies = [
 [project.optional-dependencies]
 instrument = ["openkos==0.7.0"]       # the engine under evaluation (thesis §5.9); exact pin, ADR 0006 (#94)
 llm = ["ollama>=0.4"]                 # local generative models (§5.8)
-embeddings = ["sentence-transformers>=3.3"]  # heavy; only needed for the alignment protocol
+# heavy; only needed for the alignment protocol. Skipped on Intel macOS: torch publishes no
+# wheels for macosx x86_64 on Python 3.14, so `uv sync --all-extras` would fail there.
+embeddings = ["sentence-transformers>=3.3; sys_platform != 'darwin' or platform_machine != 'x86_64'"]
 
 [project.scripts]
 afg = "afg.cli:app"
