@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "run_name": "humo-c2-es2015-openkos070",
+  "condition": "C2",
+  "sheet": "oe4-etapa-e1.csv",
+  "n_failures": 6,
+  "stages": {
+    "extraccion": {
+      "cases": 2,
+      "share": 0.3333333333333333
+    },
+    "recuperacion": {
+      "cases": 3,
+      "share": 0.5
+    },
+    "sintesis": {
+      "cases": 1,
+      "share": 0.16666666666666666
+    }
+  },
+  "rule_agreement": {
+    "with_suggestion": 4,
+    "without_suggestion": 2,
+    "agree": 2,
+    "disagree": 2,
+    "agreement_rate": 0.5
+  },
+  "disagreements": [
+    {
+      "question_id": "ES2015.q003",
+      "rule_stage": "sintesis",
+      "human_stage": "recuperacion"
+    },
+    {
+      "question_id": "ES2015.q017",
+      "rule_stage": "sintesis",
+      "human_stage": "recuperacion"
+    }
+  ]
+}

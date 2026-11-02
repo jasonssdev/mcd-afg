@@ -154,17 +154,42 @@ def _fmt(item: ObjectCoverage) -> str:
     return f"{item.object_id} ({item.coverage:.2f}, {'' if item.retrieved else 'no '}recuperado)"
 
 
+HINT_ALL_TERMS_RETRIEVED = (
+    "un objeto de la base tiene todos los términos de la referencia y se recuperó"
+)
+HINT_ALL_TERMS_UNRETRIEVED = (
+    "un objeto de la base tiene todos los términos de la referencia y no se recuperó"
+)
+HINT_ONLY_RAW_SOURCE = (
+    "solo la transcripción en bruto tiene todos los términos; no prueba que la extracción lo "
+    "capturó"
+)
+HINT_NO_TERMS = "ningún objeto ni fuente tiene todos los términos (puede ser una diferencia léxica)"
+_HINT_STAGE: dict[str, str] = {
+    HINT_ALL_TERMS_RETRIEVED: "sintesis",
+    HINT_ALL_TERMS_UNRETRIEVED: "recuperacion",
+    HINT_ONLY_RAW_SOURCE: "extraccion",
+}
+
+
+def suggested_stage(hint: str) -> str | None:
+    """The stage a ``pista_automatica`` text points at, or ``None`` when it points at none.
+
+    The fact is in the base and was retrieved: the pipeline had it, so synthesis (the note of the
+    sheet calls this "la regla automática sugiere síntesis"). In the base and not retrieved:
+    retrieval. Only in the raw transcript: extraction. No lexical match: no suggestion (it may
+    be a wording difference). It is a triage cue, never a label.
+    """
+    return _HINT_STAGE.get(hint)
+
+
 def _hint(best: ObjectCoverage | None, source: ObjectCoverage | None) -> str:
     """A triage hint (never a stage) from the best extracted object and the best source."""
     if best is not None and best.coverage == 1.0:
-        where = "y se recuperó" if best.retrieved else "y no se recuperó"
-        return f"un objeto de la base tiene todos los términos de la referencia {where}"
+        return HINT_ALL_TERMS_RETRIEVED if best.retrieved else HINT_ALL_TERMS_UNRETRIEVED
     if source is not None and source.coverage == 1.0:
-        return (
-            "solo la transcripción en bruto tiene todos los términos; no prueba que la "
-            "extracción lo capturó"
-        )
-    return "ningún objeto ni fuente tiene todos los términos (puede ser una diferencia léxica)"
+        return HINT_ONLY_RAW_SOURCE
+    return HINT_NO_TERMS
 
 
 def oe4_worksheet_rows(
@@ -281,6 +306,10 @@ def stage_shares(counts: Mapping[str, int]) -> pd.DataFrame:
 
 __all__ = [
     "ETAPA_VALUES",
+    "HINT_ALL_TERMS_RETRIEVED",
+    "HINT_ALL_TERMS_UNRETRIEVED",
+    "HINT_NO_TERMS",
+    "HINT_ONLY_RAW_SOURCE",
     "WORKSHEET_COLUMNS",
     "BaseEvidence",
     "ObjectCoverage",
@@ -291,5 +320,6 @@ __all__ = [
     "rank_bundle_objects",
     "read_worksheet_rows",
     "stage_shares",
+    "suggested_stage",
     "write_oe4_worksheet",
 ]
