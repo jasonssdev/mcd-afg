@@ -284,3 +284,29 @@ def test_ask_stops_when_the_series_has_no_transcripts(ask_env: Path) -> None:
     result = _ask("--series", "TS3009")
     assert result.exit_code == 1
     assert "TS3009" in _out(result)
+
+
+def test_tune_and_ablate_check_the_embedding_model_pin_before_embedding(
+    env: dict[str, Path], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from tests.pinned_guard import tripwire
+
+    calls = tripwire(monkeypatch)
+    monkeypatch.setattr(afg_cli, "make_c1_embedder", lambda: pytest.fail("embedded"))
+
+    for command in ("tune", "ablate"):
+        result = CliRunner().invoke(afg_cli.app, ["c1", command])
+        assert result.exit_code == 1
+
+    assert calls == [(["bge-m3"], False)] * 2
+    assert not env["results"].exists() and not env["ablation"].exists()
+
+
+def test_tune_and_ablate_results_record_the_pinned_environment_check(
+    env: dict[str, Path],
+) -> None:
+    assert _tune().exit_code == 0
+    assert CliRunner().invoke(afg_cli.app, ["c1", "ablate"]).exit_code == 0
+
+    for path in (env["results"], env["ablation"]):
+        assert json.loads(path.read_text(encoding="utf-8"))["pinned_environment_ok"] is True

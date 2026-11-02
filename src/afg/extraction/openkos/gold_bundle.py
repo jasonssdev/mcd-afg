@@ -30,10 +30,11 @@ from __future__ import annotations
 import csv
 import json
 import shutil
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -321,8 +322,12 @@ def build_gold_workspace(
     transcripts_dir: Path = TRANSCRIPTS_DIR,
     overwrite: bool = False,
     generated_at: str | None = None,
+    pinned_environment: Mapping[str, Any] | None = None,
 ) -> GoldBuildResult:
     """Write the C3 workspace ``target`` from ``c2_workspace`` and the gold ``reference``.
+
+    ``pinned_environment`` is the guard's record (``pinned_environment_ok`` and the pins), merged
+    into the manifest when given.
 
     ``relations_kind`` (``adjudicated``, ``single:<ini>`` or ``none``; see
     :func:`gold_relations_kind`) and ``reference.source_kind`` go to the manifest.
@@ -399,6 +404,7 @@ def build_gold_workspace(
         "relations_dropped": list(relations_dropped),
         "decisions_reference_kind": reference.source_kind,
         "relations_reference_kind": relations_kind,
+        **(pinned_environment or {}),
     }
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     return GoldBuildResult(
