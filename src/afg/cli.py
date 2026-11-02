@@ -2888,8 +2888,14 @@ def experiment_b(
 
     config = load_experiments_config()
     settings = experiment_b_settings(runs)
+    sufficiency_model = str(config["shared_budget"]["sufficiency_model"])
     try:
-        needed = [settings.generative_model, settings.judge_model, configured_embedding_model()]
+        needed = [
+            settings.generative_model,
+            settings.judge_model,
+            sufficiency_model,
+            configured_embedding_model(),
+        ]
         absent = missing_models(needed, list_installed_models())
     except (RuntimeError, ConnectionError, OSError) as exc:
         console.print(
@@ -2910,6 +2916,7 @@ def experiment_b(
         make_provenance_probe(),
         generative_model=settings.generative_model,
         judge_model=settings.judge_model,
+        sufficiency_model=sufficiency_model,
         embedding_model=configured_embedding_model(),
         c1_params=config["retrieval"]["c1"],
         questions_path=questions,

@@ -44,7 +44,12 @@ class FakeBackend:
 
 class _FakeProbe:
     def model_digests(self) -> dict[str, str]:
-        return {"qwen3:8b": "d-gen", "gpt-oss:20b": "d-judge", "bge-m3:latest": "d-emb"}
+        return {
+            "qwen3:8b": "d-gen",
+            "gpt-oss:20b": "d-judge",
+            "gemma4:26b-a4b": "d-suff",
+            "bge-m3:latest": "d-emb",
+        }
 
     def ollama_version(self) -> str:
         return "0.9.9"
@@ -65,7 +70,9 @@ def env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
     monkeypatch.setattr(afg_cli, "make_c1_condition", lambda: condition)
     monkeypatch.setattr(afg_cli, "make_judge_backend", lambda: FakeBackend())
     monkeypatch.setattr(
-        afg_cli, "list_installed_models", lambda: ["qwen3:8b", "gpt-oss:20b", "bge-m3:latest"]
+        afg_cli,
+        "list_installed_models",
+        lambda: ["qwen3:8b", "gpt-oss:20b", "gemma4:26b-a4b", "bge-m3:latest"],
     )
     monkeypatch.setattr(afg_cli, "configured_embedding_model", lambda: "bge-m3")
     monkeypatch.setattr(afg_cli, "make_provenance_probe", lambda: _FakeProbe())
@@ -110,6 +117,8 @@ def test_manifest_records_the_reproducibility_fields(env: dict[str, Any]) -> Non
     manifest = json.loads((env["out"] / "repro" / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["generative_model_digest"] == "d-gen"
     assert manifest["judge_model_digest"] == "d-judge"
+    assert manifest["sufficiency_model"] == "gemma4:26b-a4b"
+    assert manifest["sufficiency_model_digest"] == "d-suff"
     assert manifest["embedding_model_digest"] == "d-emb"
     assert manifest["ollama_version"] == "0.9.9"
     assert manifest["openkos_version"] is None

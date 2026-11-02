@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 08 — Métricas y criterio de éxito |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 2.0 |
+| **Versión** | 3.0 |
 | **Fecha** | 2026-11-01 |
 | **Estado** | Vigente |
 
@@ -17,6 +17,7 @@
 | 1.2 | 2026-10-15 | Se agrega la sección «Trazabilidad», con las funciones, pruebas, notebooks y decisiones en que se apoya cada métrica. No cambia ninguna cifra, decisión ni sección anterior. | Auditoría de gobernanza del 2026-10-15: los documentos 06 a 09 no tenían la sección de trazabilidad que sí tienen los documentos 01 a 05. |
 | 1.3 | 2026-10-15 | La sección E de decisiones abiertas pasa a resuelta: la función `agreement_meets_threshold` se eliminó del código. No cambia ninguna cifra ni métrica. | Corrección de código del 2026-10-15 (rama `fix/auditoria-codigo`): el código sugería un umbral de kappa que el diseño rechaza. |
 | 2.0 | 2026-11-01 | §4.1 y la tabla de métricas pasan de «series de control pendientes» a los kappas medidos de la Fase 2: existencia 0,783 (37 pares), tipo 0,554 (18 pares), dirección indefinida (acuerdo total). | Las cuatro series de control quedaron adjudicadas (notebook 18, §6.1; `reports/tables/agreement-pooled.csv`). Detalle en el [documento 10](10-jss-confiabilidad-de-la-referencia.md). |
+| 3.0 | 2026-11-01 | C1 pasa a ser un RAG convencional, así que el contraste C1 frente a C2/C3 se lee como el valor del sistema compilado frente a un RAG convencional, que no puede repartirse entre representación y etapa de respuesta. La tasa de respuestas confiadas pero desactualizadas (H4) se mide entre las preguntas que cada condición responde, y la abstención se reporta aparte como corrección del rechazo. No cambian el criterio de éxito (D16/D17), las métricas ni las cifras. | Decisión del 2026-11-01 ([ADR 0014](../decisions/0014-adr-c1-como-rag-convencional.md)). |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -42,7 +43,8 @@ para reportar) y simulaciones con datos sintéticos. Cada una está marcada como
   decisiones la máquina (Experimento A). OE3 compara la utilidad de tres condiciones al
   responder preguntas (Experimento B). OE4 atribuye cada error a su etapa.
 - **C1, C2 y C3.** Las tres condiciones que se comparan. C1 busca fragmentos de texto y
-  redacta con ellos (RAG); C2 consulta una base de decisiones construida por la máquina; C3
+  redacta con ellos, con una instrucción genérica y una sola llamada (un RAG convencional); C2
+  consulta una base de decisiones construida por la máquina; C3
   consulta la misma base construida por personas ([documento 09](09-jss-modelos-y-justificacion.md), §3).
 - **Estrato.** Grupo de preguntas del mismo tipo: E1 (hecho puntual), E2 (estado vigente), E3
   (evolución de una decisión, el que prueba la tesis) y E4 (sin respuesta en el material).
@@ -70,7 +72,9 @@ Supóngase que se le hace al sistema esta pregunta, que pertenece al tipo "evolu
 - **Una respuesta correcta con mala cita** dice "sí, se mantuvo", pero la fuente que cita es
   un pasaje que no habla del botón. La respuesta acierta; la cita no la respalda.
 - **Una abstención** ("no hay información") es correcta solo en las preguntas que el material
-  no puede responder (estrato E4). Aquí sería un error.
+  no puede responder (estrato E4). Aquí sería un error. La abstención no cuenta como respuesta
+  confiada pero desactualizada: esa tasa (H4) se mide entre las preguntas que cada condición
+  efectivamente responde, y las abstenciones se reportan aparte como corrección del rechazo.
 
 Cada métrica de este documento mide una de esas facetas: si la respuesta acierta (corrección),
 si lo que dice tiene respaldo en la transcripción (soporte de evidencia), si la cita apunta al
@@ -284,7 +288,10 @@ Las métricas secundarias se leen así:
 - **Citación correcta**: ¿al menos una fuente citada contiene la evidencia marcada por las
   personas? Se informa además la precision de la citación, que deja a la vista a quien cita
   de más (ADR 0009).
-- **Corrección del rechazo (E4)**: ¿se abstiene el sistema donde no hay respuesta?
+- **Corrección del rechazo (E4)**: ¿se abstiene el sistema donde no hay respuesta? C1 se
+  abstiene respondiendo una frase fija; C2 y C3 lo deciden con la verificación de suficiencia
+  de OpenKOS. Por eso las abstenciones se reportan aparte y la tasa de respuestas confiadas
+  pero desactualizadas (H4) se calcula solo sobre las respondidas.
 - **Costo amortizado**: ¿a partir de cuántas consultas se recupera la inversión de construir
   la base?
 
@@ -394,8 +401,9 @@ uno se indica dónde se manifiesta, las opciones con su contrapartida y qué blo
   calcula las comparaciones C2–C1 y C2–C3 con la misma maquinaria (`SECONDARY_PAIRS`), pero
   solo la primera tiene criterio. No hay regla para leer C3 frente a C1.
 - **Opciones.**
-  1. *Mantenerlo descriptivo.* Simple y coherente con D16, pero la atribución del valor de la
-     base (C1→C3) y del costo de los errores de la máquina (C3→C2) quedaría sin regla.
+  1. *Mantenerlo descriptivo.* Simple y coherente con D16, pero la atribución del valor del
+     sistema compilado frente a un RAG convencional (C1→C3; no se reparte entre representación
+     y etapa de respuesta, ADR 0014) y del costo de los errores de la máquina (C3→C2) quedaría sin regla.
   2. *Prerregistrar una regla de lectura* (por ejemplo, el mismo criterio pareado en E3).
      Permite afirmar el valor de la base, pero abre un segundo contraste (ver decisión F).
 - **Qué bloquea.** Nada inmediato. Condiciona cuánto puede afirmar la conclusión sobre el

@@ -216,7 +216,7 @@ def ask_env(env: dict[str, Path], monkeypatch: pytest.MonkeyPatch) -> Path:
     from afg.conditions.c1_document_rag import DocumentRagCondition, GenerationSettings
     from afg.conditions.c1_tuning import PinnedC1Params
 
-    replies: list[str] = ["quote", "Twelve euros.\nUSED: 1"]
+    replies: list[str] = ["Twelve euros [1]."]
 
     def make() -> DocumentRagCondition:
         return DocumentRagCondition(
@@ -244,27 +244,26 @@ def test_ask_prints_answer_citations_and_outcome(ask_env: Path) -> None:
     result = _ask("--series", "ES2015")
     assert result.exit_code == 0, result.output
     out = _out(result)
-    assert "Twelve euros." in out
-    assert "USED" not in out
+    assert "Twelve euros" in out
     assert "answered" in out
     assert "ES2015a" in out
 
 
 def test_ask_reports_an_abstention(ask_env: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    from afg.conditions.c1_document_rag import NO_ANSWER_IN_CONTEXT, DocumentRagCondition
+    from afg.conditions.c1_document_rag import DocumentRagCondition
 
     make = afg_cli.make_c1_condition
 
     def make_abstaining() -> DocumentRagCondition:
         condition = make()
-        condition.chat = _AskChat("NONE")
+        condition.chat = _AskChat("I don't know.")
         return condition
 
     monkeypatch.setattr(afg_cli, "make_c1_condition", make_abstaining)
     result = _ask("--series", "ES2015")
     assert result.exit_code == 0, result.output
     assert "no_answer_in_context" in _out(result)
-    assert NO_ANSWER_IN_CONTEXT in _out(result)
+    assert "I don't know." in _out(result)
 
 
 def test_ask_stops_when_the_generative_model_is_missing(

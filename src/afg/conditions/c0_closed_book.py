@@ -7,15 +7,14 @@ It is not part of the C1/C2/C3 set of thesis section 5.3: it is kept out of
 ``EXPERIMENT_B_CONDITIONS``, so ``afg experiment b`` cannot run it, and it only runs on
 development series (ADR 0005).
 
-Prompt choice. C1 answers with ``prompts/answer/system.md``, whose first instruction is to use
-ONLY the numbered CONTEXT and "do not use outside knowledge", and whose last one is the
-``USED:`` attribution line over the context blocks. With an empty context that prompt would
-forbid the very thing this diagnostic measures (what the model knows) and ask for citations of
-nothing. The closest faithful equivalent therefore keeps C1's remaining behaviour -- prose
-only, an honest "I do not know" instead of guessing -- and drops the context-bound parts: the
-user message is the bare question (C1's ``CONTEXT:``/``QUESTION:`` frame without any block) and
-no sufficiency call is made, since there is nothing to judge sufficient. The only difference
-from C1 is the missing context.
+Prompt choice. C1 answers with ``prompts/c1/answer.md``, which tells the model to answer from
+the numbered context, to reply "I don't know." when the context lacks the answer and to cite
+the blocks inline. With an empty context that prompt would ask for citations of nothing and
+steer the model away from the very thing this diagnostic measures (what the model knows). The
+closest faithful equivalent therefore keeps C1's remaining behaviour -- prose only, an honest
+"I do not know" instead of guessing -- and drops the context-bound parts: the user message is
+the bare question (C1's ``CONTEXT:``/``QUESTION:`` frame without any block). The only
+difference from C1 is the missing context.
 """
 
 from __future__ import annotations

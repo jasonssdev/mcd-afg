@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 06 — Metodología |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 6.0 |
-| **Fecha** | 2026-10-19 |
+| **Versión** | 6.1 |
+| **Fecha** | 2026-11-01 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -33,6 +33,7 @@
 | 4.1 | 2026-10-18 | Se declara, como limitación acotada (§7–8), que dos umbrales de troceo de OpenKOS se fijaron con mediciones sobre TS3005, una serie de evaluación. Es un cambio de redacción: no cambia cifras ni umbrales. | Issue #145. Los umbrales deciden cuándo se trocea una fuente, no qué se extrae, pero se ajustaron mirando una serie de evaluación, lo que contradice la regla del [ADR 0005](../decisions/0005-adr-development-evaluation-split.md) si no se declara. El análisis se hizo sobre el código y el historial de OpenKOS (commits `578dea3d`, `0c96ad9c` y `58b9e699`). |
 | 5.0 | 2026-10-19 | Se declara, como elección metodológica y limitación (§1), que el texto de referencia que se compara con las extracciones del Experimento A es una traducción automática al inglés de las etiquetas humanas. Las etiquetas siguen siendo las humanas, en español; la traducción no cambia ningún estado ni etiqueta. No cambian cifras ni umbrales, y no se fija τ. | Issue #141. La extracción sale en inglés, el idioma original de las transcripciones, y la referencia está en español: la similitud entre una frase en inglés de AMI y su propia anotación en español tiene mediana 0,69 (ES2015) y 0,72 (TS3009), y solo 3 de 27 y 3 de 21 llegan a 0,80 ([notebook 15](../../notebooks/15-jss-screen-de-modelos-openkos.ipynb), §6.4). Método: [`../anotacion/traduccion-referencia.md`](../anotacion/traduccion-referencia.md); protocolo: [`../protocols/alignment.md`](../protocols/alignment.md) 2.0. |
 | 6.0 | 2026-10-19 | Se fija el umbral τ del Experimento A (§1, §5–6): **τ principal = 0,70**, con 0,75 y 0,80 como análisis de sensibilidad y la curva completa siempre al lado. Se aparta de la regla fijada antes de ver los resultados (`max(τ_nulo, τ_juez)`, que daba 0,80), porque el control nulo cruza dos equipos de AMI con el mismo encargo de diseño y por eso sobrestima el azar; el desvío responde a ese defecto del control, no a la cobertura que resulta. El juez automático complementa la validación manual del protocolo y no la sustituye; la concordancia del juez con una persona sobre 50 pares queda pendiente. No cambian otros umbrales ni cifras. | Issue #142. Cobertura nula 0,138, 0,053 y 0,015 con τ = 0,70, 0,75 y 0,80; proporción de «sí» del juez a lo más 0,32 por debajo de 0,70 y al menos 0,76 en cada bin desde 0,70 ([ADR 0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md), [notebook 17](../../notebooks/17-jss-tau-referencia-en.ipynb)); protocolo [`../protocols/alignment.md`](../protocols/alignment.md) 3.0. |
+| 6.1 | 2026-11-01 | Cambio de redacción en la descripción de las condiciones (§3): C1 se presenta como un RAG convencional y la comparación con C2 y C3 como la del sistema compilado frente a ese RAG, no como el efecto de la representación aislada. No cambia ninguna cifra ni el procedimiento de ajuste de C1. | Decisión del 2026-11-01 ([ADR 0014](../decisions/0014-adr-c1-como-rag-convencional.md)); el detalle está en el [documento 09](09-jss-modelos-y-justificacion.md). |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -59,9 +60,9 @@ puede leer de una vez. Se llaman **condiciones**:
 
 | | Condición | Qué es | Para qué sirve en la comparación |
 |---|---|---|---|
-| **C1** | RAG documental | Buscar en las transcripciones los fragmentos parecidos a la pregunta y redactar una respuesta con ellos. Es la práctica actual. | El piso: lo que cualquiera haría hoy. |
+| **C1** | RAG convencional | Buscar en las transcripciones los fragmentos parecidos a la pregunta y redactar una respuesta con ellos, en una sola llamada y con una instrucción genérica. Es la práctica actual. | El piso: lo que cualquiera haría hoy. |
 | **C2** | Base construida por la máquina | Un modelo de lenguaje lee las transcripciones, extrae las decisiones y las guarda en una base con sus relaciones. Es la propuesta. | Lo que se evalúa. |
-| **C3** | Base construida por personas | La misma base de C2, pero llenada con la anotación humana del ground truth (las decisiones marcadas a mano). Sin errores de extracción. | Separa dos cosas: la distancia C1→C3 es el valor de tener la base; la distancia C3→C2 es el costo de los errores de la máquina. |
+| **C3** | Base construida por personas | La misma base de C2, pero llenada con la anotación humana del ground truth (las decisiones marcadas a mano). Sin errores de extracción. | Separa dos cosas: la distancia C1→C3 es el valor del sistema compilado frente a un RAG convencional; la distancia C3→C2 es el costo de los errores de la máquina. |
 
 Sin C3 no se podría distinguir si una mala respuesta de C2 se debe a que la idea de la base
 no sirve o a que la máquina la llenó mal. Esa es la limitación de los trabajos previos que
@@ -247,9 +248,11 @@ mismo presupuesto de contexto. Un modelo de *embeddings* convierte texto en núm
 poder medir cuánto se parecen dos fragmentos; el presupuesto de contexto es cuánto texto
 puede leer el modelo de una vez. Sin esta restricción, cualquier diferencia observada es
 inatribuible: si C2 usara un modelo más grande que C1, no se sabría si ganó por la base o
-por el modelo.
+por el modelo. Lo que sí varía entre condiciones es todo el sistema de consulta: la representación
+y la etapa de respuesta propia de cada una. Por eso la diferencia entre C1 y C2/C3 no se puede
+repartir entre ambas (documento 09, §6.5).
 
-- **C1 — RAG documental.** Transcripciones segmentadas en fragmentos e indexadas con
+- **C1 — RAG convencional.** Transcripciones segmentadas en fragmentos e indexadas con
   búsqueda híbrida (léxica, por palabras exactas, y densa, por parecido de significado).
   **Baseline honesto:** un baseline es el punto de comparación, y un baseline
   débil hace que cualquier propuesta parezca buena. Por eso los parámetros de segmentación
@@ -262,8 +265,10 @@ por el modelo.
   OpenKOS, y no sobre los fragmentos completos, que el modelo no llega a leer enteros. El
   resultado son fragmentos de a lo más 1.200 caracteres, con 1 turno de solapamiento (el
   último turno de un fragmento se repite al inicio del siguiente) y K = 5 fragmentos
-  recuperados. Como las tres condiciones recortan el contexto con las mismas funciones, las
-  tres reciben a lo más el mismo contexto, unos 7.400 caracteres, por construcción. La
+  recuperados. Las tres condiciones comparten la misma ventana de contexto y recortan con el
+  mismo método; el contexto máximo del ajuste fue de unos 7.400 caracteres. Desde el
+  2026-11-01 la instrucción de C1 es más corta que la de OpenKOS, de modo que a C1 le queda
+  algo más de espacio para los fragmentos, sin afectar el ajuste de K ni del tamaño. La
   evidencia está en el [ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md)
   (con su enmienda del 2026-10-15) y en el
   [notebook 06](../../notebooks/06-jss-ajuste-c1.ipynb).

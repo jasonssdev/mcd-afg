@@ -451,7 +451,7 @@ def test_trimming_hides_evidence_that_full_chunks_contain(tmp_path: Path) -> Non
         config,
         LetterEmbedder(),
         tmp_path,
-        context_window=8192 + 1600,
+        context_window=8192 + 1300,
         max_generation_tokens=8192,
     )
     assert full.mean_recall == 1.0 and full.mean_delivered_recall == 1.0

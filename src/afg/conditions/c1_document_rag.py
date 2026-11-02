@@ -1,22 +1,19 @@
-"""C1 -- document RAG over raw transcripts (thesis section 5.3, "floor" condition).
+"""C1 -- document RAG over raw transcripts (thesis section 5.3, conventional-RAG condition).
 
-C1 answers exactly like ``openkos query`` v0.5.4 answers (ADR 0006), except that the context
-blocks are transcript chunks retrieved by C1's own hybrid retriever instead of compiled
-concepts. The flow below mirrors ``src/openkos/retrieval/answer.py`` at tag ``v0.5.4``
-(``answer()``), read with ``git show``; nothing is imported from OpenKOS:
+C1 is a standard RAG: retrieve K transcript chunks with C1's own hybrid retriever, put them in
+a numbered context and make ONE generation call with a generic prompt
+(:mod:`afg.conditions.c1_answer_prompt`). Nothing of OpenKOS's answer stage is copied: there is
+no sufficiency call and no ``USED:`` attribution line. The flow:
 
 1. Retrieve K chunks (K and chunking pinned by ADR 0007).
 2. Number the blocks ``[n] <label><body>``, bounding bodies to the shared context window
-   (``_bound_bodies`` -> :mod:`afg.conditions.c1_prompt_budget`).
-3. Sufficiency call (``_context_holds_the_answer``), on by default as in the shipped
-   ``DEFAULT_SUFFICIENCY_CHECK``: a reply that is exactly ``NONE`` abstains; a transient
-   backend error fails open; a fatal one propagates.
-4. Synthesis call with the same ``user`` message, then ``USED:`` parsing
-   (``_split_attribution``) and scaffolding strip (``_strip_concept_id_scaffolding``).
+   (``assemble_context`` -> :mod:`afg.conditions.c1_prompt_budget`).
+3. One call on the generative model. A reply that is the fixed abstention sentence abstains;
+   otherwise the inline ``[n]`` markers name the cited blocks.
 
 Temperature and seed must be fixed (ADR 0006 point 7); the condition refuses to exist without
-them. Every call records an :class:`AnswerTrace` for OE4 mirroring ``openkos query --json``
-schema v1 as far as it applies to chunks.
+them. Every call records an :class:`AnswerTrace` for OE4, shaped like ``openkos query --json``
+schema v1 as far as it applies to a single-call chunk RAG.
 """
 
 from __future__ import annotations
@@ -28,13 +25,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal, Protocol
 
-from afg.conditions.answer_prompts import (
-    ATTRIBUTION_KEYWORD,
-    ATTRIBUTION_NONE,
-    SUFFICIENCY_NONE,
+from afg.conditions.c1_answer_prompt import (
+    answer_prompt,
+    is_abstention,
     sent_prompt_sha256,
-    sufficiency_prompt,
-    system_prompt,
 )
 from afg.conditions.c1_chunking import Chunk, chunk_meetings
 from afg.conditions.c1_prompt_budget import (
@@ -52,7 +46,8 @@ from afg.domain.question import Answer, Question
 from afg.shared.config import load_experiments_config
 from afg.shared.paths import TRANSCRIPTS_DIR
 
-# openkos.retrieval.answer.NO_MATCH / NO_ANSWER_IN_CONTEXT (stable texts).
+# openkos.retrieval.answer.NO_MATCH / NO_ANSWER_IN_CONTEXT (stable texts). C1 answers NO_MATCH
+# itself when nothing is retrieved; NO_ANSWER_IN_CONTEXT is only C2's, kept here for its import.
 NO_MATCH = "No matching concepts were found in the compiled bundle for this question."
 NO_ANSWER_IN_CONTEXT = (
     "Matching concepts were found in the compiled bundle, but none of them answers this question."
@@ -65,14 +60,14 @@ OUTCOME_NO_ANSWER_IN_CONTEXT = "no_answer_in_context"
 
 OMIT_REASON_BUDGET = "context_budget"  # openkos.retrieval.answer.OMIT_REASON_BUDGET
 
-Attribution = Literal["reported", "absent", "unparsed"]
+Attribution = Literal["reported", "absent"]
 
 
 # --- generation backend ----------------------------------------------------------------
 
 
 class ChatError(RuntimeError):
-    """Transient generation failure (OpenKOS ``BackendError``): the sufficiency check fails open."""
+    """Transient generation failure (OpenKOS ``BackendError``)."""
 
 
 class ChatUnavailableError(ChatError):
@@ -191,12 +186,10 @@ class OllamaChatBackend:
         return str(response.message.content or "")
 
 
-# --- USED: attribution and scaffolding (openkos.retrieval.answer, v0.5.4) --------------
+# --- inline citations and scaffolding -------------------------------------------------
 
-_ATTRIBUTION_LINE_RE = re.compile(
-    rf"(?im)^[ \t]*{re.escape(ATTRIBUTION_KEYWORD)}[ \t]*:[ \t]*(?P<payload>[^\n]*)$"
-)
-_ATTRIBUTION_INDEX_RE = re.compile(r"\d+")
+_CITATION_RE = re.compile(r"\[[ \t]*(\d+(?:[ \t]*,[ \t]*\d+)*)[ \t]*\]")
+_INDEX_RE = re.compile(r"\d+")
 
 _CONCEPT_ID_SCAFFOLD = r"""
       \[[ \t]*concept_id[ \t]*:[^\]\n]*\]
@@ -207,31 +200,18 @@ _SCAFFOLD_AT_LINE_START_RE = re.compile(rf"(?m)^[ \t]*(?:{_CONCEPT_ID_SCAFFOLD})
 _SCAFFOLD_INLINE_RE = re.compile(rf"[ \t]*(?:{_CONCEPT_ID_SCAFFOLD})", re.VERBOSE)
 
 
-def split_attribution(
-    reply: str, block_count: int
-) -> tuple[str, frozenset[int] | None, Attribution]:
-    """Split ``reply`` into prose, the 1-based blocks it reports, and how (``_split_attribution``).
+def parse_citations(reply: str, block_count: int) -> tuple[int, ...]:
+    """The 1-based blocks the reply cites inline as ``[n]`` or ``[n, m]``, sorted, no repeats.
 
-    The last ``USED:`` line wins and is stripped whether or not it parsed. Out-of-range
-    numbers are dropped; a report with none left is ``unparsed`` (``None``), while
-    ``USED: none`` is a positive claim (empty set).
+    Numbers outside ``1..block_count`` name no block and are dropped.
     """
-    matches = list(_ATTRIBUTION_LINE_RE.finditer(reply))
-    if not matches:
-        return reply, None, "absent"
-    last = matches[-1]
-    prose = (reply[: last.start()] + reply[last.end() :]).strip()
-    payload = last.group("payload").strip()
-    if payload.casefold() == ATTRIBUTION_NONE.casefold():
-        return prose, frozenset(), "reported"
-    reported = {
+    cited = {
         index
-        for raw in _ATTRIBUTION_INDEX_RE.findall(payload)
+        for group in _CITATION_RE.findall(reply)
+        for raw in _INDEX_RE.findall(group)
         if 1 <= (index := int(raw)) <= block_count
     }
-    if not reported:
-        return prose, None, "unparsed"
-    return prose, frozenset(reported), "reported"
+    return tuple(sorted(cited))
 
 
 def strip_concept_id_scaffolding(text: str) -> str:
@@ -255,11 +235,6 @@ def _label(chunk: Chunk) -> str:
     return f"[concept_id: {chunk.chunk_id} — {chunk.meeting_id}]\n"
 
 
-def _sufficiency_holds(reply: str) -> bool:
-    """A refusal only when the reply IS the sentinel, modulo whitespace, punctuation, case."""
-    return reply.strip().strip("\"'`*. \t\n").upper() != SUFFICIENCY_NONE
-
-
 def assemble_context(
     question: str, chunks: Sequence[Chunk], *, context_window: int, max_generation_tokens: int
 ) -> tuple[list[str], list[tuple[Chunk, bool]], list[Chunk]]:
@@ -273,9 +248,7 @@ def assemble_context(
     bodies = [c.text for c in chunks]
     if not bodies:
         return [], [], []
-    overhead = len(_user_content(labels, question)) + max(
-        len(system_prompt()), len(sufficiency_prompt())
-    )
+    overhead = len(_user_content(labels, question)) + len(answer_prompt())
     budget = budget_chars(
         planning=context_window,
         generation_reserve_tokens=max_generation_tokens,
@@ -339,9 +312,9 @@ class OmittedTrace:
 class AnswerTrace:
     """Observability record of one answer (OE4), mirroring ``openkos query --json`` v1.
 
-    Hashes are the SHA-256 of the message content as sent. ``system_sha256`` is ``None``
-    unless synthesis ran, ``sufficiency_sha256`` unless the check ran, ``user_sha256`` when
-    no context was assembled.
+    Hashes are the SHA-256 of the message content as sent. ``system_sha256`` and
+    ``raw_reply`` are ``None`` unless the model was called, ``user_sha256`` when no context
+    was assembled. ``used_indices`` are the blocks the reply cites inline.
     """
 
     outcome: str
@@ -358,13 +331,9 @@ class AnswerTrace:
     attribution: Attribution = "absent"
     cited_chunk_ids: tuple[str, ...] = ()
     cited_acts: dict[str, tuple[str, ...]] = field(default_factory=dict)
-    sufficiency_invoked: bool = False
-    sufficiency_degraded: bool = False
-    sufficiency_raw_reply: str | None = None
     raw_reply: str | None = None
     system_sha256: str | None = None
     user_sha256: str | None = None
-    sufficiency_sha256: str | None = None
 
 
 # --- the condition ---------------------------------------------------------------------
@@ -380,7 +349,6 @@ class DocumentRagCondition:
     params: PinnedC1Params
     transcripts_dir: Path = TRANSCRIPTS_DIR
     condition_id: str = "C1"
-    sufficiency_check: bool = True
     _indexes: dict[str, HybridRetriever] = field(default_factory=dict, init=False, repr=False)
 
     @classmethod
@@ -440,7 +408,7 @@ class DocumentRagCondition:
         return answer, trace
 
     def answer_with_trace(self, question: Question) -> tuple[Answer, AnswerTrace]:
-        """Mirror of ``openkos.retrieval.answer.answer`` over chunks, returning the OE4 trace."""
+        """Answer ``question`` with one generation call, returning the OE4 trace."""
         if not question.text.split():
             return self._abstention(question, NO_MATCH, self._trace(question, OUTCOME_NO_MATCH))
 
@@ -477,63 +445,34 @@ class DocumentRagCondition:
 
         user_content = _user_content(blocks, question.text)
         base["user_sha256"] = sent_prompt_sha256(user_content)
-        suff_system = sufficiency_prompt()
-        degraded = False
-        if self.sufficiency_check:
-            holds, degraded, sufficiency_reply = self._check_sufficiency(suff_system, user_content)
-            base.update(
-                sufficiency_invoked=True,
-                sufficiency_degraded=degraded,
-                sufficiency_raw_reply=sufficiency_reply,
-                sufficiency_sha256=sent_prompt_sha256(suff_system),
-            )
-            if not holds:
-                trace = self._trace(question, OUTCOME_NO_ANSWER_IN_CONTEXT, **base)
-                return self._abstention(question, NO_ANSWER_IN_CONTEXT, trace)
-
-        system = system_prompt()
+        system = answer_prompt()
         reply = self.chat.chat(
             [{"role": "system", "content": system}, {"role": "user", "content": user_content}],
             model=self.settings.model,
             options=self.settings.options,
         )
-        prose, reported, attribution = split_attribution(reply, len(blocks))
-        if reported is None:
-            cited = chunks  # no usable report: every block sent is cited (pre-#753 behaviour)
-        else:
-            cited = [c for position, c in enumerate(chunks, 1) if position in reported]
+        base.update(raw_reply=reply, system_sha256=sent_prompt_sha256(system))
+        if is_abstention(reply):
+            trace = self._trace(question, OUTCOME_NO_ANSWER_IN_CONTEXT, **base)
+            return self._abstention(question, reply.strip(), trace)
+        reported = parse_citations(reply, len(blocks))
+        cited = [c for position, c in enumerate(chunks, 1) if position in reported]
         trace = self._trace(
             question,
             OUTCOME_ANSWERED,
-            used_indices=tuple(sorted(reported)) if reported is not None else (),
-            attribution=attribution,
+            used_indices=reported,
+            attribution="reported" if reported else "absent",
             cited_chunk_ids=tuple(c.chunk_id for c in cited),
             cited_acts={c.chunk_id: c.dialogue_act_ids for c in cited},
-            raw_reply=reply,
-            system_sha256=sent_prompt_sha256(system),
             **base,
         )
         answer = Answer(
             question_id=question.id,
             condition=self.condition_id,
-            text=strip_concept_id_scaffolding(prose),
+            text=strip_concept_id_scaffolding(reply),
             cited_evidence=_evidence_spans(cited),
         )
         return answer, trace
-
-    def _check_sufficiency(self, system: str, user_content: str) -> tuple[bool, bool, str | None]:
-        """``_context_holds_the_answer``: ``(holds, degraded, reply)``; fails open on ChatError."""
-        try:
-            reply = self.chat.chat(
-                [{"role": "system", "content": system}, {"role": "user", "content": user_content}],
-                model=self.settings.model,
-                options=self.settings.options,
-            )
-        except ChatUnavailableError:
-            raise
-        except ChatError:
-            return True, True, None
-        return _sufficiency_holds(reply), False, reply
 
 
 def _evidence_spans(chunks: Sequence[Chunk]) -> tuple[EvidenceSpan, ...]:
@@ -560,6 +499,6 @@ __all__ = [
     "GenerationSettings",
     "OllamaChatBackend",
     "assemble_context",
-    "split_attribution",
+    "parse_citations",
     "strip_concept_id_scaffolding",
 ]
