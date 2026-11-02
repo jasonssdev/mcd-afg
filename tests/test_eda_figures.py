@@ -17,6 +17,7 @@ from matplotlib.figure import Figure
 from afg.eda.figures import (
     FIGURE_DPI,
     apply_style,
+    plot_agreement_by_axis,
     plot_funnel,
     plot_grouped_bars,
     plot_hbars,
@@ -25,6 +26,8 @@ from afg.eda.figures import (
     plot_position_boxes,
     plot_rate_by_bin,
     plot_rate_lines,
+    plot_role_authorship,
+    report_style,
     save_figure,
     video_style,
 )
@@ -254,3 +257,67 @@ class TestPlotHbars:
     def test_annotations_must_match_the_bars(self) -> None:
         with pytest.raises(ValueError, match="annotations"):
             plot_hbars({"a": 1.0}, annotations=[], xlabel="x")
+
+
+def _roles_frame() -> pd.DataFrame:
+    rows = []
+    shares = {
+        "ALL": {"PM": 0.47, "ID": 0.23, "ME": 0.15, "UI": 0.15},
+        "ES": {"PM": 0.50, "ID": 0.20, "ME": 0.15, "UI": 0.15},
+        "IS": {"PM": 0.44, "ID": 0.25, "ME": 0.12, "UI": 0.19},
+        "TS": {"PM": 0.46, "ID": 0.23, "ME": 0.19, "UI": 0.12},
+    }
+    for site, by_role in shares.items():
+        for role, share in by_role.items():
+            rows.append({"role": role, "site": site, "count": int(share * 100), "share": share})
+    return pd.DataFrame(rows)
+
+
+class TestReportStyle:
+    def test_sets_report_fonts_inside_the_context_only(self) -> None:
+        before = plt.rcParams["font.size"]
+        with report_style():
+            inside = plt.rcParams["font.size"]
+        assert inside >= 11
+        assert plt.rcParams["font.size"] == before
+
+
+class TestPlotRoleAuthorship:
+    def test_two_panels_with_overall_roles_in_descending_order(self) -> None:
+        fig = plot_role_authorship(_roles_frame(), title="t")
+        assert isinstance(fig, Figure)
+        left, right = fig.axes
+        assert [t.get_text() for t in left.get_yticklabels()] == ["PM", "ID", "ME", "UI"]
+        assert [t.get_text() for t in right.get_xticklabels()] == ["ES", "IS", "TS"]
+
+    def test_labels_use_decimal_comma(self) -> None:
+        fig = plot_role_authorship(_roles_frame())
+        texts = [t.get_text() for ax in fig.axes for t in ax.texts]
+        assert "47,0 %" in texts
+        assert "50,0 %" in texts
+
+    def test_rejects_missing_columns(self) -> None:
+        with pytest.raises(ValueError, match="columns"):
+            plot_role_authorship(pd.DataFrame({"role": ["PM"]}))
+
+
+class TestPlotAgreementByAxis:
+    ROWS: ClassVar[list[tuple[str, int, float, float]]] = [
+        ("Existencia", 37, 0.783, 0.892),
+        ("Tipo", 18, 0.554, 0.722),
+        ("Dirección", 37, float("nan"), 1.0),
+    ]
+
+    def test_undefined_kappa_is_written_not_plotted_as_zero(self) -> None:
+        fig = plot_agreement_by_axis(self.ROWS, title="t")
+        kappa_ax, agree_ax = fig.axes
+        texts = [t.get_text() for t in kappa_ax.texts]
+        assert "indefinido" in texts
+        assert "0,783" in texts
+        assert [p.get_width() for p in kappa_ax.patches][2] == 0
+        assert "89,2 %" in [t.get_text() for t in agree_ax.texts]
+
+    def test_axis_labels_include_the_number_of_pairs(self) -> None:
+        fig = plot_agreement_by_axis(self.ROWS)
+        labels = [t.get_text() for t in fig.axes[0].get_yticklabels()]
+        assert labels[0] == "Existencia\n(37 pares)"

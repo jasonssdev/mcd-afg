@@ -59,6 +59,27 @@ def video_style() -> Iterator[None]:
         yield
 
 
+@contextmanager
+def report_style() -> Iterator[None]:
+    """Matplotlib settings for a figure printed at page width in a written report."""
+    params: dict[str, Any] = {
+        "font.size": 12,
+        "axes.titlesize": 14,
+        "axes.labelsize": 12,
+        "xtick.labelsize": 12,
+        "ytick.labelsize": 12,
+        "legend.fontsize": 11,
+        "figure.figsize": (10, 4.6),
+        "axes.grid": True,
+        "grid.alpha": 0.3,
+        "axes.spines.top": False,
+        "axes.spines.right": False,
+        "axes.axisbelow": True,
+    }
+    with plt.rc_context(cast("Any", params)):
+        yield
+
+
 def save_figure(fig: Figure, path: Path, *, dpi: int = FIGURE_DPI) -> Path:
     """Save ``fig`` as a deterministic PNG (no software/time metadata); create the folder."""
     path = Path(path)
@@ -309,6 +330,104 @@ def plot_hbars(
     ax.set_xlabel(xlabel)
     if title:
         ax.set_title(title, loc="left")
+    return fig
+
+
+def _pct(value: float) -> str:
+    """Spanish percentage with one decimal, e.g. ``47,0 %``."""
+    return f"{_es(value * 100, 1)} %"
+
+
+def plot_role_authorship(roles: pd.DataFrame, *, title: str = "") -> Figure:
+    """Two panels: share of decision acts by role (all series) and the PM share per site.
+
+    ``roles`` is the table of :func:`afg.audit.role_authorship` (columns ``role``, ``site``,
+    ``share``; the ``ALL`` site is the cross-site aggregate). The left panel orders roles by
+    descending share; the right one shows the PM share of each recording site.
+
+    Raises:
+        ValueError: if a required column is missing.
+    """
+    missing = {"role", "site", "share"} - set(roles.columns)
+    if missing:
+        raise ValueError(
+            f"roles needs the columns role, site and share (missing {sorted(missing)})."
+        )
+    overall = roles[roles["site"] == "ALL"].sort_values("share", ascending=False)
+    pm_sites = roles[(roles["role"] == "PM") & (roles["site"] != "ALL")].sort_values("site")
+    fig, (left, right) = plt.subplots(1, 2, gridspec_kw={"width_ratios": [3, 2]})
+    shares = overall["share"].to_numpy(dtype=float)
+    colors = [_COLORS[0] if r == "PM" else "#9DB4C7" for r in overall["role"]]
+    left.barh(list(overall["role"]), shares * 100, color=colors, height=0.62)
+    left.invert_yaxis()
+    for y, value in enumerate(shares):
+        left.text(
+            value * 100 + 1,
+            y,
+            _pct(value),
+            va="center",
+            zorder=4,
+            bbox={"facecolor": "white", "edgecolor": "none", "pad": 1.5},
+        )
+    left.axvline(25, color="#555555", linestyle="--", linewidth=1)
+    left.text(25.8, 2.5, "reparto uniforme (25 %)", fontsize=10, color="#555555", va="center")
+    left.set_xlim(0, max(shares) * 100 * 1.25)
+    left.grid(axis="y", visible=False)
+    left.set_xlabel("% de los actos de diálogo que respaldan decisiones")
+    left.set_title("Todas las series", loc="left", fontsize=12)
+    pm = pm_sites["share"].to_numpy(dtype=float)
+    right.bar(list(pm_sites["site"]), pm * 100, color=_COLORS[0], width=0.55)
+    for x, value in enumerate(pm):
+        right.text(x, value * 100 + 1, _pct(value), ha="center", va="bottom")
+    right.axhline(25, color="#555555", linestyle="--", linewidth=1)
+    right.set_ylim(0, max(max(pm) * 100 * 1.2, 30))
+    right.grid(axis="x", visible=False)
+    right.set_xlabel("Sitio de grabación")
+    right.set_ylabel("% de los actos atribuidos al PM")
+    right.set_title("PM por sitio (línea: reparto uniforme)", loc="left", fontsize=12)
+    if title:
+        fig.suptitle(title, x=0.01, ha="left", fontsize=14, fontweight="bold")
+    fig.tight_layout()
+    return fig
+
+
+def plot_agreement_by_axis(
+    rows: Sequence[tuple[str, int, float, float]], *, title: str = ""
+) -> Figure:
+    """Two panels with Cohen's kappa and simple agreement for each annotated axis.
+
+    ``rows`` holds ``(axis label, number of items, kappa, simple agreement in [0, 1])``. A NaN
+    kappa (no variation in the labels) is drawn as an empty bar with the word ``indefinido``,
+    never as zero.
+    """
+    labels = [f"{name}\n({n} pares)" for name, n, _, _ in rows]
+    kappas = [k for _, _, k, _ in rows]
+    agree = [a for _, _, _, a in rows]
+    fig, (kax, aax) = plt.subplots(1, 2, sharey=True)
+    ys = list(range(len(rows)))
+    kax.barh(ys, [0.0 if pd.isna(k) else k for k in kappas], color=_COLORS[0], height=0.55)
+    for y, k in zip(ys, kappas, strict=True):
+        if pd.isna(k):
+            kax.text(0.02, y, "indefinido", va="center", style="italic", color="#555555")
+        else:
+            kax.text(k + 0.02, y, _es(k, 3), va="center")
+    kax.set_xlim(0, 1.15)
+    kax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: _es(v, 1)))
+    kax.set_xlabel("Kappa de Cohen")
+    kax.set_title("Kappa", loc="left", fontsize=12)
+    aax.barh(ys, [a * 100 for a in agree], color=_COLORS[1], height=0.55)
+    for y, a in zip(ys, agree, strict=True):
+        aax.text(a * 100 + 1, y, _pct(a), va="center")
+    aax.set_xlim(0, 118)
+    aax.set_xlabel("% de pares con la misma etiqueta")
+    aax.set_title("Acuerdo simple", loc="left", fontsize=12)
+    kax.set_yticks(ys, labels)
+    kax.invert_yaxis()
+    for ax in (kax, aax):
+        ax.grid(axis="y", visible=False)
+    if title:
+        fig.suptitle(title, x=0.01, ha="left", fontsize=14, fontweight="bold")
+    fig.tight_layout()
     return fig
 
 
