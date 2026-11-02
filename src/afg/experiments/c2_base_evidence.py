@@ -173,8 +173,12 @@ def oe4_worksheet_rows(
     bundle_dir: Path,
     *,
     top: int = 3,
+    include_rule_attributed: bool = False,
 ) -> list[dict[str, str]]:
     """One row per incorrect E1 answer whose stage the trace cannot attribute.
+
+    With ``include_rule_attributed`` the failures the rule already attributes (synthesis) get a
+    row too, so a person can label every failure of a run and overrule the rule.
 
     Rows follow :data:`WORKSHEET_COLUMNS`; ``etapa_humana`` and ``nota`` are always empty.
     """
@@ -184,7 +188,7 @@ def oe4_worksheet_rows(
         if row.correct is not False or row.stratum != "E1":
             continue
         (evidence,) = error_evidence([row], c2_records, questions)
-        if evidence.rule_stage is not None:
+        if evidence.rule_stage is not None and not include_rule_attributed:
             continue
         record = by_question[row.question_id]
         question = questions[row.question_id]

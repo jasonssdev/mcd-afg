@@ -3346,6 +3346,14 @@ def experiment_b_oe4_sheet(
     force: Annotated[
         bool, typer.Option("--force", help="Sobrescribir una hoja que ya tiene etiquetas.")
     ] = False,
+    all_failures: Annotated[
+        bool,
+        typer.Option(
+            "--all-failures",
+            help="Incluir también las fallas que la regla atribuye a síntesis, para que la "
+            "persona etiquete todas.",
+        ),
+    ] = False,
 ) -> None:
     """Hoja de evidencia OE4: fallas E1 de C2 que la traza no puede atribuir, con la base compilada.
 
@@ -3367,7 +3375,7 @@ def experiment_b_oe4_sheet(
         manifest = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8"))
         bundle = bundle_dir_for_run(manifest)
         bank = {q.id: q for q in load_experiment_questions(questions)}
-        rows = oe4_worksheet_rows(records, bank, bundle)
+        rows = oe4_worksheet_rows(records, bank, bundle, include_rule_attributed=all_failures)
         write_oe4_worksheet(run_dir / OE4_SHEET_FILE, rows, force=force)
     except (ValueError, KeyError, FileNotFoundError, QuestionBankError, CalibrationSetError) as exc:
         console.print(f"[bold red]{escape(str(exc))}[/bold red]")
