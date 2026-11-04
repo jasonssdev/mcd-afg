@@ -409,7 +409,7 @@ los resultados de las cuatro. Escríbelo en el PR y para ahí.
 Gustavo haya escrito preguntas; hasta entonces `afg gold status` muestra «Validación del banco
 de preguntas: aún no».
 
-Gustavo escribe el banco (mínimo 25 preguntas por estrato, ≥100 en total). **Tú lo validas, y
+Gustavo escribe el banco (mínimo 25 preguntas por estrato, 24 en E3 según el ADR 0021; ≥99 en total). **Tú lo validas, y
 no escribes ninguna**: `docs/propuesta.md` §5.5 exige que quien valida no sea quien escribe.
 
 Qué revisas en cada pregunta:
@@ -449,6 +449,7 @@ revisa fila por fila sin detenerse en el primer error:
 ```bash
 uv run afg gold questions-check              # tolera un banco a medias
 uv run afg gold questions-check --complete   # solo al cierre: exige el mínimo validado por estrato
+                                             # (25; en E3, 25 o las relaciones disponibles si son menos: ADR 0021)
 ```
 
 En cada fila que marcaste con `gv` comprueba que la serie sea una serie de evaluación (las de

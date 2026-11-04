@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import csv
 from collections import Counter
-from collections.abc import Callable, Collection, Sequence
+from collections.abc import Callable, Collection, Mapping, Sequence
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
@@ -31,13 +31,14 @@ from pathlib import Path
 from afg.corpus.frozen import load_frozen_turns
 from afg.domain.decision import EvidenceSpan
 from afg.domain.question import Question, QuestionStratum, parse_reference_evidence
+from afg.evaluation.relations import available_evolution_relations
 from afg.shared.config import (
     load_annotation_config,
     load_corpus_config,
     load_experiments_config,
 )
 from afg.shared.csvio import CsvFormatError, open_csv_reader, semicolon_hint
-from afg.shared.paths import TRANSCRIPTS_DIR
+from afg.shared.paths import GOLD_RELATIONS_DIR, TRANSCRIPTS_DIR
 
 ActLookup = Callable[[str], Collection[str] | None]
 """``meeting_id -> its dialogue act ids``, or ``None`` when the transcript is not on disk."""
@@ -256,7 +257,7 @@ def load_question_bank(
     *,
     study_series: Collection[str],
     meeting_letters: Collection[str],
-    min_per_stratum: int = 0,
+    min_per_stratum: int | Mapping[QuestionStratum, int] = 0,
     require_complete: bool = False,
     development_series: Collection[str] = (),
     valid_validators: Sequence[str] | None = None,
@@ -275,10 +276,13 @@ def load_question_bank(
     ``validated_by``) and ``act_ids_of`` (each cited dialogue act must exist in the meeting's
     transcript; meetings without a transcript give a single warning, not an error).
 
+    ``min_per_stratum`` is one number for every stratum or a mapping per stratum (a stratum
+    missing from the mapping has no minimum); see :func:`stratum_minimums`.
+
     The per-stratum minimum counts validated rows: a warning on a partial bank (the bank is
     still being written), a blocking error with ``require_complete``.
 
-    With a positive ``min_per_stratum``, a completely blank unvalidated row of a stratum that
+    With a positive minimum for its stratum, a completely blank unvalidated row of a stratum that
     already reached the minimum is *optional* (an unused extra row): it is listed in
     ``optional_ids``, is neither pending nor an error, and is never loaded. Below the minimum
     the same row stays pending (or a blocking error with ``require_complete``).
@@ -296,6 +300,11 @@ def load_question_bank(
         if missing:
             raise ValueError(f"{path.name}: faltan columnas del banco: {missing}.")
         rows = [{c: (r.get(c) or "") for c in BANK_COLUMNS} for r in reader]
+
+    def minimum_of(stratum: QuestionStratum) -> int:
+        if isinstance(min_per_stratum, int):
+            return min_per_stratum
+        return min_per_stratum.get(stratum, 0)
 
     issues: list[QuestionBankIssue] = []
     usable: list[Question] = []
@@ -340,7 +349,7 @@ def load_question_bank(
         is_pending = not validator
         spans: tuple[EvidenceSpan, ...] = ()
         if is_pending:
-            if min_per_stratum > 0 and stratum is not None and _is_blank(row) and not found:
+            if stratum is not None and minimum_of(stratum) > 0 and _is_blank(row) and not found:
                 blank_rows.append((row_id, label, stratum))
                 continue
             pending.append(row_id)
@@ -404,7 +413,7 @@ def load_question_bank(
     per_stratum = {s: counts.get(s, 0) for s in QuestionStratum}
     optional: list[str] = []
     for row_id, label, row_stratum in blank_rows:
-        if per_stratum[row_stratum] >= min_per_stratum:
+        if per_stratum[row_stratum] >= minimum_of(row_stratum):
             optional.append(row_id)
         else:
             pending.append(row_id)
@@ -412,13 +421,13 @@ def load_question_bank(
                 issues.append(QuestionBankIssue(label, Severity.ERROR, _UNWRITTEN))
     severity = Severity.ERROR if require_complete else Severity.WARNING
     for stratum_value, count in per_stratum.items():
-        if count < min_per_stratum:
+        if count < minimum_of(stratum_value):
             issues.append(
                 QuestionBankIssue(
                     "-",
                     severity,
                     f"{stratum_value.value}: {count} validadas, por debajo del mínimo "
-                    f"de {min_per_stratum}.",
+                    f"de {minimum_of(stratum_value)}.",
                 )
             )
     if unchecked:
@@ -457,6 +466,44 @@ def annotator_initials() -> tuple[str, ...]:
     return tuple(p["initials"] for p in people if p.get("role", "annotator") == "annotator")
 
 
+def evolution_minimum(base_minimum: int, available_relations: int) -> int:
+    """E3 minimum: the base minimum, or the evolution relations available if fewer (ADR 0021)."""
+    return min(base_minimum, available_relations)
+
+
+def stratum_minimums(base_minimum: int, available_evolution: int) -> dict[QuestionStratum, int]:
+    """Minimum of validated questions per stratum: ``base_minimum``, E3 capped by the material."""
+    return {
+        stratum: evolution_minimum(base_minimum, available_evolution)
+        if stratum is QuestionStratum.E3_EVOLUTION
+        else base_minimum
+        for stratum in QuestionStratum
+    }
+
+
+def evaluation_series() -> tuple[str, ...]:
+    """Series of ``[oe1].series`` that are not development series (ADR 0005), in config order."""
+    oe1 = load_corpus_config()["oe1"]
+    development = set(oe1["development_series"])
+    return tuple(s for s in oe1["series"] if s not in development)
+
+
+def configured_evolution_relations(relations_dir: Path = GOLD_RELATIONS_DIR) -> int:
+    """Evolution relations available in the reference of the evaluation series.
+
+    Counted from the reference (adjudicated or single-annotator file per series), never from
+    the validated questions: a question returned in validation must keep blocking the closure.
+    """
+    return available_evolution_relations(evaluation_series(), relations_dir=relations_dir)
+
+
+def configured_minimums(
+    base_minimum: int, relations_dir: Path = GOLD_RELATIONS_DIR
+) -> dict[QuestionStratum, int]:
+    """:func:`stratum_minimums` with the evolution relations read from the reference."""
+    return stratum_minimums(base_minimum, configured_evolution_relations(relations_dir))
+
+
 def load_configured_question_bank(
     path: Path, *, require_complete: bool = False, strict: bool = False
 ) -> QuestionBankReport:
@@ -478,7 +525,9 @@ def load_configured_question_bank(
         path,
         study_series=frozenset(corpus["oe1"]["series"]),
         meeting_letters=tuple(corpus["corpus"]["series"]["meeting_letters"]),
-        min_per_stratum=int(load_experiments_config()["question_bank"]["min_questions"]),
+        min_per_stratum=configured_minimums(
+            int(load_experiments_config()["question_bank"]["min_questions"])
+        ),
         require_complete=require_complete,
         **extra,  # type: ignore[arg-type]
     )
@@ -526,13 +575,18 @@ class QuestionBankProgress:
 
 
 def question_bank_progress(
-    path: Path, *, minimum: int, rows_per_stratum: dict[QuestionStratum, int]
+    path: Path,
+    *,
+    minimum: int,
+    rows_per_stratum: dict[QuestionStratum, int],
+    minimums: Mapping[QuestionStratum, int] | None = None,
 ) -> QuestionBankProgress | None:
     """Count written (``text`` filled) and validated rows per stratum, or ``None`` when the
     bank file does not exist.
 
     Never raises on content: this is a progress count, not a validation (``questions-check``
-    validates). Rows with an unknown stratum are ignored.
+    validates). Rows with an unknown stratum are ignored. ``minimums`` gives a per-stratum
+    minimum (:func:`stratum_minimums`); a stratum missing from it uses ``minimum``.
     """
     if not path.is_file():
         return None
@@ -554,7 +608,7 @@ def question_bank_progress(
                 stratum=s,
                 written=written[s],
                 validated=validated[s],
-                minimum=minimum,
+                minimum=(minimums or {}).get(s, minimum),
                 rows=rows_per_stratum.get(s, minimum),
             )
             for s in QuestionStratum

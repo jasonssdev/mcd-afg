@@ -115,7 +115,7 @@ recalibración.
 **223 decisiones y 71 pares candidatos** (53 + 111 + 59 y 7 + 37 + 27), más el banco de
 preguntas.
 
-**Por qué llevas 61 decisiones menos que Germán.** Porque además escribes el banco: ≥100
+**Por qué llevas 61 decisiones menos que Germán.** Porque además escribes el banco: unas 100
 preguntas a ~5 minutos cada una son unas 8 horas que él no tiene. El reparto equilibra horas
 totales, no filas. A cambio llevas 6 pares candidatos más que él, que es donde está el
 trabajo fino.
@@ -388,8 +388,10 @@ no» y no lo propone como siguiente paso. Las preguntas salen solo de series de 
 (ES2015, IS1004 y TS3009 quedan fuera, ADR 0005). E3 depende de relaciones ya adjudicadas, así
 que la mayoría llegará con la Fase 3.
 
-Cada uno de los cuatro estratos necesita **al menos 25 preguntas** (obligatorio), así que el
-banco tiene **al menos 100 en total** (`docs/propuesta.md` §5.5). Solo E3 admite además hasta
+Cada estrato necesita **al menos 25 preguntas** (obligatorio, `docs/propuesta.md` §5.5), salvo E3,
+cuyo mínimo es el menor entre 25 y las relaciones de evolución disponibles: hoy **24**
+([ADR 0021](../../decisions/0021-adr-minimo-de-e3-segun-relaciones-disponibles.md)). El banco
+tiene así **al menos 99 en total**. Solo E3 admite además hasta
 **40**: las filas de E3 entre la 26 y la 40 son opcionales (ver más abajo). **El autor no valida y el validador no escribe**: tú no tocas
 `validated_by`, y Germán no escribe preguntas. Es la misma regla de separación que hace que
 `jss` adjudique y no anote (`CONTRIBUTING.md` §1).
@@ -409,7 +411,7 @@ banco se escribe en inglés:
 
 ### Cuántas preguntas de E3: hasta 40, nunca inventadas
 
-El mínimo de cada estrato sigue siendo **25**, también en E3. Para E3 el banco tiene además
+El mínimo de cada estrato es **25**; en E3 es 25 o las relaciones de evolución disponibles, lo que sea menor (ver el final de esta sección). Para E3 el banco tiene además
 espacio para **hasta 40 preguntas**: las que pasen de 25 son opcionales; escribe tantas como el
 material permita, hasta ese tope. La razón es
 estadística: E3 es el estrato donde se compara C2 con C1, y con más preguntas aumenta la
@@ -423,8 +425,10 @@ siempre habrá 40 casos genuinos.
 verdad cambia entre reuniones y que está anotada como `revierte`, `reemplaza` o `refina`. Si
 el material se agota antes de 40, las filas sobrantes de E3 se **dejan vacías**: no pasa nada,
 `questions-check --complete` las trata como opcionales y no se usan. Quedarse corto de 40 se
-declara como una limitación de potencia, no como un incumplimiento; lo que sí es obligatorio
-es llegar a 25.
+declara como una limitación de potencia, no como un incumplimiento. Lo que sí es obligatorio
+es llegar a 25, o al número de relaciones de evolución que el material ofrece si es menor
+(hoy 24; [ADR 0021](../../decisions/0021-adr-minimo-de-e3-segun-relaciones-disponibles.md)):
+`questions-check` calcula ese mínimo solo, desde la referencia.
 
 ### El archivo
 
@@ -679,7 +683,7 @@ dividida con sentido).
 - [ ] No hubo comparación de etiquetas ni discusión de casos concretos con `gv` antes de la adjudicación
 
 ### Banco de preguntas (al cerrarlo)
-- [ ] ≥25 preguntas por cada uno de los cuatro estratos, ≥100 en total (en E3, hasta 40 si el material lo permite; las filas E3 sobrantes quedan vacías)
+- [ ] ≥25 preguntas por estrato (24 en E3 según el ADR 0021), ≥99 en total (en E3, hasta 40 si el material lo permite; las filas E3 sobrantes quedan vacías)
 - [ ] `stratum` usa los valores literales de `QuestionStratum`
 - [ ] Cada respuesta de referencia se deriva de la evidencia citada, no del resumen
 - [ ] Toda E4 se buscó en las cuatro transcripciones de su serie y no aparece

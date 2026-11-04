@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 08 — Métricas y criterio de éxito |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 8.1 |
-| **Fecha** | 2026-11-02 |
+| **Versión** | 8.3 |
+| **Fecha** | 2026-11-03 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -27,6 +27,8 @@
 | 7.0 | 2026-11-02 | H2 y H3 reciben su definición operativa y sus reglas de lectura, fijadas antes de los resultados de evaluación. H2 se mide en el Experimento B: la diferencia entre la brecha de corrección C3 − C2 en E3 (relaciones) y en E1 (decisiones; E2 no entra), con bootstrap independiente por estrato; se respalda si el intervalo del 95 % queda por encima de 0, es contraria si queda por debajo y no es calculable sin C3, C2 o alguno de los estratos. La brecha de extracción del Experimento A (1 menos el recall de relaciones frente a la de decisiones) queda como cifra complementaria y declarada sesgada. H3 se mide en el Experimento A entre los enlaces detectados (error de dirección frente a error de tipo, con intervalos que no se solapan); su cláusula de escala de modelo no se mide. Antes la lectura de H2 que sugería el §4.3 era la cifra condicionada del Experimento A. No cambian el criterio de éxito (D16/D17) ni las demás métricas. | Decisión del 2026-11-02 ([ADR 0018](../decisions/0018-adr-medicion-de-h2-y-h3.md), issue #242): los documentos nombraban las hipótesis pero no decían sobre qué datos se calcula la brecha ni cuándo se respaldan. C3 y C2 son condiciones del Experimento B, y la brecha es el costo de los errores de extracción. |
 | 8.0 | 2026-11-02 | La corrida formal del Experimento B incluye a C0 (el mismo generador sin ningún texto de apoyo) como referencia sin recuperación. Se informan su corrección, su abstención en E4 y sus tasas de H4 con la cota superior, y dos comparaciones descriptivas: C1 − C0 (valor de la recuperación) y C2 − C0 (valor de la base compilada frente a no recuperar). No se informan para C0 las métricas de evidencia ni de citación. No cambian el criterio D16 ni las reglas de H1 a H4. | Decisión del autor del proyecto del 2026-11-02, registrada en el [ADR 0019](../decisions/0019-adr-c0-en-la-corrida-formal-del-experimento-b.md). La versión anterior solo contaba tres condiciones en el Experimento B. |
 | 8.1 | 2026-11-02 | §4.2: el recall del filtro léxico se reporta con intervalo de Wilson al 95 %, no bootstrap. Solo se corrige la redacción. | La versión 4.1 ya había cambiado el intervalo a Wilson (tabla de métricas, §3), pero el texto de §4.2 seguía diciendo bootstrap. |
+| 8.2 | 2026-11-03 | §4.2, tabla de métricas y decisión abierta D: el *recall* del filtro léxico pasa de preliminar (tres muestras) a medido con las cuatro: total 0,407 [0,245; 0,596]; ES 1,000, IS 0,352 y TS 0,344. Se registra que no se pide una muestra adicional y que el tratamiento de la pérdida se decide aparte, con un ADR respaldado por un notebook que mide un canal semántico. No cambian umbrales, criterios ni otras métricas. | Anotación de la Tarea C de IS1004 (#203) y cierre del issue #205; [notebook 18](../../notebooks/18-jss-anotacion-f2-adjudicacion.ipynb), §8. Decisión de jss del 2026-11-03 (#30). |
+| 8.3 | 2026-11-03 | §4.2, tabla de métricas y decisión abierta D (ahora resuelta): se registra la decisión sobre la pérdida del filtro léxico. Se mantiene el filtro sin cambios y la pérdida se declara como limitación de la referencia de relaciones; no se agrega el canal semántico ni se anotan pares nuevos. Los resultados de relaciones del Experimento A se leen con esa limitación: se informa la precision de existencia también sin los falsos positivos sobre pares fuera de los candidatos, y el recall de existencia es una cota superior. No cambian cifras, umbrales ni criterios de éxito. | Decisión de jss del 2026-11-03 (#205), [ADR 0020](../decisions/0020-adr-se-mantiene-el-bloqueador-lexico.md); [notebook 25](../../notebooks/25-jss-canal-semantico-del-bloqueador.ipynb) mide la alternativa. |
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
 > la evidencia que lo motivó**. El historial nunca se reescribe: se agrega una fila.
@@ -177,7 +179,7 @@ implementada y además tener una cifra preliminar sobre desarrollo.
 | Métrica | Qué mide (en simple) | Se aplica a | Cómo se calcula | Umbral / intervalo / regla de lectura | Dónde está definida | Estado |
 |---|---|---|---|---|---|---|
 | **Kappa de anotación** (existencia, tipo, dirección) | Cuánto coinciden dos personas al marcar si dos decisiones se relacionan, cómo y en qué sentido | Series de control con doble anotación (4 de las 11 series de evaluación, 36,4 %; más 2 series de calibración de desarrollo) | Kappa de Cohen, un valor por cada uno de los tres ejes, nunca combinados | **Sin umbral de aceptación, por diseño.** Se reporta tal como salga; un kappa bajo es un hallazgo | Doc. 06 §1 y §5–6; manual de anotación §6; `annotation/agreement.py` | Medida en las cuatro series de control (Fase 2): existencia 0,783 (37 pares), tipo 0,554 (18 pares), dirección indefinida por acuerdo total (notebook 18, §6.1; documento 10) |
-| **Recall del filtro léxico** (*blocking*) | Qué parte de las relaciones reales deja pasar el filtro que decide qué pares se anotan | 200 pares rechazados (50 por serie × IS1004, ES2016, IS1003, TS3005) | Relaciones reales halladas entre los rechazados, sobre el total muestreado; por sitio y en conjunto, con intervalo de Wilson al 95 % (no bootstrap: con cero hallazgos daría [0; 0]) | **Sin umbral.** Se reporta la cifra y su intervalo | Doc. 06 §2; manual de anotación §5; `annotation/blocking.py`; `config/annotation.toml` `[annotation.recall_sample]` | Muestras generadas; anotadas las de ES2016, IS1003 y TS3005 (50 pares cada una); la función del cálculo está lista (#205) y la cifra preliminar, con tres de cuatro muestras, está en el [notebook 18](../../notebooks/18-jss-anotacion-f2-adjudicacion.ipynb), §8; falta la muestra de IS1004 (#203) |
+| **Recall del filtro léxico** (*blocking*) | Qué parte de las relaciones reales deja pasar el filtro que decide qué pares se anotan | 200 pares rechazados (50 por serie × IS1004, ES2016, IS1003, TS3005) | Relaciones reales halladas entre los rechazados, sobre el total muestreado; por sitio y en conjunto, con intervalo de Wilson al 95 % (no bootstrap: con cero hallazgos daría [0; 0]) | **Sin umbral.** Se reporta la cifra y su intervalo | Doc. 06 §2; manual de anotación §5; `annotation/blocking.py`; `config/annotation.toml` `[annotation.recall_sample]` | Medido con las cuatro muestras anotadas (50 pares cada una): *recall* total 0,407 (IC de Wilson 95 % de 0,245 a 0,596); ES 1,000 [0,236; 1,000], IS 0,352 [0,155; 0,626], TS 0,344 [0,163; 0,604] ([notebook 18](../../notebooks/18-jss-anotacion-f2-adjudicacion.ipynb), §8). No se pidió una muestra adicional. El filtro se mantiene y la pérdida se declara como limitación de la referencia ([ADR 0020](../decisions/0020-adr-se-mantiene-el-bloqueador-lexico.md)) |
 | **Precision, recall y F1** (OE2) | Qué tan bien la máquina encuentra las decisiones de la referencia | Decisiones extraídas por la máquina frente a las 343 de la referencia | Conteos de aciertos, sobras y faltantes tras el alineamiento (§4.3); F1 como **curva sobre τ** | Sin umbral ni criterio de éxito; curva con τ de 0,50 a 0,90 en pasos de 0,05 | Propuesta §5.4 y §5.6; [`docs/protocols/alignment.md`](../protocols/alignment.md); [`config/experiments.toml`](../../config/experiments.toml) `[alignment]` | Implementada. Pendiente de medir (no hay extracción real de evaluación) |
 | **Existencia, tipo y dirección de las relaciones** (OE2) | Si la máquina encuentra las relaciones entre decisiones, acierta cuál es y cuál revisa a cuál | Relaciones adjudicadas de la Tarea B frente a las de `openkos revisions` | Precision, recall y F1 del enlace; fracción de relaciones con tipo (o sentido) igual a la referencia; se reportan por separado. Principal: de extremo a extremo, con «revierte» y «reemplaza» como una clase y la dirección desconocida como error; segunda cifra condicionada a la alineación; sensibilidades: tipo estricto y dirección desconocida excluida | Sin umbral | Propuesta §5.6; [ADR 0016](../decisions/0016-adr-relaciones-temporales-de-openkos.md); `evaluation/relations.py` | Implementada y medida solo en desarrollo (ES2015, IS1004, TS3009; [notebook 22](../../notebooks/22-jss-relaciones-temporales-openkos.ipynb)). Pendiente en evaluación |
 | **Concordancia del alineamiento** | Si la regla automática que empareja decisiones coincide con el emparejamiento manual | Muestra de al menos 100 pares | Pares coincidentes entre ambos emparejamientos sobre la unión de pares emparejados | **≥ 0,80**; si no, se revisa la grilla de τ y se repite | Doc. 06 §1; [`docs/protocols/alignment.md`](../protocols/alignment.md); `evaluation/alignment.py` (`concordance`) | Implementada. Pendiente de medir |
@@ -247,10 +249,25 @@ anotación, §5).
 pareja entre sitios; una pérdida alta no invalida el ground truth, pero obliga a
 declararlo como limitación.
 
-**Estado.** Las cuatro muestras están generadas. Tres (ES2016, IS1003 y TS3005, 50 pares cada
-una) ya tienen anotación; falta la de IS1004 (#203). La función que calcula el recall con ellas
-existe (#205, `annotation/recall.py`, con intervalo de Wilson) y la cifra preliminar, con tres de
-las cuatro muestras, está en el notebook 18, §8.
+**Estado.** Las cuatro muestras (IS1004, ES2016, IS1003 y TS3005, 50 pares cada una) están
+anotadas y el cálculo está hecho (#205, `annotation/recall.py`, con intervalo de Wilson al
+95 %; notebook 18, §8). En la muestra hubo 6 falsos negativos de 200 pares. El recall total del
+filtro léxico (*blocking*) es 0,407, con intervalo [0,245; 0,596]: se estiman 26,3 relaciones
+perdidas [12,2; 55,4] frente a 18 conservadas. Por sitio, ES 1,000 [0,236; 1,000] (cero
+falsos negativos, pero la muestra no basta para acotar la pérdida: es compatible con hasta unas
+13 relaciones perdidas), IS 0,352 [0,155; 0,626] y TS 0,344 [0,163; 0,604]. La cifra preliminar
+con tres muestras era 0,496 [0,269; 0,730]; la muestra de IS1004 la baja. La pérdida es
+sustancial, y no se puede afirmar que sea pareja entre sitios. El 2026-11-03 se decidió no pedir
+una muestra adicional: una muestra mayor solo estrecharía los intervalos, sobre todo el de ES,
+sin cambiar la conclusión. El 2026-11-03 `jss` decidió mantener el filtro léxico sin cambios y
+declarar la pérdida como limitación de la referencia de relaciones ([ADR 0020](../decisions/0020-adr-se-mantiene-el-bloqueador-lexico.md)). La razón es no sumar
+carga de anotación al equipo mientras se termina el banco de preguntas. La decisión se aparta de la
+guía fijada de antemano, que ante una pérdida grande indicaba revisar el punto de operación; la
+alternativa, un canal semántico, quedó medida en el notebook 25 (con un umbral de 0,75 agregaría
+149 pares pero recuperaría solo 2 de las 6 relaciones perdidas muestreadas). En la práctica, los
+resultados de relaciones se leen con esta limitación: la precision de existencia se informa también
+sin los falsos positivos sobre pares que el filtro nunca ofreció, y el recall de existencia es una cota
+superior.
 
 ### 4.3 OE2: la extracción automática
 
@@ -482,18 +499,25 @@ uno se indica dónde se manifiesta, las opciones con su contrapartida y qué blo
   permite decidir; hasta entonces el tamaño de E3 es una proyección. Bloquea cerrar el
   diseño del Experimento B.
 
-### D. No hay umbral para el recall del filtro léxico
+### D. No hay umbral para el recall del filtro léxico (resuelto)
 
 - **Dónde se ve.** Documento 06, §2, y manual de anotación, §5: se reporta la cifra con su
-  intervalo, sin regla de aceptación. La muestra aún no está anotada.
-- **Opciones.**
-  1. *Sin umbral* (estado actual). Honesto con lo desconocido, pero no define qué recall haría
-     dudar de la cota de 92 pares.
+  intervalo, sin regla de aceptación. La muestra ya está anotada y el resultado está en el §4.2;
+  la reacción ante la pérdida se decidió el 2026-11-03: se mantiene el filtro y se declara la
+  limitación ([ADR 0020](../decisions/0020-adr-se-mantiene-el-bloqueador-lexico.md)).
+- **Opciones que se consideraron.**
+  1. *Sin umbral.* Honesto con lo desconocido, pero no define qué recall haría dudar de la cota
+     de 92 pares.
   2. *Fijar una regla de reacción antes de anotar* (por ejemplo, si el recall por sitio queda
      bajo cierto valor, ampliar el filtro y repetir la anotación de candidatos). Da una
-     acción clara, a costa de comprometer horas de anotación que hoy no están presupuestadas.
-- **Qué bloquea.** No bloquea anotar la muestra. Sí condiciona qué se hace con el resultado,
-  y cualquier cambio del filtro invalida los candidatos ya generados (`BLOCKER_VERSION`).
+     acción clara, a costa de comprometer horas de anotación que no están presupuestadas.
+- **Qué se decidió.** `jss`, el 2026-11-03: se mantiene el filtro sin cambios (el cambio de
+  filtro invalidaría los candidatos ya generados, `BLOCKER_VERSION`), no se agrega el canal
+  semántico y la pérdida (recall 0,407 [0,245; 0,596]) se declara como limitación de la
+  referencia de relaciones. La razón es no sumar carga de anotación al equipo mientras se
+  termina el banco de preguntas. Sigue sin haber un umbral de aceptación del recall. La
+  decisión completa, con las alternativas medidas, está en el
+  [ADR 0020](../decisions/0020-adr-se-mantiene-el-bloqueador-lexico.md).
 
 ### E. `agreement_meets_threshold` usaba 0,60 y los documentos dicen "sin umbral" (resuelto)
 

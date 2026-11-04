@@ -161,8 +161,8 @@ reparto equilibra horas totales, no filas.
 
 | | Decisiones | Candidatos | Además |
 |---|---:|---:|---|
-| **`gv`** | 284 | 65 | Tarea C (200 pares: 4 series × 50) + validación del banco (≥100 preguntas) |
-| **`gm`** | 223 | 71 | Escritura del banco (≥100 preguntas) |
+| **`gv`** | 284 | 65 | Tarea C (200 pares: 4 series × 50) + validación del banco (unas 100 preguntas) |
+| **`gm`** | 223 | 71 | Escritura del banco (unas 100 preguntas) |
 | **`jss`** | 0 | 0 | Adjudicación de las 6 series dobles, los CSV de adjudicación, notebooks 04–06 (uno por fase de anotación) |
 
 (284 = 53 de Fase 1 + 111 de Fase 2 + 120 de Fase 3. 223 = 53 + 111 + 59.)

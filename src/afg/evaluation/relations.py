@@ -42,7 +42,7 @@ the intervals are wide and the figures are descriptive.
 from __future__ import annotations
 
 import csv
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
@@ -57,6 +57,10 @@ from afg.shared.paths import GOLD_RELATIONS_DIR
 _NON_LINKS = frozenset({RelationType.INTRODUCE, RelationType.NO_RELACIONADA})
 _REVERSAL_CLASS = frozenset({RelationType.REVIERTE, RelationType.REEMPLAZA})
 _DIRECTION_OK = "si"
+EVOLUTION_RELATIONS = frozenset(
+    {RelationType.REFINA, RelationType.REVIERTE, RelationType.REEMPLAZA}
+)
+"""Labels of a decision that evolves: the relations an E3 question can be about."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -123,6 +127,52 @@ def load_gold_pairs(
                 GoldPair(earlier, later, RelationType(relation), direction == _DIRECTION_OK)
             )
     return tuple(pairs)
+
+
+def load_gold_pair_labels(
+    series_id: str, *, relations_dir: Path = GOLD_RELATIONS_DIR
+) -> tuple[tuple[str, str], ...]:
+    """``(pair_id, relation)`` of every labelled row of the gold of ``series_id``.
+
+    The file is the one :func:`gold_source` resolves (adjudicated, else the single-annotator
+    file), so the label column is ``final_relation`` or ``relation`` accordingly. Rows without
+    a relation are skipped.
+
+    Raises:
+        FileNotFoundError: neither kind of file exists.
+        AmbiguousReferenceError: two or more single-annotator files and no adjudication.
+    """
+    source = gold_source(series_id, relations_dir)
+    relation_col = "final_relation" if source.kind == "adjudicated" else "relation"
+    labels: list[tuple[str, str]] = []
+    with open_csv_reader(source.path) as handle:
+        for row in csv.DictReader(handle):
+            relation = (row.get(relation_col) or "").strip()
+            pair_id = (row.get("pair_id") or "").strip()
+            if relation and pair_id:
+                labels.append((pair_id, relation))
+    return tuple(labels)
+
+
+def count_evolution_relations(labels: Iterable[tuple[str, str]]) -> int:
+    """Distinct pair ids whose relation is ``refina``, ``revierte`` or ``reemplaza``.
+
+    ``labels`` are ``(pair_id, relation)`` rows. A pair id counts once however many rows carry
+    it. Pure: it reads nothing, so the rule is testable without disk.
+    """
+    evolution = {r.value for r in EVOLUTION_RELATIONS}
+    return len({pair_id for pair_id, relation in labels if relation.strip() in evolution})
+
+
+def available_evolution_relations(
+    series_ids: Iterable[str], *, relations_dir: Path = GOLD_RELATIONS_DIR
+) -> int:
+    """Evolution relations in the gold of ``series_ids`` (:func:`count_evolution_relations`)."""
+    return count_evolution_relations(
+        label
+        for series_id in series_ids
+        for label in load_gold_pair_labels(series_id, relations_dir=relations_dir)
+    )
 
 
 @dataclass(frozen=True, slots=True)
