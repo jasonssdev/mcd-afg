@@ -38,7 +38,12 @@ from afg.annotation.workspace import (
     validate_annotator,
     validate_workspace_file,
 )
-from afg.experiments.question_bank import QuestionBankProgress, question_bank_progress
+from afg.evaluation.reference import AmbiguousReferenceError
+from afg.experiments.question_bank import (
+    QuestionBankProgress,
+    configured_minimums,
+    question_bank_progress,
+)
 
 __all__ = [
     "AnnotatorStatus",
@@ -261,10 +266,15 @@ def _bank(
         return None, role
     from afg.domain.question import QuestionStratum
 
+    try:
+        minimums = configured_minimums(bank.questions_per_stratum)
+    except FileNotFoundError, AmbiguousReferenceError:
+        minimums = None  # no readable reference: keep the flat minimum (the stricter one)
     progress = question_bank_progress(
         paths.question_bank,
         minimum=bank.questions_per_stratum,
         rows_per_stratum={s: bank.rows_for(s) for s in QuestionStratum},
+        minimums=minimums,
     )
     return progress, role
 

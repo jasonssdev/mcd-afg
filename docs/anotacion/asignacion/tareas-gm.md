@@ -409,7 +409,7 @@ banco se escribe en inglés:
 
 ### Cuántas preguntas de E3: hasta 40, nunca inventadas
 
-El mínimo de cada estrato sigue siendo **25**, también en E3. Para E3 el banco tiene además
+El mínimo de cada estrato es **25**; en E3 es 25 o las relaciones de evolución disponibles, lo que sea menor (ver el final de esta sección). Para E3 el banco tiene además
 espacio para **hasta 40 preguntas**: las que pasen de 25 son opcionales; escribe tantas como el
 material permita, hasta ese tope. La razón es
 estadística: E3 es el estrato donde se compara C2 con C1, y con más preguntas aumenta la
@@ -423,8 +423,10 @@ siempre habrá 40 casos genuinos.
 verdad cambia entre reuniones y que está anotada como `revierte`, `reemplaza` o `refina`. Si
 el material se agota antes de 40, las filas sobrantes de E3 se **dejan vacías**: no pasa nada,
 `questions-check --complete` las trata como opcionales y no se usan. Quedarse corto de 40 se
-declara como una limitación de potencia, no como un incumplimiento; lo que sí es obligatorio
-es llegar a 25.
+declara como una limitación de potencia, no como un incumplimiento. Lo que sí es obligatorio
+es llegar a 25, o al número de relaciones de evolución que el material ofrece si es menor
+(hoy 24; [ADR 0021](../../decisions/0021-adr-minimo-de-e3-segun-relaciones-disponibles.md)):
+`questions-check` calcula ese mínimo solo, desde la referencia.
 
 ### El archivo
 
