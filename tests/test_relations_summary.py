@@ -126,6 +126,23 @@ def test_existence_frame_has_both_scopes_and_pooled_row() -> None:
     assert row["FP sin par candidato"] == 1
 
 
+def test_existence_frame_precision_excluding_not_candidate_false_positives() -> None:
+    frame = existence_frame(_report())
+    row = frame[(frame["Ámbito"] == "extremo a extremo") & (frame["Corrida"] == "run-0")].iloc[0]
+    # tp = 1, fp = 5 of which 1 has no candidate pair: 1 / (1 + 5 - 1) = 1/5.
+    assert row["Precisión sin FP fuera de candidatos"] == "1/5 (20,0 %) [3,6; 62,4]"
+    assert row["Precisión"] == "1/6 (16,7 %) [10,0; 90,0]"
+
+
+def test_precision_excluding_not_candidate_is_undefined_without_remaining_trials() -> None:
+    score = _score()
+    score["existence_end_to_end"] = _existence(0, 2, 1, not_candidate=2)
+    report = _report() | {"pooled": score}
+    frame = existence_frame(report)
+    row = frame[(frame["Ámbito"] == "extremo a extremo") & (frame["Corrida"] == "conjunto")].iloc[0]
+    assert row["Precisión sin FP fuera de candidatos"] == "sin casos"
+
+
 def test_accuracy_frame_rows_cover_four_views() -> None:
     frame = accuracy_frame(_report()["pooled"])
     assert list(frame.index) == [
