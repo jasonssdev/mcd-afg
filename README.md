@@ -272,7 +272,7 @@ La AFG se cursa en tres cursos de ocho semanas cada uno:
 | Curso | Qué se entrega | Objetivos |
 |---|---|---|
 | **AFG1** | Problema, estado del arte, metodología, ética, conjunto de referencia listo para anotar (herramientas de OE1) y anotación iniciada en desarrollo | OE1 (herramientas) |
-| **AFG2** | OE1 cerrado (anotación + kappa); OE2 sobre las 11 series de evaluación (ADR 0005) con una escala de modelo (3 corridas); OE3 con banco de preguntas ≥100 y las tres condiciones, versión mínima | OE1, OE2, OE3 (mínimo) |
+| **AFG2** | OE1 cerrado (anotación + kappa); OE2 sobre las 11 series de evaluación (ADR 0005) con una escala de modelo (3 corridas); OE3 con banco de preguntas ≥99 (25 por estrato, 24 en E3 según el ADR 0021) y las tres condiciones, versión mínima | OE1, OE2, OE3 (mínimo) |
 | **AFG3** | OE4, análisis de errores, intervalos bootstrap, conclusiones | OE4 |
 
 **Extensiones si hay tiempo:** segunda escala de modelo (H3), validación humana ampliada.
