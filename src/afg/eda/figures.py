@@ -431,6 +431,49 @@ def plot_agreement_by_axis(
     return fig
 
 
+def plot_semantic_channel(
+    rows: Sequence[tuple[float, float, float, float | None, int]], *, title: str = ""
+) -> Figure:
+    """Rates (left) and annotation cost (right) of a semantic channel by cosine threshold.
+
+    ``rows`` holds ``(threshold, share of false negatives caught, share of kept relations
+    caught, false-alarm rate or None, new pairs)``, the shares in ``[0, 1]``. A missing
+    false-alarm rate (no sampled ``no_relacionada`` pair) leaves a gap, never a zero.
+    """
+    thresholds = [r[0] for r in rows]
+    fig, (rax, cax) = plt.subplots(1, 2, gridspec_kw={"width_ratios": [3, 2]})
+    series = (
+        ("Falsos negativos recuperados", [r[1] for r in rows], _COLORS[0]),
+        ("Relaciones conservadas que también detecta", [r[2] for r in rows], _COLORS[2]),
+        (
+            "Falsas alarmas (pares no_relacionada)",
+            [float("nan") if r[3] is None else r[3] for r in rows],
+            _COLORS[3],
+        ),
+    )
+    for label, values, color in series:
+        rax.plot(thresholds, [v * 100 for v in values], marker="o", color=color, label=label)
+    rax.set_ylim(-3, 103)
+    rax.set_ylabel("% de los pares de cada grupo")
+    rax.set_xlabel("Umbral de similitud coseno")
+    rax.set_title("Qué atrapa y qué falla", loc="left", fontsize=12)
+    rax.legend(loc="upper right", fontsize=9)
+    width = (thresholds[1] - thresholds[0]) * 0.7 if len(thresholds) > 1 else 0.03
+    cax.bar(thresholds, [r[4] for r in rows], width=width, color=_COLORS[1])
+    for x, r in zip(thresholds, rows, strict=True):
+        cax.text(x, r[4], _es(r[4], 0), ha="center", va="bottom", fontsize=9)
+    cax.set_xlabel("Umbral de similitud coseno")
+    cax.set_ylabel("Pares nuevos por anotar")
+    cax.set_title("Costo de anotación", loc="left", fontsize=12)
+    cax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: _es(v, 0)))
+    for ax in (rax, cax):
+        ax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: _es(v, 2)))
+    if title:
+        fig.suptitle(title, x=0.01, ha="left", fontsize=14, fontweight="bold")
+    fig.tight_layout()
+    return fig
+
+
 def _plain_log_axis(axis: Any, low: float, high: float, decimals: int = 0) -> None:
     """Log axis with 1-2-5 ticks written as plain Spanish numbers instead of powers of ten."""
     ticks = [

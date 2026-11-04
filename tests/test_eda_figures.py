@@ -27,6 +27,7 @@ from afg.eda.figures import (
     plot_rate_by_bin,
     plot_rate_lines,
     plot_role_authorship,
+    plot_semantic_channel,
     report_style,
     save_figure,
     video_style,
@@ -321,3 +322,24 @@ class TestPlotAgreementByAxis:
         fig = plot_agreement_by_axis(self.ROWS)
         labels = [t.get_text() for t in fig.axes[0].get_yticklabels()]
         assert labels[0] == "Existencia\n(37 pares)"
+
+
+class TestPlotSemanticChannel:
+    ROWS: ClassVar[list[tuple[float, float, float, float | None, int]]] = [
+        (0.5, 1.0, 1.0, 0.7, 2000),
+        (0.7, 0.33, 0.7, 0.13, 400),
+        (0.9, 0.0, 0.17, 0.0, 0),
+    ]
+
+    def test_two_panels_share_the_threshold_axis(self) -> None:
+        fig = plot_semantic_channel(self.ROWS, title="t")
+        rates_ax, cost_ax = fig.axes
+        assert rates_ax.get_xlabel() == cost_ax.get_xlabel() == "Umbral de similitud coseno"
+        assert len(rates_ax.lines) == 3
+        assert [p.get_height() for p in cost_ax.patches] == [2000, 400, 0]
+
+    def test_missing_false_alarm_rate_is_not_plotted_as_zero(self) -> None:
+        rows = [(0.5, 1.0, 1.0, None, 10), (0.6, 0.5, 0.9, None, 5)]
+        fig = plot_semantic_channel(rows)
+        alarm_line = fig.axes[0].lines[2]
+        assert all(y != y for y in alarm_line.get_ydata())  # NaN, never 0
