@@ -9,10 +9,13 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping
+from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
+
+from afg.evaluation.relations import Proportion
 
 __all__ = [
     "accuracy_frame",
@@ -98,6 +101,18 @@ def run_frame(report: Mapping[str, Any]) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def _precision_without_not_candidate(existence: Mapping[str, Any]) -> str:
+    """Precision leaving out machine links on pairs the blocker never offered (ADR 0020).
+
+    Those links count as false positives in the standard precision, but a gold link on a pair
+    outside the candidates was never annotated, so part of them may be real relations the
+    blocker lost. Dropping them gives the optimistic end of the reading.
+    """
+    tp = existence["tp"]
+    trials = tp + existence["fp"] - existence["fp_breakdown"]["not_candidate"]
+    return format_proportion(asdict(Proportion.of(tp, trials)))
+
+
 def existence_frame(report: Mapping[str, Any]) -> pd.DataFrame:
     """Link existence per run and pooled, in both scopes (end to end and conditional)."""
     labelled = [(f"run-{e['run']}", e["score"]) for e in _scored_entries(report)]
@@ -117,6 +132,9 @@ def existence_frame(report: Mapping[str, Any]) -> pd.DataFrame:
                     "Precisión": format_proportion(existence["precision"]),
                     "Recall": format_proportion(existence["recall"]),
                     "F1": "no definido" if f1 is None else f"{f1:.3f}".replace(".", ","),
+                    "Precisión sin FP fuera de candidatos": _precision_without_not_candidate(
+                        existence
+                    ),
                     "FP sin par candidato": existence["fp_breakdown"]["not_candidate"],
                     "FP con decisión sin alinear": existence["fp_breakdown"]["unaligned"],
                 }
