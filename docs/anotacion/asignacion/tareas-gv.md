@@ -409,7 +409,7 @@ los resultados de las cuatro. Escríbelo en el PR y para ahí.
 Gustavo haya escrito preguntas; hasta entonces `afg gold status` muestra «Validación del banco
 de preguntas: aún no».
 
-Gustavo escribe el banco (mínimo 25 preguntas por estrato, ≥100 en total). **Tú lo validas, y
+Gustavo escribe el banco (mínimo 25 preguntas por estrato, 24 en E3 según el ADR 0021; ≥99 en total). **Tú lo validas, y
 no escribes ninguna**: `docs/propuesta.md` §5.5 exige que quien valida no sea quien escribe.
 
 Qué revisas en cada pregunta:
