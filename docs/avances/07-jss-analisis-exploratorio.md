@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 07 — Análisis exploratorio de datos |
 | **Autor** | Jason Sepúlveda S. · Gustavo Martínez |
-| **Versión** | 1.3 |
-| **Fecha** | 2026-10-17 |
+| **Versión** | 1.4 |
+| **Fecha** | 2026-11-03 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -16,6 +16,7 @@
 | 1.1 | 2026-10-15 | Se usan los nombres estándar de métricas y técnicas sin traducir (ground truth, overlap coefficient, context window, tokens, PCA, filtro léxico (*blocking*)). | Convención del equipo: los nombres de métricas y técnicas no se traducen. |
 | 1.2 | 2026-10-15 | Se agrega la sección «Trazabilidad», con los notebooks, funciones y pruebas en que se apoya cada afirmación del documento. No cambia ninguna cifra, decisión ni sección anterior. | Auditoría de gobernanza del 2026-10-15: los documentos 06 a 09 no tenían la sección de trazabilidad que sí tienen los documentos 01 a 05. |
 | 1.3 | 2026-10-17 | Se agrega la revisión de robustez del análisis exploratorio: corrección de Benjamini-Hochberg sobre las 18 pruebas (las 10 significativas se mantienen) y bootstrap por serie para P6 (el intervalo no contiene cero). Se precisa la limitación «Pocas series». No cambia ninguna cifra ni decisión anterior. | La limitación sobre valores p optimistas por falta de independencia quedó abierta en la versión 1.2; notebook 03, §6.4 y §10.2. |
+| 1.4 | 2026-11-03 | §7.5: el estado de la muestra de la Tarea C pasa de «falta anotarla» a anotada, con la cifra final remitida al avance 08. No cambia ninguna otra cifra ni decisión. | Anotación de la Tarea C de IS1004 (#203) y cierre del issue #205. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -376,8 +377,9 @@ Se toman al azar, con semilla fija, **50 pares por serie** entre los que el filt
 y se anotan con las mismas reglas que los demás. Toda relación real que aparezca entre ellos
 es una relación que el filtro perdió. Eso permite informar el **recall** del filtro: de todas
 las relaciones reales, qué proporción deja pasar. Estado actual: la muestra cubre cuatro series
-(IS1004 y una de evaluación por sitio: ES2016, IS1003 y TS3005), está generada y falta anotarla
-([avance 06](06-jss-metodologia.md)).
+(IS1004 y una de evaluación por sitio: ES2016, IS1003 y TS3005) y ya está anotada: el *recall*
+total del filtro es 0,407 ([avance 08](08-jss-metricas-y-criterio-de-exito.md), §4.2;
+[avance 06](06-jss-metodologia.md)).
 
 ### 7.6 La dificultad que el análisis dejó ver
 
