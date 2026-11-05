@@ -170,14 +170,14 @@ def test_is_question_bank_detects_format(tmp_path: Path) -> None:
     assert not is_question_bank(other)
 
 
-def test_real_empty_bank_is_all_pending() -> None:
+def test_real_bank_is_complete() -> None:
     from afg.experiments.question_bank import load_configured_question_bank
 
     path = Path("data/processed/questions/banco-preguntas.csv")
-    report = load_configured_question_bank(path)
-    assert len(report.pending_ids) == 115
-    assert report.usable == ()
+    report = load_configured_question_bank(path, require_complete=True)
     assert not report.has_errors
+    assert report.pending_ids == ()
+    assert len(report.usable) + len(report.optional_ids) == report.total_rows == 115
 
 
 _EVALUATION_ROW = "q001,ES2016,E1_point_fact,How much?,Twelve,ES2016a:ES2016a.x.1,gm,gv,\n"
