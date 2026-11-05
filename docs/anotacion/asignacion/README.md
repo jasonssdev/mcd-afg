@@ -153,7 +153,7 @@ segunda anotación ni kappa.
 | **Gustavo (`gm`)** | TS3011, IS1008, ES2014 | 59 | 27 |
 
 **Por qué Gustavo lleva menos decisiones.** Porque además escribe el **banco de preguntas**:
-mínimo 100 preguntas (25 por estrato, `docs/propuesta.md` §5.5) a un ritmo estimado de ~5
+mínimo 25 preguntas por estrato (24 en E3, ADR 0021; 99 en total; `docs/propuesta.md` §5.5) a un ritmo estimado de ~5
 minutos cada una. Germán las valida (~3 min cada una) y además hace la **Tarea C** (cuatro muestras de 50 pares, una por serie). El
 reparto equilibra horas totales, no filas.
 
@@ -161,8 +161,8 @@ reparto equilibra horas totales, no filas.
 
 | | Decisiones | Candidatos | Además |
 |---|---:|---:|---|
-| **`gv`** | 284 | 65 | Tarea C (200 pares: 4 series × 50) + validación del banco (unas 100 preguntas) |
-| **`gm`** | 223 | 71 | Escritura del banco (unas 100 preguntas) |
+| **`gv`** | 284 | 65 | Tarea C (200 pares: 4 series × 50) + validación del banco (99 preguntas) |
+| **`gm`** | 223 | 71 | Escritura del banco (99 preguntas) |
 | **`jss`** | 0 | 0 | Adjudicación de las 6 series dobles, los CSV de adjudicación, notebooks 04–06 (uno por fase de anotación) |
 
 (284 = 53 de Fase 1 + 111 de Fase 2 + 120 de Fase 3. 223 = 53 + 111 + 59.)

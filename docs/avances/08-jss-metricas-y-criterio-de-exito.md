@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 08 — Métricas y criterio de éxito |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 8.3 |
-| **Fecha** | 2026-11-03 |
+| **Versión** | 8.4 |
+| **Fecha** | 2026-11-05 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -29,6 +29,7 @@
 | 8.1 | 2026-11-02 | §4.2: el recall del filtro léxico se reporta con intervalo de Wilson al 95 %, no bootstrap. Solo se corrige la redacción. | La versión 4.1 ya había cambiado el intervalo a Wilson (tabla de métricas, §3), pero el texto de §4.2 seguía diciendo bootstrap. |
 | 8.2 | 2026-11-03 | §4.2, tabla de métricas y decisión abierta D: el *recall* del filtro léxico pasa de preliminar (tres muestras) a medido con las cuatro: total 0,407 [0,245; 0,596]; ES 1,000, IS 0,352 y TS 0,344. Se registra que no se pide una muestra adicional y que el tratamiento de la pérdida se decide aparte, con un ADR respaldado por un notebook que mide un canal semántico. No cambian umbrales, criterios ni otras métricas. | Anotación de la Tarea C de IS1004 (#203) y cierre del issue #205; [notebook 18](../../notebooks/18-jss-anotacion-f2-adjudicacion.ipynb), §8. Decisión de jss del 2026-11-03 (#30). |
 | 8.3 | 2026-11-03 | §4.2, tabla de métricas y decisión abierta D (ahora resuelta): se registra la decisión sobre la pérdida del filtro léxico. Se mantiene el filtro sin cambios y la pérdida se declara como limitación de la referencia de relaciones; no se agrega el canal semántico ni se anotan pares nuevos. Los resultados de relaciones del Experimento A se leen con esa limitación: se informa la precision de existencia también sin los falsos positivos sobre pares fuera de los candidatos, y el recall de existencia es una cota superior. No cambian cifras, umbrales ni criterios de éxito. | Decisión de jss del 2026-11-03 (#205), [ADR 0020](../decisions/0020-adr-se-mantiene-el-bloqueador-lexico.md); [notebook 25](../../notebooks/25-jss-canal-semantico-del-bloqueador.ipynb) mide la alternativa. |
+| 8.4 | 2026-11-05 | La decisión pendiente C (qué hacer si E3 tiene menos de 25 preguntas) pasa a resuelta; el mínimo de E3 es 24 y la viabilidad de E3 se reporta con el recuento medido; el tamaño del banco es de 99 preguntas (unas 1.188 respuestas). No cambian métricas, umbrales ni criterios. | [ADR 0021](../decisions/0021-adr-minimo-de-e3-segun-relaciones-disponibles.md) (D25) y notebook 26. |
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
 > la evidencia que lo motivó**. El historial nunca se reescribe: se agrega una fila.
@@ -195,7 +196,7 @@ implementada y además tener una cifra preliminar sobre desarrollo.
 | **Atribución del error** (OE4) | En qué etapa nació cada respuesta fallida de C2 | Respuestas fallidas de C2 | Reglas fijas en orden: extracción, luego recuperación, luego síntesis | Cada error cae en una y solo una categoría; la proporción atribuible a extracción es la cifra principal | Doc. 03 (OE4); doc. 06 §7–8; `evaluation/attribution.py` | Implementada. Pendiente |
 | **Concordancia LLM-as-a-judge–humano** | Si el LLM-as-a-judge coincide con las personas | 20 % de las respuestas juzgadas (una corrida sorteada por pregunta y condición), por etiqueta | Kappa de Cohen; siempre se informan también el acuerdo observado y la prevalencia | **Kappa ≥ 0,70** por etiqueta; kappa indefinido cuenta como «no cumple» | Doc. 06 §1 y §5–6; [ADR 0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md); `evaluation/judge_human_check.py` | Implementada. Pendiente sobre el Experimento B |
 | **Calibración del LLM-as-a-judge** | Si un modelo candidato sirve de LLM-as-a-judge | 42 respuestas etiquetadas a mano sobre ES2015 | Kappa y otras cinco comprobaciones ([documento 09](09-jss-modelos-y-justificacion.md), §6.3) | Seis requisitos fijados antes de correr ([`config/experiments.toml`](../../config/experiments.toml) `[judge.calibration]`) | Doc. 06 §5–6; [notebook 05](../../notebooks/05-jss-seleccion-juez.ipynb) | **Medida**: `gpt-oss:20b` cumple todos; kappa 0,951 |
-| **Viabilidad de E3** | Si habrá suficientes relaciones reales para sostener el estrato que prueba la tesis | 11 pares candidatos adjudicados de desarrollo | Proporción de relaciones reales; IC de Wilson; proyección a evaluación | E3 exige ≥ 25 preguntas. Provisional | Doc. 06 §7–8; D12; [notebook 01](../../notebooks/01-jss-viabilidad-e3.ipynb) | **Medida**: 45,5 % (5/11), IC [21,3 – 72,0 %]; proyección ≈ 37 relaciones, IC [17 – 58] |
+| **Viabilidad de E3** | Si habrá suficientes relaciones reales para sostener el estrato que prueba la tesis | 11 pares candidatos adjudicados de desarrollo | Proporción de relaciones reales; IC de Wilson; proyección a evaluación | E3 exige ≥ 25 preguntas, o las relaciones disponibles si son menos (ADR 0021) | Doc. 06 §7–8; D12; D25; [notebook 01](../../notebooks/01-jss-viabilidad-e3.ipynb); [notebook 26](../../notebooks/26-jss-minimo-e3-relaciones-disponibles.ipynb) | **Medida**: 45,5 % (5/11) en desarrollo (IC [21,3 – 72,0 %]); en las once series de evaluación hay **24** relaciones de evolución distintas, por debajo de la proyección anterior (≈ 37, IC [17 – 58]) |
 | **Potencia del criterio D16** | Con 25 preguntas, qué tan seguido el criterio detecta una mejora real | Simulación con datos sintéticos | 1.000 experimentos simulados por escenario | Informativa; no es un umbral | D17; [ADR 0010](../decisions/0010-adr-decisiones-del-analisis-del-experimento-b.md); [notebook 10](../../notebooks/10-jss-potencia-criterio-d16.ipynb); `experiments/power.py` | **Medida** (sintética): 57,5 % para +0,15 y 79,5 % para +0,20 (n = 25, base 0,5) |
 
 ## 4. Las métricas, objetivo por objetivo
@@ -312,10 +313,10 @@ recall bajo.
 **Qué se mide.** Las tres condiciones, y la referencia sin recuperación C0, responden el mismo banco de preguntas, en cuatro
 estratos: E1 (hecho puntual, donde se espera paridad), E2 (estado vigente), E3 (evolución de
 una decisión: el estrato que prueba la tesis) y E4 (sin respuesta en el material). El mínimo
-es de 25 preguntas por estrato; E3 admite hasta 40.
+es de 25 preguntas por estrato; en E3 es 25 o las relaciones de evolución disponibles si son menos, es decir 24 ([ADR 0021](../decisions/0021-adr-minimo-de-e3-segun-relaciones-disponibles.md)).
 
-**Cómo se mide.** Las respuestas (al menos unas 1.200: 100 preguntas como mínimo × 4
-condiciones, con C0, × 3 corridas; hasta 115 preguntas si E3 llega a 40) las califica un LLM-as-a-judge,
+**Cómo se mide.** Las respuestas (unas 1.188: 99 preguntas × 4
+condiciones, con C0, × 3 corridas) las califica un LLM-as-a-judge,
 `gpt-oss:20b`. Se eligió con una prueba propia sobre 42 respuestas de ES2015
 etiquetadas a mano, con seis requisitos fijados antes de correr (acuerdo con las personas,
 estabilidad ante cambios de orden y de semilla, accuracy en E4, formato válido y no premiar la
@@ -478,14 +479,14 @@ uno se indica dónde se manifiesta, las opciones con su contrapartida y qué blo
 - **Qué bloquea.** Nada inmediato. Condiciona cuánto puede afirmar la conclusión sobre el
   aporte de la base frente al de la extracción.
 
-### C. Qué hacer si E3 tiene menos de 25 preguntas
+### C. Qué hacer si E3 tiene menos de 25 preguntas (resuelto)
 
 - **Dónde se ve.** Tres textos no coinciden. La propuesta (§7) plantea ampliar a las 18 series
   de reserva o reformular E3 como análisis de casos, y deja la decisión abierta. El umbral del
   documento 06 (§1) dice que E3 "se reformula como análisis de casos". La decisión D12 dice
   que, si E3 no alcanza 25 con las once series de evaluación, "se reporta el número real y no
-  se rellena el cupo". La estimación (notebook 01) es de ≈ 37 relaciones con IC [17 – 58]: el
-  valor central alcanza; la cota inferior no.
+  se rellena el cupo". La estimación de entonces (notebook 01) era de ≈ 37 relaciones con IC [17 – 58]: el
+  valor central alcanzaba; la cota inferior no.
 - **Opciones.**
   1. *Ampliar con series de reserva.* Conserva la prueba cuantitativa de la hipótesis, pero
      suma horas de anotación (≈ 10–12 h para OE1 ya comprometidas, según la propuesta, §7) y obliga a declarar que el
@@ -495,8 +496,12 @@ uno se indica dónde se manifiesta, las opciones con su contrapartida y qué blo
   3. *Reportar el número real de preguntas* (D12) *y aplicar el criterio con la potencia que
      resulte.* No requiere trabajo adicional, pero con n < 25 la potencia baja del 57,5 %
      calculado (notebook 10) y un resultado no concluyente sería probable.
-- **Qué bloquea.** La adjudicación de al menos una serie de evaluación entrega el dato que
-  permite decidir; hasta entonces el tamaño de E3 es una proyección. Bloquea cerrar el
+- **Qué se decidió.** `jss`, el 2026-11-04 ([ADR 0021](../decisions/0021-adr-minimo-de-e3-segun-relaciones-disponibles.md),
+  D25): se eligió la opción 3, sin ampliar series ni reformular E3. Con la referencia de las
+  once series de evaluación cerrada, el material ofrece **24 relaciones de evolución
+  distintas** ([notebook 26](../../notebooks/26-jss-minimo-e3-relaciones-disponibles.ipynb)),
+  por lo que el mínimo de E3 es 24 y el faltante frente a 25 se declara como limitación de
+  potencia (baja de 57,5 % a 53,1 % para una mejora verdadera de +0,15). Ya no bloquea el
   diseño del Experimento B.
 
 ### D. No hay umbral para el recall del filtro léxico (resuelto)

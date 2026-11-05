@@ -47,8 +47,8 @@ forma más fácil de escribir una cifra equivocada, así que se listan juntas. *
 | Registros §5.2 tras la Tarea A | **sin medir** | el piloto (53 decisiones) dio 77,4 % normalizables y 90,6 % ancladas a evidencia; sobre las 343 no se ha medido |
 | Pares entre reuniones | **3.071** | medido, fijo |
 | Pares candidatos | **92** (0,30 + ≥2) | medido |
-| **Relaciones reales** | **DESCONOCIDO** | **el número que decide si E3 vive** |
-| Preguntas del banco | **115** (E1 25, E2 25, E3 40, E4 25) | el banco existe con sus 115 filas numeradas, todas aún vacías |
+| **Relaciones de evolución en evaluación** | **24** distintas | medido en las once series de evaluación (ADR 0021): decide el tamaño de E3 |
+| Preguntas del banco | **99** (E1 25, E2 25, E3 24, E4 25) | banco cerrado y validado por `gv`; E3 queda en 24 por las relaciones disponibles (ADR 0021) |
 
 Reparto por el split: desarrollo 77 decisiones / 11 candidatos · evaluación 266 / 81.
 

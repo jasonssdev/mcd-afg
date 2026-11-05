@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 03 — Objetivos |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 5.1 |
-| **Fecha** | 2026-11-04 |
+| **Versión** | 5.2 |
+| **Fecha** | 2026-11-05 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -23,6 +23,7 @@
 | 4.0 | 2026-11-01 | Cambia un objetivo y la forma de leer las hipótesis: C1 pasa a ser un RAG convencional (ya no responde con la etapa de respuesta de OpenKOS), de modo que lo que se mide es el valor del sistema compilado frente a un RAG convencional, y no el valor de la representación aislada. Se actualizan el objetivo general, OE3 y H1. H4 se mide entre las preguntas que cada condición responde, y se declara la limitación de que la diferencia entre C1 y C2/C3 no se reparte entre representación y etapa de respuesta. El costo de los errores de extracción (C3 frente a C2), OE1, OE2 y OE4 no cambian. | Decisión del 2026-11-01 ([ADR 0014](../decisions/0014-adr-c1-como-rag-convencional.md)): la pregunta del proyecto es si conviene el sistema compilado frente al RAG que se usa hoy, y una línea base con piezas de OpenKOS no la responde. |
 | 5.0 | 2026-11-01 | Se corrigen dos afirmaciones que habían quedado atrás. (1) OE2: τ sí está fijado (0,70 como valor principal, con 0,75 y 0,80 de sensibilidad, [ADR 0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md)); lo que no existe es un criterio de éxito para OE2. (2) H3: la observación informal que la motiva se hizo a dos escalas, de 8B a 27B según la propuesta (§4), y no «≈8B y ≈32B» como decía la versión 3.0; la segunda escala prevista para el proyecto, como extensión, sí es `qwen3:32b` (≈32B), según la configuración. Son dos cosas distintas y se escriben por separado. (3) «Un experimento con todo lo demás igual» pasa a nombrar lo que se mantiene igual (generador, *embeddings*, hardware y ventana), porque la etapa de respuesta ya no es igual entre C1 y C2/C3. | La propuesta (§4) fija la observación de H3 en 8B y 27B y no tiene registro en este repositorio; el modelo grande previsto sale de `config/experiments.toml` (`shared_budget.generative_model_large = "qwen3:32b"`). El ADR 0012 fijó τ el 2026-10-19. |
 | 5.1 | 2026-11-04 | El banco de OE3 pasa de «≥100 preguntas (25 × 4 estratos)» a «≥99»: 25 por estrato salvo E3, cuyo mínimo es 24. El objetivo, las hipótesis y los criterios no cambian. | El material de las series de evaluación solo tiene 24 relaciones de evolución distintas, y el [ADR 0021](../decisions/0021-adr-minimo-de-e3-segun-relaciones-disponibles.md) fija el mínimo de E3 en el menor entre 25 y esas relaciones. |
+| 5.2 | 2026-11-05 | La nota sobre la viabilidad de E3 pasa de proyección (≈ 37 relaciones) a recuento medido (24). El objetivo, las hipótesis y los criterios no cambian. | Recuento de las relaciones de evolución de la referencia ([ADR 0021](../decisions/0021-adr-minimo-de-e3-segun-relaciones-disponibles.md), notebook 26). |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -328,15 +329,16 @@ publicable: sería la primera medición controlada que acota el valor de compila
 dominio. Ninguna conclusión del proyecto depende de que el sistema compilado gane;
 el aporte es la medición, no el sistema.
 
-**Nota provisional sobre E3.** El estrato E3, el de las preguntas sobre evolución, necesita
-≥25 preguntas, y para escribirlas hacen falta relaciones reales entre decisiones. ¿Hay
-suficientes? La evidencia disponible —11 candidatos de desarrollo adjudicados por máquina,
-tasa de positivos 45,5 % (5/11), IC 95 % Wilson [21,3 % – 72,0 %], proyectado a evaluación
-~37 relaciones, IC [17 – 58]— hace a E3 **plausible, no demostrado**: el valor central
-alcanza el mínimo, la cota inferior del intervalo no. El intervalo de confianza (IC) expresa
-el rango en que podría estar la cifra real dado lo poco que se ha visto; con 11 casos, ese
-rango es ancho. Estas etiquetas fueron puestas por una máquina, sirven sólo para decidir si
-vale la pena anotar, y no son el ground truth de OE1.
+**Nota sobre E3 (actualizada el 2026-11-05).** El estrato E3, el de las preguntas sobre
+evolución, necesita relaciones reales entre decisiones. Al planificar, 11 candidatos de
+desarrollo adjudicados por máquina (tasa de positivos 45,5 %, IC 95 % Wilson [21,3 % – 72,0 %])
+proyectaban ~37 relaciones de evaluación, IC [17 – 58]. Con la referencia de las once series de
+evaluación cerrada, el recuento real es de **24 relaciones de evolución distintas**
+([notebook 26](../../notebooks/26-jss-minimo-e3-relaciones-disponibles.ipynb)), de modo que el
+mínimo de E3 es 24 y el faltante frente a 25 se declara como limitación de potencia
+([ADR 0021](../decisions/0021-adr-minimo-de-e3-segun-relaciones-disponibles.md)). Las etiquetas
+de aquellos 11 candidatos las puso una máquina, sirvieron solo para decidir si valía la pena
+anotar y no son el ground truth de OE1.
 
 ## Glosario breve
 

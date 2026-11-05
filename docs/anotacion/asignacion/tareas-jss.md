@@ -38,7 +38,7 @@ que las columnas de máquina llegaron intactas y que los valores son legales, an
 revises a ojo lo que ningún comando puede juzgar.
 
 **Congelamiento.** Con la anotación, las traducciones y el banco cerrados, el ADR de
-congelamiento (issue #237) fija la referencia, el banco, la configuración y el código. Se
+congelamiento (issue #237; ADR 0023, que reemplaza al 0022 tras la auditoría previa a la primera corrida) fija la referencia, el banco, la configuración y el código. Se
 registra una sola vez con `uv run afg freeze write --adr <número>`, que escribe
 `config/freeze.json`; sin ese registro las series de evaluación no corren. Qué contiene, qué
 bloquea y cómo se verifica: [`../../protocols/congelamiento.md`](../../protocols/congelamiento.md).
@@ -356,10 +356,10 @@ distinto (`notebooks/README.md`):
 |---|---|---|
 | `04-jss-anotacion-f1-calibracion.ipynb` | Fase 1: calibración sobre ES2015 y recalibración sobre TS3009, kappas **diagnósticos** | cerrado: ES2015 y TS3009 adjudicadas; se abre la Fase 2 |
 | `18-jss-anotacion-f2-adjudicacion.ipynb` | Fase 2: cuatro series de control, kappa **reportable** (Tarea D) | cerrado: ES2016, IS1003, TS3005 y ES2008 adjudicadas |
-| `NN-jss-anotacion-f3-referencia.ipynb` | Fase 3: reparto individual y conjunto de referencia final de las 14 series | pendiente |
 
 Son el registro académico de la anotación humana: acuerdo, kappa, adjudicación y el conjunto
-de referencia resultante. El de la Fase 3 es el que cierra OE1. Los pendientes toman el
+de referencia resultante. La Fase 3 no tiene notebook propio: la referencia final de las 14 series se cerró con los CSV
+adjudicados y sus cifras se leen en los notebooks 18, 25 y 26. Los pendientes toman el
 siguiente número libre de `notebooks/` al crearse.
 
 - **Los notebooks no calculan** (`CONTRIBUTING.md` §7.1, `notebooks/README.md`). Toda cifra

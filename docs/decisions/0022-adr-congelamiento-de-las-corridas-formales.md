@@ -2,6 +2,8 @@
 
 ## Estado
 
+**Reemplazada por el [ADR 0023](0023-adr-recongelamiento-tras-la-auditoria.md) (2026-11-05)**: una auditoría previa a la primera corrida encontró defectos en el código y huecos en el registro (transcripciones, `corpus.toml`, `annotation.toml`), y no existía ninguna corrida que invalidar. El texto que sigue se conserva como estaba cuando se aceptó.
+
 Aceptada (2026-11-05), por decisión de `jss`. Resuelve el [issue #237](https://github.com/jasonssdev/mcd-afg/issues/237). Es el último paso antes de los experimentos: con este ADR fusionado y el registro escrito, las issues de las corridas formales (Experimento A, C3, Experimento B y análisis) pueden crearse. Aplica la regla del [ADR 0005](0005-adr-development-evaluation-split.md): nada se ajusta ya con las series de evaluación.
 
 ## Contexto
