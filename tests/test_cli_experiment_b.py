@@ -375,6 +375,9 @@ def _freeze_bank(env: dict[str, Any], tmp_path: Path) -> None:
         decisions_dir=base.decisions_dir,
         relations_dir=base.relations_dir,
         question_bank_path=env["questions"],
+        transcripts_dir=base.transcripts_dir,
+        corpus_config_path=base.corpus_config_path,
+        annotation_config_path=base.annotation_config_path,
     )
     record = tmp_path / "freeze.json"
     write_freeze_record(record, sources, series=["ES2016"], adr="0017", commit=COMMIT)
