@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import dataclasses
 import json
 import re
 from collections.abc import Sequence
@@ -318,6 +319,12 @@ def test_load_run_decisions_reads_one_run_of_one_series(tmp_path: Path) -> None:
         load_run_decisions(run_dir, series="TS3009", run=0)
 
 
+def _small_config() -> Any:
+    from afg.experiments.manual_validation import ValidationConfig
+
+    return ValidationConfig(sample_size=30, matched_share=0.5, seed=42, similarity_floor=0.5)
+
+
 # --- CLI ----------
 
 
@@ -393,7 +400,7 @@ def test_cli_sheet_refuses_to_erase_labels(
 def test_cli_refuses_an_evaluation_series(
     cli_env: dict[str, Path], monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    result = _cli("a-validacion-hoja", "--run-name", "es2015-test", "--serie", "ES2008")
+    result = _cli("a-validacion-hoja", "--run-name", "es2015-test", "--series", "ES2008")
     assert result.exit_code == 1
 
 
@@ -402,7 +409,165 @@ def test_cli_help_is_in_spanish() -> None:
     assert "paso 3" in out.lower()
 
 
-def _small_config() -> Any:
+# --- pooled formal validation (ADR 0023) ----------
+
+EVAL_SERIES = ("ES2002", "ES2008", "ES2014")
+
+
+def _series_world(series: str) -> tuple[list[Decision], list[ReferenceDecision]]:
+    meetings = (f"{series}a", f"{series}b")
+    predicted = [
+        _predicted(m, i).model_copy(update={"series_id": series})
+        for m in meetings
+        for i in range(PER_MEETING)
+    ]
+    reference = [
+        dataclasses.replace(_reference(m, i), series_id=series)
+        for m in meetings
+        for i in range(PER_MEETING)
+    ]
+    return predicted, reference
+
+
+@pytest.fixture
+def pooled_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict[str, Path]:
+    runs = tmp_path / "experiment-a"
+    sheets = tmp_path / "sheets"
+    keys = tmp_path / "keys"
+    refs = {s: _series_world(s)[1] for s in EVAL_SERIES}
+    for name, listed in (("eval-run", ",".join(EVAL_SERIES)), ("dev-run", "ES2015")):
+        run_dir = runs / name
+        run_dir.mkdir(parents=True)
+        (run_dir / "manifest.json").write_text(json.dumps({"series": listed}), encoding="utf-8")
+    records = [
+        {
+            "series_id": s,
+            "run": 0,
+            "decisions": [d.model_dump(mode="json") for d in _series_world(s)[0]],
+        }
+        for s in EVAL_SERIES
+    ]
+    (runs / "eval-run" / "extracciones.jsonl").write_text(
+        "\n".join(json.dumps(r) for r in records) + "\n", encoding="utf-8"
+    )
+    dev_predicted, dev_reference = _world()
+    refs["ES2015"] = dev_reference
+    (runs / "dev-run" / "extracciones.jsonl").write_text(
+        json.dumps(
+            {
+                "series_id": "ES2015",
+                "run": 0,
+                "decisions": [d.model_dump(mode="json") for d in dev_predicted],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(afg_cli, "EXPERIMENT_A_DIR", runs)
+    monkeypatch.setattr(afg_cli, "VALIDATION_DIR", sheets)
+    monkeypatch.setattr(afg_cli, "VALIDATION_KEY_DIR", keys, raising=False)
+    monkeypatch.setattr(afg_cli, "make_alignment_similarity", lambda: fake_similarity)
+    monkeypatch.setattr(afg_cli, "load_series_reference", lambda s, **k: _FakeReference(refs[s]))
+    monkeypatch.setattr(afg_cli, "require_pinned_environment", lambda *a, **k: {})
+    monkeypatch.setattr(afg_cli, "configured_embedding_model", lambda: "fake")
+    monkeypatch.setattr(
+        afg_cli,
+        "configured_partition_of",
+        lambda: lambda s: "development" if s == "ES2015" else "evaluation",
+    )
+    monkeypatch.setattr(afg_cli, "_require_series_gate", lambda ids, **k: "evaluation")
+    monkeypatch.setattr(afg_cli, "load_validation_config", _small_config, raising=False)
+    return {"runs": runs, "sheets": sheets, "keys": keys}
+
+
+def test_pooled_sample_spans_the_series_and_labels_each_row(pooled_env: dict[str, Path]) -> None:
+    result = _cli("a-validacion-hoja", "--run-name", "eval-run")
+    assert result.exit_code == 0, result.output
+    rows = _rows(pooled_env["sheets"] / "eval-run.manual.csv")
+    assert len(rows) == 30
+    assert "serie" in rows[0]
+    assert {r["serie"] for r in rows} == set(EVAL_SERIES)
+    assert all(r["same"] == "" for r in rows)
+    key = json.loads((pooled_env["keys"] / "eval-run.clave.json").read_text(encoding="utf-8"))
+    assert {p["serie"] for p in key["pairs"]} == set(EVAL_SERIES)
+
+
+def test_pooled_sample_is_deterministic(pooled_env: dict[str, Path]) -> None:
+    sheet = pooled_env["sheets"] / "eval-run.manual.csv"
+    assert _cli("a-validacion-hoja", "--run-name", "eval-run").exit_code == 0
+    first = sheet.read_bytes()
+    assert _cli("a-validacion-hoja", "--run-name", "eval-run").exit_code == 0
+    assert sheet.read_bytes() == first
+
+
+def test_series_option_restricts_the_pool(pooled_env: dict[str, Path]) -> None:
+    result = _cli("a-validacion-hoja", "--run-name", "eval-run", "--series", "ES2002,ES2008")
+    assert result.exit_code == 0, result.output
+    rows = _rows(pooled_env["sheets"] / "eval-run.manual.csv")
+    assert {r["serie"] for r in rows} == {"ES2002", "ES2008"}
+
+
+def test_development_run_defaults_to_its_single_series(pooled_env: dict[str, Path]) -> None:
+    result = _cli("a-validacion-hoja", "--run-name", "dev-run")
+    assert result.exit_code == 0, result.output
+    rows = _rows(pooled_env["sheets"] / "dev-run.manual.csv")
+    assert {r["serie"] for r in rows} == {"ES2015"}
+
+
+def test_refuses_when_the_pool_is_below_the_sample_size(
+    pooled_env: dict[str, Path], monkeypatch: pytest.MonkeyPatch
+) -> None:
     from afg.experiments.manual_validation import ValidationConfig
 
-    return ValidationConfig(sample_size=30, matched_share=0.5, seed=42, similarity_floor=0.5)
+    monkeypatch.setattr(
+        afg_cli,
+        "load_validation_config",
+        lambda: ValidationConfig(
+            sample_size=10_000, matched_share=0.5, seed=42, similarity_floor=0.5
+        ),
+        raising=False,
+    )
+    result = _cli("a-validacion-hoja", "--run-name", "eval-run")
+    assert result.exit_code == 1
+    assert "pares candidatos" in result.output
+    assert not (pooled_env["sheets"] / "eval-run.manual.csv").exists()
+
+
+def test_key_is_written_outside_reports_and_scoring_reads_it(
+    pooled_env: dict[str, Path],
+) -> None:
+    assert _cli("a-validacion-hoja", "--run-name", "eval-run").exit_code == 0
+    key_path = pooled_env["keys"] / "eval-run.clave.json"
+    assert key_path.is_file()
+    assert not list(pooled_env["runs"].rglob("*clave*"))
+    stored = json.loads(key_path.read_text(encoding="utf-8"))
+    sheet = pooled_env["sheets"] / "eval-run.manual.csv"
+    _label(sheet, {p["pair_id"]: "si" if p["auto_match"] else "no" for p in stored["pairs"]})
+    result = _cli("a-validacion-puntaje", "--run-name", "eval-run")
+    assert result.exit_code == 0, result.output
+    out = json.loads((pooled_env["runs"] / "eval-run" / "validacion-manual.json").read_text())
+    assert out["concordance"] == 1.0
+    assert out["key"]["pairs"][0]["serie"] in EVAL_SERIES
+    assert len(out["key"]["pairs"]) == 30
+
+
+def test_same_edge_in_two_series_is_not_confused(tmp_path: Path) -> None:
+    """Index pairs repeat across series; the score must tell them apart by series."""
+    pairs = _pairs()
+    from dataclasses import replace
+
+    pooled = [replace(p, serie="A") for p in pairs] + [
+        replace(p, serie="B", pair_id="w" + p.pair_id) for p in pairs
+    ]
+    sample = _draw(pooled, size=40)
+    sheet, key = tmp_path / "s.csv", tmp_path / "k.json"
+    write_validation_files(
+        sample, sheet_path=sheet, key_path=key, source={}, tau=TAU, seed=42, force=False
+    )
+    _label(sheet, {p.pair_id: "si" if p.auto_match else "no" for p in sample})
+    assert score_validation(sheet, key)["concordance"] == 1.0
+    yes = {p.pair_id for p in sample if p.auto_match and p.serie == "A"}
+    _label(sheet, {p.pair_id: "si" if p.pair_id in yes else "no" for p in sample})
+    result = score_validation(sheet, key)
+    n_auto = sum(p.auto_match for p in sample)
+    assert result["concordance"] == pytest.approx(len(yes) / n_auto)

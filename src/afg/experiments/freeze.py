@@ -1,6 +1,6 @@
 """The freeze record and the gate that ties evaluation series to it.
 
-The freeze ADR (issue #237) fixes everything a formal run reads. This module keeps that
+The freeze ADR fixes everything a formal run reads. This module keeps that
 decision as one small machine-readable file, ``config/freeze.json``, and makes the code obey it:
 
 - :func:`write_freeze_record` writes the record (used once, by ``afg freeze write``, when the

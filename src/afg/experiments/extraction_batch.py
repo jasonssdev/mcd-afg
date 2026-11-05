@@ -11,7 +11,8 @@ comma-joined string, ``runs`` per series, ``openkos``, ``created_at``/``updated_
 readers of ``afg experiment a`` reports keep working; the batch adds ``kind``, ``series_ids``
 and ``pairs``.
 
-Only integrity is reported (ADR 0005): counts and versions, never quality against the gold.
+Only integrity is reported: counts and versions. Quality against the gold comes from
+``afg experiment a-report``.
 """
 
 from __future__ import annotations
@@ -216,7 +217,7 @@ def batch_summary_lines(manifest: Mapping[str, Any], *, elapsed_seconds: float) 
     """Spanish integrity summary of a batch: counts and versions, never quality scores."""
     runs = int(manifest["runs"])
     pairs: Mapping[str, Mapping[str, Any]] = manifest["pairs"]
-    lines = ["Resumen de integridad (sin puntajes: ADR 0005):"]
+    lines = ["Resumen de integridad (solo conteos y versiones):"]
     for series_id in manifest["series_ids"]:
         entries = [pairs[k] for k in sorted(pairs) if pairs[k]["series"] == series_id]
         ok = [e for e in entries if e["status"] == STATUS_OK]

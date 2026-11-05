@@ -107,7 +107,7 @@ required_for_goldset = [
 verify = [
   "The six series (ES2015, ES2016, IS1004, IS1006, IS1008, TS3005) are complete: all four\nmeetings per series are present on disk and their annotation files parse without error.",
   "How many distinct decisions the six series actually contain. Measured 2026-09-20: 136\ndecisions in the six DDS series; 343 in the 14 OE1 series.",
-  "How many real cross-meeting relation candidates exist. This number determines project\nviability for the E3 (evolution) question stratum (thesis section 7); run `afg corpus inventory`\nfor the measured figures (92 candidates after blocking, provisional viability estimate).",
+  "How many real cross-meeting relation candidates exist. This number determines project\nviability for the E3 (evolution) question stratum (thesis section 7); run `afg corpus inventory`\nfor the measured figures (92 candidates after blocking; 24 evolution relations in the evaluation series, ADR 0021).",
 ]
 
 [oe1]

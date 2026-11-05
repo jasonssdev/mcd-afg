@@ -15,14 +15,18 @@ filled sheet.
   does not keep but whose similarity is at least ``similarity_floor`` (the near misses). The order
   is shuffled. Size, share, floor and seed live in ``config/experiments.toml`` and are fixed
   before any label exists.
-* **Sheet.** Only the pair id, the meeting, the two texts and the empty ``same`` / ``notes``
-  columns. The similarity and the automatic decision stay in the **key**.
+* **Pooling.** A run may list several series (the formal evaluation run lists eleven). The
+  candidate pairs of all of them form one pool and the sample is drawn from it, each row carrying
+  its ``serie``; a pool smaller than ``sample_size`` is refused, never shrunk.
+* **Sheet.** Only the pair id, the series, the meeting, the two texts and the empty ``same`` /
+  ``notes`` columns. The similarity and the automatic decision stay in the **key**.
 * **Score.** The concordance of the two matched-pair sets inside the sample (Jaccard, as
   ``concordance`` defines it), the observed agreement, the confusion matrix and, per stratum,
   how many pairs the person confirmed. No pass/fail threshold is defined.
 
 Reading a stored run and its reference calls no model; only the similarity function given by the
-caller embeds texts. Only development series are involved (ADR 0005).
+caller embeds texts. The sheet lives under ``data/processed`` and the key under
+``data/interim`` (gitignored), so the person who fills the sheet cannot read the key.
 """
 
 from __future__ import annotations
@@ -46,11 +50,12 @@ from afg.evaluation.scoring import SimilarityFn, pair_text
 from afg.experiments.extraction_runs import RECORDS_FILENAME
 from afg.shared.config import load_experiments_config
 from afg.shared.csvio import open_csv_writer, read_rows
-from afg.shared.paths import PROCESSED_DIR
+from afg.shared.paths import INTERIM_DIR, PROCESSED_DIR
 
 __all__ = [
     "SHEET_COLUMNS",
     "VALIDATION_DIR",
+    "VALIDATION_KEY_DIR",
     "CandidatePair",
     "ManualValidationError",
     "ManualValidationSheetLabeledError",
@@ -65,8 +70,10 @@ __all__ = [
 ]
 
 VALIDATION_DIR: Final[Path] = PROCESSED_DIR / "alignment-validation"
+VALIDATION_KEY_DIR: Final[Path] = INTERIM_DIR / "alignment-validation"
 SHEET_COLUMNS: Final[tuple[str, ...]] = (
     "pair_id",
+    "serie",
     "meeting_id",
     "extracted_decision",
     "reference_decision",
@@ -148,6 +155,7 @@ class CandidatePair:
     reference_text: str
     similarity: float
     auto_match: bool
+    serie: str = ""
 
 
 def _pair_id(predicted_id: str, reference_id: str) -> str:
@@ -224,7 +232,8 @@ def draw_validation_sample(
     """
     if len(pairs) < sample_size:
         raise ManualValidationError(
-            f"Solo hay {len(pairs)} pares candidatos y la muestra pide {sample_size}."
+            f"Solo hay {len(pairs)} pares candidatos y la muestra pide {sample_size}; "
+            "la muestra no se reduce."
         )
     ordered = sorted(pairs, key=lambda p: p.pair_id)
     matched = [p for p in ordered if p.auto_match]
@@ -268,7 +277,9 @@ def write_validation_files(
     with open_csv_writer(sheet_path, encoding="utf-8") as writer:
         writer.writerow(SHEET_COLUMNS)
         for p in sample:
-            writer.writerow([p.pair_id, p.meeting_id, p.extracted_text, p.reference_text, "", ""])
+            writer.writerow(
+                [p.pair_id, p.serie, p.meeting_id, p.extracted_text, p.reference_text, "", ""]
+            )
     key = {
         "tau": tau,
         "seed": seed,
@@ -277,6 +288,7 @@ def write_validation_files(
         "pairs": [
             {
                 "pair_id": p.pair_id,
+                "serie": p.serie,
                 "predicted_id": p.predicted_id,
                 "reference_id": p.reference_id,
                 "predicted_index": p.predicted_index,
@@ -323,8 +335,12 @@ def score_validation(sheet_path: Path, key_path: Path) -> dict[str, Any]:
     manual = [_parse_label(r.get("same", ""), r["pair_id"]) for r in rows]
     auto = [bool(pairs[i]["auto_match"]) for i in ids]
 
-    def edge(i: str) -> tuple[int, int]:
-        return int(pairs[i]["predicted_index"]), int(pairs[i]["reference_index"])
+    def edge(i: str) -> tuple[str, int, int]:
+        return (
+            str(pairs[i].get("serie", "")),
+            int(pairs[i]["predicted_index"]),
+            int(pairs[i]["reference_index"]),
+        )
 
     auto_set = {edge(i) for i, a in zip(ids, auto, strict=True) if a}
     manual_set = {edge(i) for i, m in zip(ids, manual, strict=True) if m}
@@ -373,4 +389,5 @@ def score_validation(sheet_path: Path, key_path: Path) -> dict[str, Any]:
         "tau": key.get("tau"),
         "source": key.get("source"),
         "threshold": None,
+        "key": key,
     }
