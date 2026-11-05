@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Documento** | Registro de congelamiento y bloqueo de las series de evaluación |
-| **Estado** | Vigente (el registro se escribe al cerrar el ADR de congelamiento, issue #237) |
+| **Estado** | Vigente. Lo que se congela lo fija el [ADR 0022](../decisions/0022-adr-congelamiento-de-las-corridas-formales.md); el registro se escribe al fusionarse ese ADR (issue #237) y rige desde que `config/freeze.json` existe |
 
 ## Qué es
 
