@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 09 — Modelos y su justificación |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 12.2 |
-| **Fecha** | 2026-11-03 |
+| **Versión** | 12.3 |
+| **Fecha** | 2026-11-05 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -34,6 +34,7 @@
 | 12.0 | 2026-11-02 | C0 deja de ser un diagnóstico solo de desarrollo y entra en la corrida formal del Experimento B (`afg experiment b --conditions c0`) como referencia sin recuperación, con el mismo banco, generador, juez, semillas, bloqueo de congelamiento y entorno fijado que C1, C2 y C3 (secciones 4, 5, 5.1, 6.3 y 8). Se agregan comparaciones descriptivas C1 − C0 y C2 − C0; no cambian el criterio D16 ni las hipótesis, y las cifras de desarrollo de la sección 8 siguen siendo las mismas. | Decisión del autor del proyecto del 2026-11-02, registrada en el [ADR 0019](../decisions/0019-adr-c0-en-la-corrida-formal-del-experimento-b.md). La versión anterior decía que C0 se usaba solo en desarrollo. |
 | 12.1 | 2026-11-03 | Decisión 11 de la sección 11 (*recall* del filtro léxico): pasa de pendiente a resuelta, con la cifra final de las cuatro muestras. No cambian modelos, condiciones ni otras cifras. | Anotación de la Tarea C de IS1004 (#203) y cierre del issue #205; [notebook 18](../../notebooks/18-jss-anotacion-f2-adjudicacion.ipynb), §8. |
 | 12.2 | 2026-11-03 | Decisión 11 de la sección 11 (*recall* del filtro léxico): se registra que el filtro se mantiene y la pérdida se declara como limitación de la referencia de relaciones. No cambian modelos, condiciones ni cifras. | [ADR 0020](../decisions/0020-adr-se-mantiene-el-bloqueador-lexico.md), decisión de jss del 2026-11-03. |
+| 12.3 | 2026-11-05 | Sección 11 (estado del congelamiento): la ground truth, el banco de preguntas y el registro del congelamiento pasan de pendientes a congelados, y C3 queda listo para construirse. Solo sigue pendiente la verificación humana del juez. No cambian modelos, condiciones ni cifras. | [ADR 0022](../decisions/0022-adr-congelamiento-de-las-corridas-formales.md) y `config/freeze.json`; banco validado en #280 ([ADR 0021](../decisions/0021-adr-minimo-de-e3-segun-relaciones-disponibles.md)). |
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
 > la evidencia que lo motivó**. El historial nunca se reescribe: se agrega una fila.
@@ -944,9 +945,9 @@ Los controles 6 a 9 son los que el notebook 19 (sección 5.6) listaba antes de l
 
 | Requisito | Estado hoy | Situación |
 |---|---|---|
-| Ground truth adjudicada de las 11 series de evaluación (OE1) | 6 de 14 series adjudicadas (4 de 11 de evaluación) | Pendiente |
-| Banco de preguntas (al menos 25 por estrato) validado | 0 de 115 filas escritas | Pendiente |
-| C3 ejecutable | Implementado (`afg c3 build` y la condición C3); depende de la ground truth adjudicada para construir sus espacios de trabajo | Pendiente |
+| Ground truth de las 11 series de evaluación (OE1) | Las 14 series completas: 6 adjudicadas y 8 de anotación individual; huella de cada archivo en el [ADR 0022](../decisions/0022-adr-congelamiento-de-las-corridas-formales.md) | Congelado |
+| Banco de preguntas (al menos 25 por estrato; 24 en E3, ADR 0021) validado | 99 preguntas validadas: 25 E1, 25 E2, 24 E3 y 25 E4 | Congelado |
+| C3 ejecutable | Implementado (`afg c3 build` y la condición C3); la ground truth ya está congelada y sus espacios de trabajo se construyen en la corrida formal | Listo |
 | Modelos y huellas (generador, verificación de suficiencia, *embeddings*, extractor, juez) | Los cinco modelos definidos: generador y extractor `qwen3:8b` (ADR 0015), verificación de suficiencia `gemma4:26b-a4b`, *embeddings* `bge-m3` y juez `gpt-oss:20b`; sus huellas y las versiones de Ollama (0.32.9) y OpenKOS (0.7.0) están fijadas en `[pinned_environment]` de `config/experiments.toml` y los comandos que llaman a modelos se niegan a correr si lo instalado difiere | Congelado |
 | Versión de OpenKOS | `==0.7.0` (#94, ADR 0006) | Congelado |
 | Parámetros de C1 | 1200 / 0 / 5 en `config/experiments.toml`; una prueba verifica que coinciden con el ganador guardado | Congelado |
@@ -954,11 +955,12 @@ Los controles 6 a 9 son los que el notebook 19 (sección 5.6) listaba antes de l
 | *Prompts* de respuesta | C1: *prompt* propio con huella SHA-256 verificada por prueba (ADR 0014); C2 y C3: los de OpenKOS 0.7.0 | Congelado |
 | Criterio de éxito | D16/D17, escrito antes de ejecutar (ADR 0010) | Congelado |
 | Verificación humana del 20 % del juez | 20 % de las respuestas, kappa ≥ 0,70 | Pendiente (sobre el Experimento B) |
-| Registro del congelamiento | Un ADR que liste modelos, huellas, versión de OpenKOS y *commit* del código antes de la primera corrida | Pendiente |
+| Registro del congelamiento | [ADR 0022](../decisions/0022-adr-congelamiento-de-las-corridas-formales.md) y `config/freeze.json` (14 series, *commit* `d29d707`); los comandos que leen series de evaluación se niegan a correr si algo difiere | Congelado |
 
 Lo congelado es lo que se pudo ajustar en desarrollo (C1, τ, los *prompts*, el criterio de
-éxito). Lo pendiente depende de trabajo humano en curso (anotación, banco de preguntas) y del
-registro del congelamiento; ya no queda ninguna decisión de modelo abierta. La regla de oro, la misma del ADR 0005: **nada se ajusta
+éxito). Con el ADR 0022 también quedan congelados la ground truth, el banco de preguntas y el
+*commit* del código; lo único pendiente es la verificación humana del juez, que se hace sobre
+el Experimento B. Ya no queda ninguna decisión de modelo abierta. La regla de oro, la misma del ADR 0005: **nada se ajusta
 ya con las series de evaluación**; si algo debe cambiar, se cambia con un ADR nuevo y sobre
 desarrollo, antes de la primera corrida.
 
