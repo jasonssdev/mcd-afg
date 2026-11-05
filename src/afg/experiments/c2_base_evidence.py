@@ -21,7 +21,7 @@ Three cautions are part of the contract:
 from __future__ import annotations
 
 import re
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -133,22 +133,39 @@ def rank_bundle_objects(
     )
 
 
-def bundle_dir_for_run(
-    manifest: Mapping[str, Any], *, base_dir: Path = OPENKOS_WORKSPACES_DIR, run: int = 0
+def bundle_dir_for(
+    extraction: str, series_id: str, run: int = 0, *, base_dir: Path = OPENKOS_WORKSPACES_DIR
 ) -> Path:
-    """The bundle C2 queried, from the ``c2_extraction`` and series of an Experiment B manifest.
+    """The bundle C2 queried for one series and run of a ``c2_extraction``.
 
     C2 reads ``<base_dir>/<c2_extraction>/<series>/run-<r>/bundle`` (see
     :class:`~afg.conditions.c2_compiled_auto.CompiledAutoCondition`).
+    """
+    return base_dir / extraction / series_id / f"run-{run}" / "bundle"
+
+
+def bundle_resolver(
+    manifest: Mapping[str, Any], *, base_dir: Path = OPENKOS_WORKSPACES_DIR
+) -> Callable[[str, int], Path]:
+    """A ``(series_id, run) -> bundle`` lookup from the ``c2_extraction`` of a manifest.
+
+    A manifest may list several series (the formal run covers all of them); each record reads the
+    bundle of its own series.
 
     Raises:
-        ValueError: the manifest has no ``c2_extraction`` or not exactly one series.
+        ValueError: the manifest has no ``c2_extraction``, or the series asked for is not in it.
     """
     extraction = manifest.get("c2_extraction")
-    series = manifest.get("series") or []
-    if not extraction or len(series) != 1:
-        raise ValueError("The manifest needs a c2_extraction and exactly one series.")
-    return base_dir / str(extraction) / str(series[0]) / f"run-{run}" / "bundle"
+    if not extraction:
+        raise ValueError("The manifest needs a c2_extraction.")
+    series = {str(s) for s in manifest.get("series") or []}
+
+    def resolve(series_id: str, run: int) -> Path:
+        if series and series_id not in series:
+            raise ValueError(f"La serie {series_id} no está en el manifiesto ({sorted(series)}).")
+        return bundle_dir_for(str(extraction), series_id, run, base_dir=base_dir)
+
+    return resolve
 
 
 def _fmt(item: ObjectCoverage) -> str:
@@ -197,7 +214,7 @@ def _run_rows(
     c2_records: Sequence[Mapping[str, Any]],
     run: int,
     questions: Mapping[str, Question],
-    bundle_dir: Path,
+    bundle_for: Callable[[str, int], Path],
     *,
     top: int,
     include_rule_attributed: bool,
@@ -215,7 +232,9 @@ def _run_rows(
         reference = question.reference_answer or ""
         meeting = question.reference_evidence[0].meeting_id if question.reference_evidence else None
         ids = [str(b.get("concept_id", "")) for b in _blocks(record)]
-        found = rank_bundle_objects(reference, bundle_dir, retrieved_ids=ids, meeting_id=meeting)
+        found = rank_bundle_objects(
+            reference, bundle_for(question.series_id, run), retrieved_ids=ids, meeting_id=meeting
+        )
         best = found.objects[0] if found.objects else None
         source = found.sources[0] if found.sources else None
         out.append(
@@ -242,7 +261,7 @@ def _run_rows(
 def oe4_worksheet_rows(
     c2_records: Sequence[Mapping[str, Any]],
     questions: Mapping[str, Question],
-    bundle_dir: Path,
+    bundle_dir: Path | Callable[[str, int], Path],
     *,
     top: int = 3,
     include_rule_attributed: bool = False,
@@ -252,8 +271,12 @@ def oe4_worksheet_rows(
     With ``include_rule_attributed`` the failures the rule already attributes (synthesis) get a
     row too, so a person can label every failure of a run and overrule the rule.
 
+    ``bundle_dir`` is one bundle, or a ``(series_id, run) -> bundle`` lookup (see
+    :func:`bundle_resolver`) so each record reads the bundle of its question's series.
+
     Rows follow :data:`WORKSHEET_COLUMNS`; ``etapa_humana`` and ``nota`` are always empty.
     """
+    bundle_for = bundle_dir if callable(bundle_dir) else (lambda _series, _run: bundle_dir)
     only_c2 = [r for r in c2_records if str(r.get("condition")) == "C2"]
     runs = sorted({int(r.get("run") or 0) for r in only_c2})
     out: list[dict[str, str]] = []
@@ -263,7 +286,7 @@ def oe4_worksheet_rows(
                 [r for r in only_c2 if int(r.get("run") or 0) == run],
                 run,
                 questions,
-                bundle_dir,
+                bundle_for,
                 top=top,
                 include_rule_attributed=include_rule_attributed,
             )
@@ -342,7 +365,8 @@ __all__ = [
     "BaseEvidence",
     "ObjectCoverage",
     "WorksheetLabeledError",
-    "bundle_dir_for_run",
+    "bundle_dir_for",
+    "bundle_resolver",
     "count_stages",
     "oe4_worksheet_rows",
     "rank_bundle_objects",

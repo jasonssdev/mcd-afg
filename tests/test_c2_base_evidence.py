@@ -13,7 +13,8 @@ from afg.experiments.c2_base_evidence import (
     ETAPA_VALUES,
     WORKSHEET_COLUMNS,
     WorksheetLabeledError,
-    bundle_dir_for_run,
+    bundle_dir_for,
+    bundle_resolver,
     count_stages,
     oe4_worksheet_rows,
     rank_bundle_objects,
@@ -93,11 +94,49 @@ def test_missing_bundle_is_reported(tmp_path: Path) -> None:
         rank_bundle_objects(REFERENCE, tmp_path / "nope")
 
 
-def test_bundle_dir_for_run_follows_the_manifest(tmp_path: Path) -> None:
-    manifest = {"c2_extraction": "extr", "series": ["ES2015"]}
-    assert bundle_dir_for_run(manifest, base_dir=tmp_path, run=0) == (
-        tmp_path / "extr" / "ES2015" / "run-0" / "bundle"
+def test_bundle_dir_for_follows_extraction_series_and_run(tmp_path: Path) -> None:
+    assert bundle_dir_for("extr", "ES2015", 1, base_dir=tmp_path) == (
+        tmp_path / "extr" / "ES2015" / "run-1" / "bundle"
     )
+
+
+def test_bundle_resolver_accepts_several_series_and_rejects_others(tmp_path: Path) -> None:
+    manifest = {"c2_extraction": "extr", "series": ["ES2015", "IS1003"]}
+    resolve = bundle_resolver(manifest, base_dir=tmp_path)
+    assert resolve("IS1003", 0) == tmp_path / "extr" / "IS1003" / "run-0" / "bundle"
+    with pytest.raises(ValueError, match="TS3009"):
+        resolve("TS3009", 0)
+    with pytest.raises(ValueError, match="c2_extraction"):
+        bundle_resolver({"series": ["ES2015"]}, base_dir=tmp_path)
+
+
+def test_worksheet_reads_the_bundle_of_each_series(tmp_path: Path) -> None:
+    manifest = {"c2_extraction": "extr", "series": ["ES2015", "IS1003"]}
+    _write(
+        bundle_dir_for("extr", "ES2015", 0, base_dir=tmp_path),
+        "decisions/es-price",
+        "The selling price is twenty Euros.",
+    )
+    _write(
+        bundle_dir_for("extr", "IS1003", 0, base_dir=tmp_path),
+        "decisions/is-price",
+        "The selling price is twenty Euros.",
+    )
+    questions = {
+        "ES2015.q1": _question("ES2015.q1", REFERENCE, QuestionStratum.E1_POINT_FACT),
+        "IS1003.q1": _question("IS1003.q1", REFERENCE, QuestionStratum.E1_POINT_FACT).model_copy(
+            update={"series_id": "IS1003"}
+        ),
+    }
+    records = [
+        _record("ES2015.q1", "E1_point_fact", ["concepts/market"], correct=False),
+        _record("IS1003.q1", "E1_point_fact", ["concepts/market"], correct=False),
+    ]
+    rows = oe4_worksheet_rows(records, questions, bundle_resolver(manifest, base_dir=tmp_path))
+    assert {r["pregunta_id"]: r["mejor_objeto"] for r in rows} == {
+        "ES2015.q1": "decisions/es-price",
+        "IS1003.q1": "decisions/is-price",
+    }
 
 
 def _question(qid: str, reference: str, stratum: QuestionStratum) -> Question:
