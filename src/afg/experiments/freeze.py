@@ -8,6 +8,12 @@ decision as one small machine-readable file, ``config/freeze.json``, and makes t
   ``config/experiments.toml``, of the question bank and of three reference files per series
   (decisions as resolved, relations as resolved, and ``<SERIES>.reference-en.csv``), and the
   ``[pinned_environment]`` values.
+- The frozen transcripts (``data/interim/transcripts``, gitignored) are recorded as one manifest
+  hash (sorted relative paths and per-file SHA-256, hashed together) plus the file count, so a
+  difference names the count and the hash, not hundreds of files. ``config/corpus.toml`` and
+  ``config/annotation.toml`` are hashed like ``config/experiments.toml``. Regenerate the
+  transcripts with ``afg corpus transcripts --force`` (needs the AMI corpus); the hash must then
+  equal the frozen one.
 - :func:`freeze_differences` compares the current files with the record and lists every
   difference.
 - :func:`gate_partition` is the gate of the commands that read evaluation series. Development
@@ -26,6 +32,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import subprocess
 import tomllib
@@ -39,21 +46,25 @@ from afg.evaluation.relations import gold_source
 from afg.experiments.pinned_environment import load_pinned_environment
 from afg.shared.paths import (
     CONFIG_DIR,
+    ENV_PATH,
     EXPERIMENTS_CONFIG_PATH,
     GOLD_DECISIONS_DIR,
     GOLD_RELATIONS_DIR,
     PROJECT_ROOT,
     QUESTIONS_DIR,
+    TRANSCRIPTS_DIR,
 )
 
 __all__ = [
     "FREEZE_PATH",
+    "RESULT_AFFECTING_ENV",
     "FreezeError",
     "FreezeSources",
     "SeriesGateError",
     "build_freeze_record",
     "code_changes_since",
     "freeze_differences",
+    "freeze_provenance",
     "gate_partition",
     "manifest_series",
     "read_freeze_record",
@@ -62,11 +73,32 @@ __all__ = [
 ]
 
 FREEZE_PATH: Path = CONFIG_DIR / "freeze.json"
-SCHEMA_VERSION = 1
-CODE_PATHS = ("src", "pyproject.toml", "uv.lock")
-"""What counts as code for the frozen commit: the package and its dependency pins."""
+SCHEMA_VERSION = 2
+CODE_PATHS = ("src", "pyproject.toml", "uv.lock", ".python-version")
+"""What counts as code for the frozen commit: the package, its dependency pins and the Python."""
+_TRANSCRIPT_SUFFIXES = frozenset({".md", ".jsonl"})
+_REQUIRED_KEYS = (
+    "adr",
+    "code_commit",
+    "experiments_config",
+    "question_bank",
+    "corpus_config",
+    "annotation_config",
+    "transcripts",
+    "reference",
+    "pinned_environment",
+)
 _COMMIT = re.compile(r"^[0-9a-f]{40}$")
 _REFERENCE_KINDS = ("decisions", "relations", "reference_en")
+
+RESULT_AFFECTING_ENV = (
+    "AFG_EMBEDDING_MODEL",
+    "AFG_GENERATIVE_MODEL",
+    "AFG_JUDGE_MODEL",
+    "AFG_OPENKOS_EXECUTABLE",
+    "AFG_SEED",
+)
+"""``Settings`` variables that change what a run computes; evaluation series refuse them."""
 
 CodeChanges = Callable[[str], list[str]]
 
@@ -88,6 +120,9 @@ class FreezeSources:
     decisions_dir: Path = GOLD_DECISIONS_DIR
     relations_dir: Path = GOLD_RELATIONS_DIR
     question_bank_path: Path = QUESTIONS_DIR / "banco-preguntas.csv"
+    transcripts_dir: Path = TRANSCRIPTS_DIR
+    corpus_config_path: Path = CONFIG_DIR / "corpus.toml"
+    annotation_config_path: Path = CONFIG_DIR / "annotation.toml"
 
     def relative(self, path: Path) -> str:
         try:
@@ -99,6 +134,31 @@ class FreezeSources:
         return {
             "path": self.relative(path),
             "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        }
+
+    def transcripts(self) -> dict[str, Any]:
+        """Manifest of the transcripts: path, file count and one hash over all of them.
+
+        The hash covers the sorted relative paths with the SHA-256 of each ``.md``/``.jsonl``
+        file, so adding, removing, renaming or editing any file changes it.
+        """
+        files = (
+            sorted(
+                p
+                for p in self.transcripts_dir.rglob("*")
+                if p.is_file() and p.suffix in _TRANSCRIPT_SUFFIXES
+            )
+            if self.transcripts_dir.is_dir()
+            else []
+        )
+        manifest = hashlib.sha256()
+        for path in files:
+            name = path.relative_to(self.transcripts_dir).as_posix()
+            manifest.update(f"{name}\0{hashlib.sha256(path.read_bytes()).hexdigest()}\n".encode())
+        return {
+            "path": self.relative(self.transcripts_dir),
+            "count": len(files),
+            "sha256": manifest.hexdigest(),
         }
 
 
@@ -152,6 +212,12 @@ def build_freeze_record(
             "No se puede congelar; la referencia está incompleta:\n"
             + "\n".join(f"  - {p}" for p in problems)
         )
+    transcripts = sources.transcripts()
+    if transcripts["count"] == 0:
+        raise FreezeError(
+            f"No se puede congelar: no hay transcripciones en {transcripts['path']}. "
+            "Se generan con `afg corpus transcripts`."
+        )
     try:
         return {
             "schema_version": SCHEMA_VERSION,
@@ -159,6 +225,9 @@ def build_freeze_record(
             "code_commit": commit,
             "experiments_config": sources.digest(sources.config_path),
             "question_bank": sources.digest(sources.question_bank_path),
+            "corpus_config": sources.digest(sources.corpus_config_path),
+            "annotation_config": sources.digest(sources.annotation_config_path),
+            "transcripts": transcripts,
             "reference": reference,
             "pinned_environment": _pins(sources.config_path),
         }
@@ -197,13 +266,39 @@ def read_freeze_record(path: Path) -> dict[str, Any]:
         raise FreezeError(f"no existe el registro de congelamiento {path.name} ({path})")
     try:
         record = json.loads(path.read_text(encoding="utf-8"))
-        for key in ("adr", "code_commit", "experiments_config", "question_bank"):
-            record[key]
+        missing = [key for key in _REQUIRED_KEYS if key not in record]
+        if missing:
+            raise FreezeError(
+                f"El registro de congelamiento {path.name} está mal formado: falta "
+                f"{', '.join(missing)} (un registro de esquema anterior no sirve; se escribe "
+                "de nuevo con el ADR de congelamiento vigente)."
+            )
         record["reference"].items()
         record["pinned_environment"]["model_digests"]
+        record["transcripts"]["count"]
     except (ValueError, KeyError, TypeError, AttributeError) as exc:
         raise FreezeError(f"El registro de congelamiento {path.name} está mal formado.") from exc
     return record
+
+
+def freeze_provenance(path: Path = FREEZE_PATH) -> dict[str, Any] | None:
+    """``{adr, code_commit, sha256}`` of the record at ``path`` for a run manifest.
+
+    ``None`` when there is no record (development runs before the freeze). The hash is of the
+    file bytes, so it identifies the exact record a run was made under.
+    """
+    if not path.is_file():
+        return None
+    raw = path.read_bytes()
+    try:
+        record = json.loads(raw)
+    except ValueError:
+        record = {}
+    return {
+        "adr": record.get("adr"),
+        "code_commit": record.get("code_commit"),
+        "sha256": hashlib.sha256(raw).hexdigest(),
+    }
 
 
 def code_changes_since(
@@ -324,13 +419,24 @@ def freeze_differences(
         if message:
             found.append(message)
 
-    add(
-        _compare(
-            "config/experiments.toml",
-            record["experiments_config"],
-            _digest_or_none(sources, sources.config_path),
+    for label, key, path in (
+        ("config/experiments.toml", "experiments_config", sources.config_path),
+        ("config/corpus.toml", "corpus_config", sources.corpus_config_path),
+        ("config/annotation.toml", "annotation_config", sources.annotation_config_path),
+    ):
+        add(_compare(label, record[key], _digest_or_none(sources, path)))
+    frozen_transcripts = record["transcripts"]
+    transcripts = sources.transcripts()
+    if (transcripts["count"], transcripts["sha256"]) != (
+        frozen_transcripts["count"],
+        frozen_transcripts["sha256"],
+    ):
+        found.append(
+            f"transcripciones ({frozen_transcripts['path']}): {transcripts['count']} archivos, "
+            f"huella actual {transcripts['sha256']}; congelados {frozen_transcripts['count']}, "
+            f"huella congelada {frozen_transcripts['sha256']}. Se regeneran con "
+            "`afg corpus transcripts --force`."
         )
-    )
     try:
         current_pins = _pins(sources.config_path)
     except (OSError, ValueError) as exc:
@@ -380,6 +486,29 @@ def freeze_differences(
     return found
 
 
+def _env_file_names(env_file: Path) -> set[str]:
+    """Upper-cased variable names set in a dotenv file (a missing file sets none)."""
+    try:
+        lines = env_file.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return set()
+    names = set()
+    for line in lines:
+        line = line.strip().removeprefix("export ").strip()
+        if line and not line.startswith("#") and "=" in line:
+            names.add(line.split("=", 1)[0].strip().upper())
+    return names
+
+
+def result_overrides(
+    environ: Mapping[str, str] | None = None, env_file: Path | None = None
+) -> list[str]:
+    """The :data:`RESULT_AFFECTING_ENV` variables set in the environment or the ``.env`` file."""
+    names = {k.upper() for k in (os.environ if environ is None else environ)}
+    names |= _env_file_names(ENV_PATH if env_file is None else env_file)
+    return [name for name in RESULT_AFFECTING_ENV if name in names]
+
+
 def gate_partition(
     series_ids: Sequence[str],
     partition_of: Callable[[str], str],
@@ -388,12 +517,18 @@ def gate_partition(
     sources: FreezeSources | None = None,
     questions_path: Path | None = None,
     code_changes: CodeChanges | None = None,
+    environ: Mapping[str, str] | None = None,
+    env_file: Path | None = None,
+    runs: int | None = None,
+    configured_runs: int | None = None,
 ) -> str:
     """``development``, ``evaluation`` or ``mixed`` when every series may run; else refuse.
 
     Development series run without a record. A series that is neither development nor
     evaluation never runs. Evaluation series run only when ``freeze_path`` exists, every
     evaluation series is in it and nothing differs from it (:func:`freeze_differences`).
+    Evaluation series also refuse the ``AFG_*`` overrides of :data:`RESULT_AFFECTING_ENV`
+    (environment or ``.env``) and a ``--runs`` different from ``configured_runs``.
 
     Raises:
         SeriesGateError: the message says why and lists every difference.
@@ -410,6 +545,19 @@ def gate_partition(
     if not evaluation:
         return "development"
     names = ", ".join(evaluation)
+    overrides = result_overrides(environ, env_file)
+    if overrides:
+        raise SeriesGateError(
+            f"{names}: serie(s) de evaluación; no corren con variables {', '.join(overrides)} "
+            "definidas (entorno o .env): cambian lo que se calcula y el congelamiento no las "
+            "cubre. Quítalas; no se llamó a ningún modelo."
+        )
+    if runs is not None and configured_runs is not None and runs != configured_runs:
+        raise SeriesGateError(
+            f"{names}: serie(s) de evaluación; --runs {runs} difiere de runs_per_config = "
+            f"{configured_runs} de config/experiments.toml. Quita --runs; no se llamó a ningún "
+            "modelo."
+        )
     try:
         record = read_freeze_record(freeze_path)
     except FreezeError as exc:

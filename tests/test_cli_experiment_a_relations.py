@@ -23,6 +23,7 @@ from tests.relations_workspace import (
     write_transcripts,
     write_workspace,
 )
+from tests.test_cli_experiment_a import FakeProbe
 
 A, B = "decisions/alpha", "decisions/beta"
 RUN = "lote"
@@ -86,6 +87,22 @@ def test_writes_the_report_under_the_run_folder(env: dict[str, Any]) -> None:
         "ES2015": {"decisions": "adjudicated", "relations": "single:gv"}
     }
     assert "relaciones.json" in result.output
+
+
+def test_the_report_records_commit_dirty_tree_time_and_freeze(
+    env: dict[str, Any], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(afg_cli, "current_git_commit", lambda: "b" * 40)
+    monkeypatch.setattr(afg_cli, "make_provenance_probe", lambda: FakeProbe(None))
+    monkeypatch.setattr(afg_cli, "FREEZE_PATH", env["tmp"] / "no-freeze.json")
+
+    assert _run("--c2-extraction", RUN).exit_code == 0
+
+    report = json.loads((env["tmp"] / "out" / RUN / "relaciones.json").read_text())
+    assert report["git_commit"] == "b" * 40
+    assert report["git_dirty"] is True
+    assert isinstance(report["seconds"], float) and report["seconds"] >= 0
+    assert report["freeze"] is None
 
 
 def test_run_revisions_flag_runs_openkos_in_the_workspace(env: dict[str, Any]) -> None:

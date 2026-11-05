@@ -232,6 +232,16 @@ def test_manifest_reports_what_was_written_and_dropped(env: dict[str, Path]) -> 
     assert manifest["generated_by"] == GOLD_GENERATOR
 
 
+def test_manifest_records_provenance_and_the_build_time(env: dict[str, Path]) -> None:
+    provenance = {"git_commit": "a" * 40, "git_dirty": False, "freeze": None}
+    _build(env, provenance=provenance)
+    manifest = json.loads((env["target"] / "c3-manifest.json").read_text("utf-8"))
+
+    assert manifest["git_commit"] == "a" * 40
+    assert manifest["git_dirty"] is False and manifest["freeze"] is None
+    assert isinstance(manifest["seconds"], float) and manifest["seconds"] >= 0
+
+
 def test_evidence_that_comes_back_partial_is_listed(env: dict[str, Path]) -> None:
     result = _build(env)
 

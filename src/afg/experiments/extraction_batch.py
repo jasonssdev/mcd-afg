@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import time
 from collections.abc import Callable, Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
@@ -151,13 +152,24 @@ def run_batch(
                 report(f"{series_id} corrida {run}: ya completa, se omite.")
                 continue
             _remove_partial_pair(workspace_root, series_id, run)
-            entry: dict[str, Any] = {"series": series_id, "run": run, "status": STATUS_RUNNING}
+            entry: dict[str, Any] = {
+                "series": series_id,
+                "run": run,
+                "status": STATUS_RUNNING,
+                "started_at": _now(),
+            }
             manifest["pairs"][key] = entry
             save()
+            clock = time.monotonic()
             try:
                 extraction = adapter.extract_series(series_id, run)
             except (OpenKosError, FileNotFoundError) as exc:
-                entry.update(status=STATUS_FAILED, error=f"{type(exc).__name__}: {exc}")
+                entry.update(
+                    status=STATUS_FAILED,
+                    error=f"{type(exc).__name__}: {exc}",
+                    finished_at=_now(),
+                    seconds=round(time.monotonic() - clock, 3),
+                )
                 save()
                 report(f"{series_id} corrida {run} fallida: {exc}")
                 continue
@@ -171,6 +183,8 @@ def run_batch(
                 n_unmapped=len(extraction.unmapped),
                 quotes_total=extraction.quotes.total,
                 quotes_not_found=extraction.quotes.not_found,
+                finished_at=_now(),
+                seconds=round(time.monotonic() - clock, 3),
             )
             if extraction.openkos_version and extraction.openkos_version not in versions:
                 versions.append(extraction.openkos_version)

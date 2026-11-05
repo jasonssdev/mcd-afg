@@ -53,6 +53,36 @@ def test_series_list_runs_every_pair_under_one_run_name(tmp_path: Path, fake: Fa
     assert "ES2015: 2 de 2 corridas completas" in result.output
 
 
+def _write_freeze(path: Path) -> None:
+    path.write_text(json.dumps({"adr": "0023", "code_commit": "f" * 40}), encoding="utf-8")
+
+
+def test_manifest_records_the_freeze_when_the_record_exists(
+    tmp_path: Path, fake: FakeAdapter, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    record = tmp_path / "freeze.json"
+    _write_freeze(record)
+    monkeypatch.setattr(afg_cli, "FREEZE_PATH", record)
+
+    assert _run("--series", "ES2015", "--runs", "1", "--run-name", "f").exit_code == 0
+
+    manifest = json.loads((tmp_path / "out" / "f" / "manifest.json").read_text())
+    assert manifest["freeze"]["adr"] == "0023"
+    assert manifest["freeze"]["code_commit"] == "f" * 40
+    assert len(manifest["freeze"]["sha256"]) == 64
+    assert all("seconds" in pair for pair in manifest["pairs"].values())
+
+
+def test_manifest_freeze_is_null_without_a_record(
+    tmp_path: Path, fake: FakeAdapter, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(afg_cli, "FREEZE_PATH", tmp_path / "none.json")
+
+    assert _run("--series", "ES2015", "--runs", "1", "--run-name", "n").exit_code == 0
+
+    assert json.loads((tmp_path / "out" / "n" / "manifest.json").read_text())["freeze"] is None
+
+
 def test_partition_development_selects_its_series_and_default_runs(
     fake: FakeAdapter,
 ) -> None:

@@ -197,6 +197,24 @@ def test_c3_manifest_records_the_pinned_environment_check(env: dict[str, Any]) -
     assert manifest["pinned_environment_ok"] is True
 
 
+def test_c3_manifest_records_commit_dirty_tree_time_and_freeze(
+    env: dict[str, Any], monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    from tests.test_cli_experiment_a import FakeProbe
+
+    monkeypatch.setattr(afg_cli, "current_git_commit", lambda: "d" * 40)
+    monkeypatch.setattr(afg_cli, "make_provenance_probe", lambda: FakeProbe(None))
+    monkeypatch.setattr(afg_cli, "FREEZE_PATH", tmp_path / "none.json")
+
+    assert _run("--c2-extraction", C2_RUN, "--series", "ES2015", "--runs", "1").exit_code == 0
+
+    workspace = env["c3"] / C2_RUN / "ES2015" / "run-0"
+    manifest = json.loads((workspace / "c3-manifest.json").read_text(encoding="utf-8"))
+    assert manifest["git_commit"] == "d" * 40
+    assert manifest["git_dirty"] is True and manifest["freeze"] is None
+    assert isinstance(manifest["seconds"], float)
+
+
 def test_make_c3_condition_requires_the_build_manifest(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

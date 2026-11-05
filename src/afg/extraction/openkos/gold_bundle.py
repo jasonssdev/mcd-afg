@@ -30,6 +30,7 @@ from __future__ import annotations
 import csv
 import json
 import shutil
+import time
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -323,11 +324,13 @@ def build_gold_workspace(
     overwrite: bool = False,
     generated_at: str | None = None,
     pinned_environment: Mapping[str, Any] | None = None,
+    provenance: Mapping[str, Any] | None = None,
 ) -> GoldBuildResult:
     """Write the C3 workspace ``target`` from ``c2_workspace`` and the gold ``reference``.
 
     ``pinned_environment`` is the guard's record (``pinned_environment_ok`` and the pins), merged
-    into the manifest when given.
+    into the manifest when given. ``provenance`` (git commit, dirty tree, freeze record) is merged
+    too; the manifest always records ``seconds``, the build time.
 
     ``relations_kind`` (``adjudicated``, ``single:<ini>`` or ``none``; see
     :func:`gold_relations_kind`) and ``reference.source_kind`` go to the manifest.
@@ -344,6 +347,7 @@ def build_gold_workspace(
         if not overwrite:
             raise GoldWorkspaceExistsError(f"The C3 workspace {target} already exists.")
         shutil.rmtree(target)
+    clock = time.monotonic()
     stamp = generated_at or datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     meetings: dict[str, tuple[str, list[FrozenTurn]]] = {}
@@ -409,6 +413,8 @@ def build_gold_workspace(
             "decisions_reference_kind": reference.source_kind,
             "relations_reference_kind": relations_kind,
             **(pinned_environment or {}),
+            **(provenance or {}),
+            "seconds": round(time.monotonic() - clock, 3),
         }
         manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     except BaseException:

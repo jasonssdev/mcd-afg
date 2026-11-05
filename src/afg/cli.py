@@ -157,6 +157,7 @@ from afg.experiments.freeze import (
     FreezeError,
     FreezeSources,
     SeriesGateError,
+    freeze_provenance,
     gate_partition,
     manifest_series,
     read_freeze_record,
@@ -2590,7 +2591,11 @@ def _require_run_frozen(
 
 
 def _require_series_gate(
-    series_ids: Sequence[str], *, questions: Path | None = None, allow_mixed: bool = True
+    series_ids: Sequence[str],
+    *,
+    questions: Path | None = None,
+    allow_mixed: bool = True,
+    runs: int | None = None,
 ) -> str:
     """The partition of ``series_ids`` when they may run; otherwise print why and exit.
 
@@ -2601,7 +2606,9 @@ def _require_series_gate(
     question bank and the code still match it; any difference is listed. It runs before the
     first model call. ``questions`` is the question file a command was given. With
     ``allow_mixed`` false a run that mixes development and evaluation series is refused: its
-    manifest would claim one partition for both.
+    manifest would claim one partition for both. Evaluation series also refuse ``AFG_*``
+    overrides of models, seed and OpenKOS, and a ``--runs`` (``runs``) other than
+    ``runs_per_config``.
     """
     try:
         partition = gate_partition(
@@ -2610,6 +2617,8 @@ def _require_series_gate(
             freeze_path=FREEZE_PATH,
             sources=FreezeSources(),
             questions_path=questions,
+            runs=runs,
+            configured_runs=int(load_experiments_config()["shared_budget"]["runs_per_config"]),
         )
     except SeriesGateError as exc:
         console.print(f"[bold red]{escape(str(exc))}[/bold red]")
@@ -2622,6 +2631,15 @@ def _require_series_gate(
         )
         raise typer.Exit(code=1)
     return partition
+
+
+def _run_provenance() -> dict[str, Any]:
+    """Commit, dirty tree and freeze record (``None`` before the record exists) of a run."""
+    return {
+        "git_commit": current_git_commit(),
+        "git_dirty": make_provenance_probe().git_dirty(),
+        "freeze": freeze_provenance(FREEZE_PATH),
+    }
 
 
 def _experiment_a_manifest(
@@ -2654,6 +2672,7 @@ def _experiment_a_manifest(
             **{key: provenance[key] for key in EXPERIMENT_A_PROVENANCE_KEYS},
         },
         "git_dirty": provenance["git_dirty"],
+        "freeze": freeze_provenance(FREEZE_PATH),
         **pinned,
         "status": "running",
         "completed_runs": [],
@@ -2695,7 +2714,7 @@ def experiment_a(
     import json
     from datetime import UTC, datetime
 
-    partition = _require_series_gate([series])
+    partition = _require_series_gate([series], runs=runs)
     pinned = require_pinned_environment(_openkos_models(), needs_openkos=True)
 
     budget = load_experiments_config()["shared_budget"]
@@ -2810,7 +2829,7 @@ def experiment_a_batch(
     )
 
     series_ids = _batch_series(series, partition)
-    batch_partition = _require_series_gate(series_ids, allow_mixed=False)
+    batch_partition = _require_series_gate(series_ids, allow_mixed=False, runs=runs)
     pinned = require_pinned_environment(_openkos_models(), needs_openkos=True)
     budget = load_experiments_config()["shared_budget"]
     n_runs = runs if runs is not None else int(budget["runs_per_config"])
@@ -2937,6 +2956,7 @@ def experiment_a_relations(
     congelamiento.
     """
     import json
+    import time
 
     from afg.experiments.relations_report import score_workspaces
 
@@ -2947,6 +2967,7 @@ def experiment_a_relations(
             f"`afg experiment a-batch --run-name {escape(c2_extraction)}`.[/bold red]"
         )
         raise typer.Exit(code=1)
+    started = time.monotonic()
     series_ids = _relations_series(run_root, series)
     partition = _require_series_gate(series_ids)
     pinned = (
@@ -2983,6 +3004,7 @@ def experiment_a_relations(
         console.print(f"[bold red]{escape(str(exc))}[/bold red]")
         raise typer.Exit(code=1) from exc
     report.update(pinned)
+    report.update(_run_provenance(), seconds=round(time.monotonic() - started, 3))
     out_path = EXPERIMENT_A_DIR / c2_extraction / "relaciones.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -3172,7 +3194,7 @@ def c3_build(
     corre ningún modelo de extracción. Solo series de desarrollo.
     """
     series_ids = _batch_series(series, None)
-    _require_series_gate(series_ids)
+    _require_series_gate(series_ids, runs=runs)
     pinned = require_pinned_environment([configured_embedding_model()], needs_openkos=True)
     budget = load_experiments_config()["shared_budget"]
     n_runs = runs if runs is not None else int(budget["runs_per_config"])
@@ -3197,6 +3219,7 @@ def c3_build(
 
     runner = SubprocessRunner()
     executable = openkos_run_settings().executable
+    provenance = _run_provenance()
     failed = False
     for series_id in series_ids:
         try:
@@ -3226,6 +3249,7 @@ def c3_build(
                     transcripts_dir=TRANSCRIPTS_DIR,
                     overwrite=overwrite,
                     pinned_environment=pinned,
+                    provenance=provenance,
                 )
             except (GoldWorkspaceExistsError, OpenKosError, FileNotFoundError, OSError) as exc:
                 console.print(f"[bold red]{series_id} run-{run}: {escape(str(exc))}[/bold red]")
@@ -3418,8 +3442,10 @@ def freeze_write(
     """Escribe el registro de congelamiento que habilita las series de evaluación.
 
     Guarda el ADR, el commit del código, la huella SHA-256 de `config/experiments.toml`, del
-    banco de preguntas y, por serie, de la referencia de decisiones, la de relaciones y la
-    traducción `<SERIE>.reference-en.csv`, más los valores de `[pinned_environment]`. Lo usa el
+    banco de preguntas, de `config/corpus.toml` y `config/annotation.toml`, el manifiesto de las
+    transcripciones congeladas (número de archivos y huella única) y, por serie, de la referencia
+    de decisiones, la de relaciones y la traducción `<SERIE>.reference-en.csv`, más los valores
+    de `[pinned_environment]`. Lo usa el
     mantenedor una sola vez, al cerrar el ADR de congelamiento (issue #237); no sobrescribe un
     registro existente. No llama a ningún modelo.
     """
@@ -3705,7 +3731,7 @@ def experiment_b(
         console.print(f"[bold red]{exc}[/bold red]")
         raise typer.Exit(code=1) from exc
     gate = _require_series_gate(
-        sorted({q.series_id for q in bank}), questions=questions, allow_mixed=False
+        sorted({q.series_id for q in bank}), questions=questions, allow_mixed=False, runs=runs
     )
     if limit_questions is not None and gate != "development":
         console.print(
@@ -3765,6 +3791,7 @@ def experiment_b(
         c3_workspaces=_short(OPENKOS_C3_WORKSPACES_DIR) if "c3" in wanted else None,
     )
     provenance.update(pinned)
+    provenance["freeze"] = freeze_provenance(FREEZE_PATH)
 
     def report(done: int, total: int) -> None:
         step = max(total // 10, 1)
