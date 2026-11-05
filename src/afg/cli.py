@@ -4453,7 +4453,7 @@ def experiment_b_oe4_sheet(
     import json
 
     from afg.experiments.c2_base_evidence import (
-        bundle_dir_for_run,
+        bundle_resolver,
         oe4_worksheet_rows,
         write_oe4_worksheet,
     )
@@ -4469,15 +4469,15 @@ def experiment_b_oe4_sheet(
                 f"{_short(questions)} no es el archivo de preguntas de la corrida: huella "
                 f"{actual}, questions_sha256 del manifiesto {recorded}."
             )
-        bundle = bundle_dir_for_run(manifest)
+        bundles = bundle_resolver(manifest)
         bank = {q.id: q for q in load_experiment_questions(questions)}
-        rows = oe4_worksheet_rows(records, bank, bundle, include_rule_attributed=all_failures)
+        rows = oe4_worksheet_rows(records, bank, bundles, include_rule_attributed=all_failures)
         write_oe4_worksheet(run_dir / OE4_SHEET_FILE, rows, force=force)
     except (ValueError, KeyError, FileNotFoundError, QuestionBankError, CalibrationSetError) as exc:
         console.print(f"[bold red]{escape(str(exc))}[/bold red]")
         raise typer.Exit(code=1) from exc
     console.print(
-        f"{len(rows)} filas desde la base {_short(bundle)}. "
+        f"{len(rows)} filas desde las bases de {manifest['c2_extraction']}. "
         f"Hoja para la persona: {_short(run_dir / OE4_SHEET_FILE)}."
     )
 
