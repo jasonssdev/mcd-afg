@@ -9,6 +9,17 @@ concordancia entre ambas alineaciones. El juez automático no sustituye este pas
 del Experimento A (ni la alineación ni los puntajes). **Cuánto toma.**
 Entre 30 y 60 segundos por par, de 50 a 100 minutos en total.
 
+## Paso a paso
+
+1. **Esperar el aviso.** Quien mantiene el repositorio comenta en el [issue #290](https://github.com/jasonssdev/mcd-afg/issues/290) cuando la hoja ya está en `main`, con su ruta: `data/processed/alignment-validation/<corrida>.manual.csv`. Antes de ese comentario no hay nada que abrir.
+2. **Traer la hoja.** En la terminal, dentro de la carpeta del repositorio: `git checkout main && git pull`.
+3. **Abrir el CSV** con LibreOffice Calc o Numbers (Excel solo si se guarda como «CSV UTF-8»). El separador es la coma y la codificación UTF-8 ([`EMPIEZA-AQUI.md`](asignacion/EMPIEZA-AQUI.md) §4). Si el programa pregunta cómo interpretar el archivo, se elige UTF-8 y coma; los identificadores y las fechas no se dejan cambiar al programa (nada de convertir `ES2015.q1` o una fecha a otro formato).
+4. **Llenar solo las columnas humanas:** `same` (`si` o `no`) y, si hace falta, `notes`. Ninguna otra columna se toca.
+5. **Guardar como CSV UTF-8** (delimitado por comas) con el mismo nombre, las mismas columnas y las mismas filas, sin agregar ni reordenar.
+6. **Revisar.** El comando de puntaje (`afg experiment a-validacion-puntaje`) lo corre quien mantiene el repositorio, no quien valida. Basta con volver a abrir el archivo y confirmar que no queda ninguna celda vacía en las columnas que se llenan.
+7. **Entregar.** Se crea la rama `data/validacion-alineacion-gv`, se hace el commit del CSV y se abre el PR como indica [`EMPIEZA-AQUI.md`](asignacion/EMPIEZA-AQUI.md) §6, mencionando el issue #290 en la descripción.
+8. **No abrir la clave (`data/interim/alignment-validation/<corrida>.clave.json`) ni las cifras del Experimento A hasta que el PR esté fusionado.**
+
 ## La pregunta
 
 Cada fila trae la serie (`serie`) y dos frases de la misma reunión (`meeting_id`): `extracted_decision` (lo que extrajo

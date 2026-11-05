@@ -211,6 +211,49 @@ def test_worksheet_lists_only_unlabeled_e1_failures(
     assert row["pista_automatica"]
 
 
+def test_worksheet_carries_the_object_texts_so_it_is_self_contained(
+    bundle: Path, scenario: tuple[list[dict[str, Any]], dict[str, Question]]
+) -> None:
+    records, questions = scenario
+    (row,) = oe4_worksheet_rows(records, questions, bundle)
+    assert row["mejor_objeto_texto"].endswith("The selling price is twenty Euros.")
+    parts = row["objetos_de_la_base_texto"].split(" || ")
+    assert [p.split(": ", 1)[0] for p in parts] == [
+        "decisions/price",
+        "events/talk",
+        "concepts/market",
+    ]
+    assert "The selling price is twenty Euros." in parts[0]
+    assert "Price talk and market." in parts[1]
+    assert "---" not in row["mejor_objeto_texto"]  # front matter is not shown
+    assert row["mejor_fuente_fragmento"] == "Price twenty Euros market young adults for the remote."
+
+
+def test_worksheet_texts_are_empty_without_objects_and_sources(
+    tmp_path: Path, scenario: tuple[list[dict[str, Any]], dict[str, Question]]
+) -> None:
+    records, questions = scenario
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    (row,) = oe4_worksheet_rows(records, questions, empty)
+    assert row["mejor_objeto_texto"] == ""
+    assert row["objetos_de_la_base_texto"] == ""
+    assert row["mejor_fuente_fragmento"] == ""
+
+
+def test_source_fragment_is_the_passage_with_most_coverage_and_is_capped(tmp_path: Path) -> None:
+    root = tmp_path / "bundle"
+    filler = "Unrelated chatter about animals.\n\n" * 3
+    _write(root, "sources/es2015a", filler + "Selling price twenty Euros. " + "x " * 400 + "\n")
+    (root / "decisions").mkdir()
+    records = [_record("ES2015.q1", "E1_point_fact", ["concepts/market"], correct=False)]
+    questions = {"ES2015.q1": _question("ES2015.q1", REFERENCE, QuestionStratum.E1_POINT_FACT)}
+    (row,) = oe4_worksheet_rows(records, questions, root)
+    fragment = row["mejor_fuente_fragmento"]
+    assert fragment.startswith("Selling price twenty Euros.")
+    assert len(fragment) <= 600
+
+
 def test_worksheet_keeps_one_row_per_question_and_run_of_c2_only(
     bundle: Path, scenario: tuple[list[dict[str, Any]], dict[str, Question]]
 ) -> None:
