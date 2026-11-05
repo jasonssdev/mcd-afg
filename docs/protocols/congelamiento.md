@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Documento** | Registro de congelamiento y bloqueo de las series de evaluación |
-| **Estado** | Vigente. Lo que se congela lo fija el [ADR 0023](../decisions/0023-adr-recongelamiento-tras-la-auditoria.md), que reemplaza al ADR 0022; el registro se escribe tras la fusión del PR de ese ADR (issue #237) y rige desde que `config/freeze.json` existe |
+| **Estado** | Vigente. Lo que se congela lo fija el [ADR 0024](../decisions/0024-adr-hoja-oe4-autocontenida.md), que reemplaza al ADR 0023 (y este, al 0022); el registro se escribe tras la fusión del PR de ese ADR (issue #237) y rige desde que `config/freeze.json` existe |
 
 ## Qué es
 

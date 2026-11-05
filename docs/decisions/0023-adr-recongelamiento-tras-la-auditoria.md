@@ -2,6 +2,8 @@
 
 ## Estado
 
+**Reemplazada por el [ADR 0024](0024-adr-hoja-oe4-autocontenida.md) (2026-11-05)**: la hoja de OE4 no era autocontenida para quien etiqueta. El texto que sigue se conserva como estaba cuando se aceptó.
+
 Aceptada (2026-11-05), por decisión de `jss`. **Reemplaza al [ADR 0022](0022-adr-congelamiento-de-las-corridas-formales.md)** y resuelve de nuevo el [issue #237](https://github.com/jasonssdev/mcd-afg/issues/237). Mantiene la regla del [ADR 0005](0005-adr-development-evaluation-split.md): nada se ajusta ya con las series de evaluación. La decisión se toma **antes de que exista cualquier corrida formal**.
 
 ## Contexto

@@ -51,12 +51,19 @@ WORKSHEET_COLUMNS: tuple[str, ...] = (
     "mejor_objeto",
     "mejor_objeto_recuperado",
     "objetos_de_la_base",
+    "mejor_objeto_texto",
+    "objetos_de_la_base_texto",
     "mejor_fuente",
+    "mejor_fuente_fragmento",
     "pista_automatica",
     "etapa_humana",
     "nota",
 )
 HUMAN_COLUMNS = ("etapa_humana", "nota")
+TEXT_SEPARATOR = " || "
+"""Separates the texts of the top objects in ``objetos_de_la_base_texto``."""
+FRAGMENT_MAX_CHARS = 600
+FRAGMENT_WINDOW_LINES = 3
 
 _FRONT_MATTER_RE = re.compile(r"\A---\n.*?\n---\n", re.DOTALL)
 _RELATED_RE = re.compile(r"\n## Related\b.*\Z", re.DOTALL)
@@ -74,6 +81,7 @@ class ObjectCoverage:
     kind: str
     coverage: float
     retrieved: bool
+    text: str = ""
 
 
 @dataclass(frozen=True, slots=True)
@@ -116,12 +124,14 @@ def rank_bundle_objects(
             object_id = f"{namespace}/{path.stem}"
             if namespace == "sources" and wanted_source and object_id != wanted_source:
                 continue
-            coverage = reference_term_coverage(reference, [{"text": _object_text(path)}])
+            text = _object_text(path)
+            coverage = reference_term_coverage(reference, [{"text": text}])
             item = ObjectCoverage(
                 object_id=object_id,
                 kind=concept_kind(object_id),
                 coverage=coverage,
                 retrieved=object_id in retrieved,
+                text=text.strip(),
             )
             (sources if namespace == "sources" else extracted).append(item)
 
@@ -201,6 +211,33 @@ def suggested_stage(hint: str) -> str | None:
     return _HINT_STAGE.get(hint)
 
 
+def _object_texts(objects: Sequence[ObjectCoverage]) -> str:
+    """The texts of ``objects``, each prefixed by its id, so the sheet needs no workspace."""
+    return TEXT_SEPARATOR.join(f"{o.object_id}: {o.text}" for o in objects)
+
+
+def _source_fragment(reference: str, source: ObjectCoverage | None) -> str:
+    """The raw-source passage with the most coverage of ``reference``, capped for a sheet cell.
+
+    A passage is up to :data:`FRAGMENT_WINDOW_LINES` consecutive non-empty lines; among equal
+    coverages the shortest (then the earliest) wins.
+    """
+    if source is None:
+        return ""
+    lines = [line.strip() for line in source.text.splitlines() if line.strip()]
+    best = ""
+    best_coverage = -1.0
+    for start in range(len(lines)):
+        for size in range(1, FRAGMENT_WINDOW_LINES + 1):
+            passage = " ".join(lines[start : start + size])
+            coverage = reference_term_coverage(reference, [{"text": passage}])
+            if coverage > best_coverage or (coverage == best_coverage and len(passage) < len(best)):
+                best, best_coverage = passage, coverage
+    if len(best) > FRAGMENT_MAX_CHARS:
+        best = best[: FRAGMENT_MAX_CHARS - 1].rstrip() + "…"
+    return best
+
+
 def _hint(best: ObjectCoverage | None, source: ObjectCoverage | None) -> str:
     """A triage hint (never a stage) from the best extracted object and the best source."""
     if best is not None and best.coverage == 1.0:
@@ -249,7 +286,10 @@ def _run_rows(
                     "" if best is None else "sí" if best.retrieved else "no"
                 ),
                 "objetos_de_la_base": " | ".join(_fmt(o) for o in found.objects[:top]),
+                "mejor_objeto_texto": best.text if best else "",
+                "objetos_de_la_base_texto": _object_texts(found.objects[:top]),
                 "mejor_fuente": f"{source.object_id} ({source.coverage:.2f})" if source else "",
+                "mejor_fuente_fragmento": _source_fragment(reference, source),
                 "pista_automatica": _hint(best, source),
                 "etapa_humana": "",
                 "nota": "",

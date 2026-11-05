@@ -11,6 +11,17 @@ si/no en tres columnas y el repositorio calcula el acuerdo.
 una vez que el juez terminó de calificar. **Cuánto toma.** El tiempo no está documentado; como
 estimación, un minuto por fila, unas 4 horas en total.
 
+## Paso a paso
+
+1. **Esperar el aviso.** Quien mantiene el repositorio comenta en el [issue #292](https://github.com/jasonssdev/mcd-afg/issues/292) cuando la hoja ya está en `main`, con su ruta: `reports/experiment-b/<corrida-B>/muestra-juez.csv`. Antes de ese comentario no hay nada que abrir.
+2. **Traer la hoja.** En la terminal, dentro de la carpeta del repositorio: `git checkout main && git pull`.
+3. **Abrir el CSV** con LibreOffice Calc o Numbers (Excel solo si se guarda como «CSV UTF-8»). El separador es la coma y la codificación UTF-8 ([`EMPIEZA-AQUI.md`](asignacion/EMPIEZA-AQUI.md) §4). Si el programa pregunta cómo interpretar el archivo, se elige UTF-8 y coma; los identificadores y las fechas no se dejan cambiar al programa (nada de convertir `ES2015.q1` o una fecha a otro formato).
+4. **Llenar solo las columnas humanas:** `correct`, `evidence_supported` y `outdated` (esta última solo en filas E3), y `notes` si hace falta. Ninguna otra columna se toca.
+5. **Guardar como CSV UTF-8** (delimitado por comas) con el mismo nombre, las mismas columnas y las mismas filas, sin agregar ni reordenar.
+6. **Revisar.** El comando que calcula el acuerdo (`afg experiment b-human-check`) lo corre quien mantiene el repositorio, no quien etiqueta. Basta con volver a abrir el archivo y confirmar que no queda ninguna celda vacía en las columnas que se llenan.
+7. **Entregar.** Se crea la rama `data/verificacion-juez-gv`, se hace el commit del CSV y se abre el PR como indica [`EMPIEZA-AQUI.md`](asignacion/EMPIEZA-AQUI.md) §6, mencionando el issue #292 en la descripción.
+8. **No abrir `muestra-juez.clave.csv` ni las cifras del Experimento B hasta que el PR esté fusionado.**
+
 ## Qué se revisa
 
 De cada celda (condición × estrato; 4 × 4 = 16 celdas) se toma el 20 % de las respuestas

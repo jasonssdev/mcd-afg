@@ -10,6 +10,17 @@ base compilada. Esas son las filas de esta hoja, y las etiqueta una persona
 **Quién.** `gm`. **Cuándo.** Después de la corrida formal del Experimento B que incluye C2.
 **Cuánto toma.** El tiempo no está documentado; como estimación, de 1 a 3 minutos por fila.
 
+## Paso a paso
+
+1. **Esperar el aviso.** Quien mantiene el repositorio comenta en el [issue #293](https://github.com/jasonssdev/mcd-afg/issues/293) cuando la hoja ya está en `main`, con su ruta: `reports/experiment-b/<corrida-B>/oe4-etapa-e1.csv`. Antes de ese comentario no hay nada que abrir.
+2. **Traer la hoja.** En la terminal, dentro de la carpeta del repositorio: `git checkout main && git pull`.
+3. **Abrir el CSV** con LibreOffice Calc o Numbers (Excel solo si se guarda como «CSV UTF-8»). El separador es la coma y la codificación UTF-8 ([`EMPIEZA-AQUI.md`](asignacion/EMPIEZA-AQUI.md) §4). Si el programa pregunta cómo interpretar el archivo, se elige UTF-8 y coma; los identificadores y las fechas no se dejan cambiar al programa (nada de convertir `ES2015.q1` o una fecha a otro formato).
+4. **Llenar solo las columnas humanas:** `etapa_humana` y, si hace falta, `nota`. Ninguna otra columna se toca.
+5. **Guardar como CSV UTF-8** (delimitado por comas) con el mismo nombre, las mismas columnas y las mismas filas, sin agregar ni reordenar.
+6. **Revisar.** El comando que valida y cuenta las etapas (`afg experiment b-oe4-summary`) lo corre quien mantiene el repositorio, no quien etiqueta. Basta con volver a abrir el archivo y confirmar que no queda ninguna celda vacía en las columnas que se llenan.
+7. **Entregar.** Se crea la rama `data/oe4-etapa-gm`, se hace el commit del CSV y se abre el PR como indica [`EMPIEZA-AQUI.md`](asignacion/EMPIEZA-AQUI.md) §6, mencionando el issue #293 en la descripción.
+8. **No abrir `oe4-resumen.json` ni los resultados del Experimento B hasta que el PR esté fusionado.**
+
 ## Qué filas llegan a la hoja
 
 Una fila por cada respuesta de C2 en E1 que el juez marcó incorrecta y que la regla automática
@@ -26,8 +37,9 @@ uv run afg experiment b-oe4-sheet --run-name <corrida-B> --questions data/proces
 ```
 
 Escribe `reports/experiment-b/<corrida-B>/oe4-etapa-e1.csv`. `--questions` es obligatorio y debe
-ser el banco con el que se corrió. La hoja usa la base compilada que C2 consultó
-(`data/interim/openkos/`, fuera de git). El comando se niega a pisar una hoja que ya tiene
+ser el banco con el que se corrió. La hoja lee la base compilada que C2 consultó
+(`data/interim/openkos/`, fuera de git) y **copia en cada fila los textos que hacen falta**, de
+modo que quien etiqueta no necesita esa base. El comando se niega a pisar una hoja que ya tiene
 etiquetas (salvo `--force`). Con `--all-failures` la hoja incluye también las fallas que la regla
 ya atribuyó a síntesis, para que la persona pueda contradecirlas.
 
@@ -39,8 +51,11 @@ ya atribuyó a síntesis, para que la persona pueda contradecirlas.
 | `pregunta`, `respuesta_referencia` | Lo que se preguntó y la respuesta correcta |
 | `respuesta_c2` | Lo que contestó el sistema |
 | `mejor_objeto`, `mejor_objeto_recuperado` | El objeto de la base compilada que contiene más palabras de la referencia, y si el sistema lo recuperó (`sí`/`no`) |
+| `mejor_objeto_texto` | El texto completo de ese objeto: es lo que se lee para decidir si el dato está bien en la base |
 | `objetos_de_la_base` | Los tres objetos con más cobertura, con su cobertura (0 a 1) y si se recuperaron |
+| `objetos_de_la_base_texto` | Los textos de esos tres objetos, cada uno precedido por su identificador (`id: texto`) y separados por ` \|\| ` |
 | `mejor_fuente` | La transcripción en bruto de esa reunión con más cobertura |
+| `mejor_fuente_fragmento` | El pasaje de esa transcripción (hasta 600 caracteres) con más palabras de la referencia: sirve para ver si el dato solo aparece en la transcripción, caso de `extraccion` |
 | `pista_automatica` | Una pista de triaje de la máquina (ver abajo) |
 | **`etapa_humana`** | **La que se llena** |
 | **`nota`** | Opcional: el motivo, sobre todo en los casos dudosos |
@@ -98,9 +113,10 @@ Los desacuerdos con la pista se cuentan y se informan, y no son un error de quie
 - Guardar como **CSV UTF-8 (delimitado por comas)**, con las mismas columnas y sin agregar ni
   reordenar filas ([`EMPIEZA-AQUI.md`](asignacion/EMPIEZA-AQUI.md) §4).
 - No se deja ninguna fila vacía ni con otro valor: la hoja a medio etiquetar se rechaza.
-- Para leer un objeto completo de la base se abre en `data/interim/openkos/` (la ruta de la
-  hoja indica la corrida y la serie). Para el contexto de la reunión, la transcripción del
-  mismo archivo.
+- Todo lo necesario para decidir viene en la propia fila: los textos de los objetos
+  (`mejor_objeto_texto`, `objetos_de_la_base_texto`) y el pasaje de la transcripción
+  (`mejor_fuente_fragmento`). No hace falta abrir ninguna otra carpeta ni la base compilada. Si
+  una celda de texto está vacía, la base no tenía ese objeto o esa fuente.
 
 ## Después
 
