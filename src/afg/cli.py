@@ -158,6 +158,9 @@ from afg.experiments.freeze import (
     FreezeSources,
     SeriesGateError,
     gate_partition,
+    manifest_series,
+    read_freeze_record,
+    verify_run_against_freeze,
     write_freeze_record,
 )
 from afg.experiments.manual_validation import (
@@ -173,10 +176,16 @@ from afg.experiments.manual_validation import (
     write_validation_files,
 )
 from afg.experiments.pinned_environment import PinnedEnvironmentError, check_pinned_environment
-from afg.experiments.provenance import LiveProbe, ProvenanceProbe, collect_provenance
+from afg.experiments.provenance import (
+    LiveProbe,
+    ProvenanceProbe,
+    collect_provenance,
+    file_sha256,
+)
 from afg.experiments.question_bank import (
     QuestionBankIssue,
     QuestionBankReport,
+    configured_minimums,
     is_question_bank,
     load_configured_question_bank,
 )
@@ -205,6 +214,9 @@ from afg.experiments.tau_concordance import (
     write_concordance_files,
 )
 from afg.extraction.openkos.commands import OpenKosError, SubprocessRunner
+from afg.extraction.openkos.gold_bundle import (
+    MANIFEST_NAME as C3_MANIFEST_NAME,
+)
 from afg.extraction.openkos.gold_bundle import (
     GoldWorkspaceExistsError,
     build_gold_workspace,
@@ -2530,7 +2542,56 @@ EXPERIMENT_A_PROVENANCE_KEYS = (
 """The :func:`collect_provenance` fields that apply to Experiment A (it has no judge or C1)."""
 
 
-def _require_series_gate(series_ids: Sequence[str], *, questions: Path | None = None) -> str:
+def _freeze_problems(run_dir: Path, *, check_questions: bool = True) -> list[str]:
+    """How a finished run differs from the freeze record; empty without evaluation series.
+
+    Only runs that include evaluation series are checked (ADR 0005): their results enter the
+    tables, so they must come from the frozen bank, a clean tree and the frozen code.
+    """
+    import json
+
+    try:
+        manifest = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8"))
+    except OSError, ValueError:
+        return []  # a missing or malformed manifest is reported by the command's own loader
+    partition_of = configured_partition_of()
+    if not any(partition_of(s) == "evaluation" for s in manifest_series(manifest)):
+        return []
+    try:
+        record = read_freeze_record(FREEZE_PATH)
+    except FreezeError as exc:
+        return [f"registro de congelamiento: {exc}"]
+    return verify_run_against_freeze(manifest, record, check_questions=check_questions)
+
+
+def _require_run_frozen(
+    run_dir: Path, *, descriptive: bool = False, check_questions: bool = True
+) -> list[str]:
+    """Exit when an evaluation run does not match the freeze record; else return the problems.
+
+    With ``descriptive`` the differences are printed as a warning and returned (the output is
+    not reportable); without it they stop the command.
+    """
+    problems = _freeze_problems(run_dir, check_questions=check_questions)
+    if not problems:
+        return []
+    listing = "\n".join(f"  - {escape(p)}" for p in problems)
+    if descriptive:
+        console.print(
+            f"[yellow]{_short(run_dir)} no coincide con el congelamiento; la salida no es "
+            f"reportable:\n{listing}[/yellow]"
+        )
+        return problems
+    console.print(
+        f"[bold red]{_short(run_dir)} no coincide con el congelamiento (ADR 0005); no se produce "
+        f"un resultado reportable:\n{listing}[/bold red]"
+    )
+    raise typer.Exit(code=1)
+
+
+def _require_series_gate(
+    series_ids: Sequence[str], *, questions: Path | None = None, allow_mixed: bool = True
+) -> str:
     """The partition of ``series_ids`` when they may run; otherwise print why and exit.
 
     The one gate of the commands that read series (``experiment a``, ``a-batch``,
@@ -2538,10 +2599,12 @@ def _require_series_gate(series_ids: Sequence[str], *, questions: Path | None = 
     Evaluation series run only when the freeze record (``config/freeze.json``, written by
     ``afg freeze write`` when the freeze ADR closes) exists and the config, the reference, the
     question bank and the code still match it; any difference is listed. It runs before the
-    first model call. ``questions`` is the question file a command was given.
+    first model call. ``questions`` is the question file a command was given. With
+    ``allow_mixed`` false a run that mixes development and evaluation series is refused: its
+    manifest would claim one partition for both.
     """
     try:
-        return gate_partition(
+        partition = gate_partition(
             series_ids,
             configured_partition_of(),
             freeze_path=FREEZE_PATH,
@@ -2551,6 +2614,14 @@ def _require_series_gate(series_ids: Sequence[str], *, questions: Path | None = 
     except SeriesGateError as exc:
         console.print(f"[bold red]{escape(str(exc))}[/bold red]")
         raise typer.Exit(code=1) from exc
+    if partition == "mixed" and not allow_mixed:
+        console.print(
+            "[bold red]Las series mezclan desarrollo y evaluación "
+            f"({', '.join(series_ids)}): se corre cada partición por separado; no se llamó a "
+            "ningún modelo.[/bold red]"
+        )
+        raise typer.Exit(code=1)
+    return partition
 
 
 def _experiment_a_manifest(
@@ -2739,7 +2810,7 @@ def experiment_a_batch(
     )
 
     series_ids = _batch_series(series, partition)
-    batch_partition = _require_series_gate(series_ids)
+    batch_partition = _require_series_gate(series_ids, allow_mixed=False)
     pinned = require_pinned_environment(_openkos_models(), needs_openkos=True)
     budget = load_experiments_config()["shared_budget"]
     n_runs = runs if runs is not None else int(budget["runs_per_config"])
@@ -2981,6 +3052,7 @@ def experiment_a_report(
             f"`afg experiment a-batch --run-name {escape(c2_extraction)}`.[/bold red]"
         )
         raise typer.Exit(code=1)
+    _require_run_frozen(run_dir, descriptive=descriptive, check_questions=False)
     runs = load_extraction_runs([run_dir])
     relations_path = run_dir / "relaciones.json"
     relations = (
@@ -3279,6 +3351,17 @@ def make_c3_condition(extraction_run: str) -> CompiledGoldCondition:
             f"No hay espacios de trabajo de C3 derivados de la corrida {extraction_run!r} en "
             f"{_short(base_dir)}. Constrúyelos antes con `afg c3 build --c2-extraction "
             f"{extraction_run} --series <SERIE>`."
+        )
+    unfinished = sorted(
+        workspace.relative_to(base_dir / extraction_run).as_posix()
+        for workspace in (base_dir / extraction_run).glob("*/run-*")
+        if not (workspace / C3_MANIFEST_NAME).is_file()
+    )
+    if unfinished:
+        raise ValueError(
+            f"Los espacios de trabajo de C3 {', '.join(unfinished)} no tienen {C3_MANIFEST_NAME}: "
+            "`afg c3 build` no terminó de escribirlos. Reconstrúyelos con `afg c3 build "
+            f"--c2-extraction {extraction_run} --series <SERIE> --overwrite`."
         )
     return CompiledGoldCondition(
         runner=SubprocessRunner(),
@@ -3621,7 +3704,16 @@ def experiment_b(
     except (QuestionBankError, ValueError, FileNotFoundError, CalibrationSetError) as exc:
         console.print(f"[bold red]{exc}[/bold red]")
         raise typer.Exit(code=1) from exc
-    _require_series_gate(sorted({q.series_id for q in bank}), questions=questions)
+    gate = _require_series_gate(
+        sorted({q.series_id for q in bank}), questions=questions, allow_mixed=False
+    )
+    if limit_questions is not None and gate != "development":
+        console.print(
+            "[bold red]`--limit-questions` solo se admite con series de desarrollo: una corrida "
+            "de evaluación recorta el banco congelado y no es reportable; no se llamó a ningún "
+            "modelo.[/bold red]"
+        )
+        raise typer.Exit(code=1)
 
     config = load_experiments_config()
     settings = experiment_b_settings(runs)
@@ -3955,6 +4047,7 @@ def experiment_b_report(
         )
         raise typer.Exit(code=1)
     run_dir, records = _load_run_records(run_name)
+    unfrozen = _require_run_frozen(run_dir, descriptive=descriptive)
     config = load_experiments_config()
     try:
         bank = {q.id: q for q in load_experiment_questions(questions)}
@@ -3965,7 +4058,7 @@ def experiment_b_report(
         report = analyze_runs(
             records,
             settings=interval_settings_from_config(),
-            min_questions=int(config["question_bank"]["min_questions"]),
+            min_questions=configured_minimums(int(config["question_bank"]["min_questions"])),
             min_runs=int(config["shared_budget"]["runs_per_config"]),
             allow_development=descriptive,
             questions=bank,
@@ -3982,6 +4075,8 @@ def experiment_b_report(
         raise typer.Exit(code=1) from exc
 
     label = "reportable" if report.reportable else f"DESCRIPTIVO, partición {report.partition}"
+    if unfrozen:
+        label = "DESCRIPTIVO, no coincide con el congelamiento"
     table = Table(title=f"Experimento B, {run_name} ({label})")
     columns = (
         "Condición",
@@ -4081,6 +4176,12 @@ def experiment_final_tables(
         write_final_tables,
     )
 
+    for b_name in b_runs:
+        _require_run_frozen(EXPERIMENT_B_DIR / b_name, descriptive=descriptive)
+    if a_run is not None:
+        _require_run_frozen(
+            EXPERIMENT_A_DIR / a_run, descriptive=descriptive, check_questions=False
+        )
     try:
         inputs = load_final_inputs(
             a_run=a_run,
@@ -4145,6 +4246,7 @@ def experiment_b_sample(
     )
 
     run_dir, records = _load_run_records(run_name)
+    _require_run_frozen(run_dir)
     config = load_experiments_config()
     try:
         bank = load_experiment_questions(questions)
@@ -4254,8 +4356,12 @@ def experiment_b_oe4_sheet(
     ],
     questions: Annotated[
         Path,
-        typer.Option("--questions", help="CSV de preguntas de la corrida (referencia)."),
-    ] = WORKSHEET_PATH,
+        typer.Option(
+            "--questions",
+            help="CSV de preguntas de la corrida (referencia). Es obligatorio y debe ser el "
+            "archivo con el que se corrió (su huella se compara con la del manifiesto).",
+        ),
+    ],
     force: Annotated[
         bool, typer.Option("--force", help="Sobrescribir una hoja que ya tiene etiquetas.")
     ] = False,
@@ -4284,8 +4390,16 @@ def experiment_b_oe4_sheet(
     )
 
     run_dir, records = _load_run_records(run_name)
+    _require_run_frozen(run_dir)
     try:
         manifest = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8"))
+        recorded = manifest.get("questions_sha256")
+        actual = file_sha256(questions)
+        if recorded is not None and actual != recorded:
+            raise ValueError(
+                f"{_short(questions)} no es el archivo de preguntas de la corrida: huella "
+                f"{actual}, questions_sha256 del manifiesto {recorded}."
+            )
         bundle = bundle_dir_for_run(manifest)
         bank = {q.id: q for q in load_experiment_questions(questions)}
         rows = oe4_worksheet_rows(records, bank, bundle, include_rule_attributed=all_failures)
@@ -4329,10 +4443,12 @@ def experiment_b_oe4_summary(
         try:
             manifest = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8"))
             conditions = manifest.get("conditions") or []
-            if len(conditions) != 1:
-                raise ValueError(f"{run_name}: se esperaba una condición, hay {conditions}.")
+            if "C2" not in conditions:
+                raise ValueError(
+                    f"{run_name}: la hoja OE4 es de C2 y la corrida tiene {conditions}."
+                )
             rows = read_worksheet_rows(run_dir / OE4_SHEET_FILE)
-            summary = summarize_oe4_sheet(rows, condition=str(conditions[0]))
+            summary = summarize_oe4_sheet(rows, condition="C2")
         except (ValueError, KeyError, FileNotFoundError, CsvFormatError) as exc:
             console.print(f"[bold red]{escape(str(exc))}[/bold red]")
             raise typer.Exit(code=1) from exc

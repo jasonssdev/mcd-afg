@@ -335,7 +335,8 @@ def build_gold_workspace(
     Raises:
         FileNotFoundError: ``c2_workspace`` has no bundle.
         GoldWorkspaceExistsError: ``target`` exists and ``overwrite`` is false.
-        OpenKosCommandError: ``openkos reindex`` failed.
+        OpenKosCommandError: ``openkos reindex`` failed. Any error after the copy removes the
+            partial ``target``.
     """
     if not (c2_workspace / BUNDLE_DIRNAME).is_dir():
         raise FileNotFoundError(f"No bundle in the C2 workspace {c2_workspace}.")
@@ -369,44 +370,51 @@ def build_gold_workspace(
         if (r.earlier_id, r.later_id) not in linked
     )
 
-    shutil.copytree(c2_workspace, target, ignore=_ignore_for(c2_workspace))
-    decisions_dir = target / BUNDLE_DIRNAME / DECISIONS_DIRNAME
-    decisions_dir.mkdir(parents=True, exist_ok=True)
-    for gold in sorted(planned, key=lambda g: g.slug):
-        related = _relation_links(gold, relations, written)
-        (decisions_dir / f"{gold.slug}.md").write_text(
-            _render(gold, related, stamp), encoding="utf-8"
-        )
-    _rewrite_index(target / BUNDLE_DIRNAME / INDEX_NAME, sorted(planned, key=lambda g: g.slug))
+    try:
+        shutil.copytree(c2_workspace, target, ignore=_ignore_for(c2_workspace))
+        decisions_dir = target / BUNDLE_DIRNAME / DECISIONS_DIRNAME
+        decisions_dir.mkdir(parents=True, exist_ok=True)
+        for gold in sorted(planned, key=lambda g: g.slug):
+            related = _relation_links(gold, relations, written)
+            (decisions_dir / f"{gold.slug}.md").write_text(
+                _render(gold, related, stamp), encoding="utf-8"
+            )
+        _rewrite_index(target / BUNDLE_DIRNAME / INDEX_NAME, sorted(planned, key=lambda g: g.slug))
 
-    reindex = runner.run([executable, "reindex", "--force"], cwd=target)
-    if reindex.returncode != 0:
-        raise OpenKosCommandError(f"reindex exited {reindex.returncode}: {reindex.stderr[-500:]}")
-    version_run = runner.run([executable, "--version"])
-    version = parse_version(version_run.stdout) if version_run.returncode == 0 else None
+        reindex = runner.run([executable, "reindex", "--force"], cwd=target)
+        if reindex.returncode != 0:
+            raise OpenKosCommandError(
+                f"reindex exited {reindex.returncode}: {reindex.stderr[-500:]}"
+            )
+        version_run = runner.run([executable, "--version"])
+        version = parse_version(version_run.stdout) if version_run.returncode == 0 else None
 
-    manifest_path = target / MANIFEST_NAME
-    manifest = {
-        "schema_version": 1,
-        "series_id": series_id,
-        "c2_run": c2_run,
-        "run": run,
-        "c2_workspace": project_relative(c2_workspace),
-        "workspace": project_relative(target),
-        "generated_by": GOLD_GENERATOR,
-        "generated_at": stamp,
-        "openkos_version": version,
-        "reference_decisions": len(reference.decisions),
-        "decisions_written": len(planned),
-        "dropped": [{"id": d.decision_id, "reason": d.reason} for d in dropped],
-        "evidence_partial": inexact,
-        "relations_written": len(linked),
-        "relations_dropped": list(relations_dropped),
-        "decisions_reference_kind": reference.source_kind,
-        "relations_reference_kind": relations_kind,
-        **(pinned_environment or {}),
-    }
-    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        manifest_path = target / MANIFEST_NAME
+        manifest = {
+            "schema_version": 1,
+            "series_id": series_id,
+            "c2_run": c2_run,
+            "run": run,
+            "c2_workspace": project_relative(c2_workspace),
+            "workspace": project_relative(target),
+            "generated_by": GOLD_GENERATOR,
+            "generated_at": stamp,
+            "openkos_version": version,
+            "reference_decisions": len(reference.decisions),
+            "decisions_written": len(planned),
+            "dropped": [{"id": d.decision_id, "reason": d.reason} for d in dropped],
+            "evidence_partial": inexact,
+            "relations_written": len(linked),
+            "relations_dropped": list(relations_dropped),
+            "decisions_reference_kind": reference.source_kind,
+            "relations_reference_kind": relations_kind,
+            **(pinned_environment or {}),
+        }
+        manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    except BaseException:
+        # No partial workspace: without ``c3-manifest.json`` (written last) it is not a C3 base.
+        shutil.rmtree(target, ignore_errors=True)
+        raise
     return GoldBuildResult(
         workspace=target,
         manifest_path=manifest_path,

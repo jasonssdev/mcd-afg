@@ -111,6 +111,27 @@ def test_runs_c1_and_writes_records_and_manifest(env: dict[str, Any]) -> None:
     assert "6" in _out(result)
 
 
+def test_limit_questions_is_refused_on_evaluation_series(env: dict[str, Any]) -> None:
+    env["monkeypatch"].setattr(afg_cli, "_require_series_gate", lambda *a, **k: "evaluation")
+    result = _invoke(env, "--limit-questions", "2", "--run-name", "lim")
+    assert result.exit_code == 1
+    assert "--limit-questions" in _out(result)
+    assert not (env["out"] / "lim").exists()
+
+
+def test_limit_questions_is_allowed_on_development_series(env: dict[str, Any]) -> None:
+    result = _invoke(env, "--limit-questions", "2", "--runs", "1", "--run-name", "lim")
+    assert result.exit_code == 0, result.output
+
+
+def test_mixed_partitions_are_refused(env: dict[str, Any]) -> None:
+    env["monkeypatch"].setattr(afg_cli, "gate_partition", lambda *a, **k: "mixed")
+    result = _invoke(env, "--run-name", "mix")
+    assert result.exit_code == 1
+    assert "desarrollo" in _out(result) and "evaluación" in _out(result)
+    assert not (env["out"] / "mix").exists()
+
+
 def test_manifest_records_the_reproducibility_fields(env: dict[str, Any]) -> None:
     result = _invoke(env, "--runs", "1", "--run-name", "repro")
     assert result.exit_code == 0, result.output

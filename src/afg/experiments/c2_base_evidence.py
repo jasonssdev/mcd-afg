@@ -44,6 +44,7 @@ ETAPA_VALUES = ("extraccion", "recuperacion", "sintesis")
 """The values a person may write in ``etapa_humana``; code never writes one."""
 WORKSHEET_COLUMNS: tuple[str, ...] = (
     "pregunta_id",
+    "corrida",
     "pregunta",
     "respuesta_referencia",
     "respuesta_c2",
@@ -192,21 +193,15 @@ def _hint(best: ObjectCoverage | None, source: ObjectCoverage | None) -> str:
     return HINT_NO_TERMS
 
 
-def oe4_worksheet_rows(
+def _run_rows(
     c2_records: Sequence[Mapping[str, Any]],
+    run: int,
     questions: Mapping[str, Question],
     bundle_dir: Path,
     *,
-    top: int = 3,
-    include_rule_attributed: bool = False,
+    top: int,
+    include_rule_attributed: bool,
 ) -> list[dict[str, str]]:
-    """One row per incorrect E1 answer whose stage the trace cannot attribute.
-
-    With ``include_rule_attributed`` the failures the rule already attributes (synthesis) get a
-    row too, so a person can label every failure of a run and overrule the rule.
-
-    Rows follow :data:`WORKSHEET_COLUMNS`; ``etapa_humana`` and ``nota`` are always empty.
-    """
     by_question = {str(r["question_id"]): r for r in c2_records}
     out: list[dict[str, str]] = []
     for row in context_rows(c2_records, [], questions):
@@ -226,6 +221,7 @@ def oe4_worksheet_rows(
         out.append(
             {
                 "pregunta_id": row.question_id,
+                "corrida": str(run),
                 "pregunta": question.text,
                 "respuesta_referencia": reference,
                 "respuesta_c2": str((record.get("answer") or {}).get("text", "")),
@@ -239,6 +235,38 @@ def oe4_worksheet_rows(
                 "etapa_humana": "",
                 "nota": "",
             }
+        )
+    return out
+
+
+def oe4_worksheet_rows(
+    c2_records: Sequence[Mapping[str, Any]],
+    questions: Mapping[str, Question],
+    bundle_dir: Path,
+    *,
+    top: int = 3,
+    include_rule_attributed: bool = False,
+) -> list[dict[str, str]]:
+    """One row per incorrect C2 answer on E1 (per question and run) the trace cannot attribute.
+
+    With ``include_rule_attributed`` the failures the rule already attributes (synthesis) get a
+    row too, so a person can label every failure of a run and overrule the rule.
+
+    Rows follow :data:`WORKSHEET_COLUMNS`; ``etapa_humana`` and ``nota`` are always empty.
+    """
+    only_c2 = [r for r in c2_records if str(r.get("condition")) == "C2"]
+    runs = sorted({int(r.get("run") or 0) for r in only_c2})
+    out: list[dict[str, str]] = []
+    for run in runs:
+        out.extend(
+            _run_rows(
+                [r for r in only_c2 if int(r.get("run") or 0) == run],
+                run,
+                questions,
+                bundle_dir,
+                top=top,
+                include_rule_attributed=include_rule_attributed,
+            )
         )
     return out
 

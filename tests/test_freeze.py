@@ -14,7 +14,9 @@ from afg.experiments.freeze import (
     build_freeze_record,
     freeze_differences,
     gate_partition,
+    manifest_series,
     read_freeze_record,
+    verify_run_against_freeze,
     write_freeze_record,
 )
 from tests.freeze_fixtures import COMMIT, CONFIG_TEXT, SERIES, make_sources
@@ -284,3 +286,63 @@ def test_the_gate_checks_the_questions_file_it_is_given(
 
     with pytest.raises(SeriesGateError, match="question_bank"):
         gate(sources, record_path, ["ES2002"], questions_path=other)
+
+
+# --- a finished run against the record ------------------------------------------------------------
+
+
+def _manifest(record: dict, **over: object) -> dict:
+    manifest = {
+        "questions_sha256": record["question_bank"]["sha256"],
+        "git_dirty": False,
+        "git_commit": record["code_commit"],
+    }
+    manifest.update(over)
+    return manifest
+
+
+@pytest.fixture
+def record(record_path: Path) -> dict:
+    return read_freeze_record(record_path)
+
+
+def test_a_run_made_on_the_frozen_code_and_bank_has_no_differences(record: dict) -> None:
+    assert verify_run_against_freeze(_manifest(record), record) == []
+
+
+def test_a_run_on_another_bank_is_named(record: dict) -> None:
+    found = verify_run_against_freeze(_manifest(record, questions_sha256="0" * 64), record)
+    assert len(found) == 1 and "banco de preguntas" in found[0]
+    missing = _manifest(record)
+    del missing["questions_sha256"]
+    assert verify_run_against_freeze(missing, record)
+
+
+def test_the_bank_is_not_checked_for_a_run_without_questions(record: dict) -> None:
+    manifest = _manifest(record)
+    del manifest["questions_sha256"]
+    assert verify_run_against_freeze(manifest, record, check_questions=False) == []
+
+
+def test_a_dirty_or_unrecorded_tree_is_named(record: dict) -> None:
+    for dirty in (True, None):
+        found = verify_run_against_freeze(_manifest(record, git_dirty=dirty), record)
+        assert len(found) == 1 and "árbol" in found[0]
+
+
+def test_a_run_on_another_commit_passes_only_when_no_code_differs(record: dict) -> None:
+    manifest = _manifest(record, git_commit="d" * 40)
+    assert verify_run_against_freeze(manifest, record, code_changes=lambda a, b: []) == []
+    found = verify_run_against_freeze(
+        manifest, record, code_changes=lambda a, b: ["src/afg/cli.py"]
+    )
+    assert len(found) == 1 and "src/afg/cli.py" in found[0]
+    assert verify_run_against_freeze(
+        _manifest(record, git_commit=None), record, code_changes=lambda a, b: []
+    )
+
+
+def test_manifest_series_reads_a_list_or_a_comma_string() -> None:
+    assert manifest_series({"series": ["ES2002", "ES2008"]}) == ["ES2002", "ES2008"]
+    assert manifest_series({"series": "ES2002, ES2008"}) == ["ES2002", "ES2008"]
+    assert manifest_series({}) == []

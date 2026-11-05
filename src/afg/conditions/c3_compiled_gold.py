@@ -18,7 +18,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from afg.conditions.c2_compiled_auto import CompiledAutoCondition
+from afg.conditions.c2_compiled_auto import CompiledAutoCondition, WorkspaceNotFoundError
+from afg.extraction.openkos.gold_bundle import MANIFEST_NAME
 from afg.extraction.openkos_adapter import project_relative
 from afg.shared.paths import OPENKOS_C3_WORKSPACES_DIR
 
@@ -32,6 +33,17 @@ class CompiledGoldCondition(CompiledAutoCondition):
 
     base_dir: Path = OPENKOS_C3_WORKSPACES_DIR
     condition_id: str = "C3"
+
+    def _workspace(self, series_id: str, run: int) -> Path:
+        workspace = super()._workspace(series_id, run)
+        if not (workspace / MANIFEST_NAME).is_file():
+            raise WorkspaceNotFoundError(
+                f"The C3 workspace for {series_id} run-{run} ({project_relative(workspace)}) has "
+                f"no {MANIFEST_NAME}: `afg c3 build` did not finish writing it. Rebuild it with "
+                f"`afg c3 build --c2-extraction {self.extraction_run} --series {series_id} "
+                "--overwrite`."
+            )
+        return workspace
 
     def _missing_workspace_message(self, series_id: str, run: int, workspace: Path) -> str:
         return (

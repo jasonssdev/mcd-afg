@@ -732,3 +732,54 @@ def test_pooled_overall_comparison_is_also_guarded() -> None:
         == ("C2", "C1", ALL_STRATA, "correct")
     )
     assert overall.criterion == "insufficient_sample"
+
+
+# ------------------------------------------------ per-stratum minimums (ADR 0021, E3 = 24)
+
+
+def _minimums(e3: int, other: int = 25) -> dict[QuestionStratum, int]:
+    return {s: (e3 if s is QuestionStratum.E3_EVOLUTION else other) for s in QuestionStratum}
+
+
+def _e3_primary(n: int, minimums: dict[QuestionStratum, int] | int):
+    c1 = _bank("C1", [[False, False, False]] * n)
+    c2 = _bank("C2", [[True, True, True]] * n)
+    return analyze_runs(c1 + c2, settings=SETTINGS, min_questions=minimums)
+
+
+def test_stratum_minimum_lets_24_e3_questions_decide() -> None:
+    report = _e3_primary(24, _minimums(24))
+    assert _primary(report).criterion == "supported"
+    assert not any("E3" in w and "mínimo" in w for w in report.warnings)
+    assert _cell(report, "C2", "E3").below_minimum is False
+
+
+def test_stratum_minimum_still_flags_23_e3_questions() -> None:
+    report = _e3_primary(23, _minimums(24))
+    assert _primary(report).criterion == "insufficient_sample"
+    assert any("E3" in w and "24" in w for w in report.warnings)
+    assert _cell(report, "C2", "E3").below_minimum is True
+
+
+def test_flat_minimum_is_still_accepted() -> None:
+    assert _primary(_e3_primary(24, 25)).criterion == "insufficient_sample"
+    assert _primary(_e3_primary(25, 25)).criterion == "supported"
+
+
+def test_other_strata_keep_their_own_minimum() -> None:
+    n = 24
+    records = [
+        r
+        for cond, ok in (("C1", False), ("C2", True))
+        for r in _bank(cond, [[ok] * 3] * n, stratum="E1_point_fact")
+    ]
+    report = analyze_runs(records, settings=SETTINGS, min_questions=_minimums(24))
+    assert _cell(report, "C2", "E1").below_minimum is True
+
+
+def test_h2_uses_the_e3_minimum_of_its_own_stratum() -> None:
+    records = _h2_records([(True, True)] * 25, [(True, False)] * 24)
+    ok = analyze_runs(records, settings=SETTINGS, min_questions=_minimums(24)).h2
+    assert ok.verdict == "supported"
+    short = analyze_runs(records, settings=SETTINGS, min_questions=_minimums(25)).h2
+    assert short.verdict == "insufficient_sample"

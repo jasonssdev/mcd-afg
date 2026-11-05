@@ -44,6 +44,16 @@ def test_evaluation_series_pass_with_a_matching_record(frozen: dict[str, Any]) -
     assert afg_cli._require_series_gate(["ES2002", "ES2008"]) == "evaluation"
 
 
+def test_mixed_partitions_pass_by_default_and_exit_when_refused(
+    frozen: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    assert afg_cli._require_series_gate(["ES2002", "ES2015"]) == "mixed"
+    with pytest.raises(typer.Exit):
+        afg_cli._require_series_gate(["ES2002", "ES2015"], allow_mixed=False)
+    out = " ".join(capsys.readouterr().out.split())
+    assert "desarrollo" in out and "evaluación" in out
+
+
 def test_a_mismatch_exits_naming_the_difference(
     frozen: dict[str, Any], capsys: pytest.CaptureFixture[str]
 ) -> None:

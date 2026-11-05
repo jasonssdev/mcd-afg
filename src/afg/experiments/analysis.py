@@ -41,7 +41,7 @@ from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import asdict, dataclass, replace
 from typing import Any
 
-from afg.domain.question import Question
+from afg.domain.question import Question, QuestionStratum
 from afg.evaluation.metrics import BootstrapCI, bootstrap_ci
 from afg.evaluation.scoring import DevelopmentResultError, IntervalSettings
 from afg.experiments.summary import CitationWidthSummary, citation_width_summary
@@ -135,6 +135,8 @@ H2_NOTE = (
 )
 
 Record = Mapping[str, Any]
+MinQuestions = int | Mapping[QuestionStratum, int]
+"""Minimum of judged questions: one number for every stratum or one per stratum (ADR 0021)."""
 Extractor = Callable[[Record], float | None]
 
 
@@ -242,6 +244,19 @@ def verdict_label(verdict: str) -> str:
 
 def _label(record: Record) -> str:
     return str(record["stratum"]).split("_", 1)[0]
+
+
+def _minimum_for(min_questions: MinQuestions, stratum: str) -> int:
+    """Minimum of judged questions for a stratum label (``E3``) or the pooled ``ALL`` cell.
+
+    A mapping is read per stratum, as ``load_question_bank`` does (an absent stratum has no
+    minimum); the pooled cell takes the largest, which is the most conservative.
+    """
+    if isinstance(min_questions, int):
+        return min_questions
+    if stratum == ALL_STRATA:
+        return max(min_questions.values(), default=0)
+    return next((n for s, n in min_questions.items() if str(s).split("_", 1)[0] == stratum), 0)
 
 
 def _is_error(record: Record) -> bool:
@@ -409,7 +424,7 @@ def analyze_runs(
     records: Iterable[Record],
     *,
     settings: IntervalSettings,
-    min_questions: int,
+    min_questions: MinQuestions,
     min_runs: int = 3,
     allow_development: bool = False,
     questions: Mapping[str, Question] | None = None,
@@ -456,11 +471,12 @@ def analyze_runs(
                 scores_by_cell[(condition, stratum, name)] = scores
                 metrics[name] = _estimate(scores, settings)
             judged_questions = len(scores_by_cell[(condition, stratum, "correct")])
-            below = stratum != ALL_STRATA and judged_questions < min_questions
+            minimum = _minimum_for(min_questions, stratum)
+            below = stratum != ALL_STRATA and judged_questions < minimum
             if below:
                 warnings.append(
                     f"Estrato {stratum} de {condition}: {judged_questions} preguntas juzgadas, "
-                    f"menos del mínimo de {min_questions}."
+                    f"menos del mínimo de {minimum}."
                 )
             cells.append(
                 CellSummary(
@@ -537,7 +553,7 @@ def _compare(
     strata: Sequence[str],
     settings: IntervalSettings,
     warnings: list[str],
-    min_questions: int,
+    min_questions: MinQuestions,
 ) -> list[Comparison]:
     present = {c.condition for c in cells}
     for needed in (PRIMARY_CONDITION, PRIMARY_BASELINE):
@@ -624,7 +640,7 @@ def _gap_differences(
 def _h2(
     scores_by_cell: Mapping[tuple[str, str, str], dict[str, tuple[float, int]]],
     settings: IntervalSettings,
-    min_questions: int,
+    min_questions: MinQuestions,
 ) -> H2Result:
     """H2 of ADR 0018: percentile bootstrap of ``mean(E3 gaps) - mean(E1 gaps)``.
 
@@ -661,17 +677,18 @@ def _h2(
     upper = resampled[min(settings.n_resamples - 1, int((1 - alpha / 2) * settings.n_resamples))]
     verdict = "supported" if lower > 0.0 else ("contrary" if upper < 0.0 else "inconclusive")
     short = [
-        f"{condition} en {stratum} ({n})"
+        f"{condition} en {stratum} ({n}, mínimo {_minimum_for(min_questions, stratum)})"
         for stratum in (H2_DECISION_STRATUM, H2_RELATION_STRATUM)
         for condition in ("C2", "C3")
-        if (n := len(scores_by_cell.get((condition, stratum, "correct"), {}))) < min_questions
+        if (n := len(scores_by_cell.get((condition, stratum, "correct"), {})))
+        < _minimum_for(min_questions, stratum)
     ]
     reason = None
     if short:
         verdict = "insufficient_sample"
         reason = (
-            f"Muestra insuficiente: menos del mínimo prerregistrado de {min_questions} preguntas "
-            f"juzgadas en {', '.join(short)}."
+            "Muestra insuficiente: menos del mínimo prerregistrado de preguntas juzgadas en "
+            f"{', '.join(short)}."
         )
     return H2Result(
         verdict=verdict,
@@ -696,7 +713,7 @@ def _paired(
     scores_by_cell: Mapping[tuple[str, str, str], dict[str, tuple[float, int]]],
     settings: IntervalSettings,
     *,
-    min_questions: int,
+    min_questions: MinQuestions,
     guard_sample: bool = True,
 ) -> Comparison | None:
     scores_a = scores_by_cell[(a, stratum, metric)]
@@ -716,7 +733,8 @@ def _paired(
     sufficient = not (
         guard_sample
         and any(
-            len(scores_by_cell[(condition, stratum, "correct")]) < min_questions
+            len(scores_by_cell[(condition, stratum, "correct")])
+            < _minimum_for(min_questions, stratum)
             for condition in (a, b)
         )
     )

@@ -55,7 +55,9 @@ __all__ = [
     "code_changes_since",
     "freeze_differences",
     "gate_partition",
+    "manifest_series",
     "read_freeze_record",
+    "verify_run_against_freeze",
     "write_freeze_record",
 ]
 
@@ -204,15 +206,18 @@ def read_freeze_record(path: Path) -> dict[str, Any]:
     return record
 
 
-def code_changes_since(commit: str, root: Path = PROJECT_ROOT) -> list[str]:
+def code_changes_since(
+    commit: str, root: Path = PROJECT_ROOT, *, until: str | None = None
+) -> list[str]:
     """Code files (``src``, ``pyproject.toml``, ``uv.lock``) that differ from ``commit``.
 
-    Compares the working tree, so uncommitted edits count. An unknown commit or no git raises
-    :class:`FreezeError`.
+    Compares the working tree, so uncommitted edits count, or the commit ``until`` when given.
+    An unknown commit or no git raises :class:`FreezeError`.
     """
+    span = [commit] if until is None else [commit, until]
     try:
         done = subprocess.run(
-            ["git", "diff", "--name-only", commit, "--", *CODE_PATHS],
+            ["git", "diff", "--name-only", *span, "--", *CODE_PATHS],
             cwd=root,
             capture_output=True,
             text=True,
@@ -222,6 +227,63 @@ def code_changes_since(commit: str, root: Path = PROJECT_ROOT) -> list[str]:
     except (subprocess.SubprocessError, OSError) as exc:
         raise FreezeError(f"no se pudo comparar el código con el commit {commit[:7]}") from exc
     return [line for line in done.stdout.splitlines() if line]
+
+
+def manifest_series(manifest: Mapping[str, Any]) -> list[str]:
+    """Series of a run manifest: a list (Experiment B) or a comma-separated string (A)."""
+    series = manifest.get("series") or []
+    if isinstance(series, str):
+        series = series.split(",")
+    return [str(s).strip() for s in series if str(s).strip()]
+
+
+def verify_run_against_freeze(
+    manifest: Mapping[str, Any],
+    record: Mapping[str, Any],
+    *,
+    check_questions: bool = True,
+    code_changes: Callable[[str, str], list[str]] | None = None,
+) -> list[str]:
+    """Differences between a finished run's manifest and the freeze record (empty: it matches).
+
+    The run must have used the frozen question bank (``check_questions``, for the runs that read
+    questions), a clean git tree, and the frozen code: its commit is the frozen one or differs
+    from it in no code file (``code_changes(frozen, run)``, by default ``git diff``), so a later
+    commit that only adds the record itself or docs still matches.
+    """
+    found: list[str] = []
+    if check_questions:
+        frozen_bank = record["question_bank"]["sha256"]
+        used = manifest.get("questions_sha256")
+        if used != frozen_bank:
+            found.append(
+                f"banco de preguntas: la corrida usó la huella {used or 'desconocida'}, "
+                f"congelada {frozen_bank}"
+            )
+    if manifest.get("git_dirty") is not False:
+        found.append(
+            "árbol de trabajo: la corrida se hizo con cambios sin confirmar o no registró "
+            f"su estado (git_dirty = {manifest.get('git_dirty')})"
+        )
+    frozen = str(record["code_commit"])
+    commit = manifest.get("git_commit")
+    if commit != frozen:
+        if not commit:
+            found.append(f"código: la corrida no registró su commit, congelado {frozen[:7]}")
+        else:
+            try:
+                changed = (code_changes or (lambda a, b: code_changes_since(a, until=b)))(
+                    frozen, str(commit)
+                )
+            except FreezeError as exc:
+                found.append(f"código: {exc}")
+            else:
+                if changed:
+                    found.append(
+                        f"código: la corrida se hizo en {str(commit)[:7]}, que difiere del commit "
+                        f"congelado {frozen[:7]} ({', '.join(changed)})"
+                    )
+    return found
 
 
 def _compare(

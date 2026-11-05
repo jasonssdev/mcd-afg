@@ -195,3 +195,19 @@ def test_c3_manifest_records_the_pinned_environment_check(env: dict[str, Any]) -
     workspace = env["c3"] / C2_RUN / "ES2015" / "run-0"
     manifest = json.loads((workspace / "c3-manifest.json").read_text(encoding="utf-8"))
     assert manifest["pinned_environment_ok"] is True
+
+
+def test_make_c3_condition_requires_the_build_manifest(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    base = tmp_path / "c3"
+    workspace = base / C2_RUN / "ES2015" / "run-0"
+    (workspace / "bundle").mkdir(parents=True)
+    monkeypatch.setattr(afg_cli, "OPENKOS_C3_WORKSPACES_DIR", base)
+
+    with pytest.raises(ValueError, match=r"c3-manifest\.json") as raised:
+        afg_cli.make_c3_condition(C2_RUN)
+    assert "ES2015/run-0" in str(raised.value)
+
+    (workspace / "c3-manifest.json").write_text("{}", encoding="utf-8")
+    assert afg_cli.make_c3_condition(C2_RUN).condition_id == "C3"

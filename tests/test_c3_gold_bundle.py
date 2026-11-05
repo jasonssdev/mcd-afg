@@ -280,6 +280,21 @@ def test_failed_reindex_is_an_error(env: dict[str, Path]) -> None:
         _build(env, FakeRunner(reindex_code=1))
 
 
+def test_failed_build_leaves_no_partial_workspace(env: dict[str, Path]) -> None:
+    with pytest.raises(OpenKosCommandError):
+        _build(env, FakeRunner(reindex_code=1))
+    assert not env["target"].exists()
+
+
+def test_failed_build_over_an_overwritten_workspace_leaves_nothing_behind(
+    env: dict[str, Path],
+) -> None:
+    _build(env)
+    with pytest.raises(OpenKosCommandError):
+        _build(env, FakeRunner(reindex_code=1), overwrite=True)
+    assert not env["target"].exists()
+
+
 def test_refuses_to_overwrite_unless_asked(env: dict[str, Path]) -> None:
     _build(env)
     (env["target"] / "marker").write_text("x", encoding="utf-8")
