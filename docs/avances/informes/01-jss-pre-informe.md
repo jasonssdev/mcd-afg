@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 01 — Pre-informe AFG2 |
 | **Autores** | Jason Sepúlveda S., Germán Vega, Gustavo Martínez |
-| **Versión** | 0.2 (borrador para revisión del equipo) |
-| **Fecha** | 2026-11-02 |
+| **Versión** | 0.3 (borrador para revisión del equipo) |
+| **Fecha** | 2026-11-05 |
 | **Estado** | Borrador |
 
 ## Historial de versiones
@@ -14,6 +14,7 @@
 |---|---|---|---|
 | 0.1 | 2026-11-02 | Borrador inicial, redactado a partir de los avances 01 a 10 (modelos en su versión 12.0). No se ha enviado. | Pre-informe de AFG2, con entrega el 2026-11-09. |
 | 0.2 | 2026-11-02 | Se cita OpenKOS 0.7.0 como software (repositorio público, licencia Apache 2.0) en el texto y en las referencias. | La referencia faltaba; avance 04 v1.7. |
+| 0.3 | 2026-11-05 | Se actualiza el estado de la referencia: el *ground truth* está cerrado en las 14 series (antes «6 de 14»), el recall del filtro léxico se reporta (0,407; ADR 0020) y se retira la nota de pendientes que decía que estaban en curso. | Cierre de la Fase 3 de anotación, ADR 0020 y auditoría previa a la primera corrida formal (ADR 0023). |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (0.1 → 0.2). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero y **debe declarar la evidencia
@@ -109,7 +110,7 @@ El PM respalda el 47,0 % de los actos, casi el doble de un reparto uniforme; sig
 
 Anotar a mano los 3.071 pares tomaría unas 77 horas y casi todos no se relacionan, así que un filtro léxico conserva los pares con *overlap coefficient* (palabras compartidas sobre las de la frase más corta) de al menos 0,30 y al menos 2 palabras de contenido en común: el coeficiente solo deja 712 pares (23,2 %) y con el mínimo absoluto quedan 92 (3,0 %, unas 2,3 horas). Se prefirió a Jaccard porque una reversión suele ser una frase corta que apunta a una larga: sobre el par de control del botón turbo Jaccard da 0,118 y lo pierde, y el *overlap coefficient* da 0,400.
 
-El filtro tiene un sesgo medido: si la decisión más corta del par tiene 2 o 3 palabras, deja pasar apenas 0,3 % y 2,0 % de los pares, frente a 36,6 % y 42,1 % con el coeficiente solo, y probablemente descarta relaciones reales entre frases muy cortas. Por eso 92 es lo máximo que deja anotar, no el número de relaciones del corpus. Su *recall* se medirá con 200 pares rechazados (tres series ya anotadas); la cifra aún no se reporta.
+El filtro tiene un sesgo medido: si la decisión más corta del par tiene 2 o 3 palabras, deja pasar apenas 0,3 % y 2,0 % de los pares, frente a 36,6 % y 42,1 % con el coeficiente solo, y probablemente descarta relaciones reales entre frases muy cortas. Por eso 92 es lo máximo que deja anotar, no el número de relaciones del corpus. Su *recall* se midió con 200 pares rechazados (cuatro series): 0,407, con intervalo de Wilson al 95 % de 0,245 a 0,596 (6 falsos negativos); se mantiene el filtro y la pérdida se declara como limitación de la referencia de relaciones (ADR 0020).
 
 ## 5. Modelo de aprendizaje de máquinas
 
@@ -126,7 +127,7 @@ El proyecto **no entrena ningún modelo**: los modelos de lenguaje (LLM) ya vien
 | C2 | Base compilada por máquina con OpenKOS 0.7.0 | Propuesta evaluada |
 | C3 | La misma base, construida desde el *ground truth* adjudicado | Referencia superior |
 
-La distancia entre C1 y C3 mide el valor del sistema compilado; la de C3 a C2, que usan el mismo sistema, el costo de los errores de la máquina. Como C1 y C2/C3 difieren también en la etapa de respuesta, su diferencia no puede repartirse entre representación y respuesta (limitación declarada). C3 aún no puede ejecutarse: el *ground truth* está adjudicado para 6 de las 14 series.
+La distancia entre C1 y C3 mide el valor del sistema compilado; la de C3 a C2, que usan el mismo sistema, el costo de los errores de la máquina. Como C1 y C2/C3 difieren también en la etapa de respuesta, su diferencia no puede repartirse entre representación y respuesta (limitación declarada). El *ground truth* está cerrado para las 14 series (6 adjudicadas por doble anotación y 8 de un solo anotador), de modo que C3 puede construirse en la corrida formal.
 
 ### 5.2 Modelos, parámetros y su justificación
 
@@ -331,4 +332,4 @@ Cada cifra del informe proviene de un avance; ninguna se calculó aquí.
 
 - La escala de lectura del kappa (Sección 6.1) se menciona sin autor porque el avance 04 no incluye Landis y Koch; si se quiere citar, agregar la referencia.
 - El encuadre de «el modelo» como *pipeline* (Sección 5.1) y la presentación de solo resultados de desarrollo siguen pendientes de confirmación con el tutor (avance 09, §1).
-- El recall del filtro léxico (Sección 4.3) y la adjudicación completa del *ground truth* (Sección 5.1) están en curso; actualizar antes del envío.
+- El recall del filtro léxico (Sección 4.3) y la adjudicación del *ground truth* (Sección 5.1) ya están cerrados; las corridas formales esperan el recongelamiento (ADR 0023). Revisar el resto del texto contra esas cifras antes del envío.

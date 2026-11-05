@@ -57,20 +57,26 @@ Para crear uno nuevo, sigue la lista de pasos de [`CONTRIBUTING.md` §7.3](../CO
 | 24 | `24-jss-figuras-pre-informe.ipynb` | Dos figuras del pre-informe, exportadas a `docs/entregables/figuras/`: la autoría de las decisiones por rol (PM 47,0 %, ID 22,8 %, ME 15,3 %, UI 14,9 % sobre 685 actos de las 14 series) con la proporción del PM en cada sitio (de 44,0 % a 49,8 %), de `afg.audit.role_authorship` (notebook 00); y el acuerdo entre anotadores de la Fase 2 de OE1 (existencia: 37 pares, acuerdo 89,2 %, kappa 0,783; tipo: 18 pares, 72,2 %, 0,554; dirección: 37 pares, 100 %, kappa indefinido), de `afg.annotation.pooled.pooled_agreement_report` en su alcance de la Fase 2 (notebook 18). No calcula nada nuevo y solo lee estadísticas agregadas (ADR [0005](../docs/decisions/0005-adr-development-evaluation-split.md)). Necesita el corpus | ✅ |
 | 25 | `25-jss-canal-semantico-del-bloqueador.ipynb` | Insumo para la decisión sobre la pérdida del bloqueador léxico (notebook 18, §8): qué aportaría un canal semántico (similitud coseno de `bge-m3`) y cuánto costaría anotar sus pares nuevos. Describe los 6 falsos negativos de la Tarea C solo con medidas estructurales (3 sin tokens en común, 3 con uno), y para una grilla de umbrales de 0,50 a 0,90 mide falsos negativos recuperados, relaciones conservadas detectadas, falsas alarmas (Wilson), pares nuevos por serie y total, y recall estimado de la unión; añade la sensibilidad de aflojar el umbral léxico. De `afg.annotation.semantic_channel`. No elige umbral ni camino: los umbrales se exploran sobre los mismos 6 falsos negativos, de modo que son optimistas. Solo muestra identificadores y medidas agregadas (ADR [0005](../docs/decisions/0005-adr-development-evaluation-split.md)). Necesita el corpus y Ollama con `bge-m3` | ✅ |
 | 26 | `26-jss-minimo-e3-relaciones-disponibles.ipynb` | Respaldo del ADR [0021](../docs/decisions/0021-adr-minimo-de-e3-segun-relaciones-disponibles.md): cuenta las relaciones de evolución distintas (`refina`, `revierte`, `reemplaza`) de la referencia de las 11 series de evaluación, serie por serie y solo con identificadores de par (24 en total, sin contar decisiones hijas aparte), deriva el mínimo de E3 (`min(25, disponibles)` = 24) y mide con la simulación del notebook 10 la potencia con 24, 25 y 40 preguntas (criterio pareado, dispersión 1, exactitud base 0,5: con +0,15 pasa de 57,5 % a 53,1 %; con +0,20, de 79,5 % a 77,0 %). De `afg.evaluation.relations` y `afg.experiments.question_bank`. Solo muestra identificadores y medidas agregadas (ADR [0005](../docs/decisions/0005-adr-development-evaluation-split.md)). No necesita el corpus ni Ollama | ✅ |
-| — | `NN-jss-anotacion-f3-referencia.ipynb` | Anotación humana, Fase 3: reparto individual y conjunto de referencia final de las 14 series | pendiente |
 | — | `NN-jss-experimento-a.ipynb` | OE2 — calidad de la extracción automática contra la referencia | pendiente |
 | — | `NN-jss-experimento-b.ipynb` | OE3/OE4 — C1 vs C2 vs C3 y atribución del error a su etapa | pendiente |
 
+> **La Fase 3 no tiene notebook propio.** Su reparto individual produjo los CSV de referencia
+> de las 14 series (los archivos son el resultado) y las cifras que la tesis cita de ella se
+> leen en el [18](18-jss-anotacion-f2-adjudicacion.ipynb) (adjudicación y recall del bloqueador),
+> el [25](25-jss-canal-semantico-del-bloqueador.ipynb) (pérdida del bloqueador léxico) y el
+> [26](26-jss-minimo-e3-relaciones-disponibles.ipynb) (relaciones de evolución disponibles).
+> Por eso el antiguo marcador `NN-jss-anotacion-f3-referencia` se retiró de esta lista.
+>
 > **Por qué el 01 y los notebooks de anotación están separados.** El 01 contiene etiquetas
-> puestas por una máquina, con fines de planificación. Los de anotación (el 04 y los de las
-> Fases 2 y 3) contienen la anotación real, hecha a mano, y el conjunto de
+> puestas por una máquina, con fines de planificación. Los de anotación (el 04 y el 18)
+> contienen la anotación real, hecha a mano, y el conjunto de
 > referencia resultante. Mezclarlos invitaría a que alguien cite las provisionales como si
 > fueran la referencia.
 >
 > **Por qué un notebook por fase de anotación.** Cada fase responde una pregunta distinta con
-> un estatus distinto: la Fase 1 es diagnóstico (su kappa no se reporta), la Fase 2 produce el
-> kappa reportable y la Fase 3 el conjunto de referencia. Un solo notebook mezclaría cifras
-> que se citan con cifras que no.
+> un estatus distinto: la Fase 1 es diagnóstico (su kappa no se reporta) y la Fase 2 produce el
+> kappa reportable; la Fase 3 entrega los CSV de la referencia final. Un solo notebook mezclaría
+> cifras que se citan con cifras que no.
 
 ## Regla de arquitectura: el notebook no calcula
 
@@ -88,7 +94,7 @@ que le corresponde (`corpus`, `eda`, `experiments`, `extraction`). Las cifras qu
 calculaban en línea (el embudo del filtro y sus horas, la cobertura de la capa `disfluency`, el
 resumen del manifiesto, las fechas de las reuniones, la potencia del criterio D16, las columnas
 de citación y el rol de cada juez candidato) salen hoy de funciones con prueba, así que la regla
-rige para toda la serie (los 23 notebooks, del 00 al 22).
+rige para toda la serie (los 27 notebooks, del 00 al 26).
 
 ## Regla de alcance: qué se puede mirar
 

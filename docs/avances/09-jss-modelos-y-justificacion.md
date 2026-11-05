@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 09 — Modelos y su justificación |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 12.3 |
+| **Versión** | 12.4 |
 | **Fecha** | 2026-11-05 |
 | **Estado** | Vigente |
 
@@ -35,6 +35,7 @@
 | 12.1 | 2026-11-03 | Decisión 11 de la sección 11 (*recall* del filtro léxico): pasa de pendiente a resuelta, con la cifra final de las cuatro muestras. No cambian modelos, condiciones ni otras cifras. | Anotación de la Tarea C de IS1004 (#203) y cierre del issue #205; [notebook 18](../../notebooks/18-jss-anotacion-f2-adjudicacion.ipynb), §8. |
 | 12.2 | 2026-11-03 | Decisión 11 de la sección 11 (*recall* del filtro léxico): se registra que el filtro se mantiene y la pérdida se declara como limitación de la referencia de relaciones. No cambian modelos, condiciones ni cifras. | [ADR 0020](../decisions/0020-adr-se-mantiene-el-bloqueador-lexico.md), decisión de jss del 2026-11-03. |
 | 12.3 | 2026-11-05 | Sección 11 (estado del congelamiento): la ground truth, el banco de preguntas y el registro del congelamiento pasan de pendientes a congelados, y C3 queda listo para construirse. Solo sigue pendiente la verificación humana del juez. No cambian modelos, condiciones ni cifras. | [ADR 0022](../decisions/0022-adr-congelamiento-de-las-corridas-formales.md) y `config/freeze.json`; banco validado en #280 ([ADR 0021](../decisions/0021-adr-minimo-de-e3-segun-relaciones-disponibles.md)). |
+| 12.4 | 2026-11-05 | El tamaño del Experimento B pasa de «100 preguntas como mínimo» a 99 preguntas (24 en E3), unas 1.188 respuestas. No cambian modelos ni cifras de desarrollo. La tabla de la partición (sección 4) pasa de «0 escritas de 115 filas» a «99 validadas». | Banco cerrado ([ADR 0021](../decisions/0021-adr-minimo-de-e3-segun-relaciones-disponibles.md)). |
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
 > la evidencia que lo motivó**. El historial nunca se reescribe: se agrega una fila.
@@ -235,7 +236,7 @@ propone como posiblemente relacionadas, para anotar su relación; hay 92 de 3.07
 | Partición | Series | Reuniones | Frases de decisión | Pares entre reuniones | Pares candidatos | Preguntas |
 |---|---|---|---|---|---|---|
 | Desarrollo | 3 (21,4 %) | 12 (21,4 %) | 77 (22,4 %) | 688 (22,4 %) | 11 (12,0 %) | 21 (100,0 %) |
-| Evaluación | 11 (78,6 %) | 44 (78,6 %) | 266 (77,6 %) | 2.383 (77,6 %) | 81 (88,0 %) | 0 escritas de 115 filas del banco |
+| Evaluación | 11 (78,6 %) | 44 (78,6 %) | 266 (77,6 %) | 2.383 (77,6 %) | 81 (88,0 %) | 99 validadas (25/25/24/25) |
 | Total OE1 | 14 (100,0 %) | 56 (100,0 %) | 343 (100,0 %) | 3.071 (100,0 %) | 92 (100,0 %) | — |
 | Reserva | 18 | sin medir | sin medir | sin medir | sin medir | sin medir |
 
@@ -243,8 +244,9 @@ propone como posiblemente relacionadas, para anotar su relación; hay 92 de 3.07
 
 El reparto es deliberado: lo que se usa para elegir es poco y lo que se usa para reportar es la
 gran mayoría. Las 21 preguntas de calibración son todas de ES2015. El banco de evaluación tiene
-115 filas numeradas y 0 escritas, de modo que todavía no puede existir ningún resultado sobre
-preguntas de evaluación. La reserva (18 series) no se ha medido ni tocado; está disponible si
+99 preguntas validadas (25 en E1, E2 y E4; 24 en E3, [ADR 0021](../decisions/0021-adr-minimo-de-e3-segun-relaciones-disponibles.md)),
+y todavía no existe ningún resultado sobre ellas: la primera corrida formal viene después del
+congelamiento. La reserva (18 series) no se ha medido ni tocado; está disponible si
 E3 necesita más material.
 
 ### 4.2 Congelar antes de evaluar
@@ -475,7 +477,7 @@ dominio de la tesis, reuniones donde lo que importa es la decisión, es parte de
 
 ### 6.3 Juez: calibración de tres candidatos
 
-El Experimento B genera unas 1.200 respuestas (100 preguntas como mínimo × 4 condiciones,
+El Experimento B genera unas 1.200 respuestas (99 preguntas × 4 condiciones,
 con C0, × 3 corridas; el cálculo del notebook 07 contaba tres condiciones). Calificarlas a mano es inviable para un equipo de tres personas, así que
 las califica un **LLM-as-a-judge**: un segundo modelo que lee la pregunta, la respuesta de
 referencia, la respuesta del sistema y el pasaje de la transcripción donde está la evidencia.

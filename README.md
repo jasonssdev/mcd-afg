@@ -303,7 +303,7 @@ uv run afg gold agreement --series IS1004          # kappa: existencia / tipo / 
 uv run afg gold validate --annotator <iniciales>   # verifica tu trabajo antes de abrir el PR
 uv run afg gold status                             # panel: una fila por anotador y serie; con --annotator, estado y «Siguiente: …»
 uv run afg gold adjudicate --series ES2015         # escribe los dos CSV de adjudicación (prellenados donde hay acuerdo)
-uv run afg gold questions-init                     # (mantenedor) crea el banco vacío: 25 filas por estrato y 40 en E3 (115 en total); se niega a regenerar un banco con preguntas escritas
+uv run afg gold questions-init                     # (mantenedor) crea el banco vacío (plantilla de 115 filas: 25 por estrato y 40 en E3; el banco cerrado tiene 99 preguntas, 24 en E3, ADR 0021); se niega a regenerar un banco con preguntas escritas
 uv run afg gold questions-check                   # revisa el banco de preguntas fila por fila, sin correr nada (--complete exige el mínimo validado por estrato)
 uv run afg gold validate-adjudication --series ES2015   # verifica que el adjudicador terminó los dos CSV
 
@@ -334,7 +334,7 @@ uv run afg experiment b             # Experimento B: preguntas x condiciones x c
 uv run afg experiment b-report      # análisis del Experimento B: tasas, intervalos bootstrap y comparación D16
 uv run afg experiment b-sample      # muestra para la verificación humana: una corrida por pregunta y condición
 uv run afg experiment b-human-check # acuerdo juez-humano (kappa de Cohen) por etiqueta, con el umbral prerregistrado
-uv run afg freeze write --adr <número>  # (mantenedor, una sola vez) escribe config/freeze.json al cerrar el ADR de congelamiento (#237); las series de evaluación solo corren con ese registro (docs/protocols/congelamiento.md)
+uv run afg freeze write --adr <número>  # (mantenedor, una sola vez) escribe config/freeze.json tras fusionar el ADR de congelamiento (ADR 0023, que reemplaza al 0022; #237); las series de evaluación solo corren con ese registro (docs/protocols/congelamiento.md)
 ```
 
 ### Notebooks
@@ -357,10 +357,26 @@ uv run jupyter lab
 | 09 | `09-jss-regla-de-citacion.ipynb` | Análisis de la regla de citación correcta (§5.6, §6.2) sobre la corrida de humo con C1 |
 | 10 | `10-jss-potencia-criterio-d16.ipynb` | Potencia del criterio principal D16 por simulación con datos sintéticos: intervalos independientes sin solapar frente a diferencia pareada C2 − C1 (respalda la enmienda del ADR 0010) |
 | 11 | `11-jss-figuras-video-eda.ipynb` | Selección de las cinco figuras del video de avance #1 y su exportación como PNG a `docs/entregables/figuras/` |
-| — | *(pendiente)* `NN-jss-anotacion-f2-control.ipynb` | Anotación humana, Fase 2: series de control, kappa reportable |
-| — | *(pendiente)* `NN-jss-anotacion-f3-referencia.ipynb` | Anotación humana, Fase 3: conjunto de referencia final |
+| 12 | `12-jss-extraccion-openkos-es2015.ipynb` | Corrida exploratoria de extracción con OpenKOS sobre ES2015 (serie de desarrollo) |
+| 13 | `13-jss-anchura-de-citas.ipynb` | Anchura de las citas de C1 y C2 y su efecto en la regla de citación correcta |
+| 14 | `14-jss-alineacion-experimento-a.ipynb` | Ámbito, rol e intervalos de la alineación del Experimento A sobre las corridas de ES2015 |
+| 15 | `15-jss-screen-de-modelos-openkos.ipynb` | Screen prerregistrado de cuatro modelos generativos para el pase de decisiones de OpenKOS |
+| 16 | `16-jss-c2-fuentes-e1.ipynb` | Qué contexto recupera C2 en las preguntas de hecho puntual (E1) frente a C1 |
+| 17 | `17-jss-tau-referencia-en.ipynb` | Evidencia para fijar τ con la referencia traducida al inglés |
+| 18 | `18-jss-anotacion-f2-adjudicacion.ipynb` | Anotación humana, Fase 2: doble anotación, adjudicación de las cuatro series de control y recall del bloqueador léxico |
+| 19 | `19-jss-modelos.ipynb` | Etapa de modelado (AFG2, semana 4): modelos por rol, línea base C0/C1/C2 en desarrollo, variabilidad y costo |
+| 20 | `20-gm-mejoras-modelado.ipynb` | Complemento del 19: extractor `qwen3:8b` frente a `qwen3.6:27b` y etapa de las fallas de C2 en E1 |
+| 21 | `21-jss-extraccion-de-conceptos-openkos.ipynb` | Decisiones de OpenKOS sobre la extracción de conceptos con que se construye C2 |
+| 22 | `22-jss-relaciones-temporales-openkos.ipynb` | Puntuación de las relaciones temporales de C2 en desarrollo |
+| 23 | `23-jss-ensayo-general-es2015.ipynb` | Ensayo general de la cadena completa sobre ES2015 (serie de desarrollo) |
+| 24 | `24-jss-figuras-pre-informe.ipynb` | Dos figuras del pre-informe |
+| 25 | `25-jss-canal-semantico-del-bloqueador.ipynb` | Qué aportaría un canal semántico al bloqueador léxico y cuánto costaría anotarlo |
+| 26 | `26-jss-minimo-e3-relaciones-disponibles.ipynb` | Relaciones de evolución disponibles en las once series de evaluación: respaldo del ADR 0021 (mínimo de E3 = 24) |
 | — | *(pendiente)* `NN-jss-experimento-a.ipynb` | OE2 — calidad de la extracción automática |
 | — | *(pendiente)* `NN-jss-experimento-b.ipynb` | OE3/OE4 — C1 vs C2 vs C3 y atribución del error (el 07 cubre solo el motor de corrida y la corrida de humo) |
+
+La Fase 3 de anotación no tiene notebook propio: su resultado son los CSV de la referencia, y
+sus cifras se leen en los notebooks 18, 25 y 26.
 
 Los notebooks pendientes no tienen número reservado: cada uno toma el siguiente número libre
 al crearse.
@@ -437,22 +453,26 @@ Tres convenciones que más se rompen sin querer:
 
 ## 8. Estado
 
-**Los experimentos no han empezado.** El corpus está descargado, auditado y la muestra elegida;
-las herramientas de construcción del conjunto de referencia están implementadas y con test.
-Falta la anotación humana, y con ella todo lo demás.
+**Las corridas formales todavía no han empezado.** El corpus está descargado y auditado, y el
+conjunto de referencia (OE1) está cerrado: las 14 series anotadas, los desacuerdos de las
+series de doble anotación adjudicados y las traducciones al inglés hechas. El banco de preguntas está cerrado con 99
+preguntas validadas (E1 25, E2 25, E3 24 y E4 25; E3 queda en 24 porque las once series de
+evaluación ofrecen 24 relaciones de evolución distintas, ADR 0021), y el recall del bloqueador
+léxico se midió en 0,407 (ADR 0020).
 
-Existe además el andamiaje del Experimento B: el motor de corrida (`afg experiment b`), la
-línea base C1 con su ajuste (`afg c1 tune`, `afg c1 ask`) y una corrida de humo de desarrollo
-sobre ES2015, cuyas cifras no entran en resultados (ADR 0005). Las corridas reales están en
-pausa (OpenKOS ya está fijado en la 0.7.0, #94) hasta contar con su lector del bundle y la corrida de
-extracción (#95), terminar el banco de preguntas y la sesión de adjudicación.
+Antes de la primera corrida formal una auditoría encontró defectos de código y huecos del
+registro de congelamiento; se corrigen en el PR #283 y el [ADR 0023](docs/decisions/0023-adr-recongelamiento-tras-la-auditoria.md)
+**reemplaza al ADR 0022**. Las corridas de los Experimentos A y B (OE2 y OE3) esperan solo a
+que ese ADR se fusione y se escriba `config/freeze.json` (#237). Hasta entonces el bloqueo de
+`afg` impide cualquier corrida sobre series de evaluación; las series de desarrollo (ES2015,
+IS1004, TS3009) corren sin registro y sus cifras no entran en resultados (ADR 0005).
 
 | | Objetivo | Estado | Curso |
 |---|---|---|---|
-| **OE1** | Conjunto de referencia con relaciones entre reuniones | Herramientas listas; falta anotar | AFG1 → AFG2 |
-| **OE2** | Calidad de la extracción automática | No empezado | AFG2 |
-| **OE3** | Comparación C1 / C2 / C3 | Motor de corrida y C1 listos; C2 y C3 pendientes de OpenKOS | AFG2 |
-| **OE4** | Atribución del error a su etapa de origen | Código listo; nada que correr | AFG3 |
+| **OE1** | Conjunto de referencia con relaciones entre reuniones | Cerrado | AFG1 → AFG2 |
+| **OE2** | Calidad de la extracción automática | Listo para correr, a la espera del registro de congelamiento | AFG2 |
+| **OE3** | Comparación C0 / C1 / C2 / C3 | Listo para correr, a la espera del registro de congelamiento | AFG2 |
+| **OE4** | Atribución del error a su etapa de origen | Código listo; las etiquetas de etapa las pone una persona tras la corrida de B | AFG3 |
 
 Lo pendiente, por prioridad, está en los **issues de GitHub**.
 

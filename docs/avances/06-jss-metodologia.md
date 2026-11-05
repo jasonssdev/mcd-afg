@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 06 — Metodología |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 10.0 |
-| **Fecha** | 2026-11-02 |
+| **Versión** | 10.1 |
+| **Fecha** | 2026-11-05 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -40,6 +40,7 @@
 | 9.0 | 2026-11-02 | El ajuste de C1 (§3–4) se repite sobre el cuerpo Markdown de la transcripción, que C1 corta con un divisor de texto genérico (sin la estructura de turnos): el resultado pasa de fragmentos de 1.200 caracteres con 1 turno de solapamiento y K = 5 a **fragmentos de 1.200 caracteres, sin solapamiento, y K = 5** (cambia la segmentación; el K se mantiene). El espacio de C1 para los fragmentos se calcula con la sobrecarga de instrucciones de OpenKOS, de modo que es casi igual al de C2 (unos 8.700 frente a 8.300 caracteres). | Decisión del autor del proyecto del 2026-11-02: C1 recibe el mismo documento que OpenKOS, como un RAG convencional. Evidencia: [ADR 0007](../decisions/0007-adr-ajuste-c1-y-presupuesto-de-contexto.md) (enmienda del 2026-11-02), [ADR 0014](../decisions/0014-adr-c1-como-rag-convencional.md) (enmienda del 2026-11-02) y [notebook 06](../../notebooks/06-jss-ajuste-c1.ipynb). |
 | 9.1 | 2026-11-02 | Se registra el resultado de la concordancia del juez de τ con una persona sobre 50 pares (§1, §5–6), que la versión 6.0 dejó pendiente: acuerdo sustancial, juez más estricto que la persona, y por eso las cifras de alineación del Experimento A con τ = 0,70 son un piso conservador. Se mantiene τ = 0,70 y no cambian otros umbrales ni cifras. | Acuerdo de 43 de 50 pares (86 %), kappa 0,716 (IC 95 % de 0,520 a 0,880); los 7 desacuerdos son del juez en «no» y la persona en «sí»; por debajo de 0,70 el juez dice «sí» en el 21 % de los pares y la persona en el 42 % ([ADR 0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md), [notebook 17](../../notebooks/17-jss-tau-referencia-en.ipynb) §8). Evidencia limitada: 24 pares bajo el umbral, una sola persona que además adjudica y mantiene el proyecto, y solo ES2015 y TS3009. Protocolo [`../protocols/alignment.md`](../protocols/alignment.md) 3.1. |
 | 10.0 | 2026-11-02 | C0, el mismo generador respondiendo sin ningún texto de apoyo, deja de ser solo un diagnóstico de desarrollo y entra en la corrida formal del Experimento B como referencia sin recuperación (§3–4, fase 3 y tamaño de la corrida). Las tres condiciones de la comparación principal no cambian, ni el criterio D16 ni las hipótesis. | Decisión del autor del proyecto del 2026-11-02, registrada en el [ADR 0019](../decisions/0019-adr-c0-en-la-corrida-formal-del-experimento-b.md). El avance anterior solo describía a C0 como diagnóstico de desarrollo. |
+| 10.1 | 2026-11-05 | Se sustituyen las cifras provisionales de E3 por las medidas: el mínimo es 24 (antes «≥ 25, hasta 40» y ≈ 37 relaciones proyectadas) y la adjudicación pendiente de las series de evaluación está cerrada. No cambian hipótesis, umbrales ni el criterio D16. | Medición de las relaciones de evolución de la referencia ([ADR 0021](../decisions/0021-adr-minimo-de-e3-segun-relaciones-disponibles.md), notebook 26) y cierre de la Fase 3 de anotación. |
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
 > la evidencia que lo motivó**. El historial nunca se reescribe: se agrega una fila.
@@ -149,7 +150,7 @@ datos y cualquier cambio se registra en `docs/decisions/`.
 |---|---|---|
 | Concordancia del alineamiento automático con el emparejamiento manual (100 pares) | ≥ 0,80 | Se revisa la grilla de τ y se repite la validación |
 | Concordancia LLM-as-a-judge – humano (20 % de las respuestas, una corrida por pregunta y condición), por etiqueta | kappa ≥ 0,70 | Si falla la corrección de respuesta, se descarta el juicio automático de la métrica principal y se reporta solo la evaluación humana; si falla el soporte de evidencia, esa métrica se reporta solo con evaluación humana o marcada como no confiable |
-| Tamaño del estrato E3 | ≥ 25 preguntas (el banco admite hasta 40) | E3 se reformula como análisis de casos con reporte cualitativo |
+| Tamaño del estrato E3 | ≥ 25 preguntas, o las relaciones de evolución disponibles si son menos (24 medidas, ADR 0021) | E3 se reformula como análisis de casos con reporte cualitativo |
 | Diferencia entre condiciones (criterio principal D16) | Intervalo bootstrap del 95 % de la diferencia pareada C2 − C1 por encima de 0 | No se afirma diferencia; se reporta como no concluyente |
 | Kappa de la anotación (existencia, tipo, dirección) | Sin umbral de aceptación, por diseño | Se reporta tal como salga; un kappa bajo es un hallazgo (documento 01, §3) |
 
@@ -513,7 +514,7 @@ se usa el intervalo de **Wilson**: la aproximación normal (Wald) puede dar lím
 `afg.evaluation.metrics.wilson_interval` y se muestra en
 [`../../notebooks/01-jss-viabilidad-e3.ipynb`](../../notebooks/01-jss-viabilidad-e3.ipynb)
 §2; la proyección a los 81 candidatos de evaluación escala los límites del intervalo (≈37,
-IC [17 – 58]). Para **todo resultado experimental** se usa **bootstrap percentil**: se
+IC [17 – 58]; la medición posterior dio 24, ADR 0021). Para **todo resultado experimental** se usa **bootstrap percentil**: se
 remuestrean las preguntas con reemplazo 10.000 veces, se recalcula la métrica en cada
 remuestreo y se toman los percentiles 2,5 % y 97,5 % de los valores obtenidos. Los
 parámetros están en `config/experiments.toml` (`bootstrap_resamples = 10_000`,
@@ -533,21 +534,20 @@ serie tiene 4, con solo 35 remuestreos distintos), de modo que para una serie su
 **Qué significaría operar esto en una organización real.** El experimento completo depende
 de que exista suficiente material de evolución entre reuniones para sostener el estrato E3
 del banco de preguntas (las preguntas del tipo "¿cómo cambió la decisión sobre X?"). Esto es
-**provisional**: adjudicando a mano los 11 candidatos de desarrollo, la tasa de positivos
-fue 45,5 % (5/11), IC 95 % Wilson [21,3 % – 72,0 %], proyectando a evaluación ~37
-relaciones, IC [17 – 58]. El intervalo de confianza (IC) expresa el rango en que podría
-estar la cifra real dado lo poco que se ha visto; con 11 casos, es ancho. E3 exige ≥25
-preguntas: el valor central alcanza, **la cota inferior del intervalo no**. Sigue siendo
-**plausible, no demostrado** — la resolución final requiere adjudicar a mano al menos una
-serie de evaluación, trabajo humano todavía pendiente.
+**plausible al planificar y medido después**: adjudicando a mano los 11 candidatos de
+desarrollo, la tasa de positivos fue 45,5 % (5/11), IC 95 % Wilson [21,3 % – 72,0 %], lo que
+proyectaba ~37 relaciones de evaluación, IC [17 – 58]. Con la referencia de las once series de
+evaluación ya cerrada, el recuento real es de **24 relaciones de evolución distintas**
+([notebook 26](../../notebooks/26-jss-minimo-e3-relaciones-disponibles.ipynb)): por debajo de la
+proyección central y dentro de su intervalo. El conteo es un piso, porque el filtro léxico pierde
+relaciones (recall 0,407, ADR 0020).
 
-El mínimo de E3 sigue siendo 25, pero el banco admite hasta 40 preguntas de ese estrato: se
-escriben tantas como el material permita, para aumentar la probabilidad de detectar una mejora
-más pequeña (con 25 preguntas una mejora real de 15 puntos se detecta alrededor de 57 % de las
-veces; con 40, alrededor de 76 %, según el
-[notebook 10](../../notebooks/10-jss-potencia-criterio-d16.ipynb)). El tope lo fija el material
-de evolución disponible (~37 relaciones proyectadas, [notebook 01](../../notebooks/01-jss-viabilidad-e3.ipynb)),
-no el esfuerzo; si se queda corto de 40, se declara como limitación de potencia.
+El mínimo de E3 es 25 o las relaciones disponibles si son menos, es decir **24**
+([ADR 0021](../decisions/0021-adr-minimo-de-e3-segun-relaciones-disponibles.md), D25). No se
+inventan casos para llegar a 25: el faltante se declara como limitación de potencia (con 25
+preguntas una mejora real de 15 puntos se detecta alrededor de 57 % de las veces; con 24,
+alrededor de 53 %, según el
+[notebook 10](../../notebooks/10-jss-potencia-criterio-d16.ipynb) y el ADR 0021).
 
 ## Glosario breve
 
@@ -593,7 +593,7 @@ desde `src/afg/` a través de un notebook, no entra en la tesis.
 | Cronología verificada vía `startTime` | [`../../config/corpus.toml`](../../config/corpus.toml), sección `[corpus.phases]` |
 | Filtro léxico: coeficiente ≥0,30 y `\|A∩B\|≥2`; 712 vs 92 | [`../decisions/README.md`](../decisions/README.md), decisiones D5 y D9 |
 | Piloto: 3/6 casos confirmados; botón turbo falso | [`../anotacion/manual-anotacion-oe1.md`](../anotacion/manual-anotacion-oe1.md) §3; [`../../notebooks/01-jss-viabilidad-e3.ipynb`](../../notebooks/01-jss-viabilidad-e3.ipynb) |
-| Viabilidad de E3 (provisional): 45,5 % [21,3–72,0 %], proyección ~37 [17–58] | [`../../notebooks/01-jss-viabilidad-e3.ipynb`](../../notebooks/01-jss-viabilidad-e3.ipynb) |
+| Viabilidad de E3: 45,5 % [21,3–72,0 %] en desarrollo y proyección ~37 [17–58] (superadas por el recuento de 24 relaciones, ADR 0021) | [`../../notebooks/01-jss-viabilidad-e3.ipynb`](../../notebooks/01-jss-viabilidad-e3.ipynb) |
 | Referencia en inglés: traducción automática, no etiqueta; completa y vigente por validación | [`../anotacion/traduccion-referencia.md`](../anotacion/traduccion-referencia.md); `src/afg/evaluation/translation.py` |
 | Regla "todo número reproducible desde `src/afg/`" | [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md) §7.1 |
 | Filtro léxico: sesgos, comparación por sitio y Tarea C | [`../../notebooks/00-jss-corpus-y-auditoria.ipynb`](../../notebooks/00-jss-corpus-y-auditoria.ipynb) §4.1; `src/afg/annotation/blocking.py` |

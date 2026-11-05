@@ -1,6 +1,6 @@
 # Calibración del juez: qué haces y cómo
 
-**Para qué sirve.** El Experimento B produce unas 900 respuestas (100 preguntas × 3
+**Para qué sirve.** El Experimento B produce unas 1.188 respuestas (99 preguntas × 4
 condiciones × 3 corridas) y un juez automático las califica. Antes de usarlo hay que elegir
 cuál de los tres modelos candidatos es el juez y comprobar que califica como lo haría una
 persona. Para eso se arma un conjunto pequeño, con etiquetas puestas **por una persona**, y se

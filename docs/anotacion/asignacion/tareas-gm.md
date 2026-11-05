@@ -115,7 +115,7 @@ recalibración.
 **223 decisiones y 71 pares candidatos** (53 + 111 + 59 y 7 + 37 + 27), más el banco de
 preguntas.
 
-**Por qué llevas 61 decisiones menos que Germán.** Porque además escribes el banco: unas 100
+**Por qué llevas 61 decisiones menos que Germán.** Porque además escribes el banco: 99
 preguntas a ~5 minutos cada una son unas 8 horas que él no tiene. El reparto equilibra horas
 totales, no filas. A cambio llevas 6 pares candidatos más que él, que es donde está el
 trabajo fino.
@@ -409,7 +409,7 @@ banco se escribe en inglés:
 | `E3_evolution` | E3 — evolución | *Did X change? In which meeting and why?* | **El estrato que prueba la tesis** |
 | `E4_unanswerable` | E4 — incontestable | Pregunta adyacente al dominio, sin respuesta en el material | Mide si el sistema **se abstiene o fabrica** |
 
-### Cuántas preguntas de E3: hasta 40, nunca inventadas
+### Cuántas preguntas de E3: las que el material permita (24), nunca inventadas
 
 El mínimo de cada estrato es **25**; en E3 es 25 o las relaciones de evolución disponibles, lo que sea menor (ver el final de esta sección). Para E3 el banco tiene además
 espacio para **hasta 40 preguntas**: las que pasen de 25 son opcionales; escribe tantas como el
@@ -418,12 +418,13 @@ estadística: E3 es el estrato donde se compara C2 con C1, y con más preguntas 
 probabilidad de detectar una mejora real pequeña. En la simulación de potencia del notebook 10,
 con 25 preguntas una mejora verdadera de 15 puntos se detecta en alrededor de 57 % de los
 experimentos; con 40, en alrededor de 76 %. El límite lo pone el material, no el esfuerzo: el
-notebook 01 proyecta unas 37 relaciones de evolución en las series de evaluación, así que no
-siempre habrá 40 casos genuinos.
+material real de las once series de evaluación ofrece 24 relaciones de evolución distintas
+([notebook 26](../../../notebooks/26-jss-minimo-e3-relaciones-disponibles.ipynb); la proyección
+anterior del notebook 01, unas 37, quedó superada por la medición), así que no hay 40 casos genuinos.
 
 **Regla: nunca se inventa un caso E3.** Solo entra una pregunta sobre una decisión que de
 verdad cambia entre reuniones y que está anotada como `revierte`, `reemplaza` o `refina`. Si
-el material se agota antes de 40, las filas sobrantes de E3 se **dejan vacías**: no pasa nada,
+el material se agota antes de 40 (el banco cerrado quedó en 24), las filas sobrantes de E3 se **dejan vacías**: no pasa nada,
 `questions-check --complete` las trata como opcionales y no se usan. Quedarse corto de 40 se
 declara como una limitación de potencia, no como un incumplimiento. Lo que sí es obligatorio
 es llegar a 25, o al número de relaciones de evolución que el material ofrece si es menor
@@ -683,7 +684,7 @@ dividida con sentido).
 - [ ] No hubo comparación de etiquetas ni discusión de casos concretos con `gv` antes de la adjudicación
 
 ### Banco de preguntas (al cerrarlo)
-- [ ] ≥25 preguntas por estrato (24 en E3 según el ADR 0021), ≥99 en total (en E3, hasta 40 si el material lo permite; las filas E3 sobrantes quedan vacías)
+- [ ] ≥25 preguntas por estrato (24 en E3 según el ADR 0021), ≥99 en total (el banco cerrado tiene 24 en E3: el material no ofrece más y las filas E3 sobrantes quedan vacías)
 - [ ] `stratum` usa los valores literales de `QuestionStratum`
 - [ ] Cada respuesta de referencia se deriva de la evidencia citada, no del resumen
 - [ ] Toda E4 se buscó en las cuatro transcripciones de su serie y no aparece
