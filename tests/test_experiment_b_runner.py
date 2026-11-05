@@ -316,6 +316,31 @@ def test_resume_with_different_settings_is_refused(tmp_path: Path) -> None:
         _run(tmp_path, [_question()], [FakeCondition()], settings=_settings(temperature=0.5))
 
 
+def test_resume_with_other_conditions_or_series_is_refused(tmp_path: Path) -> None:
+    _run(tmp_path, [_question()], [FakeCondition()])
+    with pytest.raises(ManifestMismatchError, match="series"):
+        _run(tmp_path, [_question("q1", "ES2002")], [FakeCondition()])
+    with pytest.raises(ManifestMismatchError, match="conditions"):
+        _run(tmp_path, [_question()], [FakeCondition(), FakeCondition(condition_id="C9")])
+
+
+def test_resume_with_other_questions_or_extraction_is_refused(tmp_path: Path) -> None:
+    first = {"questions_sha256": "aaa", "c2_extraction": "a-1"}
+    _run(tmp_path, [_question()], [FakeCondition()], provenance=first)
+    _run(tmp_path, [_question()], [FakeCondition()], provenance=first)
+    with pytest.raises(ManifestMismatchError, match="questions_sha256"):
+        _run(
+            tmp_path,
+            [_question()],
+            [FakeCondition()],
+            provenance={**first, "questions_sha256": "b"},
+        )
+    with pytest.raises(ManifestMismatchError, match="c2_extraction"):
+        _run(
+            tmp_path, [_question()], [FakeCondition()], provenance={**first, "c2_extraction": "a-2"}
+        )
+
+
 def test_resume_may_raise_the_number_of_runs(tmp_path: Path) -> None:
     _run(tmp_path, [_question()], [FakeCondition()], settings=_settings(runs=1))
     summary = _run(tmp_path, [_question()], [FakeCondition()], settings=_settings(runs=2))

@@ -11,13 +11,15 @@ comma-joined string, ``runs`` per series, ``openkos``, ``created_at``/``updated_
 readers of ``afg experiment a`` reports keep working; the batch adds ``kind``, ``series_ids``
 and ``pairs``.
 
-Only integrity is reported (ADR 0005): counts and versions, never quality against the gold.
+Only integrity is reported: counts and versions. Quality against the gold comes from
+``afg experiment a-report``.
 """
 
 from __future__ import annotations
 
 import json
 import shutil
+import time
 from collections.abc import Callable, Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
@@ -151,13 +153,24 @@ def run_batch(
                 report(f"{series_id} corrida {run}: ya completa, se omite.")
                 continue
             _remove_partial_pair(workspace_root, series_id, run)
-            entry: dict[str, Any] = {"series": series_id, "run": run, "status": STATUS_RUNNING}
+            entry: dict[str, Any] = {
+                "series": series_id,
+                "run": run,
+                "status": STATUS_RUNNING,
+                "started_at": _now(),
+            }
             manifest["pairs"][key] = entry
             save()
+            clock = time.monotonic()
             try:
                 extraction = adapter.extract_series(series_id, run)
             except (OpenKosError, FileNotFoundError) as exc:
-                entry.update(status=STATUS_FAILED, error=f"{type(exc).__name__}: {exc}")
+                entry.update(
+                    status=STATUS_FAILED,
+                    error=f"{type(exc).__name__}: {exc}",
+                    finished_at=_now(),
+                    seconds=round(time.monotonic() - clock, 3),
+                )
                 save()
                 report(f"{series_id} corrida {run} fallida: {exc}")
                 continue
@@ -171,6 +184,8 @@ def run_batch(
                 n_unmapped=len(extraction.unmapped),
                 quotes_total=extraction.quotes.total,
                 quotes_not_found=extraction.quotes.not_found,
+                finished_at=_now(),
+                seconds=round(time.monotonic() - clock, 3),
             )
             if extraction.openkos_version and extraction.openkos_version not in versions:
                 versions.append(extraction.openkos_version)
@@ -202,7 +217,7 @@ def batch_summary_lines(manifest: Mapping[str, Any], *, elapsed_seconds: float) 
     """Spanish integrity summary of a batch: counts and versions, never quality scores."""
     runs = int(manifest["runs"])
     pairs: Mapping[str, Mapping[str, Any]] = manifest["pairs"]
-    lines = ["Resumen de integridad (sin puntajes: ADR 0005):"]
+    lines = ["Resumen de integridad (solo conteos y versiones):"]
     for series_id in manifest["series_ids"]:
         entries = [pairs[k] for k in sorted(pairs) if pairs[k]["series"] == series_id]
         ok = [e for e in entries if e["status"] == STATUS_OK]

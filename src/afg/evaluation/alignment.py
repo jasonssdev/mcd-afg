@@ -119,9 +119,7 @@ def align_over_tau_grid(
     return [align(similarity_matrix, tau) for tau in tau_grid]
 
 
-def concordance(
-    automatic_matches: set[tuple[int, int]], manual_matches: set[tuple[int, int]]
-) -> float:
+def concordance[T](automatic_matches: set[T], manual_matches: set[T]) -> float:
     """Agreement rate between the automatic alignment and a manual matching sample.
 
     Thesis section 5.4, point 3: the automatic protocol is validated against manual

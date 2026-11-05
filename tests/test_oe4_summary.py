@@ -73,6 +73,18 @@ def test_summary_rejects_duplicated_questions() -> None:
         summarize_oe4_sheet(rows, condition="C2")
 
 
+def test_summary_accepts_the_same_question_in_different_runs() -> None:
+    rows = [
+        {**_row("ES2015.q1", HINT_NO_TERMS, "sintesis"), "corrida": "0"},
+        {**_row("ES2015.q1", HINT_NO_TERMS, "extraccion"), "corrida": "1"},
+    ]
+    summary = summarize_oe4_sheet(rows, condition="C2")
+    assert summary.n_failures == 2 and summary.stages["sintesis"] == 1
+    repeated = [{**rows[0]}, {**rows[0]}]
+    with pytest.raises(ValueError, match="duplicad"):
+        summarize_oe4_sheet(repeated, condition="C2")
+
+
 def test_summary_of_an_empty_sheet_is_all_zero() -> None:
     summary = summarize_oe4_sheet([], condition="C3")
     assert summary.n_failures == 0
@@ -123,6 +135,13 @@ def test_cli_refuses_a_half_labelled_sheet_and_writes_nothing(out: Path) -> None
     assert not (run / OE4_SUMMARY_FILE).exists()
 
 
-def test_cli_needs_exactly_one_condition_in_the_manifest(out: Path) -> None:
-    _make_run(out, "recuperacion", ["C1", "C2"])
+def test_cli_reads_the_c2_sheet_of_a_multi_condition_run(out: Path) -> None:
+    run = _make_run(out, "recuperacion", ["C0", "C1", "C2", "C3"])
+    assert _invoke("b-oe4-summary", "--run-name", "r1").exit_code == 0
+    data = json.loads((run / OE4_SUMMARY_FILE).read_text(encoding="utf-8"))
+    assert data["condition"] == "C2"
+
+
+def test_cli_needs_c2_in_the_manifest(out: Path) -> None:
+    _make_run(out, "recuperacion", ["C1", "C3"])
     assert _invoke("b-oe4-summary", "--run-name", "r1").exit_code == 1

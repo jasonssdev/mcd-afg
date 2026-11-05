@@ -1,4 +1,4 @@
-"""Judge-person concordance on a sample of the tau-calibration judgments (ADR 0012, pending item).
+"""Judge-person concordance on a sample of the tau-calibration judgments (ADR 0012).
 
 The same-decision judge fixed the "judge" criterion for tau without any person having checked
 its verdicts. This module draws a small blind sample from the stored judgments, writes the

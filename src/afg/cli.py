@@ -157,11 +157,16 @@ from afg.experiments.freeze import (
     FreezeError,
     FreezeSources,
     SeriesGateError,
+    freeze_provenance,
     gate_partition,
+    manifest_series,
+    read_freeze_record,
+    verify_run_against_freeze,
     write_freeze_record,
 )
 from afg.experiments.manual_validation import (
     VALIDATION_DIR,
+    VALIDATION_KEY_DIR,
     ManualValidationError,
     ManualValidationSheetLabeledError,
     candidate_pairs,
@@ -173,10 +178,16 @@ from afg.experiments.manual_validation import (
     write_validation_files,
 )
 from afg.experiments.pinned_environment import PinnedEnvironmentError, check_pinned_environment
-from afg.experiments.provenance import LiveProbe, ProvenanceProbe, collect_provenance
+from afg.experiments.provenance import (
+    LiveProbe,
+    ProvenanceProbe,
+    collect_provenance,
+    file_sha256,
+)
 from afg.experiments.question_bank import (
     QuestionBankIssue,
     QuestionBankReport,
+    configured_minimums,
     is_question_bank,
     load_configured_question_bank,
 )
@@ -205,6 +216,9 @@ from afg.experiments.tau_concordance import (
     write_concordance_files,
 )
 from afg.extraction.openkos.commands import OpenKosError, SubprocessRunner
+from afg.extraction.openkos.gold_bundle import (
+    MANIFEST_NAME as C3_MANIFEST_NAME,
+)
 from afg.extraction.openkos.gold_bundle import (
     GoldWorkspaceExistsError,
     build_gold_workspace,
@@ -281,7 +295,7 @@ experiment_app = typer.Typer(
 skills_app = typer.Typer(help="Instala, verifica y enlaza las skills de .agents/skills/.")
 freeze_app = typer.Typer(
     help="Registro del congelamiento: lo que deben cumplir las corridas sobre las series de "
-    "evaluación (issue #238)."
+    "evaluación."
 )
 
 app.add_typer(gold_app, name="gold")
@@ -2530,7 +2544,60 @@ EXPERIMENT_A_PROVENANCE_KEYS = (
 """The :func:`collect_provenance` fields that apply to Experiment A (it has no judge or C1)."""
 
 
-def _require_series_gate(series_ids: Sequence[str], *, questions: Path | None = None) -> str:
+def _freeze_problems(run_dir: Path, *, check_questions: bool = True) -> list[str]:
+    """How a finished run differs from the freeze record; empty without evaluation series.
+
+    Only runs that include evaluation series are checked (ADR 0005): their results enter the
+    tables, so they must come from the frozen bank, a clean tree and the frozen code.
+    """
+    import json
+
+    try:
+        manifest = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8"))
+    except OSError, ValueError:
+        return []  # a missing or malformed manifest is reported by the command's own loader
+    partition_of = configured_partition_of()
+    if not any(partition_of(s) == "evaluation" for s in manifest_series(manifest)):
+        return []
+    try:
+        record = read_freeze_record(FREEZE_PATH)
+    except FreezeError as exc:
+        return [f"registro de congelamiento: {exc}"]
+    return verify_run_against_freeze(manifest, record, check_questions=check_questions)
+
+
+def _require_run_frozen(
+    run_dir: Path, *, descriptive: bool = False, check_questions: bool = True
+) -> list[str]:
+    """Exit when an evaluation run does not match the freeze record; else return the problems.
+
+    With ``descriptive`` the differences are printed as a warning and returned (the output is
+    not reportable); without it they stop the command.
+    """
+    problems = _freeze_problems(run_dir, check_questions=check_questions)
+    if not problems:
+        return []
+    listing = "\n".join(f"  - {escape(p)}" for p in problems)
+    if descriptive:
+        console.print(
+            f"[yellow]{_short(run_dir)} no coincide con el congelamiento; la salida no es "
+            f"reportable:\n{listing}[/yellow]"
+        )
+        return problems
+    console.print(
+        f"[bold red]{_short(run_dir)} no coincide con el congelamiento; no se produce "
+        f"un resultado reportable:\n{listing}[/bold red]"
+    )
+    raise typer.Exit(code=1)
+
+
+def _require_series_gate(
+    series_ids: Sequence[str],
+    *,
+    questions: Path | None = None,
+    allow_mixed: bool = True,
+    runs: int | None = None,
+) -> str:
     """The partition of ``series_ids`` when they may run; otherwise print why and exit.
 
     The one gate of the commands that read series (``experiment a``, ``a-batch``,
@@ -2538,19 +2605,42 @@ def _require_series_gate(series_ids: Sequence[str], *, questions: Path | None = 
     Evaluation series run only when the freeze record (``config/freeze.json``, written by
     ``afg freeze write`` when the freeze ADR closes) exists and the config, the reference, the
     question bank and the code still match it; any difference is listed. It runs before the
-    first model call. ``questions`` is the question file a command was given.
+    first model call. ``questions`` is the question file a command was given. With
+    ``allow_mixed`` false a run that mixes development and evaluation series is refused: its
+    manifest would claim one partition for both. Evaluation series also refuse ``AFG_*``
+    overrides of models, seed and OpenKOS, and a ``--runs`` (``runs``) other than
+    ``runs_per_config``.
     """
     try:
-        return gate_partition(
+        partition = gate_partition(
             series_ids,
             configured_partition_of(),
             freeze_path=FREEZE_PATH,
             sources=FreezeSources(),
             questions_path=questions,
+            runs=runs,
+            configured_runs=int(load_experiments_config()["shared_budget"]["runs_per_config"]),
         )
     except SeriesGateError as exc:
         console.print(f"[bold red]{escape(str(exc))}[/bold red]")
         raise typer.Exit(code=1) from exc
+    if partition == "mixed" and not allow_mixed:
+        console.print(
+            "[bold red]Las series mezclan desarrollo y evaluación "
+            f"({', '.join(series_ids)}): se corre cada partición por separado; no se llamó a "
+            "ningún modelo.[/bold red]"
+        )
+        raise typer.Exit(code=1)
+    return partition
+
+
+def _run_provenance() -> dict[str, Any]:
+    """Commit, dirty tree and freeze record (``None`` before the record exists) of a run."""
+    return {
+        "git_commit": current_git_commit(),
+        "git_dirty": make_provenance_probe().git_dirty(),
+        "freeze": freeze_provenance(FREEZE_PATH),
+    }
 
 
 def _experiment_a_manifest(
@@ -2583,6 +2673,7 @@ def _experiment_a_manifest(
             **{key: provenance[key] for key in EXPERIMENT_A_PROVENANCE_KEYS},
         },
         "git_dirty": provenance["git_dirty"],
+        "freeze": freeze_provenance(FREEZE_PATH),
         **pinned,
         "status": "running",
         "completed_runs": [],
@@ -2618,13 +2709,13 @@ def experiment_a(
     ingesta las cuatro reuniones de la serie en orden, lee las decisiones compiladas y agrega
     una línea a `extracciones.jsonl` en `reports/experiment-a/<run-name>/`, junto con
     `manifest.json`. Las series de desarrollo corren siempre; las de evaluación solo con el
-    registro de congelamiento (`config/freeze.json`) y si lo actual coincide con él (ADR 0005,
-    `afg freeze write`). La semilla de la corrida r es `seed + r`.
+    registro de congelamiento (`config/freeze.json`) y si lo actual coincide con él
+    (`afg freeze write`). La semilla de la corrida r es `seed + r`.
     """
     import json
     from datetime import UTC, datetime
 
-    partition = _require_series_gate([series])
+    partition = _require_series_gate([series], runs=runs)
     pinned = require_pinned_environment(_openkos_models(), needs_openkos=True)
 
     budget = load_experiments_config()["shared_budget"]
@@ -2698,13 +2789,18 @@ def _batch_series(series: str | None, partition: str | None) -> list[str]:
 def experiment_a_batch(
     series: Annotated[
         str | None,
-        typer.Option("--series", help="Series separadas por comas (solo de desarrollo, ADR 0005)."),
+        typer.Option(
+            "--series",
+            help="Series separadas por comas (las de evaluación exigen el registro de "
+            "congelamiento).",
+        ),
     ] = None,
     partition: Annotated[
         str | None,
         typer.Option(
             "--partition",
-            help="Todas las series de una partición (development; evaluation se rechaza).",
+            help="Todas las series de una partición (development o evaluation; la de evaluación "
+            "exige el registro de congelamiento).",
         ),
     ] = None,
     runs: Annotated[
@@ -2726,8 +2822,8 @@ def experiment_a_batch(
     `reports/experiment-a/<run-name>/` (cada registro conserva su serie) y en
     `data/interim/openkos/<run-name>/`, donde C2 los busca. Un par fallido se registra y el
     lote sigue; el código de salida es distinto de cero si alguno falló. Al final imprime un
-    resumen de integridad, sin puntajes (ADR 0005). Repetir `--run-name` reanuda el lote.
-    Solo series de desarrollo mientras la versión de OpenKOS no esté fijada (ADR 0006).
+    resumen de integridad, sin puntajes. Repetir `--run-name` reanuda el lote. Las series de
+    desarrollo corren siempre; las de evaluación solo con el registro de congelamiento.
     """
     import time
     from datetime import UTC, datetime
@@ -2739,7 +2835,7 @@ def experiment_a_batch(
     )
 
     series_ids = _batch_series(series, partition)
-    batch_partition = _require_series_gate(series_ids)
+    batch_partition = _require_series_gate(series_ids, allow_mixed=False, runs=runs)
     pinned = require_pinned_environment(_openkos_models(), needs_openkos=True)
     budget = load_experiments_config()["shared_budget"]
     n_runs = runs if runs is not None else int(budget["runs_per_config"])
@@ -2839,8 +2935,7 @@ def experiment_a_relations(
         str | None,
         typer.Option(
             "--series",
-            help="Series separadas por comas (solo de desarrollo, ADR 0005); por defecto, "
-            "todas las de la corrida.",
+            help="Series separadas por comas; por defecto, todas las de la corrida.",
         ),
     ] = None,
     run_revisions: Annotated[
@@ -2866,6 +2961,7 @@ def experiment_a_relations(
     congelamiento.
     """
     import json
+    import time
 
     from afg.experiments.relations_report import score_workspaces
 
@@ -2876,6 +2972,7 @@ def experiment_a_relations(
             f"`afg experiment a-batch --run-name {escape(c2_extraction)}`.[/bold red]"
         )
         raise typer.Exit(code=1)
+    started = time.monotonic()
     series_ids = _relations_series(run_root, series)
     partition = _require_series_gate(series_ids)
     pinned = (
@@ -2912,6 +3009,7 @@ def experiment_a_relations(
         console.print(f"[bold red]{escape(str(exc))}[/bold red]")
         raise typer.Exit(code=1) from exc
     report.update(pinned)
+    report.update(_run_provenance(), seconds=round(time.monotonic() - started, 3))
     out_path = EXPERIMENT_A_DIR / c2_extraction / "relaciones.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -2947,8 +3045,9 @@ def experiment_a_report(
         bool,
         typer.Option(
             "--descriptive",
-            help="Vista descriptiva de una corrida de desarrollo: se guarda aparte "
-            "(`informe-descriptivo.json`) y no es reportable (ADR 0005).",
+            help="Vista descriptiva de una corrida de desarrollo, mixta o de evaluación que no "
+            "coincide con el congelamiento: se guarda aparte (`informe-descriptivo.json`) y "
+            "no es reportable.",
         ),
     ] = False,
 ) -> None:
@@ -2981,6 +3080,7 @@ def experiment_a_report(
             f"`afg experiment a-batch --run-name {escape(c2_extraction)}`.[/bold red]"
         )
         raise typer.Exit(code=1)
+    _require_run_frozen(run_dir, descriptive=descriptive, check_questions=False)
     runs = load_extraction_runs([run_dir])
     relations_path = run_dir / "relaciones.json"
     relations = (
@@ -3078,7 +3178,11 @@ def c3_build(
     ],
     series: Annotated[
         str,
-        typer.Option("--series", help="Series separadas por comas (solo de desarrollo, ADR 0005)."),
+        typer.Option(
+            "--series",
+            help="Series separadas por comas (las de evaluación exigen el registro de "
+            "congelamiento).",
+        ),
     ],
     runs: Annotated[
         int | None,
@@ -3097,10 +3201,11 @@ def c3_build(
     y reindexa con `openkos reindex`. El resultado queda en
     `data/interim/openkos-c3/<corrida>/<serie>/run-<r>/`, con un `c3-manifest.json` que lista las
     decisiones escritas y las descartadas por no tener evidencia localizable (ADR 0013). No
-    corre ningún modelo de extracción. Solo series de desarrollo.
+    corre ningún modelo de extracción. Las series de evaluación exigen el registro de
+    congelamiento.
     """
     series_ids = _batch_series(series, None)
-    _require_series_gate(series_ids)
+    _require_series_gate(series_ids, runs=runs)
     pinned = require_pinned_environment([configured_embedding_model()], needs_openkos=True)
     budget = load_experiments_config()["shared_budget"]
     n_runs = runs if runs is not None else int(budget["runs_per_config"])
@@ -3125,6 +3230,7 @@ def c3_build(
 
     runner = SubprocessRunner()
     executable = openkos_run_settings().executable
+    provenance = _run_provenance()
     failed = False
     for series_id in series_ids:
         try:
@@ -3154,6 +3260,7 @@ def c3_build(
                     transcripts_dir=TRANSCRIPTS_DIR,
                     overwrite=overwrite,
                     pinned_environment=pinned,
+                    provenance=provenance,
                 )
             except (GoldWorkspaceExistsError, OpenKosError, FileNotFoundError, OSError) as exc:
                 console.print(f"[bold red]{series_id} run-{run}: {escape(str(exc))}[/bold red]")
@@ -3280,6 +3387,17 @@ def make_c3_condition(extraction_run: str) -> CompiledGoldCondition:
             f"{_short(base_dir)}. Constrúyelos antes con `afg c3 build --c2-extraction "
             f"{extraction_run} --series <SERIE>`."
         )
+    unfinished = sorted(
+        workspace.relative_to(base_dir / extraction_run).as_posix()
+        for workspace in (base_dir / extraction_run).glob("*/run-*")
+        if not (workspace / C3_MANIFEST_NAME).is_file()
+    )
+    if unfinished:
+        raise ValueError(
+            f"Los espacios de trabajo de C3 {', '.join(unfinished)} no tienen {C3_MANIFEST_NAME}: "
+            "`afg c3 build` no terminó de escribirlos. Reconstrúyelos con `afg c3 build "
+            f"--c2-extraction {extraction_run} --series <SERIE> --overwrite`."
+        )
     return CompiledGoldCondition(
         runner=SubprocessRunner(),
         settings=openkos_run_settings(),
@@ -3315,7 +3433,7 @@ def make_experiment_b_condition(
 @freeze_app.command("write")
 def freeze_write(
     adr: Annotated[
-        str, typer.Option("--adr", help="Número del ADR de congelamiento, por ejemplo 0017.")
+        str, typer.Option("--adr", help="Número del ADR de congelamiento, por ejemplo 0023.")
     ],
     commit: Annotated[
         str | None,
@@ -3335,10 +3453,12 @@ def freeze_write(
     """Escribe el registro de congelamiento que habilita las series de evaluación.
 
     Guarda el ADR, el commit del código, la huella SHA-256 de `config/experiments.toml`, del
-    banco de preguntas y, por serie, de la referencia de decisiones, la de relaciones y la
-    traducción `<SERIE>.reference-en.csv`, más los valores de `[pinned_environment]`. Lo usa el
-    mantenedor una sola vez, al cerrar el ADR de congelamiento (issue #237); no sobrescribe un
-    registro existente. No llama a ningún modelo.
+    banco de preguntas, de `config/corpus.toml` y `config/annotation.toml`, el manifiesto de las
+    transcripciones congeladas (número de archivos y huella única) y, por serie, de la referencia
+    de decisiones, la de relaciones y la traducción `<SERIE>.reference-en.csv`, más los valores
+    de `[pinned_environment]`. Lo usa el
+    mantenedor al cerrar el ADR de congelamiento; no sobrescribe un registro existente (cambiarlo
+    exige un ADR nuevo). No llama a ningún modelo.
     """
     oe1 = load_corpus_config()["oe1"]
     chosen = (
@@ -3361,30 +3481,44 @@ def freeze_write(
     )
 
 
-def _validation_inputs(run_name: str, serie: str | None) -> tuple[Path, str]:
-    """The run directory and the series of the manual validation (manifest series by default)."""
+def _validation_inputs(run_name: str, series: str | None) -> tuple[Path, list[str]]:
+    """The run directory and the series pooled in the manual validation.
+
+    Default: every evaluation series of the run's manifest, or its single series for a
+    development run. ``series`` is a comma list that overrides it.
+    """
     import json
+
+    from afg.experiments.freeze import manifest_series
 
     run_dir = EXPERIMENT_A_DIR / run_name
     if not (run_dir / "manifest.json").is_file():
         console.print(f"[bold red]No existe la corrida {_short(run_dir)}.[/bold red]")
         raise typer.Exit(code=1)
-    if serie is None:
-        listed = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8")).get("series")
-        serie = listed if isinstance(listed, str) else None
-        if serie is None:
-            console.print("[bold red]La corrida tiene varias series: indica `--serie`.[/bold red]")
-            raise typer.Exit(code=1)
-    _require_series_gate([serie])
-    return run_dir, serie
+    if series is not None:
+        chosen = [s.strip() for s in series.split(",") if s.strip()]
+    else:
+        listed = manifest_series(json.loads((run_dir / "manifest.json").read_text("utf-8")))
+        partition_of = configured_partition_of()
+        chosen = [s for s in listed if partition_of(s) == "evaluation"]
+        if not chosen and len(listed) == 1:
+            chosen = listed
+    if not chosen or len(set(chosen)) != len(chosen):
+        console.print(
+            "[bold red]No se pudo decidir las series de la validación: indica `--series` "
+            "(lista separada por comas, sin repetir).[/bold red]"
+        )
+        raise typer.Exit(code=1)
+    _require_series_gate(chosen, allow_mixed=False)
+    return run_dir, chosen
 
 
-def _validation_paths(
-    run_name: str, serie: str, hoja: Path | None, clave: Path | None
-) -> tuple[Path, Path]:
+def _validation_paths(run_name: str, hoja: Path | None, clave: Path | None) -> tuple[Path, Path]:
+    """Sheet (``data/processed``) and key (``data/interim``, gitignored: the validator never
+    sees it) of a run's manual validation."""
     return (
-        hoja or VALIDATION_DIR / f"{run_name}.{serie}.manual.csv",
-        clave or EXPERIMENT_A_DIR / run_name / f"validacion-manual-{serie}-clave.json",
+        hoja or VALIDATION_DIR / f"{run_name}.manual.csv",
+        clave or VALIDATION_KEY_DIR / f"{run_name}.clave.json",
     )
 
 
@@ -3393,9 +3527,13 @@ def experiment_a_validacion_hoja(
     run_name: Annotated[
         str, typer.Option("--run-name", help="Corrida guardada en reports/experiment-a/.")
     ],
-    serie: Annotated[
+    series: Annotated[
         str | None,
-        typer.Option("--serie", help="Serie de desarrollo (por defecto, la del manifiesto)."),
+        typer.Option(
+            "--series",
+            help="Series de la muestra, separadas por comas (por defecto, las series de "
+            "evaluación del manifiesto, o la única serie de una corrida de desarrollo).",
+        ),
     ] = None,
     corrida: Annotated[int, typer.Option("--corrida", min=0, help="Repetición de la corrida.")] = 0,
     tau: Annotated[
@@ -3417,18 +3555,29 @@ def experiment_a_validacion_hoja(
     referencia) de la misma reunión: la mitad son pares que la alineación automática empareja y
     la otra mitad, pares cercanos que descarta. Tamaño, semilla y reparto salen de
     `config/experiments.toml`. La hoja no muestra similitud ni qué decidió la alineación; eso queda
-    en la clave. Calcula embeddings, no llama al modelo generativo. Solo series de desarrollo.
+    en la clave. Con varias series los pares se juntan en un solo conjunto y la muestra sale de
+    él; cada fila indica su serie. Si el conjunto tiene menos pares que la muestra, se niega.
+    La clave queda en `data/interim/alignment-validation/` (fuera del repositorio) para que
+    quien valida no la vea. Calcula embeddings, no llama al modelo generativo.
     """
-    run_dir, serie = _validation_inputs(run_name, serie)
-    sheet_path, key_path = _validation_paths(run_name, serie, hoja, clave)
+    from dataclasses import replace
+
+    run_dir, series_ids = _validation_inputs(run_name, series)
+    sheet_path, key_path = _validation_paths(run_name, hoja, clave)
     cfg = load_validation_config()
     try:
-        predicted = load_run_decisions(run_dir, series=serie, run=corrida)
-        reference = load_series_reference(serie, language="en").decisions
         require_pinned_environment([configured_embedding_model()], needs_openkos=False)
-        pairs = candidate_pairs(
-            reference, predicted, make_alignment_similarity(), tau=tau, floor=cfg.similarity_floor
-        )
+        similarity = make_alignment_similarity()
+        pairs = []
+        for serie in series_ids:
+            predicted = load_run_decisions(run_dir, series=serie, run=corrida)
+            reference = load_series_reference(serie, language="en").decisions
+            pairs += [
+                replace(p, serie=serie)
+                for p in candidate_pairs(
+                    reference, predicted, similarity, tau=tau, floor=cfg.similarity_floor
+                )
+            ]
         sample = draw_validation_sample(
             pairs, sample_size=cfg.sample_size, matched_share=cfg.matched_share, seed=cfg.seed
         )
@@ -3439,7 +3588,7 @@ def experiment_a_validacion_hoja(
             key_path=key_path,
             source={
                 "run_name": run_name,
-                "series": serie,
+                "series": series_ids,
                 "run": corrida,
                 "records": records.name,
                 "sha256": source_sha256(records),
@@ -3477,10 +3626,6 @@ def experiment_a_validacion_puntaje(
     run_name: Annotated[
         str | None, typer.Option("--run-name", help="Corrida guardada en reports/experiment-a/.")
     ] = None,
-    serie: Annotated[
-        str | None,
-        typer.Option("--serie", help="Serie de desarrollo (por defecto, la del manifiesto)."),
-    ] = None,
     hoja: Annotated[Path | None, typer.Option("--hoja", help="Hoja llena.")] = None,
     clave: Annotated[Path | None, typer.Option("--clave", help="Clave de la hoja.")] = None,
     salida: Annotated[
@@ -3492,7 +3637,8 @@ def experiment_a_validacion_puntaje(
     Exige todas las etiquetas si/no. Reporta la concordancia del protocolo
     (`alignment.concordance`: pares coincidentes entre las dos alineaciones sobre su unión), el
     acuerdo observado, la matriz de confusión y cuántos pares confirmó la persona en cada
-    grupo. No define umbral de aprobación.
+    grupo. No define umbral de aprobación. Lee la clave de `data/interim/alignment-validation/`
+    y la copia en el resultado, que queda en `reports/experiment-a/<corrida>/`.
     """
     import json
 
@@ -3503,9 +3649,13 @@ def experiment_a_validacion_puntaje(
         raise typer.Exit(code=1)
     sheet_path, key_path, out_path = hoja, clave, salida
     if run_name is not None:
-        _, serie = _validation_inputs(run_name, serie)
-        sheet_path, key_path = _validation_paths(run_name, serie, hoja, clave)
-        out_path = salida or EXPERIMENT_A_DIR / run_name / f"validacion-manual-{serie}.json"
+        if not (EXPERIMENT_A_DIR / run_name / "manifest.json").is_file():
+            console.print(
+                f"[bold red]No existe la corrida {_short(EXPERIMENT_A_DIR / run_name)}.[/bold red]"
+            )
+            raise typer.Exit(code=1)
+        sheet_path, key_path = _validation_paths(run_name, hoja, clave)
+        out_path = salida or EXPERIMENT_A_DIR / run_name / "validacion-manual.json"
     assert sheet_path is not None and key_path is not None and out_path is not None
     for needed in (sheet_path, key_path):
         if not needed.exists():
@@ -3543,7 +3693,8 @@ def experiment_b(
             "--questions",
             help="CSV de preguntas: el banco `banco-preguntas.csv` (corre solo las filas "
             "validadas y se niega si hay errores bloqueantes, con las mismas verificaciones de "
-            "`afg gold questions-check`), la hoja `ES2015.preguntas.csv` "
+            "`afg gold questions-check`; la corrida formal sobre series de evaluación usa el "
+            "banco congelado, sin cambios), la hoja `ES2015.preguntas.csv` "
             "o el CSV de preguntas de calibración.",
         ),
     ],
@@ -3621,7 +3772,16 @@ def experiment_b(
     except (QuestionBankError, ValueError, FileNotFoundError, CalibrationSetError) as exc:
         console.print(f"[bold red]{exc}[/bold red]")
         raise typer.Exit(code=1) from exc
-    _require_series_gate(sorted({q.series_id for q in bank}), questions=questions)
+    gate = _require_series_gate(
+        sorted({q.series_id for q in bank}), questions=questions, allow_mixed=False, runs=runs
+    )
+    if limit_questions is not None and gate != "development":
+        console.print(
+            "[bold red]`--limit-questions` solo se admite con series de desarrollo: una corrida "
+            "de evaluación recorta el banco congelado y no es reportable; no se llamó a ningún "
+            "modelo.[/bold red]"
+        )
+        raise typer.Exit(code=1)
 
     config = load_experiments_config()
     settings = experiment_b_settings(runs)
@@ -3673,6 +3833,7 @@ def experiment_b(
         c3_workspaces=_short(OPENKOS_C3_WORKSPACES_DIR) if "c3" in wanted else None,
     )
     provenance.update(pinned)
+    provenance["freeze"] = freeze_provenance(FREEZE_PATH)
 
     def report(done: int, total: int) -> None:
         step = max(total // 10, 1)
@@ -3913,8 +4074,8 @@ def experiment_b_report(
         bool,
         typer.Option(
             "--descriptive",
-            help="Vista descriptiva (--descriptive) de registros de desarrollo o mixtos: "
-            "se guarda aparte y no es reportable.",
+            help="Vista descriptiva de registros de desarrollo, mixtos o de evaluación que no "
+            "coinciden con el congelamiento: se guarda aparte y no es reportable.",
         ),
     ] = False,
     questions: Annotated[
@@ -3955,6 +4116,7 @@ def experiment_b_report(
         )
         raise typer.Exit(code=1)
     run_dir, records = _load_run_records(run_name)
+    unfrozen = _require_run_frozen(run_dir, descriptive=descriptive)
     config = load_experiments_config()
     try:
         bank = {q.id: q for q in load_experiment_questions(questions)}
@@ -3965,7 +4127,7 @@ def experiment_b_report(
         report = analyze_runs(
             records,
             settings=interval_settings_from_config(),
-            min_questions=int(config["question_bank"]["min_questions"]),
+            min_questions=configured_minimums(int(config["question_bank"]["min_questions"])),
             min_runs=int(config["shared_budget"]["runs_per_config"]),
             allow_development=descriptive,
             questions=bank,
@@ -3982,6 +4144,8 @@ def experiment_b_report(
         raise typer.Exit(code=1) from exc
 
     label = "reportable" if report.reportable else f"DESCRIPTIVO, partición {report.partition}"
+    if unfrozen:
+        label = "DESCRIPTIVO, no coincide con el congelamiento"
     table = Table(title=f"Experimento B, {run_name} ({label})")
     columns = (
         "Condición",
@@ -4056,8 +4220,8 @@ def experiment_final_tables(
         bool,
         typer.Option(
             "--descriptive",
-            help="Admite corridas de desarrollo; cada tabla y figura lleva "
-            "'desarrollo — no reportable' (ADR 0005).",
+            help="Admite corridas de desarrollo, mixtas o de evaluación que no coinciden con el "
+            "congelamiento; cada tabla y figura lleva 'desarrollo — no reportable'.",
         ),
     ] = False,
     out_dir: Annotated[
@@ -4081,6 +4245,12 @@ def experiment_final_tables(
         write_final_tables,
     )
 
+    for b_name in b_runs:
+        _require_run_frozen(EXPERIMENT_B_DIR / b_name, descriptive=descriptive)
+    if a_run is not None:
+        _require_run_frozen(
+            EXPERIMENT_A_DIR / a_run, descriptive=descriptive, check_questions=False
+        )
     try:
         inputs = load_final_inputs(
             a_run=a_run,
@@ -4145,6 +4315,7 @@ def experiment_b_sample(
     )
 
     run_dir, records = _load_run_records(run_name)
+    _require_run_frozen(run_dir)
     config = load_experiments_config()
     try:
         bank = load_experiment_questions(questions)
@@ -4254,8 +4425,12 @@ def experiment_b_oe4_sheet(
     ],
     questions: Annotated[
         Path,
-        typer.Option("--questions", help="CSV de preguntas de la corrida (referencia)."),
-    ] = WORKSHEET_PATH,
+        typer.Option(
+            "--questions",
+            help="CSV de preguntas de la corrida (referencia). Es obligatorio y debe ser el "
+            "archivo con el que se corrió (su huella se compara con la del manifiesto).",
+        ),
+    ],
     force: Annotated[
         bool, typer.Option("--force", help="Sobrescribir una hoja que ya tiene etiquetas.")
     ] = False,
@@ -4284,8 +4459,16 @@ def experiment_b_oe4_sheet(
     )
 
     run_dir, records = _load_run_records(run_name)
+    _require_run_frozen(run_dir)
     try:
         manifest = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8"))
+        recorded = manifest.get("questions_sha256")
+        actual = file_sha256(questions)
+        if recorded is not None and actual != recorded:
+            raise ValueError(
+                f"{_short(questions)} no es el archivo de preguntas de la corrida: huella "
+                f"{actual}, questions_sha256 del manifiesto {recorded}."
+            )
         bundle = bundle_dir_for_run(manifest)
         bank = {q.id: q for q in load_experiment_questions(questions)}
         rows = oe4_worksheet_rows(records, bank, bundle, include_rule_attributed=all_failures)
@@ -4329,10 +4512,12 @@ def experiment_b_oe4_summary(
         try:
             manifest = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8"))
             conditions = manifest.get("conditions") or []
-            if len(conditions) != 1:
-                raise ValueError(f"{run_name}: se esperaba una condición, hay {conditions}.")
+            if "C2" not in conditions:
+                raise ValueError(
+                    f"{run_name}: la hoja OE4 es de C2 y la corrida tiene {conditions}."
+                )
             rows = read_worksheet_rows(run_dir / OE4_SHEET_FILE)
-            summary = summarize_oe4_sheet(rows, condition=str(conditions[0]))
+            summary = summarize_oe4_sheet(rows, condition="C2")
         except (ValueError, KeyError, FileNotFoundError, CsvFormatError) as exc:
             console.print(f"[bold red]{escape(str(exc))}[/bold red]")
             raise typer.Exit(code=1) from exc

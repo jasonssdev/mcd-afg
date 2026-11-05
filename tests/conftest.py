@@ -54,3 +54,17 @@ def _no_freeze_record(
 
     absent = tmp_path_factory.mktemp("freeze") / "freeze.json"
     monkeypatch.setattr(afg_cli, "FREEZE_PATH", absent, raising=False)
+
+
+@pytest.fixture(autouse=True)
+def _no_result_overrides(
+    monkeypatch: pytest.MonkeyPatch, tmp_path_factory: pytest.TempPathFactory
+) -> None:
+    """The developer's own ``AFG_*`` overrides and ``.env`` must not reach the freeze gate."""
+    from afg.experiments.freeze import RESULT_AFFECTING_ENV
+
+    for name in RESULT_AFFECTING_ENV:
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setattr(
+        "afg.experiments.freeze.ENV_PATH", tmp_path_factory.getbasetemp() / "no-such.env"
+    )

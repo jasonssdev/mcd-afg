@@ -13,8 +13,11 @@ from afg.experiments.freeze import (
     SeriesGateError,
     build_freeze_record,
     freeze_differences,
+    freeze_provenance,
     gate_partition,
+    manifest_series,
     read_freeze_record,
+    verify_run_against_freeze,
     write_freeze_record,
 )
 from tests.freeze_fixtures import COMMIT, CONFIG_TEXT, SERIES, make_sources
@@ -190,6 +193,88 @@ def test_every_difference_is_listed_at_once(sources: FreezeSources, record_path:
     assert len(differences(sources, record_path)) >= 3
 
 
+# --- transcripts and extra configs (B7, B8) -----------------------------------------------
+
+
+def test_the_record_holds_the_transcripts_manifest_and_the_two_configs(
+    record_path: Path,
+) -> None:
+    data = json.loads(record_path.read_text(encoding="utf-8"))
+
+    assert data["transcripts"]["path"] == "data/interim/transcripts"
+    assert data["transcripts"]["count"] == 4
+    assert len(data["transcripts"]["sha256"]) == 64
+    assert data["corpus_config"]["path"] == "config/corpus.toml"
+    assert data["annotation_config"]["path"] == "config/annotation.toml"
+    assert len(data["corpus_config"]["sha256"]) == 64
+
+
+def test_a_changed_transcript_is_named_by_hash_not_by_file(
+    sources: FreezeSources, record_path: Path
+) -> None:
+    (sources.transcripts_dir / "ES2002a.md").write_text("edited\n", encoding="utf-8")
+
+    found = differences(sources, record_path)
+
+    assert len(found) == 1 and "transcripciones" in found[0]
+    assert "ES2002a" not in found[0] and "huella actual" in found[0]
+
+
+def test_a_transcript_added_or_removed_changes_the_count(
+    sources: FreezeSources, record_path: Path
+) -> None:
+    (sources.transcripts_dir / "ES2002b.md").unlink()
+
+    found = differences(sources, record_path)
+
+    assert any("3 archivos" in f and "congelados 4" in f for f in found)
+
+
+def test_missing_transcripts_are_a_difference(sources: FreezeSources, record_path: Path) -> None:
+    for path in sources.transcripts_dir.iterdir():
+        path.unlink()
+
+    assert any(
+        "transcripciones" in f and "0 archivos" in f for f in differences(sources, record_path)
+    )
+
+
+def test_writing_refuses_empty_transcripts(sources: FreezeSources, tmp_path: Path) -> None:
+    for path in sources.transcripts_dir.iterdir():
+        path.unlink()
+
+    with pytest.raises(FreezeError, match="transcripciones"):
+        build_freeze_record(sources, series=SERIES, adr="0017", commit=COMMIT)
+
+
+@pytest.mark.parametrize("name", ["corpus.toml", "annotation.toml"])
+def test_a_changed_corpus_or_annotation_config_is_named(
+    sources: FreezeSources, record_path: Path, name: str
+) -> None:
+    (sources.root / "config" / name).write_text("changed = 1\n", encoding="utf-8")
+
+    found = differences(sources, record_path)
+
+    assert len(found) == 1 and f"config/{name}" in found[0]
+
+
+def test_a_record_without_the_new_keys_is_named_in_spanish(
+    sources: FreezeSources, record_path: Path
+) -> None:
+    data = json.loads(record_path.read_text(encoding="utf-8"))
+    del data["transcripts"]
+    record_path.write_text(json.dumps(data), encoding="utf-8")
+
+    with pytest.raises(FreezeError, match="transcripts"):
+        read_freeze_record(record_path)
+
+
+def test_python_version_counts_as_code() -> None:
+    from afg.experiments.freeze import CODE_PATHS
+
+    assert ".python-version" in CODE_PATHS
+
+
 # --- read ----------------------------------------------------------------------------------
 
 
@@ -284,3 +369,128 @@ def test_the_gate_checks_the_questions_file_it_is_given(
 
     with pytest.raises(SeriesGateError, match="question_bank"):
         gate(sources, record_path, ["ES2002"], questions_path=other)
+
+
+# --- a finished run against the record ------------------------------------------------------------
+
+
+def _manifest(record: dict, **over: object) -> dict:
+    manifest = {
+        "questions_sha256": record["question_bank"]["sha256"],
+        "git_dirty": False,
+        "git_commit": record["code_commit"],
+    }
+    manifest.update(over)
+    return manifest
+
+
+@pytest.fixture
+def record(record_path: Path) -> dict:
+    return read_freeze_record(record_path)
+
+
+def test_a_run_made_on_the_frozen_code_and_bank_has_no_differences(record: dict) -> None:
+    assert verify_run_against_freeze(_manifest(record), record) == []
+
+
+def test_a_run_on_another_bank_is_named(record: dict) -> None:
+    found = verify_run_against_freeze(_manifest(record, questions_sha256="0" * 64), record)
+    assert len(found) == 1 and "banco de preguntas" in found[0]
+    missing = _manifest(record)
+    del missing["questions_sha256"]
+    assert verify_run_against_freeze(missing, record)
+
+
+def test_the_bank_is_not_checked_for_a_run_without_questions(record: dict) -> None:
+    manifest = _manifest(record)
+    del manifest["questions_sha256"]
+    assert verify_run_against_freeze(manifest, record, check_questions=False) == []
+
+
+def test_a_dirty_or_unrecorded_tree_is_named(record: dict) -> None:
+    for dirty in (True, None):
+        found = verify_run_against_freeze(_manifest(record, git_dirty=dirty), record)
+        assert len(found) == 1 and "árbol" in found[0]
+
+
+def test_a_run_on_another_commit_passes_only_when_no_code_differs(record: dict) -> None:
+    manifest = _manifest(record, git_commit="d" * 40)
+    assert verify_run_against_freeze(manifest, record, code_changes=lambda a, b: []) == []
+    found = verify_run_against_freeze(
+        manifest, record, code_changes=lambda a, b: ["src/afg/cli.py"]
+    )
+    assert len(found) == 1 and "src/afg/cli.py" in found[0]
+    assert verify_run_against_freeze(
+        _manifest(record, git_commit=None), record, code_changes=lambda a, b: []
+    )
+
+
+def test_manifest_series_reads_a_list_or_a_comma_string() -> None:
+    assert manifest_series({"series": ["ES2002", "ES2008"]}) == ["ES2002", "ES2008"]
+    assert manifest_series({"series": "ES2002, ES2008"}) == ["ES2002", "ES2008"]
+    assert manifest_series({}) == []
+
+
+# --- AFG_* overrides (B9) ------------------------------------------------------------------
+
+
+def test_an_override_in_the_environment_refuses_evaluation_series(
+    sources: FreezeSources, record_path: Path
+) -> None:
+    with pytest.raises(SeriesGateError) as raised:
+        gate(
+            sources,
+            record_path,
+            ["ES2002"],
+            environ={"AFG_JUDGE_MODEL": "other", "AFG_SEED": "7", "AFG_LOG_LEVEL": "DEBUG"},
+        )
+
+    message = str(raised.value)
+    assert "AFG_JUDGE_MODEL" in message and "AFG_SEED" in message
+    assert "AFG_LOG_LEVEL" not in message and "no se llamó a ningún modelo" in message
+
+
+def test_an_override_in_the_env_file_refuses_evaluation_series(
+    sources: FreezeSources, record_path: Path, tmp_path: Path
+) -> None:
+    env_file = tmp_path / ".env"
+    env_file.write_text("# comment\nafg_openkos_executable = /x/openkos\nAFG_LOG_LEVEL=DEBUG\n")
+
+    with pytest.raises(SeriesGateError, match="AFG_OPENKOS_EXECUTABLE"):
+        gate(sources, record_path, ["ES2002"], environ={}, env_file=env_file)
+
+
+def test_overrides_do_not_matter_for_development_series(
+    sources: FreezeSources, record_path: Path
+) -> None:
+    assert gate(sources, record_path, ["ES2015"], environ={"AFG_SEED": "7"}) == "development"
+
+
+def test_no_override_passes_evaluation_series(sources: FreezeSources, record_path: Path) -> None:
+    assert gate(sources, record_path, ["ES2002"], environ={}) == "evaluation"
+
+
+def test_the_runs_option_must_equal_the_configured_value_on_evaluation(
+    sources: FreezeSources, record_path: Path
+) -> None:
+    with pytest.raises(SeriesGateError, match=r"--runs 3.*5"):
+        gate(sources, record_path, ["ES2002"], environ={}, runs=3, configured_runs=5)
+    assert gate(sources, record_path, ["ES2002"], environ={}, runs=5, configured_runs=5)
+    assert gate(sources, record_path, ["ES2015"], environ={}, runs=1, configured_runs=5)
+
+
+# --- provenance of the manifests (B10) ----------------------------------------------------
+
+
+def test_freeze_provenance_holds_adr_commit_and_the_file_hash(record_path: Path) -> None:
+    import hashlib
+
+    assert freeze_provenance(record_path) == {
+        "adr": "0017",
+        "code_commit": COMMIT,
+        "sha256": hashlib.sha256(record_path.read_bytes()).hexdigest(),
+    }
+
+
+def test_freeze_provenance_is_none_without_a_record(tmp_path: Path) -> None:
+    assert freeze_provenance(tmp_path / "freeze.json") is None

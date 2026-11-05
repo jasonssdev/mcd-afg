@@ -111,16 +111,27 @@ def _question(qid: str, reference: str, stratum: QuestionStratum) -> Question:
     )
 
 
-def _record(qid: str, stratum: str, ids: list[str], *, correct: bool) -> dict[str, Any]:
+def _record(
+    qid: str,
+    stratum: str,
+    ids: list[str],
+    *,
+    correct: bool,
+    condition: str = "C2",
+    run: int = 0,
+    text: str | None = None,
+) -> dict[str, Any]:
     blocks = [
         {"index": i, "concept_id": c, "text": f"[concept_id: {c} — T]\n# T\n\nmarket"}
         for i, c in enumerate(ids, start=1)
     ]
     return {
         "question_id": qid,
+        "condition": condition,
+        "run": run,
         "stratum": stratum,
         "verdict": {"correct": correct},
-        "answer": {"text": f"answer {qid}", "abstained": False},
+        "answer": {"text": text or f"answer {qid}", "abstained": False},
         "trace": {"outcome": "answered", "context_blocks": blocks},
     }
 
@@ -159,6 +170,26 @@ def test_worksheet_lists_only_unlabeled_e1_failures(
     assert "decisions/price (1.00, no recuperado)" in row["objetos_de_la_base"]
     assert row["mejor_fuente"] == "sources/es2015a (0.75)"
     assert row["pista_automatica"]
+
+
+def test_worksheet_keeps_one_row_per_question_and_run_of_c2_only(
+    bundle: Path, scenario: tuple[list[dict[str, Any]], dict[str, Question]]
+) -> None:
+    _, questions = scenario
+    records = [
+        _record("ES2015.q1", "E1_point_fact", ["concepts/market"], correct=False, run=run, **kw)
+        for run in (0, 1)
+        for kw in (
+            {"condition": "C2", "text": f"c2 run {run}"},
+            {"condition": "C1", "text": f"c1 run {run}"},
+        )
+    ]
+    rows = oe4_worksheet_rows(records, questions, bundle)
+    assert [(r["pregunta_id"], r["corrida"]) for r in rows] == [
+        ("ES2015.q1", "0"),
+        ("ES2015.q1", "1"),
+    ]
+    assert [r["respuesta_c2"] for r in rows] == ["c2 run 0", "c2 run 1"]
 
 
 def test_worksheet_can_include_failures_the_rule_attributes(

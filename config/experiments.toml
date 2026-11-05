@@ -8,8 +8,8 @@
 
 [shared_budget]
 generative_model = "qwen3:8b"        # answering model in C1, C2 and C3 and extraction model of C2/C3: OpenKOS 0.7.0's default `model:` (ADR 0006, ADR 0014, ADR 0015); the exact model fingerprint is recorded in each run manifest
-generative_model_large = "qwen3:32b" # read by the pending Experiment A/B code; keep. Second scale point (H3); an extension, not a committed run -- see docs/avances/03-jss-objetivos.md
-sufficiency_model = "gemma4:26b-a4b" # model OpenKOS uses for its sufficiency check in C2/C3 (openkos.config.DEFAULT_TASK_MODELS["sufficiency"]), left at its packaged default; C1 has no sufficiency check and never reads this key
+generative_model_large = "qwen3:32b" # read by the Experiment A/B code; keep. Second scale point (H3); an extension, not a committed run -- see docs/avances/03-jss-objetivos.md
+sufficiency_model = "gemma4:26b-a4b" # model OpenKOS uses for its sufficiency check in C2/C3 (openkos.config.DEFAULT_TASK_MODELS["sufficiency"]), left at its packaged default; C1 has no sufficiency check and never reads this key. OpenKOS's `adjudication`, `contradiction` and `sufficiency` tasks all default to this same pinned `gemma4:26b-a4b`
 embedding_model = "bge-m3"
 context_window_tokens = 12288        # openkos num_ctx default (ADR 0006)
 max_generation_tokens = 8192         # openkos num_predict default (ADR 0006)
@@ -34,7 +34,7 @@ openkos_version = "0.7.0"
 "bge-m3" = "7907646426070047a77226ac3e684fbbe8410524f7b4a74d02837e43f2146bab"
 
 [retrieval]
-answer_limit = 5                     # read by the pending Experiment A/B code; keep. `--limit` of `openkos query` for C2 and C3 (OpenKOS default, ADR 0006). Kept on purpose: the three conditions share a TEXT budget, not an equal K (ADR 0007). C1 uses [retrieval.c1].k
+answer_limit = 5                     # read by the Experiment A/B code; keep. `--limit` of `openkos query` for C2 and C3 (OpenKOS default, ADR 0006). Kept on purpose: the three conditions share a TEXT budget, not an equal K (ADR 0007). C1 uses [retrieval.c1].k
 rrf_k = 60                           # reciprocal rank fusion constant, as in openkos retrieval/fusion.py
 # Unweighted RRF over the lexical and dense channels, as in openkos retrieval/fusion.py.
 
@@ -51,8 +51,10 @@ chunk_size = [800, 1200, 1600, 2400]  # chunk size cap, characters
 chunk_overlap = [0, 200]             # characters shared between consecutive chunks
 k = [3, 5, 8, 10]                    # chunks sent to the answer prompt
 # Total context chars OpenKOS measured for 5 bodies before it bounded the context (issue
-# #882); pre-registered and kept as the eligibility filter, although the effective budget in
-# v0.5.4 is ~7,400 chars (ADR 0007, amendment). A config is eligible only if
+# #882); pre-registered and kept as the eligibility filter, although the effective budget is
+# lower: ~7,400 chars was measured on OpenKOS v0.5.4 (ADR 0007, amendment) and is kept as
+# documented there, not re-measured; since 0.7.0 the budget is computed per question (~8,300
+# chars for C2 on ES2015, ADR 0007). A config is eligible only if
 # k * chunk_size <= char_budget.
 char_budget = 13516
 # Winner: the eligible config with the highest mean recall; among eligible configs within
@@ -64,7 +66,8 @@ tie_margin = 0.02
 # data, ADR 0005), measuring the recall of the text that reaches the model after OpenKOS's
 # context budget (ADR 0007, amendment of 2026-10-15). Result: reports/c1-tuning/resultados.json;
 # reasoning: notebook 06 and ADR 0007. A test checks these equal the stored winner. The
-# ~7,400-character context OpenKOS v0.5.4 sends is the same for C1, C2 and C3 by construction.
+# context OpenKOS sends (a v0.5.4 measurement of ~7,400 characters, kept as documented in ADR
+# 0007 and not re-measured on 0.7.0) is the same for C1, C2 and C3 by construction.
 # Retuned on 2026-11-02 over the Markdown chunking (ADR 0007, amendment of 2026-11-02).
 chunk_size = 1200                    # chunk size cap, characters
 chunk_overlap = 0                    # characters shared between consecutive chunks
@@ -74,12 +77,12 @@ k = 5                                # chunks sent to the answer prompt
 # Thesis section 5.4: cosine-similarity candidates over (decision object, content) pairs,
 # one-to-one matching via the Hungarian algorithm, F1 reported as a curve over tau, never
 # a single point.
-# Read by the pending Experiment A/B code; keep: tau_grid and manual_validation_sample_size.
+# Read by the Experiment A/B code; keep: tau_grid and manual_validation_sample_size.
 tau_grid = [0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90]
 manual_validation_sample_size = 100  # minimum sample for automatic-vs-manual concordance
 
 [alignment.concordance]
-# Judge-person concordance on the tau-calibration judgments (ADR 0012, pending item). Fixed
+# Judge-person concordance on the tau-calibration judgments (ADR 0012). Fixed
 # BEFORE any label exists. The sample is stratified by the 0.05 similarity bins: `per_bin` pairs
 # per bin plus random extras from the rest up to `sample_size`; the order is shuffled. The report
 # is kappa + agreement with a bootstrap CI (resamples and level from [evaluation], seed from
@@ -137,8 +140,8 @@ min_e4_accuracy = 0.80               # accuracy on the E4_unanswerable stratum
 min_json_valid_rate = 0.99           # share of outputs that parse and validate
 max_verbosity_flip_rate = 0.10       # verdict changes when a wrong answer is padded
 series = ["ES2015"]                  # the calibration set draws only from these series
-# ES2015 is annotated and adjudicated, so reading questions about it breaks no pending
-# annotation. IS1004 (annotated independently in Phase 3, issue #30) and TS3009
+# ES2015 is annotated and adjudicated, so reading questions about it breaks no annotation
+# in progress. IS1004 (annotated independently in Phase 3, issue #30) and TS3009
 # (recalibration not finished) are development series too, but exposing their content
 # before those annotations close would break annotator independence. Must stay a subset of
 # `development_series` in corpus.toml; the loader fails otherwise.

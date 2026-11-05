@@ -232,6 +232,16 @@ def test_manifest_reports_what_was_written_and_dropped(env: dict[str, Path]) -> 
     assert manifest["generated_by"] == GOLD_GENERATOR
 
 
+def test_manifest_records_provenance_and_the_build_time(env: dict[str, Path]) -> None:
+    provenance = {"git_commit": "a" * 40, "git_dirty": False, "freeze": None}
+    _build(env, provenance=provenance)
+    manifest = json.loads((env["target"] / "c3-manifest.json").read_text("utf-8"))
+
+    assert manifest["git_commit"] == "a" * 40
+    assert manifest["git_dirty"] is False and manifest["freeze"] is None
+    assert isinstance(manifest["seconds"], float) and manifest["seconds"] >= 0
+
+
 def test_evidence_that_comes_back_partial_is_listed(env: dict[str, Path]) -> None:
     result = _build(env)
 
@@ -278,6 +288,21 @@ def test_reindexes_after_writing_the_bundle(env: dict[str, Path]) -> None:
 def test_failed_reindex_is_an_error(env: dict[str, Path]) -> None:
     with pytest.raises(OpenKosCommandError, match="reindex"):
         _build(env, FakeRunner(reindex_code=1))
+
+
+def test_failed_build_leaves_no_partial_workspace(env: dict[str, Path]) -> None:
+    with pytest.raises(OpenKosCommandError):
+        _build(env, FakeRunner(reindex_code=1))
+    assert not env["target"].exists()
+
+
+def test_failed_build_over_an_overwritten_workspace_leaves_nothing_behind(
+    env: dict[str, Path],
+) -> None:
+    _build(env)
+    with pytest.raises(OpenKosCommandError):
+        _build(env, FakeRunner(reindex_code=1), overwrite=True)
+    assert not env["target"].exists()
 
 
 def test_refuses_to_overwrite_unless_asked(env: dict[str, Path]) -> None:

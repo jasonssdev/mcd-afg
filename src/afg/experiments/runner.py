@@ -197,6 +197,26 @@ def _compared_settings(settings: Mapping[str, Any]) -> dict[str, Any]:
 # --- engine ------------------------------------------------------------------------------------
 
 
+def _changed_identity(
+    previous: Mapping[str, Any],
+    conditions: list[str],
+    series: list[str],
+    provenance: Mapping[str, Any] | None,
+) -> list[str]:
+    """What identifies the run (conditions, series, question file, C2 extraction) and changed."""
+    changed = [
+        name
+        for name, now in (("conditions", conditions), ("series", series))
+        if previous.get(name) != now
+    ]
+    changed += [
+        key
+        for key in ("questions_sha256", "c2_extraction")
+        if provenance is not None and key in provenance and previous.get(key) != provenance[key]
+    ]
+    return changed
+
+
 def _partition(series: Iterable[str], partition_of: Callable[[str], str]) -> str:
     found = {partition_of(s) for s in series}
     if len(found) == 1:
@@ -257,6 +277,13 @@ def run_experiment_b(
         )
 
     series = sorted({q.series_id for q in bank})
+    if previous is not None:
+        changed = _changed_identity(previous, sorted(conditions), series, provenance)
+        if changed:
+            raise ManifestMismatchError(
+                f"{manifest_path} was written with other {', '.join(changed)}; use another "
+                "--run-name or restore them to resume."
+            )
     partition = _partition(series, partitioner)
     manifest: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,

@@ -91,10 +91,10 @@ def summarize_oe4_sheet(rows: Sequence[Mapping[str, str]], *, condition: str) ->
 
     Raises:
         ValueError: a row has an empty or unknown ``etapa_humana`` (a half-labelled sheet never
-            yields a partial figure), or a question appears twice.
+            yields a partial figure), or a (question, run) pair appears twice.
     """
-    ids = [r["pregunta_id"] for r in rows]
-    repeated = sorted({i for i in ids if ids.count(i) > 1})
+    keys = [(r["pregunta_id"], r.get("corrida", "")) for r in rows]
+    repeated = sorted({f"{q} (corrida {c})" if c else q for q, c in keys if keys.count((q, c)) > 1})
     if repeated:
         raise ValueError(f"preguntas duplicadas en la hoja: {', '.join(repeated)}")
     stages = count_stages([], rows)

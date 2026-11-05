@@ -39,6 +39,7 @@ def env(tmp_path: Path) -> dict[str, Path]:
             quotes=[("es2015a", QUOTE)],
         ),
     )
+    (workspace / "c3-manifest.json").write_text("{}", encoding="utf-8")
     return {"transcripts": transcripts, "base": base, "workspace": workspace}
 
 
@@ -105,6 +106,14 @@ def test_missing_workspace_says_how_to_build_it(env: dict[str, Path]) -> None:
     with pytest.raises(WorkspaceNotFoundError, match="afg c3 build") as raised:
         condition.answer(question())
     assert "run-2" in str(raised.value) and RUN_NAME in str(raised.value)
+
+
+def test_a_workspace_without_the_build_manifest_is_not_queried(env: dict[str, Path]) -> None:
+    (env["workspace"] / "c3-manifest.json").unlink()
+    runner = QueryRunner()
+    with pytest.raises(WorkspaceNotFoundError, match=r"c3-manifest\.json"):
+        make(env, runner).answer(question())
+    assert runner.queries() == []
 
 
 def test_without_a_run_the_error_names_c3(env: dict[str, Path]) -> None:

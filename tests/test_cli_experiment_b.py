@@ -111,6 +111,39 @@ def test_runs_c1_and_writes_records_and_manifest(env: dict[str, Any]) -> None:
     assert "6" in _out(result)
 
 
+def test_limit_questions_is_refused_on_evaluation_series(env: dict[str, Any]) -> None:
+    env["monkeypatch"].setattr(afg_cli, "_require_series_gate", lambda *a, **k: "evaluation")
+    result = _invoke(env, "--limit-questions", "2", "--run-name", "lim")
+    assert result.exit_code == 1
+    assert "--limit-questions" in _out(result)
+    assert not (env["out"] / "lim").exists()
+
+
+def test_runs_is_passed_to_the_series_gate(env: dict[str, Any]) -> None:
+    seen: dict[str, Any] = {}
+
+    def recorder(series_ids: Any, **kwargs: Any) -> str:
+        seen.update(kwargs)
+        return "development"
+
+    env["monkeypatch"].setattr(afg_cli, "_require_series_gate", recorder)
+    _invoke(env, "--conditions", "c1", "--runs", "2", "--run-name", "r")
+    assert seen.get("runs") == 2
+
+
+def test_limit_questions_is_allowed_on_development_series(env: dict[str, Any]) -> None:
+    result = _invoke(env, "--limit-questions", "2", "--runs", "1", "--run-name", "lim")
+    assert result.exit_code == 0, result.output
+
+
+def test_mixed_partitions_are_refused(env: dict[str, Any]) -> None:
+    env["monkeypatch"].setattr(afg_cli, "gate_partition", lambda *a, **k: "mixed")
+    result = _invoke(env, "--run-name", "mix")
+    assert result.exit_code == 1
+    assert "desarrollo" in _out(result) and "evaluación" in _out(result)
+    assert not (env["out"] / "mix").exists()
+
+
 def test_manifest_records_the_reproducibility_fields(env: dict[str, Any]) -> None:
     result = _invoke(env, "--runs", "1", "--run-name", "repro")
     assert result.exit_code == 0, result.output
@@ -125,6 +158,26 @@ def test_manifest_records_the_reproducibility_fields(env: dict[str, Any]) -> Non
     assert manifest["git_dirty"] is True
     assert manifest["c1_params"] == {"chunk_size": 1200, "chunk_overlap": 0, "k": 5}
     assert manifest["questions_sha256"] == hashlib.sha256(env["questions"].read_bytes()).hexdigest()
+
+
+def test_manifest_records_the_freeze_record_or_null(env: dict[str, Any], tmp_path: Path) -> None:
+    import hashlib
+
+    env["monkeypatch"].setattr(afg_cli, "FREEZE_PATH", tmp_path / "none.json")
+    assert _invoke(env, "--runs", "1", "--run-name", "nofreeze").exit_code == 0
+    none = json.loads((env["out"] / "nofreeze" / "manifest.json").read_text(encoding="utf-8"))
+    assert none["freeze"] is None
+
+    record = tmp_path / "freeze.json"
+    record.write_text(json.dumps({"adr": "0023", "code_commit": "f" * 40}), encoding="utf-8")
+    env["monkeypatch"].setattr(afg_cli, "FREEZE_PATH", record)
+    assert _invoke(env, "--runs", "1", "--run-name", "withfreeze").exit_code == 0
+    got = json.loads((env["out"] / "withfreeze" / "manifest.json").read_text(encoding="utf-8"))
+    assert got["freeze"] == {
+        "adr": "0023",
+        "code_commit": "f" * 40,
+        "sha256": hashlib.sha256(record.read_bytes()).hexdigest(),
+    }
 
 
 def test_limit_questions_and_default_runs_from_config(env: dict[str, Any]) -> None:
@@ -374,10 +427,10 @@ def test_bank_runs_only_validated_rows_and_reports_pending(
 ) -> None:
     _bank(env, _BANK_OK, _BANK_PENDING)
     _freeze_bank(env, tmp_path)
-    result = _invoke(env, "--runs", "1", "--run-name", "bank")
+    result = _invoke(env, "--run-name", "bank")  # evaluation: runs_per_config only (3)
     assert result.exit_code == 0, result.output
     lines = (env["out"] / "bank" / "respuestas.jsonl").read_text(encoding="utf-8").splitlines()
-    assert [json.loads(line)["question_id"] for line in lines] == ["q001"]
+    assert {json.loads(line)["question_id"] for line in lines} == {"q001"}
     assert "1 pendiente" in _out(result)
 
 

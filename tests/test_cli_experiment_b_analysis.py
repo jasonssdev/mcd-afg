@@ -282,3 +282,63 @@ def test_report_labels_verdicts_on_too_small_samples(out: Path) -> None:
     principal = next(line for line in result.output.splitlines() if "Principal (D16)" in line)
     assert "muestra insuficiente" in principal
     assert "supported" not in principal
+
+
+# --- evaluation runs must match the freeze record ------------------------------------------------
+
+
+def _freeze_wired(out: Path, monkeypatch: pytest.MonkeyPatch, manifest: dict[str, Any]) -> Path:
+    from afg.experiments.freeze import read_freeze_record, write_freeze_record
+    from tests.freeze_fixtures import COMMIT, SERIES, make_sources
+
+    sources = make_sources(out / "tree")
+    record_path = out / "freeze.json"
+    write_freeze_record(record_path, sources, series=SERIES, adr="0017", commit=COMMIT)
+    record = read_freeze_record(record_path)
+    monkeypatch.setattr(afg_cli, "FREEZE_PATH", record_path)
+    monkeypatch.setattr("afg.experiments.freeze.code_changes_since", lambda *a, **k: [])
+    run = _write_run(out, "ev-frozen", "evaluation")
+    full = {
+        "series": ["ES2002"],
+        "conditions": ["C1", "C2"],
+        "questions_sha256": record["question_bank"]["sha256"],
+        "git_dirty": False,
+        "git_commit": COMMIT,
+        **manifest,
+    }
+    (run / "manifest.json").write_text(json.dumps(full), encoding="utf-8")
+    return run
+
+
+def test_report_of_an_evaluation_run_that_matches_the_freeze_is_reportable(
+    out: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _freeze_wired(out, monkeypatch, {})
+    result = _invoke("b-report", "--run-name", "ev-frozen", "--questions", "q.csv")
+    assert result.exit_code == 0, result.output
+    assert "reportable" in result.output
+
+
+@pytest.mark.parametrize(
+    ("command", "extra"),
+    [("b-report", ["--questions", "q.csv"]), ("b-sample", ["--questions", "q.csv"])],
+)
+def test_evaluation_run_with_another_bank_or_dirty_tree_is_refused(
+    out: Path, monkeypatch: pytest.MonkeyPatch, command: str, extra: list[str]
+) -> None:
+    _freeze_wired(out, monkeypatch, {"questions_sha256": "0" * 64, "git_dirty": True})
+    result = _invoke(command, "--run-name", "ev-frozen", *extra)
+    text = " ".join(result.output.split())
+    assert result.exit_code == 1
+    assert "congelamiento" in text and "banco de preguntas" in text and "árbol" in text
+    assert not (out / "ev-frozen" / "muestra-juez.csv").exists()
+
+
+def test_descriptive_report_of_a_mismatched_evaluation_run_is_not_reportable(
+    out: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _freeze_wired(out, monkeypatch, {"git_dirty": True})
+    result = _invoke("b-report", "--run-name", "ev-frozen", "--descriptive", "--questions", "q.csv")
+    assert result.exit_code == 0, result.output
+    assert "no es reportable" in " ".join(result.output.split())
+    assert "(reportable)" not in result.output

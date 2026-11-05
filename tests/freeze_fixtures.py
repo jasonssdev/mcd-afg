@@ -35,10 +35,20 @@ def make_sources(
         (decisions / f"{name}.reference-en.csv").write_text(f"en {name}\n")
         (relations / f"{name}.candidates.gv.csv").write_text(f"r {name}\n")
     (questions / "banco-preguntas.csv").write_text(bank_text, encoding="utf-8")
+    (root / "config" / "corpus.toml").write_text("[oe1]\n", encoding="utf-8")
+    (root / "config" / "annotation.toml").write_text("[phase]\n", encoding="utf-8")
+    transcripts = root / "data" / "interim" / "transcripts"
+    transcripts.mkdir(parents=True, exist_ok=True)
+    for name in ("ES2002a", "ES2002b"):
+        (transcripts / f"{name}.md").write_text(f"md {name}\n", encoding="utf-8")
+        (transcripts / f"{name}.jsonl").write_text(f"jl {name}\n", encoding="utf-8")
     return FreezeSources(
         root=root,
         config_path=root / "config" / "experiments.toml",
         decisions_dir=decisions,
         relations_dir=relations,
         question_bank_path=questions / "banco-preguntas.csv",
+        transcripts_dir=transcripts,
+        corpus_config_path=root / "config" / "corpus.toml",
+        annotation_config_path=root / "config" / "annotation.toml",
     )

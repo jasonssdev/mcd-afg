@@ -44,6 +44,16 @@ def test_evaluation_series_pass_with_a_matching_record(frozen: dict[str, Any]) -
     assert afg_cli._require_series_gate(["ES2002", "ES2008"]) == "evaluation"
 
 
+def test_mixed_partitions_pass_by_default_and_exit_when_refused(
+    frozen: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    assert afg_cli._require_series_gate(["ES2002", "ES2015"]) == "mixed"
+    with pytest.raises(typer.Exit):
+        afg_cli._require_series_gate(["ES2002", "ES2015"], allow_mixed=False)
+    out = " ".join(capsys.readouterr().out.split())
+    assert "desarrollo" in out and "evaluación" in out
+
+
 def test_a_mismatch_exits_naming_the_difference(
     frozen: dict[str, Any], capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -55,6 +65,56 @@ def test_a_mismatch_exits_naming_the_difference(
 
     out = " ".join(capsys.readouterr().out.split())
     assert "ES2008 decisions" in out and "huella actual" in out
+
+
+def test_runs_different_from_the_configured_value_exit_on_evaluation(
+    frozen: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    configured = int(afg_cli.load_experiments_config()["shared_budget"]["runs_per_config"])
+
+    assert afg_cli._require_series_gate(["ES2002"], runs=configured) == "evaluation"
+    assert afg_cli._require_series_gate(["ES2015"], runs=configured + 1) == "development"
+    with pytest.raises(typer.Exit):
+        afg_cli._require_series_gate(["ES2002"], runs=configured + 1)
+
+    assert "--runs" in " ".join(capsys.readouterr().out.split())
+
+
+def test_an_afg_override_exits_on_evaluation(
+    frozen: dict[str, Any],
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setenv("AFG_JUDGE_MODEL", "other")
+
+    with pytest.raises(typer.Exit):
+        afg_cli._require_series_gate(["ES2002"])
+
+    assert "AFG_JUDGE_MODEL" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize(
+    "argv",
+    [
+        ["experiment", "a", "--series", "ES2002", "--runs", "3"],
+        ["experiment", "a-batch", "--series", "ES2002", "--run-name", "x", "--runs", "3"],
+        ["c3", "build", "--c2-extraction", "x", "--series", "ES2002", "--runs", "3"],
+    ],
+)
+def test_the_commands_pass_runs_to_the_gate(
+    monkeypatch: pytest.MonkeyPatch, argv: list[str]
+) -> None:
+    seen: dict[str, Any] = {}
+
+    def recorder(series_ids: Any, **kwargs: Any) -> str:
+        seen.update(kwargs)
+        raise typer.Exit(code=1)
+
+    monkeypatch.setattr(afg_cli, "_require_series_gate", recorder)
+
+    CliRunner().invoke(afg_cli.app, argv)
+
+    assert seen.get("runs") == 3
 
 
 # --- the commands refuse before any model call -------------------------------------------------

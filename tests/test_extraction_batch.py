@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime
 from pathlib import Path
 
 import pytest
@@ -228,3 +229,20 @@ def test_summary_warns_when_more_than_one_openkos_version_was_seen(
     text = "\n".join(batch_summary_lines(manifest, elapsed_seconds=5))
     assert "0.5.5" in text and "0.6.0" in text
     assert "Aviso" in text
+
+
+def test_every_pair_records_when_it_started_finished_and_how_long_it_took(
+    dirs: tuple[Path, Path],
+) -> None:
+    adapter = FakeAdapter(dirs[1])
+    adapter.fail.add(("IS1004", 1))
+
+    manifest = _go(adapter, dirs)
+
+    assert len(manifest["pairs"]) == 4
+    for entry in manifest["pairs"].values():
+        started = datetime.fromisoformat(entry["started_at"])
+        finished = datetime.fromisoformat(entry["finished_at"])
+        assert started <= finished
+        assert isinstance(entry["seconds"], float) and entry["seconds"] >= 0
+    assert manifest["pairs"]["IS1004/1"]["status"] == "failed"
