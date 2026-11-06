@@ -6160,12 +6160,12 @@
       "bge-m3": "7907646426070047a77226ac3e684fbbe8410524f7b4a74d02837e43f2146bab"
     }
   },
-  "git_commit": "09e46a87f82daadee762c2b290f3567c5249f1f0",
+  "git_commit": "e99adfde105fe244192b43577a7df3229eddee02",
   "git_dirty": false,
   "freeze": {
-    "adr": "0024",
-    "code_commit": "e346a4eec5ecb58820ce5a4d3c5f4782549f5cbb",
-    "sha256": "d08c2453c5f68d741e660002b418d4e693849c49b37638bce81b01923dfb1bf3"
+    "adr": "0025",
+    "code_commit": "00b458f384350ddb785cc1c4ecfce597b01babe4",
+    "sha256": "48ce4b6000c720ecf444e976b2900cdd3c6c40b64303ff6458b69a7b61b067bc"
   },
-  "seconds": 2992.078
+  "seconds": 43.59
 }
