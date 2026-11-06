@@ -1,0 +1,6171 @@
+{
+  "run_name": "experimento-a-formal",
+  "partition": "evaluation",
+  "tau": 0.7,
+  "alignment_scope": "origin_meetings",
+  "series": [
+    "ES2002",
+    "ES2008",
+    "ES2014",
+    "ES2016",
+    "IS1003",
+    "IS1006",
+    "IS1008",
+    "IS1009",
+    "TS3003",
+    "TS3005",
+    "TS3011"
+  ],
+  "n_errors": 0,
+  "entries": [
+    {
+      "series": "ES2002",
+      "run": 0,
+      "alignment": {
+        "machine_decisions": 54,
+        "gold_decisions": 31,
+        "aligned": 10
+      },
+      "findings": {
+        "n_relations": 17,
+        "by_verdict": {
+          "refines": 8,
+          "reverses": 3,
+          "unrelated": 6
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 9,
+        "n_gold_links": 3,
+        "n_gold_links_aligned": 0,
+        "n_machine_relations": 17,
+        "n_machine_links": 11,
+        "n_machine_links_aligned": 1,
+        "existence_end_to_end": {
+          "tp": 0,
+          "fp": 11,
+          "fn": 3,
+          "precision": {
+            "successes": 0,
+            "trials": 11,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.2588329669680316
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 3,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.5614970317550454
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 1,
+            "unaligned": 10
+          }
+        },
+        "existence_conditional": {
+          "tp": 0,
+          "fp": 1,
+          "fn": 0,
+          "precision": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 1,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 3,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.5614970317550454
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 3,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.5614970317550454
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 3,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.5614970317550454
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 3,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.5614970317550454
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "reference_kinds": {
+        "decisions": "single:gv",
+        "relations": "single:gv"
+      }
+    },
+    {
+      "series": "ES2002",
+      "run": 1,
+      "alignment": {
+        "machine_decisions": 55,
+        "gold_decisions": 31,
+        "aligned": 11
+      },
+      "findings": {
+        "n_relations": 15,
+        "by_verdict": {
+          "refines": 7,
+          "reverses": 3,
+          "unrelated": 5
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 9,
+        "n_gold_links": 3,
+        "n_gold_links_aligned": 0,
+        "n_machine_relations": 15,
+        "n_machine_links": 10,
+        "n_machine_links_aligned": 0,
+        "existence_end_to_end": {
+          "tp": 0,
+          "fp": 10,
+          "fn": 3,
+          "precision": {
+            "successes": 0,
+            "trials": 10,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.27753279986288903
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 3,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.5614970317550454
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 10
+          }
+        },
+        "existence_conditional": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "precision": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "f1": null,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 3,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.5614970317550454
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 3,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.5614970317550454
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 3,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.5614970317550454
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 3,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.5614970317550454
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "reference_kinds": {
+        "decisions": "single:gv",
+        "relations": "single:gv"
+      }
+    },
+    {
+      "series": "ES2002",
+      "run": 2,
+      "alignment": {
+        "machine_decisions": 55,
+        "gold_decisions": 31,
+        "aligned": 11
+      },
+      "findings": {
+        "n_relations": 17,
+        "by_verdict": {
+          "refines": 8,
+          "reverses": 3,
+          "unrelated": 6
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 9,
+        "n_gold_links": 3,
+        "n_gold_links_aligned": 0,
+        "n_machine_relations": 17,
+        "n_machine_links": 11,
+        "n_machine_links_aligned": 1,
+        "existence_end_to_end": {
+          "tp": 0,
+          "fp": 11,
+          "fn": 3,
+          "precision": {
+            "successes": 0,
+            "trials": 11,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.2588329669680316
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 3,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.5614970317550454
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 1,
+            "unaligned": 10
+          }
+        },
+        "existence_conditional": {
+          "tp": 0,
+          "fp": 1,
+          "fn": 0,
+          "precision": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 1,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 3,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.5614970317550454
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 3,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.5614970317550454
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 3,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.5614970317550454
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 3,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.5614970317550454
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "reference_kinds": {
+        "decisions": "single:gv",
+        "relations": "single:gv"
+      }
+    },
+    {
+      "series": "ES2008",
+      "run": 0,
+      "alignment": {
+        "machine_decisions": 48,
+        "gold_decisions": 32,
+        "aligned": 7
+      },
+      "findings": {
+        "n_relations": 22,
+        "by_verdict": {
+          "reaffirms": 1,
+          "refines": 10,
+          "reverses": 3,
+          "unrelated": 8
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 14,
+        "n_gold_links": 5,
+        "n_gold_links_aligned": 0,
+        "n_machine_relations": 22,
+        "n_machine_links": 14,
+        "n_machine_links_aligned": 1,
+        "existence_end_to_end": {
+          "tp": 0,
+          "fp": 14,
+          "fn": 5,
+          "precision": {
+            "successes": 0,
+            "trials": 14,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.21531080273763573
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 5,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.43448246478317465
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 1,
+            "unaligned": 13
+          }
+        },
+        "existence_conditional": {
+          "tp": 0,
+          "fp": 1,
+          "fn": 0,
+          "precision": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 1,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 5,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.43448246478317465
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 5,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.43448246478317465
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 5,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.43448246478317465
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 5,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.43448246478317465
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "reference_kinds": {
+        "decisions": "adjudicated",
+        "relations": "adjudicated"
+      }
+    },
+    {
+      "series": "ES2008",
+      "run": 1,
+      "alignment": {
+        "machine_decisions": 43,
+        "gold_decisions": 32,
+        "aligned": 8
+      },
+      "findings": {
+        "n_relations": 19,
+        "by_verdict": {
+          "reaffirms": 1,
+          "refines": 10,
+          "reverses": 6,
+          "unrelated": 2
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 14,
+        "n_gold_links": 5,
+        "n_gold_links_aligned": 0,
+        "n_machine_relations": 19,
+        "n_machine_links": 17,
+        "n_machine_links_aligned": 1,
+        "existence_end_to_end": {
+          "tp": 0,
+          "fp": 17,
+          "fn": 5,
+          "precision": {
+            "successes": 0,
+            "trials": 17,
+            "rate": 0.0,
+            "lower": 1.3877787807814457e-17,
+            "upper": 0.18431813500885175
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 5,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.43448246478317465
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 1,
+            "unaligned": 16
+          }
+        },
+        "existence_conditional": {
+          "tp": 0,
+          "fp": 1,
+          "fn": 0,
+          "precision": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 1,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 5,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.43448246478317465
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 5,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.43448246478317465
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 5,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.43448246478317465
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 5,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.43448246478317465
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "reference_kinds": {
+        "decisions": "adjudicated",
+        "relations": "adjudicated"
+      }
+    },
+    {
+      "series": "ES2008",
+      "run": 2,
+      "alignment": {
+        "machine_decisions": 42,
+        "gold_decisions": 32,
+        "aligned": 9
+      },
+      "findings": {
+        "n_relations": 23,
+        "by_verdict": {
+          "reaffirms": 1,
+          "refines": 11,
+          "reverses": 5,
+          "unrelated": 6
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 14,
+        "n_gold_links": 5,
+        "n_gold_links_aligned": 0,
+        "n_machine_relations": 23,
+        "n_machine_links": 17,
+        "n_machine_links_aligned": 2,
+        "existence_end_to_end": {
+          "tp": 0,
+          "fp": 17,
+          "fn": 5,
+          "precision": {
+            "successes": 0,
+            "trials": 17,
+            "rate": 0.0,
+            "lower": 1.3877787807814457e-17,
+            "upper": 0.18431813500885175
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 5,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.43448246478317465
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 2,
+            "unaligned": 15
+          }
+        },
+        "existence_conditional": {
+          "tp": 0,
+          "fp": 2,
+          "fn": 0,
+          "precision": {
+            "successes": 0,
+            "trials": 2,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.6576197724933468
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 2,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 5,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.43448246478317465
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 5,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.43448246478317465
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 5,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.43448246478317465
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 5,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.43448246478317465
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "reference_kinds": {
+        "decisions": "adjudicated",
+        "relations": "adjudicated"
+      }
+    },
+    {
+      "series": "ES2014",
+      "run": 0,
+      "alignment": {
+        "machine_decisions": 65,
+        "gold_decisions": 32,
+        "aligned": 8
+      },
+      "findings": {
+        "n_relations": 33,
+        "by_verdict": {
+          "reaffirms": 2,
+          "refines": 12,
+          "reverses": 10,
+          "unrelated": 9
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 14,
+        "n_gold_links": 6,
+        "n_gold_links_aligned": 0,
+        "n_machine_relations": 33,
+        "n_machine_links": 24,
+        "n_machine_links_aligned": 2,
+        "existence_end_to_end": {
+          "tp": 0,
+          "fp": 24,
+          "fn": 6,
+          "precision": {
+            "successes": 0,
+            "trials": 24,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.13797620467498012
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 6,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.3903342879021652
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 2,
+            "unaligned": 22
+          }
+        },
+        "existence_conditional": {
+          "tp": 0,
+          "fp": 2,
+          "fn": 0,
+          "precision": {
+            "successes": 0,
+            "trials": 2,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.6576197724933468
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 2,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 6,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.3903342879021652
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 6,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.3903342879021652
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 6,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.3903342879021652
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 6,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.3903342879021652
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "reference_kinds": {
+        "decisions": "single:gm",
+        "relations": "single:gm"
+      }
+    },
+    {
+      "series": "ES2014",
+      "run": 1,
+      "alignment": {
+        "machine_decisions": 66,
+        "gold_decisions": 32,
+        "aligned": 9
+      },
+      "findings": {
+        "n_relations": 35,
+        "by_verdict": {
+          "reaffirms": 1,
+          "refines": 14,
+          "reverses": 11,
+          "unrelated": 9
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 14,
+        "n_gold_links": 6,
+        "n_gold_links_aligned": 0,
+        "n_machine_relations": 35,
+        "n_machine_links": 26,
+        "n_machine_links_aligned": 2,
+        "existence_end_to_end": {
+          "tp": 0,
+          "fp": 26,
+          "fn": 6,
+          "precision": {
+            "successes": 0,
+            "trials": 26,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.12872892185921522
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 6,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.3903342879021652
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 2,
+            "unaligned": 24
+          }
+        },
+        "existence_conditional": {
+          "tp": 0,
+          "fp": 2,
+          "fn": 0,
+          "precision": {
+            "successes": 0,
+            "trials": 2,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.6576197724933468
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 2,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 6,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.3903342879021652
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 6,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.3903342879021652
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 6,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.3903342879021652
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 6,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.3903342879021652
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "reference_kinds": {
+        "decisions": "single:gm",
+        "relations": "single:gm"
+      }
+    },
+    {
+      "series": "ES2014",
+      "run": 2,
+      "alignment": {
+        "machine_decisions": 68,
+        "gold_decisions": 32,
+        "aligned": 9
+      },
+      "findings": {
+        "n_relations": 40,
+        "by_verdict": {
+          "reaffirms": 1,
+          "refines": 14,
+          "reverses": 16,
+          "unrelated": 9
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 14,
+        "n_gold_links": 6,
+        "n_gold_links_aligned": 0,
+        "n_machine_relations": 40,
+        "n_machine_links": 31,
+        "n_machine_links_aligned": 2,
+        "existence_end_to_end": {
+          "tp": 0,
+          "fp": 31,
+          "fn": 6,
+          "precision": {
+            "successes": 0,
+            "trials": 31,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.11025539546043589
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 6,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.3903342879021652
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 2,
+            "unaligned": 29
+          }
+        },
+        "existence_conditional": {
+          "tp": 0,
+          "fp": 2,
+          "fn": 0,
+          "precision": {
+            "successes": 0,
+            "trials": 2,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.6576197724933468
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 2,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 6,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.3903342879021652
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 6,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.3903342879021652
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 6,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.3903342879021652
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 6,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.3903342879021652
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "reference_kinds": {
+        "decisions": "single:gm",
+        "relations": "single:gm"
+      }
+    },
+    {
+      "series": "ES2016",
+      "run": 0,
+      "alignment": {
+        "machine_decisions": 56,
+        "gold_decisions": 21,
+        "aligned": 9
+      },
+      "findings": {
+        "n_relations": 63,
+        "by_verdict": {
+          "reaffirms": 11,
+          "refines": 18,
+          "reverses": 10,
+          "unrelated": 24
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 4,
+        "n_gold_links": 4,
+        "n_gold_links_aligned": 1,
+        "n_machine_relations": 63,
+        "n_machine_links": 39,
+        "n_machine_links_aligned": 1,
+        "existence_end_to_end": {
+          "tp": 1,
+          "fp": 38,
+          "fn": 3,
+          "precision": {
+            "successes": 1,
+            "trials": 39,
+            "rate": 0.02564102564102564,
+            "lower": 0.004540703100990098,
+            "upper": 0.1318099016985007
+          },
+          "recall": {
+            "successes": 1,
+            "trials": 4,
+            "rate": 0.25,
+            "lower": 0.04558726080970055,
+            "upper": 0.699358157417598
+          },
+          "f1": 0.04651162790697674,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 38
+          }
+        },
+        "existence_conditional": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "precision": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "recall": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "f1": 1.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 4,
+            "rate": 0.25,
+            "lower": 0.04558726080970055,
+            "upper": 0.699358157417598
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 4,
+            "rate": 0.25,
+            "lower": 0.04558726080970055,
+            "upper": 0.699358157417598
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 4,
+            "rate": 0.25,
+            "lower": 0.04558726080970055,
+            "upper": 0.699358157417598
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 4,
+            "rate": 0.25,
+            "lower": 0.04558726080970055,
+            "upper": 0.699358157417598
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 1,
+          "rate": 0.0,
+          "lower": 0.0,
+          "upper": 0.7934506856227624
+        }
+      },
+      "reference_kinds": {
+        "decisions": "adjudicated",
+        "relations": "adjudicated"
+      }
+    },
+    {
+      "series": "ES2016",
+      "run": 1,
+      "alignment": {
+        "machine_decisions": 57,
+        "gold_decisions": 21,
+        "aligned": 9
+      },
+      "findings": {
+        "n_relations": 69,
+        "by_verdict": {
+          "reaffirms": 8,
+          "refines": 24,
+          "reverses": 9,
+          "unrelated": 28
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 4,
+        "n_gold_links": 4,
+        "n_gold_links_aligned": 1,
+        "n_machine_relations": 69,
+        "n_machine_links": 41,
+        "n_machine_links_aligned": 1,
+        "existence_end_to_end": {
+          "tp": 1,
+          "fp": 40,
+          "fn": 3,
+          "precision": {
+            "successes": 1,
+            "trials": 41,
+            "rate": 0.024390243902439025,
+            "lower": 0.004318531568912397,
+            "upper": 0.12595062055774225
+          },
+          "recall": {
+            "successes": 1,
+            "trials": 4,
+            "rate": 0.25,
+            "lower": 0.04558726080970055,
+            "upper": 0.699358157417598
+          },
+          "f1": 0.04444444444444444,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 40
+          }
+        },
+        "existence_conditional": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "precision": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "recall": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "f1": 1.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 4,
+            "rate": 0.25,
+            "lower": 0.04558726080970055,
+            "upper": 0.699358157417598
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 4,
+            "rate": 0.25,
+            "lower": 0.04558726080970055,
+            "upper": 0.699358157417598
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 4,
+            "rate": 0.25,
+            "lower": 0.04558726080970055,
+            "upper": 0.699358157417598
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 4,
+            "rate": 0.25,
+            "lower": 0.04558726080970055,
+            "upper": 0.699358157417598
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 1,
+          "rate": 0.0,
+          "lower": 0.0,
+          "upper": 0.7934506856227624
+        }
+      },
+      "reference_kinds": {
+        "decisions": "adjudicated",
+        "relations": "adjudicated"
+      }
+    },
+    {
+      "series": "ES2016",
+      "run": 2,
+      "alignment": {
+        "machine_decisions": 51,
+        "gold_decisions": 21,
+        "aligned": 9
+      },
+      "findings": {
+        "n_relations": 57,
+        "by_verdict": {
+          "reaffirms": 8,
+          "refines": 24,
+          "reverses": 7,
+          "unrelated": 18
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 4,
+        "n_gold_links": 4,
+        "n_gold_links_aligned": 1,
+        "n_machine_relations": 57,
+        "n_machine_links": 39,
+        "n_machine_links_aligned": 1,
+        "existence_end_to_end": {
+          "tp": 1,
+          "fp": 38,
+          "fn": 3,
+          "precision": {
+            "successes": 1,
+            "trials": 39,
+            "rate": 0.02564102564102564,
+            "lower": 0.004540703100990098,
+            "upper": 0.1318099016985007
+          },
+          "recall": {
+            "successes": 1,
+            "trials": 4,
+            "rate": 0.25,
+            "lower": 0.04558726080970055,
+            "upper": 0.699358157417598
+          },
+          "f1": 0.04651162790697674,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 38
+          }
+        },
+        "existence_conditional": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "precision": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "recall": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "f1": 1.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 4,
+            "rate": 0.25,
+            "lower": 0.04558726080970055,
+            "upper": 0.699358157417598
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 4,
+            "rate": 0.25,
+            "lower": 0.04558726080970055,
+            "upper": 0.699358157417598
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 4,
+            "rate": 0.25,
+            "lower": 0.04558726080970055,
+            "upper": 0.699358157417598
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 4,
+            "rate": 0.25,
+            "lower": 0.04558726080970055,
+            "upper": 0.699358157417598
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 1,
+          "rate": 0.0,
+          "lower": 0.0,
+          "upper": 0.7934506856227624
+        }
+      },
+      "reference_kinds": {
+        "decisions": "adjudicated",
+        "relations": "adjudicated"
+      }
+    },
+    {
+      "series": "IS1003",
+      "run": 0,
+      "alignment": {
+        "machine_decisions": 49,
+        "gold_decisions": 22,
+        "aligned": 5
+      },
+      "findings": {
+        "n_relations": 26,
+        "by_verdict": {
+          "reaffirms": 2,
+          "refines": 8,
+          "reverses": 5,
+          "unrelated": 11
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 8,
+        "n_gold_links": 3,
+        "n_gold_links_aligned": 1,
+        "n_machine_relations": 26,
+        "n_machine_links": 15,
+        "n_machine_links_aligned": 1,
+        "existence_end_to_end": {
+          "tp": 1,
+          "fp": 14,
+          "fn": 2,
+          "precision": {
+            "successes": 1,
+            "trials": 15,
+            "rate": 0.06666666666666667,
+            "lower": 0.011866895493268526,
+            "upper": 0.2981652987378002
+          },
+          "recall": {
+            "successes": 1,
+            "trials": 3,
+            "rate": 0.3333333333333333,
+            "lower": 0.06149194472039626,
+            "upper": 0.7923403991979521
+          },
+          "f1": 0.1111111111111111,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 14
+          }
+        },
+        "existence_conditional": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "precision": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "recall": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "f1": 1.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 3,
+            "rate": 0.3333333333333333,
+            "lower": 0.06149194472039626,
+            "upper": 0.7923403991979521
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 3,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.5614970317550454
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 3,
+            "rate": 0.3333333333333333,
+            "lower": 0.06149194472039626,
+            "upper": 0.7923403991979521
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 3,
+            "rate": 0.3333333333333333,
+            "lower": 0.06149194472039626,
+            "upper": 0.7923403991979521
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 1,
+          "rate": 0.0,
+          "lower": 0.0,
+          "upper": 0.7934506856227624
+        }
+      },
+      "reference_kinds": {
+        "decisions": "adjudicated",
+        "relations": "adjudicated"
+      }
+    },
+    {
+      "series": "IS1003",
+      "run": 1,
+      "alignment": {
+        "machine_decisions": 53,
+        "gold_decisions": 22,
+        "aligned": 5
+      },
+      "findings": {
+        "n_relations": 43,
+        "by_verdict": {
+          "reaffirms": 4,
+          "refines": 11,
+          "reverses": 8,
+          "unrelated": 20
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 8,
+        "n_gold_links": 3,
+        "n_gold_links_aligned": 1,
+        "n_machine_relations": 43,
+        "n_machine_links": 23,
+        "n_machine_links_aligned": 1,
+        "existence_end_to_end": {
+          "tp": 1,
+          "fp": 22,
+          "fn": 2,
+          "precision": {
+            "successes": 1,
+            "trials": 23,
+            "rate": 0.043478260869565216,
+            "lower": 0.007716666143453135,
+            "upper": 0.20991155070258866
+          },
+          "recall": {
+            "successes": 1,
+            "trials": 3,
+            "rate": 0.3333333333333333,
+            "lower": 0.06149194472039626,
+            "upper": 0.7923403991979521
+          },
+          "f1": 0.07692307692307691,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 22
+          }
+        },
+        "existence_conditional": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "precision": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "recall": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "f1": 1.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 3,
+            "rate": 0.3333333333333333,
+            "lower": 0.06149194472039626,
+            "upper": 0.7923403991979521
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 3,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.5614970317550454
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 3,
+            "rate": 0.3333333333333333,
+            "lower": 0.06149194472039626,
+            "upper": 0.7923403991979521
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 3,
+            "rate": 0.3333333333333333,
+            "lower": 0.06149194472039626,
+            "upper": 0.7923403991979521
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 1,
+          "rate": 0.0,
+          "lower": 0.0,
+          "upper": 0.7934506856227624
+        }
+      },
+      "reference_kinds": {
+        "decisions": "adjudicated",
+        "relations": "adjudicated"
+      }
+    },
+    {
+      "series": "IS1003",
+      "run": 2,
+      "alignment": {
+        "machine_decisions": 51,
+        "gold_decisions": 22,
+        "aligned": 5
+      },
+      "findings": {
+        "n_relations": 30,
+        "by_verdict": {
+          "reaffirms": 3,
+          "refines": 6,
+          "reverses": 9,
+          "unrelated": 12
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 8,
+        "n_gold_links": 3,
+        "n_gold_links_aligned": 1,
+        "n_machine_relations": 30,
+        "n_machine_links": 18,
+        "n_machine_links_aligned": 1,
+        "existence_end_to_end": {
+          "tp": 1,
+          "fp": 17,
+          "fn": 2,
+          "precision": {
+            "successes": 1,
+            "trials": 18,
+            "rate": 0.05555555555555555,
+            "lower": 0.009875190978303083,
+            "upper": 0.25757300781872583
+          },
+          "recall": {
+            "successes": 1,
+            "trials": 3,
+            "rate": 0.3333333333333333,
+            "lower": 0.06149194472039626,
+            "upper": 0.7923403991979521
+          },
+          "f1": 0.09523809523809525,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 17
+          }
+        },
+        "existence_conditional": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "precision": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "recall": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "f1": 1.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 3,
+            "rate": 0.3333333333333333,
+            "lower": 0.06149194472039626,
+            "upper": 0.7923403991979521
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 3,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.5614970317550454
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 3,
+            "rate": 0.3333333333333333,
+            "lower": 0.06149194472039626,
+            "upper": 0.7923403991979521
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 3,
+            "rate": 0.3333333333333333,
+            "lower": 0.06149194472039626,
+            "upper": 0.7923403991979521
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 1,
+          "rate": 0.0,
+          "lower": 0.0,
+          "upper": 0.7934506856227624
+        }
+      },
+      "reference_kinds": {
+        "decisions": "adjudicated",
+        "relations": "adjudicated"
+      }
+    },
+    {
+      "series": "IS1006",
+      "run": 0,
+      "alignment": {
+        "machine_decisions": 45,
+        "gold_decisions": 16,
+        "aligned": 8
+      },
+      "findings": {
+        "n_relations": 18,
+        "by_verdict": {
+          "reaffirms": 2,
+          "refines": 7,
+          "reverses": 5,
+          "unrelated": 4
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 1,
+        "n_gold_links": 0,
+        "n_gold_links_aligned": 0,
+        "n_machine_relations": 18,
+        "n_machine_links": 14,
+        "n_machine_links_aligned": 0,
+        "existence_end_to_end": {
+          "tp": 0,
+          "fp": 14,
+          "fn": 0,
+          "precision": {
+            "successes": 0,
+            "trials": 14,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.21531080273763573
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 14
+          }
+        },
+        "existence_conditional": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "precision": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "f1": null,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "reference_kinds": {
+        "decisions": "single:gv",
+        "relations": "single:gv"
+      }
+    },
+    {
+      "series": "IS1006",
+      "run": 1,
+      "alignment": {
+        "machine_decisions": 41,
+        "gold_decisions": 16,
+        "aligned": 7
+      },
+      "findings": {
+        "n_relations": 17,
+        "by_verdict": {
+          "reaffirms": 2,
+          "refines": 6,
+          "reverses": 5,
+          "unrelated": 4
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 1,
+        "n_gold_links": 0,
+        "n_gold_links_aligned": 0,
+        "n_machine_relations": 17,
+        "n_machine_links": 13,
+        "n_machine_links_aligned": 0,
+        "existence_end_to_end": {
+          "tp": 0,
+          "fp": 13,
+          "fn": 0,
+          "precision": {
+            "successes": 0,
+            "trials": 13,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.2280953723541983
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 13
+          }
+        },
+        "existence_conditional": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "precision": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "f1": null,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "reference_kinds": {
+        "decisions": "single:gv",
+        "relations": "single:gv"
+      }
+    },
+    {
+      "series": "IS1006",
+      "run": 2,
+      "alignment": {
+        "machine_decisions": 43,
+        "gold_decisions": 16,
+        "aligned": 8
+      },
+      "findings": {
+        "n_relations": 18,
+        "by_verdict": {
+          "reaffirms": 1,
+          "refines": 7,
+          "reverses": 5,
+          "unrelated": 5
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 1,
+        "n_gold_links": 0,
+        "n_gold_links_aligned": 0,
+        "n_machine_relations": 18,
+        "n_machine_links": 13,
+        "n_machine_links_aligned": 0,
+        "existence_end_to_end": {
+          "tp": 0,
+          "fp": 13,
+          "fn": 0,
+          "precision": {
+            "successes": 0,
+            "trials": 13,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.2280953723541983
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 13
+          }
+        },
+        "existence_conditional": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "precision": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "f1": null,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "reference_kinds": {
+        "decisions": "single:gv",
+        "relations": "single:gv"
+      }
+    },
+    {
+      "series": "IS1008",
+      "run": 0,
+      "alignment": {
+        "machine_decisions": 51,
+        "gold_decisions": 11,
+        "aligned": 4
+      },
+      "findings": {
+        "n_relations": 20,
+        "by_verdict": {
+          "refines": 8,
+          "reverses": 1,
+          "unrelated": 11
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 8,
+        "n_gold_links": 1,
+        "n_gold_links_aligned": 0,
+        "n_machine_relations": 20,
+        "n_machine_links": 9,
+        "n_machine_links_aligned": 0,
+        "existence_end_to_end": {
+          "tp": 0,
+          "fp": 9,
+          "fn": 1,
+          "precision": {
+            "successes": 0,
+            "trials": 9,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.2991450484195439
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 9
+          }
+        },
+        "existence_conditional": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "precision": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "f1": null,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "reference_kinds": {
+        "decisions": "single:gm",
+        "relations": "single:gm"
+      }
+    },
+    {
+      "series": "IS1008",
+      "run": 1,
+      "alignment": {
+        "machine_decisions": 50,
+        "gold_decisions": 11,
+        "aligned": 4
+      },
+      "findings": {
+        "n_relations": 23,
+        "by_verdict": {
+          "refines": 8,
+          "reverses": 1,
+          "unrelated": 14
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 8,
+        "n_gold_links": 1,
+        "n_gold_links_aligned": 0,
+        "n_machine_relations": 23,
+        "n_machine_links": 9,
+        "n_machine_links_aligned": 0,
+        "existence_end_to_end": {
+          "tp": 0,
+          "fp": 9,
+          "fn": 1,
+          "precision": {
+            "successes": 0,
+            "trials": 9,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.2991450484195439
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 9
+          }
+        },
+        "existence_conditional": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "precision": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "f1": null,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "reference_kinds": {
+        "decisions": "single:gm",
+        "relations": "single:gm"
+      }
+    },
+    {
+      "series": "IS1008",
+      "run": 2,
+      "alignment": {
+        "machine_decisions": 50,
+        "gold_decisions": 11,
+        "aligned": 4
+      },
+      "findings": {
+        "n_relations": 19,
+        "by_verdict": {
+          "refines": 6,
+          "reverses": 3,
+          "unrelated": 10
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 8,
+        "n_gold_links": 1,
+        "n_gold_links_aligned": 0,
+        "n_machine_relations": 19,
+        "n_machine_links": 9,
+        "n_machine_links_aligned": 0,
+        "existence_end_to_end": {
+          "tp": 0,
+          "fp": 9,
+          "fn": 1,
+          "precision": {
+            "successes": 0,
+            "trials": 9,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.2991450484195439
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 9
+          }
+        },
+        "existence_conditional": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "precision": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "f1": null,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "reference_kinds": {
+        "decisions": "single:gm",
+        "relations": "single:gm"
+      }
+    },
+    {
+      "series": "IS1009",
+      "run": 0,
+      "alignment": {
+        "machine_decisions": 30,
+        "gold_decisions": 24,
+        "aligned": 4
+      },
+      "findings": {
+        "n_relations": 2,
+        "by_verdict": {
+          "reaffirms": 1,
+          "unrelated": 1
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 1,
+        "n_gold_links": 1,
+        "n_gold_links_aligned": 0,
+        "n_machine_relations": 2,
+        "n_machine_links": 1,
+        "n_machine_links_aligned": 0,
+        "existence_end_to_end": {
+          "tp": 0,
+          "fp": 1,
+          "fn": 1,
+          "precision": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 1
+          }
+        },
+        "existence_conditional": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "precision": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "f1": null,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "reference_kinds": {
+        "decisions": "single:gv",
+        "relations": "single:gv"
+      }
+    },
+    {
+      "series": "IS1009",
+      "run": 1,
+      "alignment": {
+        "machine_decisions": 30,
+        "gold_decisions": 24,
+        "aligned": 4
+      },
+      "findings": {
+        "n_relations": 2,
+        "by_verdict": {
+          "reaffirms": 1,
+          "unrelated": 1
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 1,
+        "n_gold_links": 1,
+        "n_gold_links_aligned": 0,
+        "n_machine_relations": 2,
+        "n_machine_links": 1,
+        "n_machine_links_aligned": 0,
+        "existence_end_to_end": {
+          "tp": 0,
+          "fp": 1,
+          "fn": 1,
+          "precision": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 1
+          }
+        },
+        "existence_conditional": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "precision": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "f1": null,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "reference_kinds": {
+        "decisions": "single:gv",
+        "relations": "single:gv"
+      }
+    },
+    {
+      "series": "IS1009",
+      "run": 2,
+      "alignment": {
+        "machine_decisions": 30,
+        "gold_decisions": 24,
+        "aligned": 4
+      },
+      "findings": {
+        "n_relations": 2,
+        "by_verdict": {
+          "reaffirms": 1,
+          "unrelated": 1
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 1,
+        "n_gold_links": 1,
+        "n_gold_links_aligned": 0,
+        "n_machine_relations": 2,
+        "n_machine_links": 1,
+        "n_machine_links_aligned": 0,
+        "existence_end_to_end": {
+          "tp": 0,
+          "fp": 1,
+          "fn": 1,
+          "precision": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 1
+          }
+        },
+        "existence_conditional": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "precision": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "f1": null,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "reference_kinds": {
+        "decisions": "single:gv",
+        "relations": "single:gv"
+      }
+    },
+    {
+      "series": "TS3003",
+      "run": 0,
+      "alignment": {
+        "machine_decisions": 61,
+        "gold_decisions": 31,
+        "aligned": 13
+      },
+      "findings": {
+        "n_relations": 31,
+        "by_verdict": {
+          "reaffirms": 2,
+          "refines": 9,
+          "reverses": 10,
+          "unrelated": 10
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 6,
+        "n_gold_links": 5,
+        "n_gold_links_aligned": 2,
+        "n_machine_relations": 31,
+        "n_machine_links": 21,
+        "n_machine_links_aligned": 1,
+        "existence_end_to_end": {
+          "tp": 0,
+          "fp": 21,
+          "fn": 5,
+          "precision": {
+            "successes": 0,
+            "trials": 21,
+            "rate": 0.0,
+            "lower": 1.3877787807814457e-17,
+            "upper": 0.15463901892484688
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 5,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.43448246478317465
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 1,
+            "unaligned": 20
+          }
+        },
+        "existence_conditional": {
+          "tp": 0,
+          "fp": 1,
+          "fn": 2,
+          "precision": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 2,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.6576197724933468
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 1,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 5,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.43448246478317465
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 2,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.6576197724933468
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 5,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.43448246478317465
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 2,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.6576197724933468
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 5,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.43448246478317465
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 2,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.6576197724933468
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 5,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.43448246478317465
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 2,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.6576197724933468
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "reference_kinds": {
+        "decisions": "single:gv",
+        "relations": "single:gv"
+      }
+    },
+    {
+      "series": "TS3003",
+      "run": 1,
+      "alignment": {
+        "machine_decisions": 61,
+        "gold_decisions": 31,
+        "aligned": 10
+      },
+      "findings": {
+        "n_relations": 24,
+        "by_verdict": {
+          "reaffirms": 2,
+          "refines": 10,
+          "reverses": 8,
+          "unrelated": 4
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 6,
+        "n_gold_links": 5,
+        "n_gold_links_aligned": 2,
+        "n_machine_relations": 24,
+        "n_machine_links": 20,
+        "n_machine_links_aligned": 3,
+        "existence_end_to_end": {
+          "tp": 1,
+          "fp": 19,
+          "fn": 4,
+          "precision": {
+            "successes": 1,
+            "trials": 20,
+            "rate": 0.05,
+            "lower": 0.00888144880079543,
+            "upper": 0.23613119344674194
+          },
+          "recall": {
+            "successes": 1,
+            "trials": 5,
+            "rate": 0.2,
+            "lower": 0.036224108632430196,
+            "upper": 0.6244653702374746
+          },
+          "f1": 0.08000000000000002,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 2,
+            "unaligned": 17
+          }
+        },
+        "existence_conditional": {
+          "tp": 1,
+          "fp": 2,
+          "fn": 1,
+          "precision": {
+            "successes": 1,
+            "trials": 3,
+            "rate": 0.3333333333333333,
+            "lower": 0.06149194472039626,
+            "upper": 0.7923403991979521
+          },
+          "recall": {
+            "successes": 1,
+            "trials": 2,
+            "rate": 0.5,
+            "lower": 0.09453120573423074,
+            "upper": 0.9054687942657693
+          },
+          "f1": 0.4,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 2,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 5,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.43448246478317465
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 2,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.6576197724933468
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 5,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.43448246478317465
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 2,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.6576197724933468
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 5,
+            "rate": 0.2,
+            "lower": 0.036224108632430196,
+            "upper": 0.6244653702374746
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 2,
+            "rate": 0.5,
+            "lower": 0.09453120573423074,
+            "upper": 0.9054687942657693
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 5,
+            "rate": 0.2,
+            "lower": 0.036224108632430196,
+            "upper": 0.6244653702374746
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 2,
+            "rate": 0.5,
+            "lower": 0.09453120573423074,
+            "upper": 0.9054687942657693
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 1,
+          "rate": 0.0,
+          "lower": 0.0,
+          "upper": 0.7934506856227624
+        }
+      },
+      "reference_kinds": {
+        "decisions": "single:gv",
+        "relations": "single:gv"
+      }
+    },
+    {
+      "series": "TS3003",
+      "run": 2,
+      "alignment": {
+        "machine_decisions": 63,
+        "gold_decisions": 31,
+        "aligned": 10
+      },
+      "findings": {
+        "n_relations": 42,
+        "by_verdict": {
+          "reaffirms": 3,
+          "refines": 12,
+          "reverses": 13,
+          "unrelated": 14
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 6,
+        "n_gold_links": 5,
+        "n_gold_links_aligned": 2,
+        "n_machine_relations": 42,
+        "n_machine_links": 28,
+        "n_machine_links_aligned": 2,
+        "existence_end_to_end": {
+          "tp": 1,
+          "fp": 27,
+          "fn": 4,
+          "precision": {
+            "successes": 1,
+            "trials": 28,
+            "rate": 0.03571428571428571,
+            "lower": 0.0063325198490377516,
+            "upper": 0.17712197743353314
+          },
+          "recall": {
+            "successes": 1,
+            "trials": 5,
+            "rate": 0.2,
+            "lower": 0.036224108632430196,
+            "upper": 0.6244653702374746
+          },
+          "f1": 0.06060606060606061,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 1,
+            "unaligned": 26
+          }
+        },
+        "existence_conditional": {
+          "tp": 1,
+          "fp": 1,
+          "fn": 1,
+          "precision": {
+            "successes": 1,
+            "trials": 2,
+            "rate": 0.5,
+            "lower": 0.09453120573423074,
+            "upper": 0.9054687942657693
+          },
+          "recall": {
+            "successes": 1,
+            "trials": 2,
+            "rate": 0.5,
+            "lower": 0.09453120573423074,
+            "upper": 0.9054687942657693
+          },
+          "f1": 0.5,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 1,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 5,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.43448246478317465
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 2,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.6576197724933468
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 5,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.43448246478317465
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 2,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.6576197724933468
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 5,
+            "rate": 0.2,
+            "lower": 0.036224108632430196,
+            "upper": 0.6244653702374746
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 2,
+            "rate": 0.5,
+            "lower": 0.09453120573423074,
+            "upper": 0.9054687942657693
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 5,
+            "rate": 0.2,
+            "lower": 0.036224108632430196,
+            "upper": 0.6244653702374746
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 2,
+            "rate": 0.5,
+            "lower": 0.09453120573423074,
+            "upper": 0.9054687942657693
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 1,
+          "rate": 0.0,
+          "lower": 0.0,
+          "upper": 0.7934506856227624
+        }
+      },
+      "reference_kinds": {
+        "decisions": "single:gv",
+        "relations": "single:gv"
+      }
+    },
+    {
+      "series": "TS3005",
+      "run": 0,
+      "alignment": {
+        "machine_decisions": 62,
+        "gold_decisions": 37,
+        "aligned": 12
+      },
+      "findings": {
+        "n_relations": 28,
+        "by_verdict": {
+          "reaffirms": 1,
+          "refines": 7,
+          "reverses": 6,
+          "unrelated": 14
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 11,
+        "n_gold_links": 8,
+        "n_gold_links_aligned": 4,
+        "n_machine_relations": 28,
+        "n_machine_links": 14,
+        "n_machine_links_aligned": 1,
+        "existence_end_to_end": {
+          "tp": 1,
+          "fp": 13,
+          "fn": 7,
+          "precision": {
+            "successes": 1,
+            "trials": 14,
+            "rate": 0.07142857142857142,
+            "lower": 0.012722215247890911,
+            "upper": 0.3146870442415111
+          },
+          "recall": {
+            "successes": 1,
+            "trials": 8,
+            "rate": 0.125,
+            "lower": 0.02241749145005667,
+            "upper": 0.47088818221285345
+          },
+          "f1": 0.09090909090909091,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 13
+          }
+        },
+        "existence_conditional": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 3,
+          "precision": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "recall": {
+            "successes": 1,
+            "trials": 4,
+            "rate": 0.25,
+            "lower": 0.04558726080970055,
+            "upper": 0.699358157417598
+          },
+          "f1": 0.4,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 8,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.3244075648838801
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 4,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.48989083645459713
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 8,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.3244075648838801
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 4,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.48989083645459713
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 8,
+            "rate": 0.125,
+            "lower": 0.02241749145005667,
+            "upper": 0.47088818221285345
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 4,
+            "rate": 0.25,
+            "lower": 0.04558726080970055,
+            "upper": 0.699358157417598
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 8,
+            "rate": 0.125,
+            "lower": 0.02241749145005667,
+            "upper": 0.47088818221285345
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 4,
+            "rate": 0.25,
+            "lower": 0.04558726080970055,
+            "upper": 0.699358157417598
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 1,
+          "rate": 0.0,
+          "lower": 0.0,
+          "upper": 0.7934506856227624
+        }
+      },
+      "reference_kinds": {
+        "decisions": "adjudicated",
+        "relations": "adjudicated"
+      }
+    },
+    {
+      "series": "TS3005",
+      "run": 1,
+      "alignment": {
+        "machine_decisions": 65,
+        "gold_decisions": 37,
+        "aligned": 12
+      },
+      "findings": {
+        "n_relations": 47,
+        "by_verdict": {
+          "reaffirms": 1,
+          "refines": 6,
+          "reverses": 8,
+          "unrelated": 32
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 11,
+        "n_gold_links": 8,
+        "n_gold_links_aligned": 4,
+        "n_machine_relations": 47,
+        "n_machine_links": 15,
+        "n_machine_links_aligned": 1,
+        "existence_end_to_end": {
+          "tp": 1,
+          "fp": 14,
+          "fn": 7,
+          "precision": {
+            "successes": 1,
+            "trials": 15,
+            "rate": 0.06666666666666667,
+            "lower": 0.011866895493268526,
+            "upper": 0.2981652987378002
+          },
+          "recall": {
+            "successes": 1,
+            "trials": 8,
+            "rate": 0.125,
+            "lower": 0.02241749145005667,
+            "upper": 0.47088818221285345
+          },
+          "f1": 0.08695652173913045,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 14
+          }
+        },
+        "existence_conditional": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 3,
+          "precision": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "recall": {
+            "successes": 1,
+            "trials": 4,
+            "rate": 0.25,
+            "lower": 0.04558726080970055,
+            "upper": 0.699358157417598
+          },
+          "f1": 0.4,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 8,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.3244075648838801
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 4,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.48989083645459713
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 8,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.3244075648838801
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 4,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.48989083645459713
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 8,
+            "rate": 0.125,
+            "lower": 0.02241749145005667,
+            "upper": 0.47088818221285345
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 4,
+            "rate": 0.25,
+            "lower": 0.04558726080970055,
+            "upper": 0.699358157417598
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 8,
+            "rate": 0.125,
+            "lower": 0.02241749145005667,
+            "upper": 0.47088818221285345
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 4,
+            "rate": 0.25,
+            "lower": 0.04558726080970055,
+            "upper": 0.699358157417598
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 1,
+          "rate": 0.0,
+          "lower": 0.0,
+          "upper": 0.7934506856227624
+        }
+      },
+      "reference_kinds": {
+        "decisions": "adjudicated",
+        "relations": "adjudicated"
+      }
+    },
+    {
+      "series": "TS3005",
+      "run": 2,
+      "alignment": {
+        "machine_decisions": 63,
+        "gold_decisions": 37,
+        "aligned": 12
+      },
+      "findings": {
+        "n_relations": 35,
+        "by_verdict": {
+          "reaffirms": 1,
+          "refines": 5,
+          "reverses": 6,
+          "unrelated": 23
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 11,
+        "n_gold_links": 8,
+        "n_gold_links_aligned": 4,
+        "n_machine_relations": 35,
+        "n_machine_links": 12,
+        "n_machine_links_aligned": 1,
+        "existence_end_to_end": {
+          "tp": 1,
+          "fp": 11,
+          "fn": 7,
+          "precision": {
+            "successes": 1,
+            "trials": 12,
+            "rate": 0.08333333333333333,
+            "lower": 0.014865094404917095,
+            "upper": 0.35387991114111683
+          },
+          "recall": {
+            "successes": 1,
+            "trials": 8,
+            "rate": 0.125,
+            "lower": 0.02241749145005667,
+            "upper": 0.47088818221285345
+          },
+          "f1": 0.1,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 11
+          }
+        },
+        "existence_conditional": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 3,
+          "precision": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          },
+          "recall": {
+            "successes": 1,
+            "trials": 4,
+            "rate": 0.25,
+            "lower": 0.04558726080970055,
+            "upper": 0.699358157417598
+          },
+          "f1": 0.4,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 8,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.3244075648838801
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 4,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.48989083645459713
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 8,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.3244075648838801
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 4,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.48989083645459713
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 8,
+            "rate": 0.125,
+            "lower": 0.02241749145005667,
+            "upper": 0.47088818221285345
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 4,
+            "rate": 0.25,
+            "lower": 0.04558726080970055,
+            "upper": 0.699358157417598
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 1,
+            "trials": 8,
+            "rate": 0.125,
+            "lower": 0.02241749145005667,
+            "upper": 0.47088818221285345
+          },
+          "conditional": {
+            "successes": 1,
+            "trials": 4,
+            "rate": 0.25,
+            "lower": 0.04558726080970055,
+            "upper": 0.699358157417598
+          },
+          "among_detected": {
+            "successes": 1,
+            "trials": 1,
+            "rate": 1.0,
+            "lower": 0.2065493143772375,
+            "upper": 1.0
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 1,
+          "rate": 0.0,
+          "lower": 0.0,
+          "upper": 0.7934506856227624
+        }
+      },
+      "reference_kinds": {
+        "decisions": "adjudicated",
+        "relations": "adjudicated"
+      }
+    },
+    {
+      "series": "TS3011",
+      "run": 0,
+      "alignment": {
+        "machine_decisions": 56,
+        "gold_decisions": 21,
+        "aligned": 5
+      },
+      "findings": {
+        "n_relations": 22,
+        "by_verdict": {
+          "reaffirms": 1,
+          "refines": 4,
+          "reverses": 4,
+          "unrelated": 13
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 5,
+        "n_gold_links": 1,
+        "n_gold_links_aligned": 0,
+        "n_machine_relations": 22,
+        "n_machine_links": 9,
+        "n_machine_links_aligned": 0,
+        "existence_end_to_end": {
+          "tp": 0,
+          "fp": 9,
+          "fn": 1,
+          "precision": {
+            "successes": 0,
+            "trials": 9,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.2991450484195439
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 9
+          }
+        },
+        "existence_conditional": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "precision": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "f1": null,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "reference_kinds": {
+        "decisions": "single:gm",
+        "relations": "single:gm"
+      }
+    },
+    {
+      "series": "TS3011",
+      "run": 1,
+      "alignment": {
+        "machine_decisions": 57,
+        "gold_decisions": 21,
+        "aligned": 6
+      },
+      "findings": {
+        "n_relations": 23,
+        "by_verdict": {
+          "reaffirms": 1,
+          "refines": 6,
+          "reverses": 4,
+          "unrelated": 12
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 5,
+        "n_gold_links": 1,
+        "n_gold_links_aligned": 0,
+        "n_machine_relations": 23,
+        "n_machine_links": 11,
+        "n_machine_links_aligned": 0,
+        "existence_end_to_end": {
+          "tp": 0,
+          "fp": 11,
+          "fn": 1,
+          "precision": {
+            "successes": 0,
+            "trials": 11,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.2588329669680316
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 11
+          }
+        },
+        "existence_conditional": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "precision": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "f1": null,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "reference_kinds": {
+        "decisions": "single:gm",
+        "relations": "single:gm"
+      }
+    },
+    {
+      "series": "TS3011",
+      "run": 2,
+      "alignment": {
+        "machine_decisions": 57,
+        "gold_decisions": 21,
+        "aligned": 6
+      },
+      "findings": {
+        "n_relations": 21,
+        "by_verdict": {
+          "reaffirms": 1,
+          "refines": 5,
+          "reverses": 4,
+          "unrelated": 11
+        },
+        "skipped_non_decision": 0
+      },
+      "score": {
+        "n_gold_pairs": 5,
+        "n_gold_links": 1,
+        "n_gold_links_aligned": 0,
+        "n_machine_relations": 21,
+        "n_machine_links": 10,
+        "n_machine_links_aligned": 0,
+        "existence_end_to_end": {
+          "tp": 0,
+          "fp": 10,
+          "fn": 1,
+          "precision": {
+            "successes": 0,
+            "trials": 10,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.27753279986288903
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "f1": 0.0,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 10
+          }
+        },
+        "existence_conditional": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "precision": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "recall": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "f1": null,
+          "fp_breakdown": {
+            "gold_no_link": 0,
+            "not_candidate": 0,
+            "unaligned": 0
+          }
+        },
+        "type_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "type_strict": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_principal": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "direction_unknown_excluded": {
+          "end_to_end": {
+            "successes": 0,
+            "trials": 1,
+            "rate": 0.0,
+            "lower": 0.0,
+            "upper": 0.7934506856227624
+          },
+          "conditional": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          },
+          "among_detected": {
+            "successes": 0,
+            "trials": 0,
+            "rate": null,
+            "lower": null,
+            "upper": null
+          }
+        },
+        "unknown_direction": {
+          "successes": 0,
+          "trials": 0,
+          "rate": null,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "reference_kinds": {
+        "decisions": "single:gm",
+        "relations": "single:gm"
+      }
+    }
+  ],
+  "pooled": {
+    "n_gold_pairs": 243,
+    "n_gold_links": 111,
+    "n_gold_links_aligned": 24,
+    "n_machine_relations": 903,
+    "n_machine_links": 546,
+    "n_machine_links_aligned": 27,
+    "existence_end_to_end": {
+      "tp": 11,
+      "fp": 535,
+      "fn": 100,
+      "precision": {
+        "successes": 11,
+        "trials": 546,
+        "rate": 0.020146520146520148,
+        "lower": 0.011286030614792353,
+        "upper": 0.03571198746139848
+      },
+      "recall": {
+        "successes": 11,
+        "trials": 111,
+        "rate": 0.0990990990990991,
+        "lower": 0.05624021774548065,
+        "upper": 0.16877833466633843
+      },
+      "f1": 0.03348554033485541,
+      "fp_breakdown": {
+        "gold_no_link": 0,
+        "not_candidate": 16,
+        "unaligned": 519
+      }
+    },
+    "existence_conditional": {
+      "tp": 11,
+      "fp": 16,
+      "fn": 13,
+      "precision": {
+        "successes": 11,
+        "trials": 27,
+        "rate": 0.4074074074074074,
+        "lower": 0.24514757074395568,
+        "upper": 0.5927329903193531
+      },
+      "recall": {
+        "successes": 11,
+        "trials": 24,
+        "rate": 0.4583333333333333,
+        "lower": 0.27891333731210993,
+        "upper": 0.649251346410805
+      },
+      "f1": 0.4313725490196078,
+      "fp_breakdown": {
+        "gold_no_link": 0,
+        "not_candidate": 16,
+        "unaligned": 0
+      }
+    },
+    "type_principal": {
+      "end_to_end": {
+        "successes": 6,
+        "trials": 111,
+        "rate": 0.05405405405405406,
+        "lower": 0.02500631426003326,
+        "upper": 0.11293567100704642
+      },
+      "conditional": {
+        "successes": 6,
+        "trials": 24,
+        "rate": 0.25,
+        "lower": 0.11999366228595004,
+        "upper": 0.44899444005153993
+      },
+      "among_detected": {
+        "successes": 6,
+        "trials": 11,
+        "rate": 0.5454545454545454,
+        "lower": 0.2800915374093221,
+        "upper": 0.7872872837754024
+      }
+    },
+    "type_strict": {
+      "end_to_end": {
+        "successes": 3,
+        "trials": 111,
+        "rate": 0.02702702702702703,
+        "lower": 0.009233638497232216,
+        "upper": 0.07646240648300379
+      },
+      "conditional": {
+        "successes": 3,
+        "trials": 24,
+        "rate": 0.125,
+        "lower": 0.043443340801234465,
+        "upper": 0.3100388127050006
+      },
+      "among_detected": {
+        "successes": 3,
+        "trials": 11,
+        "rate": 0.2727272727272727,
+        "lower": 0.09746059290024897,
+        "upper": 0.565645301176129
+      }
+    },
+    "direction_principal": {
+      "end_to_end": {
+        "successes": 11,
+        "trials": 111,
+        "rate": 0.0990990990990991,
+        "lower": 0.05624021774548065,
+        "upper": 0.16877833466633843
+      },
+      "conditional": {
+        "successes": 11,
+        "trials": 24,
+        "rate": 0.4583333333333333,
+        "lower": 0.27891333731210993,
+        "upper": 0.649251346410805
+      },
+      "among_detected": {
+        "successes": 11,
+        "trials": 11,
+        "rate": 1.0,
+        "lower": 0.7411670330319684,
+        "upper": 1.0
+      }
+    },
+    "direction_unknown_excluded": {
+      "end_to_end": {
+        "successes": 11,
+        "trials": 111,
+        "rate": 0.0990990990990991,
+        "lower": 0.05624021774548065,
+        "upper": 0.16877833466633843
+      },
+      "conditional": {
+        "successes": 11,
+        "trials": 24,
+        "rate": 0.4583333333333333,
+        "lower": 0.27891333731210993,
+        "upper": 0.649251346410805
+      },
+      "among_detected": {
+        "successes": 11,
+        "trials": 11,
+        "rate": 1.0,
+        "lower": 0.7411670330319684,
+        "upper": 1.0
+      }
+    },
+    "unknown_direction": {
+      "successes": 0,
+      "trials": 11,
+      "rate": 0.0,
+      "lower": 0.0,
+      "upper": 0.2588329669680316
+    }
+  },
+  "reference_kinds": {
+    "ES2002": {
+      "decisions": "single:gv",
+      "relations": "single:gv"
+    },
+    "ES2008": {
+      "decisions": "adjudicated",
+      "relations": "adjudicated"
+    },
+    "ES2014": {
+      "decisions": "single:gm",
+      "relations": "single:gm"
+    },
+    "ES2016": {
+      "decisions": "adjudicated",
+      "relations": "adjudicated"
+    },
+    "IS1003": {
+      "decisions": "adjudicated",
+      "relations": "adjudicated"
+    },
+    "IS1006": {
+      "decisions": "single:gv",
+      "relations": "single:gv"
+    },
+    "IS1008": {
+      "decisions": "single:gm",
+      "relations": "single:gm"
+    },
+    "IS1009": {
+      "decisions": "single:gv",
+      "relations": "single:gv"
+    },
+    "TS3003": {
+      "decisions": "single:gv",
+      "relations": "single:gv"
+    },
+    "TS3005": {
+      "decisions": "adjudicated",
+      "relations": "adjudicated"
+    },
+    "TS3011": {
+      "decisions": "single:gm",
+      "relations": "single:gm"
+    }
+  },
+  "pinned_environment_ok": true,
+  "pinned_environment": {
+    "ollama_version": "0.32.9",
+    "openkos_version": "0.7.0",
+    "model_digests": {
+      "qwen3:8b": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41",
+      "gemma4:26b-a4b": "001e5dafc3c77684c2307ebc6ab8e336e10c9b18eca52acf547d72fc83c3ca8c",
+      "bge-m3": "7907646426070047a77226ac3e684fbbe8410524f7b4a74d02837e43f2146bab"
+    }
+  },
+  "git_commit": "09e46a87f82daadee762c2b290f3567c5249f1f0",
+  "git_dirty": false,
+  "freeze": {
+    "adr": "0024",
+    "code_commit": "e346a4eec5ecb58820ce5a4d3c5f4782549f5cbb",
+    "sha256": "d08c2453c5f68d741e660002b418d4e693849c49b37638bce81b01923dfb1bf3"
+  },
+  "seconds": 2992.078
+}
