@@ -1,8 +1,8 @@
 # docs/avances/
 
 Los **documentos vivos** del proyecto: el problema, la fuente de datos, los objetivos, la
-bibliografía, los aspectos éticos, la metodología, el análisis exploratorio, las métricas y los
-modelos.
+bibliografía, los aspectos éticos, la metodología, el análisis exploratorio, las métricas, los
+modelos y los resultados con sus conclusiones.
 
 > **Por qué "avances" y no "entregables".** Estos documentos **cambian a medida que el
 > proyecto avanza**. No son lo que se entrega: son el contenido del que se construye lo que
@@ -23,6 +23,7 @@ modelos.
 | [`10-jss-confiabilidad-de-la-referencia.md`](10-jss-confiabilidad-de-la-referencia.md) | Resultados de confiabilidad de OE1 (fases 1 y 2): kappa de existencia, tipo y dirección, y su lectura; composición final de la referencia (14 series, 358 decisiones, 46 relaciones) tras la Fase 3 |
 | [`11-jss-resultados-experimento-a.md`](11-jss-resultados-experimento-a.md) | Resultados del Experimento A (OE2): precisión, recall y F1 de decisiones, relaciones, validación manual de la alineación, límites y costo en tiempo |
 | [`12-jss-resultados-experimento-b.md`](12-jss-resultados-experimento-b.md) | Resultados del Experimento B (OE3 y OE4): corrección por condición y estrato, D16, H2, C0 como referencia, validez del juez, etapa del fallo de C2, citas y abstención, límites |
+| [`13-jss-conclusiones.md`](13-jss-conclusiones.md) | Conclusiones del proyecto: la respuesta a cada objetivo (OE1 a OE4) y a cada hipótesis (D16 y H1 a H4), qué significan los resultados, costos y punto de equilibrio, implicación práctica, límites y trabajo futuro |
 | [`informes/`](informes/) | Los informes del curso como documentos vivos (pre-informe de AFG2 y, después, informe final de AFG3), armados a partir de estos avances |
 
 ## De dónde sale el contenido
