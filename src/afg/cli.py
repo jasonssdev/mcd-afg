@@ -4258,6 +4258,9 @@ def experiment_final_tables(
             a_dir=EXPERIMENT_A_DIR,
             b_dir=EXPERIMENT_B_DIR,
             descriptive=descriptive,
+            questions={
+                q.id: q for q in load_experiment_questions(QUESTIONS_DIR / "banco-preguntas.csv")
+            },
         )
         final = build_final_tables(inputs, descriptive=descriptive)
     except DevelopmentResultError as exc:

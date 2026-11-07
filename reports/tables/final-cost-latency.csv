@@ -1,0 +1,7 @@
+role,model,activity,units,mean_seconds,total_seconds,ratio,detail,source
+answer,qwen3:8b,experimento-b-formal / C0,297,4.166965913999931,1237.5888764579795,,,reports/experiment-b/experimento-b-formal
+answer,qwen3:8b,experimento-b-formal / C1,297,5.705432915134622,1694.513575794983,,,reports/experiment-b/experimento-b-formal
+answer,qwen3:8b,experimento-b-formal / C2,297,15.339692922134786,4555.888797874031,,,reports/experiment-b/experimento-b-formal
+answer,qwen3:8b,experimento-b-formal / C3,297,14.51045849411467,4309.606172752057,,,reports/experiment-b/experimento-b-formal
+judge,gpt-oss:20b,experimento-b-formal,1188,6.304756732317388,7490.0509979930575,,,reports/experiment-b/experimento-b-formal
+extraction,qwen3:8b,"OpenKOS completo ES2002,ES2008,ES2014,ES2016,IS1003,IS1006,IS1008,IS1009,TS3003,TS3005,TS3011 (experimento-a-formal)",33,1288.5479157272728,42522.081219,,OpenKOS 0.7.0,reports/experiment-a/experimento-a-formal

@@ -109,6 +109,8 @@ def _cost(table: pd.DataFrame, path: Path, stamp: str | None) -> Path:
 
 
 def _oe4(table: pd.DataFrame, path: Path, stamp: str | None) -> Path:
+    if "basis" in table.columns and (table["basis"] == "todas").any():
+        table = table[table["basis"] == "todas"]  # headline: all failures, not just the sheet
     wide = table.pivot_table(index="condition", columns="stage", values="share", aggfunc="mean")
     fig, ax = plt.subplots(figsize=(7, 0.7 * max(2, len(wide)) + 1.5))
     left = pd.Series(0.0, index=wide.index)
