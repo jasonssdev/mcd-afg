@@ -6,16 +6,16 @@
   "n_failures": 40,
   "stages": {
     "extraccion": {
-      "cases": 18,
-      "share": 0.45
+      "cases": 21,
+      "share": 0.525
     },
     "recuperacion": {
       "cases": 11,
       "share": 0.275
     },
     "sintesis": {
-      "cases": 11,
-      "share": 0.275
+      "cases": 8,
+      "share": 0.2
     }
   },
   "rule_agreement": {
