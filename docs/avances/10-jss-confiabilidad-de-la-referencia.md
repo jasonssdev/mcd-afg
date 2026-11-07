@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 10 — Confiabilidad de la referencia humana (OE1) |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.0 |
-| **Fecha** | 2026-11-01 |
+| **Versión** | 2.0 |
+| **Fecha** | 2026-11-07 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -13,6 +13,7 @@
 | Versión | Fecha | Cambio | Motivo |
 |---|---|---|---|
 | 1.0 | 2026-11-01 | Versión inicial. Resultados de confiabilidad de OE1 de las fases 1 y 2. | La Fase 2 quedó completa (cuatro series de control adjudicadas) y ningún documento reportaba aún estos resultados. |
+| 2.0 | 2026-11-07 | Se agrega la composición final de la referencia (14 series, 358 decisiones, 46 relaciones, quién anotó cada serie, muestra de recall de TS3005) y se reescribe la sección «Estado». Los kappas de la Fase 2 no cambian. | La Fase 3 quedó completa y el [notebook 29](../../notebooks/29-jss-anotacion-f3-referencia.ipynb) fija las cifras de la referencia final; el issue #194 (muestra de recall de TS3005) está cerrado. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -116,11 +117,48 @@ niveles y en uno no existe. Se reporta como indefinido, con su acuerdo simple de
 - **Solo agregados.** Las series de control son de evaluación: se reportan conteos y kappas,
   no frases ni casos (ADR 0005).
 
+## La referencia final
+
+Con la Fase 3 la anotación humana de OE1 está completa. Las cifras salen del
+[notebook 29](../../notebooks/29-jss-anotacion-f3-referencia.ipynb), que lee los mismos archivos
+que usa el código.
+
+| | Series | Decisiones | Relaciones de oro |
+|---|---|---|---|
+| Evaluación | 11 | 278 | 37 (24 de evolución) |
+| Desarrollo | 3 | 80 | 9 |
+| **Total** | **14** | **358** | **46** |
+
+**Quién produjo cada referencia.** Seis de las 14 series tienen una referencia adjudicada tras
+doble anotación de `gm` y `gv`: ES2015 y TS3009 (desarrollo) y ES2008, ES2016, IS1003 y TS3005
+(evaluación). Las otras ocho tienen un solo anotador: `gv` en ES2002, IS1004, IS1006, IS1009 y
+TS3003, y `gm` en ES2014, IS1008 y TS3011. Esa parte de la referencia (siete series de
+evaluación) no tiene medida de acuerdo, porque no hay una segunda lectura.
+
+**Cómo se cuentan las decisiones.** Una frase `compuesta` agrupa varias decisiones y se
+reemplaza por sus hijas: la referencia cuenta las hijas y no el padre. Por eso las 358 no son las
+343 del [documento 02](02-jss-fuente-de-datos.md): las 343 son las frases candidatas de la base,
+antes de etiquetar. Las personas descartaron 49 que no eran decisiones y reemplazaron 24 padres
+compuestos por 88 hijas (343 − 49 − 24 + 88 = 358). Las 278 del [documento 11](11-jss-resultados-experimento-a.md)
+son las de las 11 series de evaluación; las 37 relaciones del notebook 27 y las 24 de evolución
+del notebook 26 son las de esas mismas series.
+
+**Muestra de recall de TS3005 (issue #194).** Estaba entregada y completa: 50 pares rechazados
+por el bloqueador léxico, de los cuales 3 eran relaciones reales. El recall estimado de la serie
+es 0,344 y el total de las cuatro muestras es 0,407 [0,245; 0,596], ambas cifras ya publicadas en
+el notebook 18; la muestra de TS3005 no las cambia.
+
+**Una salvedad.** Tres de las 9 relaciones de las series de desarrollo (2 en IS1004 y 1 en
+TS3009) siguen apuntando a un padre `compuesto`, porque la corrección del ADR 0025 alcanzó solo a
+las series de evaluación. Ninguna cifra de evaluación depende de ellas.
+
 ## Estado
 
-Estas cifras son **finales para OE1**: la Fase 3 no agrega ningún kappa. Lo que falta de la
-anotación (la Fase 3 y la muestra de recall de la Tarea C de TS3005, issue #194) no cambia
-estos valores.
+Estas cifras son **finales para OE1**: la anotación humana terminó, la Fase 3 no agrega ningún
+kappa y no queda ninguna muestra pendiente. Los kappas de las fases 1 y 2 ([notebooks 04 y
+18](#fuentes)) no cambian. Queda una limitación que la tesis debe declarar: la mayor parte de la
+referencia de evaluación (siete de once series) la produjo una sola persona, y la confiabilidad
+se midió solo en las cuatro series de control.
 
 ## Fuentes
 
@@ -128,6 +166,7 @@ estos valores.
 |---|---|
 | Fase 1: método y conclusiones de la calibración | [`notebooks/04-jss-anotacion-f1-calibracion.ipynb`](../../notebooks/04-jss-anotacion-f1-calibracion.ipynb) |
 | Fase 2: acuerdo por serie, kappa agrupado (§6) y límites (§7) | [`notebooks/18-jss-anotacion-f2-adjudicacion.ipynb`](../../notebooks/18-jss-anotacion-f2-adjudicacion.ipynb) |
+| Referencia final: decisiones y relaciones por serie, quién anotó cada una y muestra de recall de TS3005 | [`notebooks/29-jss-anotacion-f3-referencia.ipynb`](../../notebooks/29-jss-anotacion-f3-referencia.ipynb) |
 | Kappa agrupado, total y por fase | [`reports/tables/agreement-pooled.csv`](../../reports/tables/agreement-pooled.csv) |
 | Diseño de las fases | [`docs/anotacion/asignacion/README.md`](../anotacion/asignacion/README.md) |
 | Antecedente de Fernández et al. (2008) | [documento 01](01-jss-problema.md) y [documento 04](04-jss-bibliografia.md) |
