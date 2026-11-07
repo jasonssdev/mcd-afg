@@ -13,6 +13,7 @@ from afg.evaluation.judge_calibration_agreement import AgreementError, SecondShe
 from afg.evaluation.judge_human_check import (
     SHEET_COLUMNS,
     check_judge_against_humans,
+    check_judge_by_condition,
     read_csv_rows,
     save_judge_human_check,
     select_human_sample,
@@ -491,3 +492,19 @@ def test_saved_check_carries_the_outdated_verdict(tmp_path: Path) -> None:
     assert payload["outdated_reliable"] is True
     assert payload["outdated"]["column"] == "outdated"
     assert payload["outdated"]["kappa"] == pytest.approx(1.0)
+
+
+def test_agreement_by_condition_checks_each_condition_on_its_own_rows() -> None:
+    key = _key(40, [("si", "si"), ("no", "si")] * 20)
+    for i, row in enumerate(key):
+        row["condition"] = "C0" if i < 20 else "C1"
+    human = {k["id"]: (k["judge_correct"], k["judge_evidence_supported"]) for k in key}
+    for row in key[20:]:  # humans disagree with the judge on every C1 row
+        human[row["id"]] = ("si", "si")
+    by_condition = check_judge_by_condition(key, _labelled(key, human), min_kappa=0.70)
+    assert list(by_condition) == ["C0", "C1"]
+    assert by_condition["C0"].n_items == 20
+    assert by_condition["C0"].columns[0].kappa == pytest.approx(1.0)
+    assert by_condition["C0"].keep_automatic_judging is True
+    assert by_condition["C1"].n_items == 20
+    assert by_condition["C1"].keep_automatic_judging is False
