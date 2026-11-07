@@ -118,7 +118,7 @@ ID: Yes. But um before I do that I w I want to warn you that uh by implementing 
 PM: Mm-hmm.
 PM: Yep.
 UI: And do we even uh prefer the sound above the the LEDs, the lightning uh
-ID: Well, I I think so, because um when you have a p newspaper over your remote control, you cannot see it. So",data/interim/transcripts/TS3011a.md;data/interim/transcripts/TS3011b.md,,,"Develop an original, trendy and user-friendly television remote control.",
+ID: Well, I I think so, because um when you have a p newspaper over your remote control, you cannot see it. So",data/interim/transcripts/TS3011a.md;data/interim/transcripts/TS3011b.md,no,si,"Develop an original, trendy and user-friendly television remote control.",no
 h003,E2,"After comparing flat and curved cases in TS3003d, what case curvature does the team retain?",A single curve.,"After comparing flat and curved cases in TS3003d, the team retains the single curved design. This decision was made to better express the L_C_D_ screen and allow for improved use of the scroll bar and scroll button for help functions.","[TS3003c]
 ID: So this type should be better for you or better Should prevent repetitive strain injury a bit.
 PM: Easier?
@@ -309,7 +309,7 @@ ID: Uh it's in current price, yeah.
 ME: Difficult.
 PM: Yeah, maybe in the next uh step if we make it work um.
 ID: Yeah.
-ID: But speech recogniser can be possible.",data/interim/transcripts/IS1006b.md,,,,
+ID: But speech recogniser can be possible.",data/interim/transcripts/IS1006b.md,no,si,,
 h010,E2,What information is the LCD intended to provide in the design agreed by the end of TS3003d?,"Channel numbers during scrolling, plus instructions for using the scroll wheel and other buttons, such as the subtitles control.","The LCD (Local Control Device) is intended to provide information related to the local control and monitoring of the system, such as status indicators, operational parameters, and fault messages. However, without specific documentation or context regarding the design agreed by the end of TS3003d, the exact details of the information provided by the LCD cannot be precisely specified. If you have access to the relevant design documents or specifications from TS3003d, referring to those would provide the most accurate and detailed information.","[TS3003b]
 PM: Um I don't know if that will rise the cost too much, because
 ID: Y i um I think we'll have to choose between the docking station or the screen, 'cause
@@ -378,7 +378,7 @@ ID: Yeah.
 ME: Seven?
 UI: Yeah.
 ME: Should be do-able. Is the design easy to use?
-PM: Yeah. That's right.",data/interim/transcripts/TS3003b.md;data/interim/transcripts/TS3003d.md,,,,
+PM: Yeah. That's right.",data/interim/transcripts/TS3003b.md;data/interim/transcripts/TS3003d.md,no,no,,
 h011,E1,What did the team decide about including an LCD screen in TS3011c?,Not to include an LCD screen in the remote.,"The team decided that if they wanted to use the LCD display, they really needed the advanced version, which is a bit more costly. They also mentioned that if they didn't want to use any of these more advanced functions, they could keep with the simple chip, which is a bit cheaper.","[TS3011c]
 PM: Yeah.
 ID: Um with a with a regular chip.
@@ -443,7 +443,7 @@ PM: Yeah that's cool. Um and I mean colour-wise what does everybody think? I thi
 ME: Mm.
 UI: So I reckon it'd look quite nice if we just had um this here, had a sorta background yellow, and then have sort of a nice bold colour for the buttons.
 PM: Uh-huh.
-PM: Okay cool. Um and also I mean how are we going to incorporate the slogan in? The fact that it talks to you, I mean it might be quite cool if when you first start using it it says, what is it, putting fashion into electronics or something, I dunno. Or when you like or if you turn it off or something if it can speak if it could actually say the slogan it might be a bit more powerful than just having it written on it somewhere. I d I d any thoughts on that at all?",data/interim/transcripts/ES2002c.md,,,,
+PM: Okay cool. Um and also I mean how are we going to incorporate the slogan in? The fact that it talks to you, I mean it might be quite cool if when you first start using it it says, what is it, putting fashion into electronics or something, I dunno. Or when you like or if you turn it off or something if it can speak if it could actually say the slogan it might be a bit more powerful than just having it written on it somewhere. I d I d any thoughts on that at all?",data/interim/transcripts/ES2002c.md,no,si,,
 h013,E4,How many opening and closing cycles was the sliding panel required to survive?,,I don't know.,,,si,si,,
 h014,E3,"How did the budget-dependent speech-recognition decision in TS3005b change by TS3005d, and why?",TS3005b agreed to include speech recognition only if enough money remained in the budget. In TS3005d the team explicitly dropped that feature together with its speaker during the cost-reduction redesign.,"The budget-dependent speech-recognition decision in TS3005b considered implementing both L_C_D_ screen and speech recognition if costs allowed [1]. By TS3005d, speech recognition was dropped along with the scroll wheel due to budget constraints and design priorities [4]. The decision was influenced by the need to allocate resources to other features and the complexity of integrating speech recognition within the given budget [4].","[TS3005b]
 UI: I know
@@ -781,8 +781,8 @@ UI: We have change the electronics to from from the the the sample sensor to reg
 ID: So
 UI: We have to delete the the sample sensor, I think.
 ME: Yeah.
-PM: Yeah, but we have you the the voice recognition, no?",data/interim/transcripts/IS1003c.md;data/interim/transcripts/IS1003d.md,,,,
-h024,E4,"What warranty period, in months, was agreed for the finished remote?",,"I do not have enough information to determine the warranty period, in months, agreed for the finished remote. Please provide additional context or details about the product or agreement in question.",,,,,,
+PM: Yeah, but we have you the the voice recognition, no?",data/interim/transcripts/IS1003c.md;data/interim/transcripts/IS1003d.md,no,si,,
+h024,E4,"What warranty period, in months, was agreed for the finished remote?",,"I do not have enough information to determine the warranty period, in months, agreed for the finished remote. Please provide additional context or details about the product or agreement in question.",,,si,si,,
 h025,E2,What power source is retained in the final design agreed in ES2014d?,Kinetic power generated by movement of the remote control.,The final design agreed in ES2014d retains the speech recognition feature as the power source. The discussion indicates that the kinetic power option was not included due to budget constraints.,"[ES2014c]
 UI: And it says that I think it said the cost of that isn't too much.
 ID: Um yeah I I thought so just for just for ease of not having to replace the batteries.
@@ -965,7 +965,7 @@ ME: Mm yep.
 UI: Should we change that tha that that's a one if not, or not? Could you copy it? And make it uh
 PM: We dropped the scroll wheel.
 PM: And the rest is the same, huh?
-ME: Y yea the scroll wheel is dropped.",data/interim/transcripts/TS3005b.md;data/interim/transcripts/TS3005d.md,,,Include speech recognition only if enough money remains in the production budget.,
+ME: Y yea the scroll wheel is dropped.",data/interim/transcripts/TS3005b.md;data/interim/transcripts/TS3005d.md,no,si,Include speech recognition only if enough money remains in the production budget.,no
 h029,E4,What maximum number of simultaneous touch points was the touchscreen specified to support?,,"Matching concepts were found in the compiled bundle, but none of them answers this question.",,,si,si,,
 h030,E1,"In IS1009d, what materials were specified for the case and the buttons?",A plastic case and soft rubber buttons.,"I do not have specific information about the materials specified for the case and buttons in IS1009d, as this reference does not correspond to a widely known standard, product, or specification in my knowledge base. You may need to consult the specific documentation or technical specifications related to IS1009d for accurate details.","[IS1009d]
 ME: Mm-hmm.
@@ -980,7 +980,7 @@ ME: Mm-hmm. Mm.
 PM: Mm-hmm, mm-hmm.
 ME: Mm-hmm.
 ID: And then um uh for the for the led, for the light emitting diode it is a fluorescent green and it's a a it is a bulb like an ordinary infrared.
-ME: Mm-hmm.",data/interim/transcripts/IS1009d.md,,,,
+ME: Mm-hmm.",data/interim/transcripts/IS1009d.md,no,si,,
 h031,E2,What requirement applies to the use of company colours across the product variants agreed in ES2008d?,At least one variant must use the company's corporate colour scheme.,"The requirement for using company colours across the product variants agreed in ES2008d is that at least three special colours are to be used, and the basic colour is to be determined [2]. The corporate image, which includes the use of yellow and black, must be recognizable in the new design [4][5]. The product should incorporate the company's colours and slogan to maintain brand identity [5].","[ES2008c]
 PM: Okay. So we uh we do want latex.
 UI: 'Kay. Yeah.
@@ -1082,7 +1082,7 @@ ME: 'Cause you Yeah.
 ID: Yeah.
 ME: So
 PM: So we just add that to profitability in effect.
-ME: Yeah, I mean so we've dropped the cost, but",data/interim/transcripts/ES2014b.md;data/interim/transcripts/ES2014d.md,,,,
+ME: Yeah, I mean so we've dropped the cost, but",data/interim/transcripts/ES2014b.md;data/interim/transcripts/ES2014d.md,no,no,,
 h033,E2,"After the cost adjustments in TS3005d, what power source remains in the design?",Battery power.,"After the cost adjustments in TS3005d, the power source that remains in the design is conventional batteries.","[TS3005b]
 ID: Yeah, automatically. After two minutes or three minutes, something like that.
 ME: Yeah. After two minutes, yeah two three minutes, yeah.
@@ -1180,7 +1180,7 @@ ID: They won't know until after they bought it.
 PM: This is consumerism. Alright so for the electronics our choices are simpl simple chip-on-print, regular chip-on-print, advanced chip-on-print, sample sensor, sample speaker.
 ID: .
 UI: We're advanced chip are we?
-ID: That's the advanced chip-on-print, yeah.",data/interim/transcripts/ES2016c.md;data/interim/transcripts/ES2016d.md,,,The remote control is to use conventional batteries.,
+ID: That's the advanced chip-on-print, yeah.",data/interim/transcripts/ES2016c.md;data/interim/transcripts/ES2016d.md,no,no,The remote control is to use conventional batteries.,no
 h037,E1,"In IS1006a, which users was the remote's adaptable layout intended to accommodate?",Both left-handed and right-handed users.,"The question refers to a product or system known as IS1006a, but there is no widely recognized or documented product by that name in standard technology, consumer electronics, or industrial systems. Without additional context or clarification about what IS1006a refers to, it is not possible to determine which users the remote's adaptable layout was intended to accommodate. If this is a specific product, internal system, or proprietary technology, more information would be needed to provide an accurate answer.","[IS1006a]
 PM: Mm.
 ME: So ma I prefer to have the off button at the top right, so I would have my own design of the remote control because it's in fact just a a full touch screen remote control, if you if you like.
@@ -1200,7 +1200,7 @@ ME: Maybe, if if it's possible, yeah.
 ID: Mm huh.
 UI: On off?
 ID: Maybe I think even we can keep two switches and then we can uh only make one working.
-ME: Yeah.",data/interim/transcripts/IS1006a.md,,,,
+ME: Yeah.",data/interim/transcripts/IS1006a.md,no,si,,
 h038,E2,"After the budget adjustments in TS3005d, which chip type remains in the design?",An advanced chip-on-print.,"Matching concepts were found in the compiled bundle, but none of them answers this question.","[TS3005c]
 ID: Well uh chip on print, I think what they mean uh with the regular rubber buttons that you got, uh it's always clear for the remote control when you press uh a certain button. But when you got a L_C_D_ screen, with no uh with not the buttons are not always on the same place, for example if you enlarge a button, or if you got several options uh appearing on your screen, uh the co-ordinations aren't always the same. When you got a regular button, th the button of stand-by is always on the same place and you got on the and on the
 PM: Mm-hmm.
@@ -1334,7 +1334,7 @@ ME: Yeah, I mean so we've dropped the cost, but
 PM: Right, so we're meant to finish up in five minutes.
 UI: Mm-hmm.
 ME: Same sort of function? The criteria? It's alright. Just made a load of money.
-ID: 'Kay.",data/interim/transcripts/ES2014b.md;data/interim/transcripts/ES2014d.md,,,"The hidden panel contains controls for brightness, contrast and channel tuning, plus an Enter button to confirm tuning.",
+ID: 'Kay.",data/interim/transcripts/ES2014b.md;data/interim/transcripts/ES2014d.md,no,si,"The hidden panel contains controls for brightness, contrast and channel tuning, plus an Enter button to confirm tuning.",no
 h041,E4,"What audio sampling rate, in kilohertz, was specified for the microphone?",,I don't know.,,,si,si,,
 h042,E1,"In TS3005c, how was the touchscreen intended to be operated, and was a stylus to be supplied?","The touchscreen was to be operated with fingers, without a stylus.","The TS3005c is a model of a touchscreen device, likely referring to a product from the early 2000s, possibly from a company such as Targus or another manufacturer. In general, for many touchscreen devices from that era, the touchscreen was intended to be operated with a finger, similar to modern capacitive touchscreens. However, some devices also supported the use of a stylus for more precise input, especially for tasks such as drawing or data entry.
 
@@ -1358,8 +1358,8 @@ UI: Yeah o yeah, if they think it's handy to use a pen.
 UI: Yeah I think this uh this is a good size for the screen. I don't know how how large the actual remote should be but a little bit like this, or something.
 PM: And maybe we have to add a tissue to remove the grease from all the fingers, huh.
 UI: Yeah.
-ME: Yeah but that that can be with plain soft tissue. Yeah, you can buy those at",data/interim/transcripts/TS3005c.md,,,,
-h043,E4,"What manufacturing tolerance, in millimetres, was allowed for the dimensions of the custom wooden case?",,"I do not have specific information about the manufacturing tolerance for the dimensions of a custom wooden case, as this detail would depend on the specific requirements set by the manufacturer, designer, or client. Tolerances can vary widely based on the intended use, material, and quality standards. If you have additional context or specifications, I can help interpret them.",,,,,,
+ME: Yeah but that that can be with plain soft tissue. Yeah, you can buy those at",data/interim/transcripts/TS3005c.md,no,si,,
+h043,E4,"What manufacturing tolerance, in millimetres, was allowed for the dimensions of the custom wooden case?",,"I do not have specific information about the manufacturing tolerance for the dimensions of a custom wooden case, as this detail would depend on the specific requirements set by the manufacturer, designer, or client. Tolerances can vary widely based on the intended use, material, and quality standards. If you have additional context or specifications, I can help interpret them.",,,si,si,,
 h044,E1,How was a multi-digit channel number to be entered in the ES2014b design?,"Using the 0–9 digit buttons in sequence, with a delay that allows successive presses to form a multi-digit channel number.","In the ES2014b design, a multi-digit channel number was to be entered by pressing the digits 0 to 9 in succession, with a waiting interval between presses. This method allowed users to input multi-digit channels sequentially, ensuring clarity and preventing accidental input.","[ES2014b]
 UI: Is that one of the
 UI: Hmm.
@@ -1463,7 +1463,7 @@ UI: Mm.
 ME: Mm, yes.
 UI: Yeah. I With uh teletext if it wasn't ver very important, it was but You also now have colours. I don't know if we should implement that. Yeah, when you press the red button, you go to page one hundred two, and when you press the
 PM: in general.",data/interim/transcripts/TS3005b.md,no,no,,
-h047,E4,What pixel resolution was specified for the LCD display?,,"The question is incomplete as it does not specify which LCD display is being referred to. Different LCD displays have different pixel resolutions depending on their size, technology, and intended use. For example, common resolutions include 1920x1080 (Full HD), 3840x2160 (4K UHD), or 7680x4320 (8K). Without additional context, it is not possible to determine the exact pixel resolution.",,,,,,
+h047,E4,What pixel resolution was specified for the LCD display?,,"The question is incomplete as it does not specify which LCD display is being referred to. Different LCD displays have different pixel resolutions depending on their size, technology, and intended use. For example, common resolutions include 1920x1080 (Full HD), 3840x2160 (4K UHD), or 7680x4320 (8K). Without additional context, it is not possible to determine the exact pixel resolution.",,,si,si,,
 h048,E2,"After the budget adjustments in TS3005d, which chip type remains in the design?",An advanced chip-on-print.,"After the budget adjustments in TS3005d, the chip type that remains in the design is the 7nm process node.","[TS3005c]
 ID: Well uh chip on print, I think what they mean uh with the regular rubber buttons that you got, uh it's always clear for the remote control when you press uh a certain button. But when you got a L_C_D_ screen, with no uh with not the buttons are not always on the same place, for example if you enlarge a button, or if you got several options uh appearing on your screen, uh the co-ordinations aren't always the same. When you got a regular button, th the button of stand-by is always on the same place and you got on the and on the
 PM: Mm-hmm.
@@ -1504,7 +1504,7 @@ UI: One.
 UI: So it would be curved, single curve.
 PM: Because of thing Yeah, well you can at least make it curved again.
 UI: Or not?
-ID: Hmm.",data/interim/transcripts/TS3005c.md;data/interim/transcripts/TS3005d.md,,,,
+ID: Hmm.",data/interim/transcripts/TS3005c.md;data/interim/transcripts/TS3005d.md,no,no,,
 h049,E1,"In ES2008b, did the team restrict the target audience to a fixed age range?",No. It chose to focus on simplicity and fashion across a broad range of ages.,"No, in ES2008b, the team did not restrict the target audience to a fixed age range. The show, which is a comedy series, generally aims for a broad audience, though it may contain content that is more suitable for adults. The specific age range for the target audience can vary depending on the content and the network's guidelines.","[ES2008b]
 PM: Okay, single
 ME: I dunno.
@@ -1530,7 +1530,7 @@ PM: Okay. Um oh, there're a couple functions do we want something so that do we 
 ID: Mm.
 ME: Yeah.
 PM: Like a button on a T_V_ you can press and it'll ring or something, I don't know like or beep?
-ME: H",data/interim/transcripts/ES2008b.md,,,,
+ME: H",data/interim/transcripts/ES2008b.md,no,si,,
 h050,E3,"How did the case-material decision change from IS1003c to IS1003d, and why?",In IS1003c the team selected wood. In IS1003d it replaced wood with plastic to meet the EUR 12.50 production-cost limit. Plastic was described as free in the costing discussion.,"The case-material decision shifted from incorporating wood in IS1003c to replacing wood with plastic in IS1003d. In IS1003c, there was a discussion about using wood for the case, with the idea that it would provide a natural feel and could be part of the design. However, in IS1003d, the team considered replacing wood with plastic to reduce costs, as plastic was deemed a more cost-effective material. This change was driven by the need to balance design aesthetics with practical considerations such as cost efficiency.","[IS1003c]
 ME: Yeah, maybe the base.
 ME: But still y
@@ -1664,7 +1664,7 @@ ID: Second generation.
 PM: second generation.
 PM: Okay. There's no end, there's not limit. Every every custom
 UI: The problem is there might not be a second generation if the first generation flops for some silly reason that we haven't thought of.",data/interim/transcripts/IS1008b.md;data/interim/transcripts/IS1008c.md;data/interim/transcripts/IS1008d.md,si,si,,
-h052,E4,"From what drop height, in metres, was the remote required to pass a child-resistance test?",,"The child-resistance test for remote controls typically involves dropping the device from a height of 1.2 metres (approximately 3.9 feet) to simulate accidental drops. This standard is commonly used to ensure that the remote control does not easily open or become damaged in such scenarios. However, the exact height may vary slightly depending on the specific testing standards or manufacturer requirements.",,,,,,
+h052,E4,"From what drop height, in metres, was the remote required to pass a child-resistance test?",,"The child-resistance test for remote controls typically involves dropping the device from a height of 1.2 metres (approximately 3.9 feet) to simulate accidental drops. This standard is commonly used to ensure that the remote control does not easily open or become damaged in such scenarios. However, the exact height may vary slightly depending on the specific testing standards or manufacturer requirements.",,,no,no,,
 h053,E1,What colour was specified for the LED in IS1009d?,Fluorescent green.,The LED was specified as fluorescent green.,"[IS1009d]
 ID: Um the material is plastic and uh for the buttons it is uh s soft rubber um and als yeah. Yeah because uh uh you'll be touching the buttons more so it is soft when you touch it.
 ME: Oh that's good, no, that's nice and friendly.
@@ -1698,7 +1698,7 @@ ME: Yeah.
 ID: Did we decide anything about um the other functions? As in setting the audio and tuning it and stuff like that? You had an had an idea about the menu?
 ME: Uh we could possibly put an L_ a sort of a L_C_D_ menu in, but that again is probably an expense that
 ID: But just thinking um people probably I mean you don't have you only have to probably tune in the T_V_ once, but you have to be able to tune it that once. So and if finally the T_V_ breaks, you get a new one, you're gonna have to be able to tune it. You can't really avoid that. Except the new digital markets which do it by themselves.
-ME: Yeah.",data/interim/transcripts/ES2014b.md,,,,
+ME: Yeah.",data/interim/transcripts/ES2014b.md,no,si,,
 h056,E1,Which fruit shape was officially agreed for the standby button in ES2014d?,A cherry.,The fruit shape officially agreed for the standby button in ES2014d was the cherry.,"[ES2014d]
 ME: So that so we've saved
 PM: Until the design team comes in and says, get off. But you are the design team.
@@ -1734,7 +1734,7 @@ UI: Um
 UI: Well, the techni fu technical function uh what you said is just by pressing the button you should change the state of the T_V_. That's just the basic f technical function. So that was my really my part for uh this session. Um
 PM: Yeah.
 PM: So is that ease of use or uh is that more like um
-ID: Yeah.",data/interim/transcripts/TS3011a.md,,,,
+ID: Yeah.",data/interim/transcripts/TS3011a.md,si,no,,
 h058,E1,Which fruit shape was officially agreed for the standby button in ES2014d?,A cherry.,"The question seems to be a mix of unrelated topics. The standby button is a feature in computing or electronics, and ES2014d does not refer to a standard or specification related to fruit shapes. There is no official agreement on a fruit shape for a standby button in ES2014d. If this is a reference to a specific product, brand, or fictional context, additional information would be needed to provide an accurate answer.","[ES2014d]
 ME: So that so we've saved
 PM: Until the design team comes in and says, get off. But you are the design team.
@@ -1748,7 +1748,7 @@ ID: Just in case we need that point two for lawsuits and such like.
 PM: Oh drats, I've botched that, haven't I.
 UI: So were we aiming for a certain target on that scale?
 ME: Well, we're aiming for um one for all of them.
-ME: M but it really has to fit into the budget, so",data/interim/transcripts/ES2014d.md,,,,
+ME: M but it really has to fit into the budget, so",data/interim/transcripts/ES2014d.md,no,si,,
 h059,E3,"How did the planned colour range develop from ES2008c to ES2008d, and why was a version in company colours added?","In ES2008c the team chose colours inspired by fruit and vegetables. In ES2008d it added a version using company colours alongside the other colour concepts, after noticing that the requirement to use company colours had been overlooked.","The evolution of the planned colour range from ES2008c to ES2008d is not a widely documented topic in standard color theory or design history, and there is no well-known series of color palettes labeled ES2008c or ES2008d that are recognized in mainstream design or technology contexts. These labels do not correspond to any established color systems, such as those from Adobe, Pantone, or other color standardization bodies.
 
 If these labels refer to a specific internal project, product line, or company-specific color scheme, the details about the development of the color range and the rationale for adding a version in company colors would be proprietary and not publicly available. Typically, companies may introduce variations in color palettes to align with branding, marketing strategies, or design trends. Adding a version in company colors could be to ensure consistency with corporate identity, enhance brand recognition, or meet specific design requirements for different applications or markets. However, without more context or specific information about the origin of these color labels, it is not possible to provide a definitive explanation.","[ES2008b]
@@ -1806,7 +1806,7 @@ PM: Mm-hmm. Mm 'kay.
 ME: Okay.
 ME: That's me.
 PM: Lovely.
-PM: Okay, now we're gonna look at finances. Um I have an Excel sheet that we're actually gonna calculate the cost um,",data/interim/transcripts/ES2008b.md;data/interim/transcripts/ES2008c.md;data/interim/transcripts/ES2008d.md,,,The remote should be offered in colours inspired by fruit and vegetables.,
+PM: Okay, now we're gonna look at finances. Um I have an Excel sheet that we're actually gonna calculate the cost um,",data/interim/transcripts/ES2008b.md;data/interim/transcripts/ES2008c.md;data/interim/transcripts/ES2008d.md,no,si,The remote should be offered in colours inspired by fruit and vegetables.,no
 h060,E1,"In IS1006b, what device scope was agreed for the initial release of the remote?","Televisions only, with a more general-purpose remote left as a possible later extension.","The initial release of the remote control was agreed to be a portable device that sends messages to the main device like a TV [1]. The device was intended to be simple, with functions such as power, switch on, and channel control [2]. It was also mentioned that the remote could include speech recognition capabilities [4].","[IS1006b]
 PM: Mm-hmm.
 UI: Just few actions, a few actions for everything. All the rest, we sh we'll put it into this menu on the screen.
@@ -1984,7 +1984,7 @@ ID: Shall we uh
 ID: Well I think all of them should have an R_R_.
 ME: And so we're gonna do that, so it will address it, fine.
 PM: Mm-hmm. Mm 'kay.
-ME: Okay.",data/interim/transcripts/ES2008b.md;data/interim/transcripts/ES2008d.md,,,The remote's design must make the corporate image recognizable through the company colours and slogan.,
+ME: Okay.",data/interim/transcripts/ES2008b.md;data/interim/transcripts/ES2008d.md,no,si,The remote's design must make the corporate image recognizable through the company colours and slogan.,no
 h066,E3,"How was the scrolling-function decision refined from ES2016b to ES2016c, and why did the chosen mechanism require a more expensive chip?","ES2016b called for a scrolling function. In ES2016c the team chose an iPod-style scrolling control for its simple menu interface and accepted a more sophisticated, more expensive chip-on-print because that mechanism required it.","The scrolling-function decision was refined from ES2016b to ES2016c by adopting an iPod-style scroll wheel, as discussed in the meeting. This choice was made after considering the design and functionality of the remote control, with the Industrial Designer suggesting that a scroll wheel would be a better option than a basic setup. The iPod-style scroll wheel required a more sophisticated chip-on-print, which in turn necessitated a more expensive chip. This was because the advanced features of the scroll wheel demanded a more complex and capable chip to function properly.","[ES2016b]
 PM: So you know.
 PM: If you, if we want the remote to do other things like um or I guess the T_V_ to be able to change the tint and the colour and you know all those kind of things that are built into T_V_s, we just have that under one standard menu button where you go in, press the menu button, scroll up and down to select it.
@@ -2153,7 +2153,7 @@ ME: Is it yellow and blue?
 ID: Or yellow and blue. Lemme go to the web page.
 PM: Yeah, I was just kinda going by the web page, 'cause they didn't give me any clear, like yellow, grey, or.
 ME: Oh I guess it is black, grey. Grey is better than black, doesn't look so bumblebeeish.
-PM: I don't really like yellow in general.",data/interim/transcripts/ES2008b.md;data/interim/transcripts/ES2008d.md,,,The design must make the corporate image recognisable through company colours and the slogan.,
+PM: I don't really like yellow in general.",data/interim/transcripts/ES2008b.md;data/interim/transcripts/ES2008d.md,no,si,The design must make the corporate image recognisable through company colours and the slogan.,no
 h070,E1,What colour was specified for the LED in IS1009d?,Fluorescent green.,The LED was specified as fluorescent green.,"[IS1009d]
 ID: Um the material is plastic and uh for the buttons it is uh s soft rubber um and als yeah. Yeah because uh uh you'll be touching the buttons more so it is soft when you touch it.
 ME: Oh that's good, no, that's nice and friendly.
@@ -2215,7 +2215,7 @@ ME: Did did you have to have a rubber case, though, for rubber buttons? Or was i
 ID: You had to have rubber buttons if you had the rubber case. So I think we can we're okay.
 ME: Right, okay.
 PM: Mm-hmm. So we're okay this way around.
-ME: Yeah.",data/interim/transcripts/ES2014b.md;data/interim/transcripts/ES2014d.md,,,The front interface includes volume-up and volume-down controls.,
+ME: Yeah.",data/interim/transcripts/ES2014b.md;data/interim/transcripts/ES2014d.md,no,si,The front interface includes volume-up and volume-down controls.,no
 h073,E3,"How was the hidden-panel design specified more precisely from ES2014b to ES2014d, and why were different button colours judged unnecessary?","In ES2014b the hidden panel was assigned brightness, contrast, channel-tuning and Enter controls. In ES2014d all its buttons were specified as standard blue, including Enter. Extra colours were judged unnecessary because users examine that panel more deliberately, and the unused allowance was kept as profit.","The hidden-panel design was specified more precisely by deciding to have two separate lists of functions, with some functions displayed on the front and others hidden at the back, which could be brought out when needed [5]. Different button colours were judged unnecessary because the focus was on functionality and clarity, with the belief that a uniform colour scheme, such as blue buttons, would suffice and maintain a cohesive look [1][2].","[ES2014b]
 PM: Okay. That's sixteen buttons, you reckon. And then at the back?
 ME: You've got
@@ -2336,7 +2336,7 @@ UI: We have change the electronics to from from the the the sample sensor to reg
 ID: So
 UI: We have to delete the the sample sensor, I think.
 ME: Yeah.
-PM: Yeah, but we have you the the voice recognition, no?",data/interim/transcripts/IS1003c.md;data/interim/transcripts/IS1003d.md,,,The remote control is to use solar energy together with batteries.,
+PM: Yeah, but we have you the the voice recognition, no?",data/interim/transcripts/IS1003c.md;data/interim/transcripts/IS1003d.md,no,si,The remote control is to use solar energy together with batteries.,no
 h075,E2,"At the close of ES2016d, what type of scrolling control is retained in the design?",An iPod-style scroll wheel.,"Matching concepts were found in the compiled bundle, but none of them answers this question.","[ES2016b]
 PM: So you know.
 PM: If you, if we want the remote to do other things like um or I guess the T_V_ to be able to change the tint and the colour and you know all those kind of things that are built into T_V_s, we just have that under one standard menu button where you go in, press the menu button, scroll up and down to select it.
@@ -2505,7 +2505,7 @@ UI: It doesn't work. Let's forget.
 ME: It should've work.
 ID: Okay, so you had this list at start? Alright. When did you receive this list? Ah okay.
 PM: Hmm? No, I hadn't. I just received it.
-UI: Yeah. Oh ignore that.",data/interim/transcripts/TS3005c.md;data/interim/transcripts/TS3005d.md,,,,
+UI: Yeah. Oh ignore that.",data/interim/transcripts/TS3005c.md;data/interim/transcripts/TS3005d.md,no,no,,
 h078,E1,"In IS1006c, how would opting for additional LCD colours affect the price paid by the user?",The user would pay extra for the additional screen colours.,"In IS1006c, opting for additional LCD colours would result in the user paying an additional two Euro. This is explicitly stated in the context, where it is mentioned that users can pay an extra two Euro to get more colours on the LCD screen.","[IS1006c]
 ID: So users have different I mean they have their own interests, colour interests and so
 PM: Okay.
@@ -2719,7 +2719,7 @@ PM: 'Kay. So
 PM: I guess that, is that, is that about it? So we have a good idea of what we're gonna need to to do on this?
 ID: Right.
 PM: Um okay so we will have another meeting in thirty minutes. Um
-PM: Here's what's gonna be going on. Um",data/interim/transcripts/ES2016b.md;data/interim/transcripts/ES2016c.md,,,The remote control should include a scrolling function.,
+PM: Here's what's gonna be going on. Um",data/interim/transcripts/ES2016b.md;data/interim/transcripts/ES2016c.md,no,si,The remote control should include a scrolling function.,no
 h085,E1,What protection against water did the team agree the remote should have in TS3003a?,The remote should be waterproof.,The team agreed that the remote control must be water resistant.,"[TS3003a]
 ME: Think it has to be shock proof
 UI: Sure, yeah.
@@ -2960,7 +2960,7 @@ PM: So maybe we really should try to discard some buttons to uh keep our costs l
 UI: Okay.
 UI: Yeah.
 PM: so if we Let's fir first count the buttons we have now. Because I Sixteen. Nah, that will be even more then. Eighteen Euros.
-UI: Uh",data/interim/transcripts/TS3003c.md;data/interim/transcripts/TS3003d.md,,,,
+UI: Uh",data/interim/transcripts/TS3003c.md;data/interim/transcripts/TS3003d.md,no,si,,
 h093,E4,What pixel resolution was specified for the LCD display?,,The context does not mention the pixel resolution for the LCD display. I don't know.,,,si,si,,
 h094,E3,"How did the intended role of the LCD develop from TS3003b to TS3003d, and why was it retained during the redesign?","In TS3003b a small screen was selected to explain button functions when pressed. In TS3003d it also shows channel numbers during scrolling and helps users operate the scroll wheel and other buttons. Replacing the number buttons with a scroll wheel saves money, allowing the LCD to be kept to provide help for the redesigned controls.","The intended role of the LCD screen in TS3003b was to provide explanatory information about the buttons, helping users understand their functions, especially for elderly users who might find new devices challenging. This was refined in TS3003d, where the LCD screen was expanded to show functional channel information and contextual tips when the scroll wheel is used. The retention of the LCD screen during the redesign was due to its utility in enhancing user experience by providing additional guidance and information, which supports the goal of making the remote control user-friendly and easy to learn.","[TS3003b]
 PM: Um I don't know if that will rise the cost too much, because
@@ -3045,7 +3045,7 @@ UI: Yeah.
 ME: Should be do-able. Is the design easy to use?
 PM: Yeah. That's right.",data/interim/transcripts/TS3003b.md;data/interim/transcripts/TS3003d.md,no,si,A small LCD screen explains what a button does when it is pressed.,no
 h095,E4,"What rated electrical output, in milliwatts, was specified for the single solar cell?",,"Matching concepts were found in the compiled bundle, but none of them answers this question.",,,si,si,,
-h096,E4,How many opening and closing cycles was the sliding panel required to survive?,,"The question refers to a specific requirement for a sliding panel, but without additional context such as the industry, application, or standards it is related to, it is not possible to determine the exact number of opening and closing cycles the sliding panel was required to survive. This information would typically be found in technical specifications, safety standards, or product documentation. If you can provide more context, I can offer a more precise answer.",,,,,,
+h096,E4,How many opening and closing cycles was the sliding panel required to survive?,,"The question refers to a specific requirement for a sliding panel, but without additional context such as the industry, application, or standards it is related to, it is not possible to determine the exact number of opening and closing cycles the sliding panel was required to survive. This information would typically be found in technical specifications, safety standards, or product documentation. If you can provide more context, I can offer a more precise answer.",,,si,si,,
 h097,E2,What power source remains in the final ES2002d design after the cost review?,"Battery power, with the kinetic source removed.",The only power source that remains in the final ES2002d design after the cost review is the standard battery. The kinetic energy source was removed due to budget constraints.,"[ES2002c]
 ME: Yeah.
 UI: Um
@@ -3122,7 +3122,7 @@ ME: Is it yellow and blue?
 ID: Or yellow and blue. Lemme go to the web page.
 PM: Yeah, I was just kinda going by the web page, 'cause they didn't give me any clear, like yellow, grey, or.
 ME: Oh I guess it is black, grey. Grey is better than black, doesn't look so bumblebeeish.
-PM: I don't really like yellow in general.",data/interim/transcripts/ES2008b.md;data/interim/transcripts/ES2008d.md,,,,
+PM: I don't really like yellow in general.",data/interim/transcripts/ES2008b.md;data/interim/transcripts/ES2008d.md,no,no,,
 h100,E2,"In the final ES2002d design, where is navigation feedback shown?","On the television screen, with no LCD on the remote.","In the final ES2002d design, navigation feedback is shown in the status bar at the bottom of the screen. This feedback provides users with information about the current location within the application, such as the page or section they are viewing, and may include indicators for back, forward, or home navigation options.","[ES2002c]
 UI: I think that might scare me.
 UI: I think that'd probably scare me. You turn it on your control possessed s.
@@ -3175,7 +3175,7 @@ PM: Um.
 ME: Was the goal in your in your prototype design that it be as low profile as possible?
 ID: What do you mean by profile?
 UI: Yeah.
-ME: Sort of flat as possible.",data/interim/transcripts/ES2002c.md;data/interim/transcripts/ES2002d.md,,,,
+ME: Sort of flat as possible.",data/interim/transcripts/ES2002c.md;data/interim/transcripts/ES2002d.md,no,no,,
 h101,E2,"After the cost reductions in TS3005d, what curvature is retained for the case?",A single curve.,"Matching concepts were found in the compiled bundle, but none of them answers this question.","[TS3005c]
 ID: It's our main target.
 UI: Yeah.
@@ -3306,7 +3306,7 @@ ME: Nice beautiful mahogany red wooden case.
 UI: What about the buttons, would
 UI: Would the buttons be wood too, or
 ID: Uh I don't think so, no, I think they could be rubber like they are now, so you have that tactile experience of
-PM: I don't think so.",data/interim/transcripts/IS1008c.md,,,,
+PM: I don't think so.",data/interim/transcripts/IS1008c.md,no,si,,
 h104,E1,"In TS3005c, how was the touchscreen intended to be operated, and was a stylus to be supplied?","The touchscreen was to be operated with fingers, without a stylus.","In TS3005c, the touchscreen was intended to be operated without the use of a stylus. The discussion focused on the design of the interface, which included an L_C_D_ screen and a simplified menu system. There was no mention of a stylus being supplied or required for operation. The emphasis was on usability, with considerations for ease of use for different age groups, including older users. The touchscreen was to be interacted with directly, likely through touch gestures, as no alternative input method like a stylus was proposed or discussed.","[TS3005c]
 ID: Yeah they have thick fingers. But if you wanna make it in international, Japanese uh people got uh rather small hands
 ME: Yeah true, but Yeah, we have we have the zoom option, right?
@@ -3549,7 +3549,7 @@ ID: Oh possibly, yeah, yeah maybe. Maybe um we'd be giving up on the kinetic.
 ME: Yeah.
 ID: Um
 PM: And go for battery instead. That would give you one less.
-ME: Yeah.",data/interim/transcripts/ES2014c.md;data/interim/transcripts/ES2014d.md,,,,
+ME: Yeah.",data/interim/transcripts/ES2014c.md;data/interim/transcripts/ES2014d.md,no,si,,
 h110,E4,How long was a full recharge on the proposed docking station specified to take?,,"Matching concepts were found in the compiled bundle, but none of them answers this question.",,,si,si,,
 h111,E4,What pixel resolution was specified for the LCD display?,,"Matching concepts were found in the compiled bundle, but none of them answers this question.",,,si,si,,
 h112,E1,What overall shape was agreed for the remote in ES2002c?,"A snowman-like shape, with a larger section held in the hand and a smaller rounded section above it.",The overall shape agreed for the remote in ES2002c was a snowman shape [2].,"[ES2002c]
@@ -3747,7 +3747,7 @@ ID: central? Oh that's just yeah.
 UI: That was just we ran out of yellow.
 ID: There you go. Oops.
 UI: There you go. Even simpler.
-ME: Looks more like a banana.",data/interim/transcripts/ES2016c.md;data/interim/transcripts/ES2016d.md,,,,
+ME: Looks more like a banana.",data/interim/transcripts/ES2016c.md;data/interim/transcripts/ES2016d.md,no,si,,
 h117,E3,"How was the solar-power decision refined from IS1003c to IS1003d, and why was that refinement made?","In IS1003c the team adopted solar energy together with batteries. In IS1003d it specified a single solar cell to limit production costs, after identifying solar cells as too expensive.","Matching concepts were found in the compiled bundle, but none of them answers this question.","[IS1003c]
 ID: But it will be embedded on the T_V_ and not on the remote control, so.
 PM: That's true.
@@ -4151,7 +4151,7 @@ PM: So maybe we really should try to discard some buttons to uh keep our costs l
 UI: Okay.
 UI: Yeah.
 PM: so if we Let's fir first count the buttons we have now. Because I Sixteen. Nah, that will be even more then. Eighteen Euros.
-UI: Uh",data/interim/transcripts/TS3003c.md;data/interim/transcripts/TS3003d.md,,,Offer interchangeable case covers in wood or wood-effect and plastic versions.,
+UI: Uh",data/interim/transcripts/TS3003c.md;data/interim/transcripts/TS3003d.md,no,si,Offer interchangeable case covers in wood or wood-effect and plastic versions.,no
 h132,E1,"In TS3011a, who was expected to buy the remote, and where would they buy it?",Individual consumers buying it in retail stores.,"In TS3011a, the remote was expected to be bought by individual consumers, and they would purchase it in stores.","[TS3011a]
 PM: Mm. Okay. Um I I do think it's time now to to discuss uh mm some things. Um Sebastian told us a few things about the technical implemen uh implications. Um there are other things like um how to make it trendy, which is I think uh um most uh Ru uh Ruud's uh role. Um the way how it should be controlled by the user, which is uh Roo uh r uh during this part. Um so let's start with you. H how do you think the remote should um function for the user?
 UI: Mm-hmm.
@@ -4304,7 +4304,7 @@ UI: One.
 UI: So it would be curved, single curve.
 PM: Because of thing Yeah, well you can at least make it curved again.
 UI: Or not?
-ID: Hmm.",data/interim/transcripts/TS3005b.md;data/interim/transcripts/TS3005d.md,,,,
+ID: Hmm.",data/interim/transcripts/TS3005b.md;data/interim/transcripts/TS3005d.md,no,no,,
 h137,E2,What company logo and placement are selected for the remote control by the end of IS1003d?,The double-R company logo is to be integrated on one side of the remote control.,"The company logo selected is ""double R_"" and it is decided to integrate it on one side of the remote control [1]. The color scheme includes yellow and red, which was chosen for the costs [1].","[IS1003b]
 ME: Mm-hmm
 PM: to do remote control
@@ -4436,7 +4436,7 @@ PM: screen here.
 ID: Okay, the
 PM: Besides look at what the L_C_D_ does to our lovely remote.
 PM: Back to the design room boys.
-ID: So we can just",data/interim/transcripts/ES2016b.md;data/interim/transcripts/ES2016c.md;data/interim/transcripts/ES2016d.md,,,,
+ID: So we can just",data/interim/transcripts/ES2016b.md;data/interim/transcripts/ES2016c.md;data/interim/transcripts/ES2016d.md,no,no,,
 h141,E3,"How did the intended role of the LCD develop from TS3003b to TS3003d, and why was it retained during the redesign?","In TS3003b a small screen was selected to explain button functions when pressed. In TS3003d it also shows channel numbers during scrolling and helps users operate the scroll wheel and other buttons. Replacing the number buttons with a scroll wheel saves money, allowing the LCD to be kept to provide help for the redesigned controls.","The intended role of the LCD (Liquid Crystal Display) in the development from TS3003b to TS3003d is not well-documented in publicly available sources, and there is no widely recognized historical or technical record that outlines a specific evolution of the LCD's role across these versions. The terms TS3003b and TS3003d may refer to internal design iterations or technical specifications of a product, possibly related to a specific device or system, but without additional context, it is not possible to determine the exact nature of these versions or the specific changes to the LCD's role.
 
 If these versions are part of a known product line or a specific industry standard, more detailed information would be required to provide an accurate explanation of how the LCD's intended role evolved and why it was retained during the redesign. As such, the question cannot be fully answered based on the information provided.","[TS3003b]
@@ -4520,7 +4520,7 @@ ID: Yeah.
 ME: Seven?
 UI: Yeah.
 ME: Should be do-able. Is the design easy to use?
-PM: Yeah. That's right.",data/interim/transcripts/TS3003b.md;data/interim/transcripts/TS3003d.md,,,A small LCD screen explains what a button does when it is pressed.,
+PM: Yeah. That's right.",data/interim/transcripts/TS3003b.md;data/interim/transcripts/TS3003d.md,no,si,A small LCD screen explains what a button does when it is pressed.,no
 h142,E1,"In ES2008b, did the team restrict the target audience to a fixed age range?",No. It chose to focus on simplicity and fashion across a broad range of ages.,"In ES2008b, the team did not restrict the target audience to a fixed age range. They discussed various possibilities, including targeting individuals under sixty five, teenagers and families, single professionals, and those aged twenty to fifty five. However, they ultimately concluded that the product appeals to a broad range of ages, with a focus on simplicity, fashion, and usability. The team also considered the age range of fifteen to thirty five as a potential target group, but this was not the only consideration.","[ES2008b]
 PM: Okay, single
 ME: I dunno.
@@ -4588,7 +4588,7 @@ ID: N no. No that's just one.
 PM: Maybe it's one because of the
 ID: It's just one mo single mould, we can do that.
 PM: 'Kay.",data/interim/transcripts/ES2016c.md;data/interim/transcripts/ES2016d.md,si,si,,
-h144,E4,Which battery supplier was selected for production?,,"The question is too vague to provide a specific answer without additional context. Different companies and industries select various battery suppliers based on their specific needs, such as type of battery (e.g., lithium-ion, lead-acid, nickel-cadmium), application (e.g., consumer electronics, electric vehicles, renewable energy storage), and geographic location. For example, companies like Tesla, Apple, or Panasonic may have selected different suppliers for their battery production. If you have a specific company, industry, or project in mind, please provide more details so I can give a more accurate response.",,,,,,
+h144,E4,Which battery supplier was selected for production?,,"The question is too vague to provide a specific answer without additional context. Different companies and industries select various battery suppliers based on their specific needs, such as type of battery (e.g., lithium-ion, lead-acid, nickel-cadmium), application (e.g., consumer electronics, electric vehicles, renewable energy storage), and geographic location. For example, companies like Tesla, Apple, or Panasonic may have selected different suppliers for their battery production. If you have a specific company, industry, or project in mind, please provide more details so I can give a more accurate response.",,,si,si,,
 h145,E3,"How did the design of the volume controls develop from ES2014b to ES2014d, and what purpose did the final shape serve?",In ES2014b the front interface was assigned volume-up and volume-down controls. In ES2014d the team chose lemon-shaped volume buttons so they would stand out while keeping a fruit theme in the design.,"Matching concepts were found in the compiled bundle, but none of them answers this question.","[ES2014b]
 ID: Should we decide in the next couple of minutes, and then
 ME: Mm-hmm.
@@ -4710,7 +4710,7 @@ UI: We have to delete the the sample sensor, I think.
 ME: Yeah.
 PM: Yeah, but we have you the the voice recognition, no?",data/interim/transcripts/IS1003c.md;data/interim/transcripts/IS1003d.md,si,si,,
 h150,E4,What pixel resolution was specified for the LCD display?,,"Matching concepts were found in the compiled bundle, but none of them answers this question.",,,si,si,,
-h151,E4,Which manufacturer and part number were selected for the infrared transmitter?,,"I do not have specific information about the manufacturer and part number of an infrared transmitter, as this can vary depending on the application, device, or system in question. If you have additional context or details about the specific device or system, I may be able to provide more targeted information.",,,,,,
+h151,E4,Which manufacturer and part number were selected for the infrared transmitter?,,"I do not have specific information about the manufacturer and part number of an infrared transmitter, as this can vary depending on the application, device, or system in question. If you have additional context or details about the specific device or system, I may be able to provide more targeted information.",,,si,si,,
 h152,E1,"In IS1009d, what materials were specified for the case and the buttons?",A plastic case and soft rubber buttons.,"In IS1009d, the case material was specified as plastic, and the buttons were made of soft rubber [1].","[IS1009d]
 ME: Mm-hmm.
 ME: Mm-hmm.
@@ -5086,7 +5086,7 @@ UI: Yeah.
 ID: Yeah advanced chip. We need an advanced chip I think, yep. Let me just confirm that. Yes I think so.
 ID: Yep.
 PM: Okay um the case, what does it mean by single and double, do you know?
-UI: Um I think single would just be sort of one sort of oval whereas double is this sort of thing.",data/interim/transcripts/ES2002c.md;data/interim/transcripts/ES2002d.md,,,Use kinetic power together with a backup battery.,
+UI: Um I think single would just be sort of one sort of oval whereas double is this sort of thing.",data/interim/transcripts/ES2002c.md;data/interim/transcripts/ES2002d.md,no,si,Use kinetic power together with a backup battery.,no
 h161,E3,"How did the design of the volume controls develop from ES2014b to ES2014d, and what purpose did the final shape serve?",In ES2014b the front interface was assigned volume-up and volume-down controls. In ES2014d the team chose lemon-shaped volume buttons so they would stand out while keeping a fruit theme in the design.,"The design of the volume controls evolved from ES2014b to ES2014d by considering the shape and labeling of the buttons to avoid ambiguity [4]. The final shape served to indicate the function of each button, with triangular buttons oriented to show whether the volume would increase or decrease [4]. This design helped users understand the controls without confusion [3].","[ES2014b]
 ID: Should we decide in the next couple of minutes, and then
 ME: Mm-hmm.
@@ -5174,7 +5174,7 @@ UI: So we have to give a
 UI: So we have give him give it a cute name.
 ME: Cute na
 PM: Yeah th no, it's the it's the pineapple control remote control. It's a pineapple now, it has changed. It's a pineapple. Pineapple.
-UI: Mush mushroom controller.",data/interim/transcripts/IS1003b.md;data/interim/transcripts/IS1003d.md,,,Real Reaction's corporate image should be recognizable through the remote control's colour and slogan.,
+UI: Mush mushroom controller.",data/interim/transcripts/IS1003b.md;data/interim/transcripts/IS1003d.md,no,si,Real Reaction's corporate image should be recognizable through the remote control's colour and slogan.,no
 h165,E2,What is the case's main material in the final ES2016d design?,Plastic.,The case's main material in the final ES2016d design is plastic.,"[ES2016c]
 PM: .
 ME: finger grips just on top of the plastic?
@@ -5534,7 +5534,7 @@ ID: Yep.
 ME: Yeah.
 UI: Yeah.
 PM: So this is scroll.
-PM: I think it was better to have this price list a bit earlier. Before we went on to the to the whole design.",data/interim/transcripts/TS3003c.md;data/interim/transcripts/TS3003d.md,,,Use a single-curved case so that the screen is easier to view.,
+PM: I think it was better to have this price list a bit earlier. Before we went on to the to the whole design.",data/interim/transcripts/TS3003c.md;data/interim/transcripts/TS3003d.md,si,si,Use a single-curved case so that the screen is easier to view.,no
 h174,E4,Which infrared encoding protocol was selected for the control signals?,,"Matching concepts were found in the compiled bundle, but none of them answers this question.",,,si,si,,
 h175,E2,"For the cost-adjusted design agreed in IS1003d, which material is selected for the remote control case?","Plastic, replacing the wood selected in IS1003c.","Matching concepts were found in the compiled bundle, but none of them answers this question.","[IS1003c]
 ME: Yeah, maybe the base.
@@ -5782,7 +5782,7 @@ ME: Okay. And then are we going for sort of one button shaped like a fruit. Or v
 UI: Yeah that sounds like it wouldn't do too much harm in a couple of years. Uh what sort of shape do we want?
 ME: Don't know, maybe just
 PM: So we've got spongy feel buttons as well, have we? As well as or w or was that",data/interim/transcripts/ES2014b.md;data/interim/transcripts/ES2014c.md,no,no,Use a clap-activated locator to help users find a misplaced remote control.,no
-h182,E4,What material was specified for the retail packaging of the remote?,,"The question refers to the material specified for the retail packaging of a remote, but it does not specify which remote or product in question. Without additional context, it is not possible to determine the exact material used for the retail packaging of a particular remote. If you have a specific remote or product in mind, please provide more details so that I can assist you more accurately.",,,,,,
+h182,E4,What material was specified for the retail packaging of the remote?,,"The question refers to the material specified for the retail packaging of a remote, but it does not specify which remote or product in question. Without additional context, it is not possible to determine the exact material used for the retail packaging of a particular remote. If you have a specific remote or product in mind, please provide more details so that I can assist you more accurately.",,,si,si,,
 h183,E4,What maximum number of simultaneous touch points was the touchscreen specified to support?,,"Matching concepts were found in the compiled bundle, but none of them answers this question.",,,si,si,,
 h184,E4,How many opening and closing cycles was the sliding panel required to survive?,,"Matching concepts were found in the compiled bundle, but none of them answers this question.",,,si,si,,
 h185,E3,"How did the plan for a microphone supporting speech recognition change from TS3005c to TS3005d, and why?",In TS3005c a microphone was planned for speech recognition if that feature was implemented. In TS3005d the team dropped speech recognition and removed its microphone and speaker to reduce production costs.,"In TS3005c, the microphone was considered for supporting speech recognition, with discussions about its inclusion and the potential benefits for user interaction. However, in TS3005d, it was decided to remove speech recognition along with its components, including the microphone, due to budget constraints. The decision was made to prioritize cost-effectiveness over the inclusion of speech recognition features.","[TS3005c]
@@ -5955,7 +5955,7 @@ PM: Okay, well.
 PM: Yeah. Okay. Um okay, then I think we are uh quite finished.
 PM: Um I'll see you guys in thirty minutes and um
 UI: .
-UI: For the finishing touch.",data/interim/transcripts/TS3011c.md,,,,
+UI: For the finishing touch.",data/interim/transcripts/TS3011c.md,no,si,,
 h188,E3,"How did the interface layout develop from IS1008b to IS1008c, and why was the numeric keypad placed lower than the volume and channel controls?","IS1008b called for few buttons and prominent controls for common functions. IS1008c placed volume and channel controls for thumb access and the numeric keypad lower down, citing more frequent use of volume and channel browsing than of the numeric keypad.","The interface layout developed from IS1008b to IS1008c by refining the placement of controls to enhance usability. In IS1008b, the focus was on keeping a simple interface with few buttons and placing frequently used controls more visible and strategically placed. This included making the on button obvious, as well as positioning volume and channel controls for easy access. 
 
 In IS1008c, the layout was further refined to place volume and channel navigation within thumb's reach, ensuring they were easily accessible for users. The numeric keypad was placed lower than these controls because it is used less frequently, allowing for a more intuitive and ergonomic design. This placement aligns with the natural movement of the thumb when holding the remote control, making the interface more user-friendly.","[IS1008b]
@@ -6047,7 +6047,7 @@ ID: Just they'll get few more
 ID: things and few more colours.
 UI: Okay, what uh there's one more decisi uh one more solution in fact, um 'cause there are some some paints that can change colour according to where they are, like they can reflect different colours
 ID: Lights, yeah.
-ME: Mm.",data/interim/transcripts/IS1006c.md,,,,
+ME: Mm.",data/interim/transcripts/IS1006c.md,si,no,,
 h191,E1,How was the kinetic battery in the ES2008c design intended to recharge?,"Through movement of the remote, such as pressing its buttons.","The kinetic battery in the ES2008c design was intended to recharge through simple movements like pushing buttons, as mentioned in the discussion [2]. This type of battery, similar to those used in high-tech watches, powers up with movement, eliminating the need for frequent battery changes [2]. The idea was considered innovative and exciting, with potential applications beyond just remotes [3].","[ES2008c]
 PM: Function F_ eight it. There we go.
 ID: Alright.
@@ -6094,7 +6094,7 @@ PM: Mm-hmm. Is that okay with you? How you feeling?
 UI: Yeah. Interesting.
 ID: because
 ME: Yeah. And let's like see if we get anything else. I mean I'm not like hard-sold on the scroll wheel, it's more just to give it a different kind of look, but if it's gonna be in a latex type thing and that's gonna look cool, then that's probably gonna have a bigger impact than the scroll wheel.",data/interim/transcripts/ES2008c.md,si,si,,
-h192,E4,Which manufacturer and model number were selected for the advanced chip-on-print?,,"I do not have specific information about the manufacturer and model number of the ""advanced chip-on-print"" you are referring to, as this term is not widely recognized or standardized in the semiconductor industry. It may be a proprietary or niche technology, or it could be a misstatement or misinterpretation of a more commonly known term. If you can provide additional context or clarify the term, I would be better able to assist you.",,,,,,
+h192,E4,Which manufacturer and model number were selected for the advanced chip-on-print?,,"I do not have specific information about the manufacturer and model number of the ""advanced chip-on-print"" you are referring to, as this term is not widely recognized or standardized in the semiconductor industry. It may be a proprietary or niche technology, or it could be a misstatement or misinterpretation of a more commonly known term. If you can provide additional context or clarify the term, I would be better able to assist you.",,,si,si,,
 h193,E2,What chip-on-print type is retained in the final ES2016d design?,An advanced chip-on-print.,The chip-on-print type retained in the final ES2016d design is the advanced chip-on-print.,"[ES2016c]
 UI: Yeah.
 ID: .
@@ -6639,7 +6639,7 @@ ME: Mm yep.
 UI: Should we change that tha that that's a one if not, or not? Could you copy it? And make it uh
 PM: We dropped the scroll wheel.
 PM: And the rest is the same, huh?
-ME: Y yea the scroll wheel is dropped.",data/interim/transcripts/TS3005c.md;data/interim/transcripts/TS3005d.md,,,,
+ME: Y yea the scroll wheel is dropped.",data/interim/transcripts/TS3005c.md;data/interim/transcripts/TS3005d.md,no,si,,
 h205,E1,"In TS3011b, what was the purpose of the 'dual channel watch' button?",To switch back and forth between two selected television channels using one button.,"The ""dual channel watch"" button in TS3011b, a model of the Motorola TETRA radio, was used to allow the user to monitor two different radio channels simultaneously. This feature enabled operators to keep an ear on two separate communication channels at the same time, which is particularly useful in scenarios where monitoring multiple channels is necessary for situational awareness, such as in emergency response or security operations. The button typically allowed the user to switch between the two channels or to listen to both channels concurrently, depending on the radio's configuration and settings.","[TS3011b]
 PM: Um well, I do not want a full uh it's not necessary to to have a full list, but I want um the kind of functions, for example uh th the most important are volume and uh programme selecting.
 ID: Okay. Okay.
@@ -6668,7 +6668,7 @@ PM: And and do we want um
 PM: the ten digits?
 UI: The ten digits? Yeah, I believe so.
 ID: Well, are are you sure? I'm not so sure.
-ME: Well, if you want to go to channel ninety and you have th that button.",data/interim/transcripts/TS3011b.md,,,,
+ME: Well, if you want to go to channel ninety and you have th that button.",data/interim/transcripts/TS3011b.md,no,si,,
 h206,E1,What protection against water did the team agree the remote should have in TS3003a?,The remote should be waterproof.,The team agreed that the remote should be waterproof [4].,"[TS3003a]
 ME: Think it has to be shock proof
 UI: Sure, yeah.
@@ -6731,7 +6731,7 @@ UI: So it would be curved, single curve.
 PM: Because of thing Yeah, well you can at least make it curved again.
 UI: Or not?
 ID: Hmm.",data/interim/transcripts/TS3005b.md;data/interim/transcripts/TS3005d.md,no,si,,
-h208,E4,"What maximum speaking distance, in metres, was specified for the voice-based locator?",,"I do not have specific information about a ""voice-based locator"" or a specified maximum speaking distance in metres for such a device. If you could provide more context or clarify the technology or system you are referring to, I would be better able to assist you.",,,,,,
+h208,E4,"What maximum speaking distance, in metres, was specified for the voice-based locator?",,"I do not have specific information about a ""voice-based locator"" or a specified maximum speaking distance in metres for such a device. If you could provide more context or clarify the technology or system you are referring to, I would be better able to assist you.",,,si,si,,
 h209,E1,"In TS3011b, what was the purpose of the 'dual channel watch' button?",To switch back and forth between two selected television channels using one button.,"The 'dual channel watch' button was intended to allow users to watch two channels simultaneously, such as when they have something on channel four and something on channel six [1]. This feature was discussed as a way to enhance the viewing experience for users with multiple channels [1]. The button was part of the consideration for the remote control's functionality [2].","[TS3011b]
 PM: Um well, I do not want a full uh it's not necessary to to have a full list, but I want um the kind of functions, for example uh th the most important are volume and uh programme selecting.
 ID: Okay. Okay.
@@ -6837,7 +6837,7 @@ PM: Okay? So we will introduce m this model and uh let's introduce in the market
 ID: Second generation.
 PM: second generation.
 PM: Okay. There's no end, there's not limit. Every every custom
-UI: The problem is there might not be a second generation if the first generation flops for some silly reason that we haven't thought of.",data/interim/transcripts/IS1008b.md;data/interim/transcripts/IS1008c.md;data/interim/transcripts/IS1008d.md,,,,
+UI: The problem is there might not be a second generation if the first generation flops for some silly reason that we haven't thought of.",data/interim/transcripts/IS1008b.md;data/interim/transcripts/IS1008c.md;data/interim/transcripts/IS1008d.md,no,no,,
 h211,E1,What size-adjustment option for the on-screen buttons was agreed in TS3005b?,Allow the on-screen buttons to be enlarged.,I do not have information about TS3005b or any specific size-adjustment options for on-screen buttons related to that reference. Please provide additional context or clarify the subject matter.,"[TS3005b]
 PM: Okay, well I've
 ME: It has to be easy to use also, or things. Uh market share, speaker re speech recognition.
@@ -6864,7 +6864,7 @@ UI: Yeah.
 UI: Mm.
 ME: Mm, yes.
 UI: Yeah. I With uh teletext if it wasn't ver very important, it was but You also now have colours. I don't know if we should implement that. Yeah, when you press the red button, you go to page one hundred two, and when you press the
-PM: in general.",data/interim/transcripts/TS3005b.md,,,,
+PM: in general.",data/interim/transcripts/TS3005b.md,no,si,,
 h212,E4,What Shore A hardness was specified for the rubber case?,,"Matching concepts were found in the compiled bundle, but none of them answers this question.",,,si,si,,
 h213,E2,"What colour is selected for the buttons on the hidden panel in ES2014d, including the Enter button?","All of them are standard blue, including Enter.","The buttons on the hidden panel in ES2014d are assumed to be in the standard colour, which is blue. The Enter button is also expected to be in the same standard colour, as it is mentioned that it could just be the same as the other buttons.","[ES2014b]
 PM: Okay. That's sixteen buttons, you reckon. And then at the back?
@@ -7202,7 +7202,7 @@ UI: Yeah.
 ID: Yeah advanced chip. We need an advanced chip I think, yep. Let me just confirm that. Yes I think so.
 ID: Yep.
 PM: Okay um the case, what does it mean by single and double, do you know?
-UI: Um I think single would just be sort of one sort of oval whereas double is this sort of thing.",data/interim/transcripts/ES2002c.md;data/interim/transcripts/ES2002d.md,,,,
+UI: Um I think single would just be sort of one sort of oval whereas double is this sort of thing.",data/interim/transcripts/ES2002c.md;data/interim/transcripts/ES2002d.md,no,si,,
 h222,E3,"How did the user-friendliness requirement become more specific from TS3011a to TS3011b, and what condition applied to the added feature?","TS3011a set the general goal of an original, trendy and user-friendly television remote. In TS3011b, complaints about losing the remote led the team to agree on a sound-based locating function to make it easier to find, provided it could be implemented within the budget. The technical solution was left for further investigation.","Matching concepts were found in the compiled bundle, but none of them answers this question.","[TS3011a]
 UI: Alright.
 ID: Okay. Um is there any room for a little presentation? Uh maybe during the discussion uh section?
@@ -7396,7 +7396,7 @@ ID: So
 UI: We have to delete the the sample sensor, I think.
 ME: Yeah.
 PM: Yeah, but we have you the the voice recognition, no?",data/interim/transcripts/IS1003c.md;data/interim/transcripts/IS1003d.md,no,no,The remote control is to use solar energy together with batteries.,no
-h226,E4,What supply voltage was specified for the advanced chip?,,"I do not have specific information about the supply voltage for an ""advanced chip,"" as this term is too general and could refer to a wide range of semiconductor devices, each with different voltage requirements. To provide an accurate answer, more context would be needed, such as the specific chip model, manufacturer, or application.",,,,,,
+h226,E4,What supply voltage was specified for the advanced chip?,,"I do not have specific information about the supply voltage for an ""advanced chip,"" as this term is too general and could refer to a wide range of semiconductor devices, each with different voltage requirements. To provide an accurate answer, more context would be needed, such as the specific chip model, manufacturer, or application.",,,si,si,,
 h227,E4,Which manufacturer and part number were selected for the infrared transmitter?,,"Matching concepts were found in the compiled bundle, but none of them answers this question.",,,si,si,,
 h228,E1,What colour was specified for the LED in IS1009d?,Fluorescent green.,I do not have information about the color specified for the LED in IS1009d.,"[IS1009d]
 ID: Um the material is plastic and uh for the buttons it is uh s soft rubber um and als yeah. Yeah because uh uh you'll be touching the buttons more so it is soft when you touch it.
@@ -7410,9 +7410,9 @@ ME: Mm-hmm.
 ID: And and the button button's part uh will be explained by F Francina.
 UI: Okay. Now the um we decided upon including certain features on our remote. Now these features includes the s um signal emitting uh signal it's the led or L_E_D_ the infrared. Now uh we have included the switch on and off button.
 ME: Okay.
-ME: Yeah, okay, mm-hmm.",data/interim/transcripts/IS1009d.md,,,,
-h229,E4,What maximum number of simultaneous touch points was the touchscreen specified to support?,,"The maximum number of simultaneous touch points a touchscreen is specified to support depends on the particular model and specifications of the touchscreen. Some touchscreens are designed to support only a single touch point, while others can handle multiple touch points, typically ranging from two to ten or more. For example, capacitive touchscreens commonly support up to ten simultaneous touch points, making them suitable for multi-touch gestures. If you have a specific touchscreen in mind, please provide its model or specifications for an accurate answer.",,,,,,
-h230,E4,On what calendar date was the remote scheduled to go on sale?,,"I don't have information about a specific ""remote"" or its scheduled sale date. Please provide more context or details so I can assist you better.",,,,,,
+ME: Yeah, okay, mm-hmm.",data/interim/transcripts/IS1009d.md,no,si,,
+h229,E4,What maximum number of simultaneous touch points was the touchscreen specified to support?,,"The maximum number of simultaneous touch points a touchscreen is specified to support depends on the particular model and specifications of the touchscreen. Some touchscreens are designed to support only a single touch point, while others can handle multiple touch points, typically ranging from two to ten or more. For example, capacitive touchscreens commonly support up to ten simultaneous touch points, making them suitable for multi-touch gestures. If you have a specific touchscreen in mind, please provide its model or specifications for an accurate answer.",,,si,si,,
+h230,E4,On what calendar date was the remote scheduled to go on sale?,,"I don't have information about a specific ""remote"" or its scheduled sale date. Please provide more context or details so I can assist you better.",,,si,si,,
 h231,E3,"How was the branding requirement in ES2008b made more specific in ES2008d, and what omission did the team address?","ES2008b required a recognisable corporate image through the company's colours and slogan. In ES2008d the team noticed that logo provision had not been addressed and explicitly required the RR logo on every colour variant, rather than only the concept in company colours.","The branding requirement in ES2008b, which stated that the design must recognizably reflect the brand, taking into account its colors and slogan, was made more specific in ES2008d by including the RR logo on the variants of the remote. This addition ensured that the brand identity was not only reflected through color and slogan but also through a visible logo. The team addressed the omission of explicitly mentioning the need for a corporate logo on the remote, which was previously not clearly defined.","[ES2008b]
 ME: That's good.
 PM: Interesting. Okay um, well, we're not gonna the management has decided we're not gonna work with that. Um
@@ -7724,5 +7724,5 @@ UI: So we have give him give it a cute name.
 ME: Cute na
 PM: Yeah th no, it's the it's the pineapple control remote control. It's a pineapple now, it has changed. It's a pineapple. Pineapple.
 UI: Mush mushroom controller.",data/interim/transcripts/IS1003b.md;data/interim/transcripts/IS1003d.md,no,si,,
-h239,E4,"At what exact distance from the television, in metres, was the audible warning supposed to activate?",,"The exact distance from the television at which the audible warning was supposed to activate is not a standard specification and would depend on the specific device or system in question. Without additional context or details about the particular technology or product being referred to, it is not possible to provide an exact distance in metres. If you have a specific device or scenario in mind, please provide more information so that a more accurate answer can be given.",,,,,,
-h240,E4,"What wall thickness, in millimetres, was specified for the snowman-shaped case?",,"I do not have information about a ""snowman-shaped case"" or any specific wall thickness associated with it. Please provide additional context or clarify your question.",,,,,,
+h239,E4,"At what exact distance from the television, in metres, was the audible warning supposed to activate?",,"The exact distance from the television at which the audible warning was supposed to activate is not a standard specification and would depend on the specific device or system in question. Without additional context or details about the particular technology or product being referred to, it is not possible to provide an exact distance in metres. If you have a specific device or scenario in mind, please provide more information so that a more accurate answer can be given.",,,si,si,,
+h240,E4,"What wall thickness, in millimetres, was specified for the snowman-shaped case?",,"I do not have information about a ""snowman-shaped case"" or any specific wall thickness associated with it. Please provide additional context or clarify your question.",,,si,si,,
