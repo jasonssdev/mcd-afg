@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 03 — Objetivos |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 5.2 |
-| **Fecha** | 2026-11-05 |
+| **Versión** | 6.0 |
+| **Fecha** | 2026-11-07 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -24,6 +24,7 @@
 | 5.0 | 2026-11-01 | Se corrigen dos afirmaciones que habían quedado atrás. (1) OE2: τ sí está fijado (0,70 como valor principal, con 0,75 y 0,80 de sensibilidad, [ADR 0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md)); lo que no existe es un criterio de éxito para OE2. (2) H3: la observación informal que la motiva se hizo a dos escalas, de 8B a 27B según la propuesta (§4), y no «≈8B y ≈32B» como decía la versión 3.0; la segunda escala prevista para el proyecto, como extensión, sí es `qwen3:32b` (≈32B), según la configuración. Son dos cosas distintas y se escriben por separado. (3) «Un experimento con todo lo demás igual» pasa a nombrar lo que se mantiene igual (generador, *embeddings*, hardware y ventana), porque la etapa de respuesta ya no es igual entre C1 y C2/C3. | La propuesta (§4) fija la observación de H3 en 8B y 27B y no tiene registro en este repositorio; el modelo grande previsto sale de `config/experiments.toml` (`shared_budget.generative_model_large = "qwen3:32b"`). El ADR 0012 fijó τ el 2026-10-19. |
 | 5.1 | 2026-11-04 | El banco de OE3 pasa de «≥100 preguntas (25 × 4 estratos)» a «≥99»: 25 por estrato salvo E3, cuyo mínimo es 24. El objetivo, las hipótesis y los criterios no cambian. | El material de las series de evaluación solo tiene 24 relaciones de evolución distintas, y el [ADR 0021](../decisions/0021-adr-minimo-de-e3-segun-relaciones-disponibles.md) fija el mínimo de E3 en el menor entre 25 y esas relaciones. |
 | 5.2 | 2026-11-05 | La nota sobre la viabilidad de E3 pasa de proyección (≈ 37 relaciones) a recuento medido (24). El objetivo, las hipótesis y los criterios no cambian. | Recuento de las relaciones de evolución de la referencia ([ADR 0021](../decisions/0021-adr-minimo-de-e3-segun-relaciones-disponibles.md), notebook 26). |
+| 6.0 | 2026-11-07 | Se corrige el supuesto de OE3 sobre el costo amortizado: se conserva como supuesto del diseño y se agrega el resultado observado (consulta de C2 15,3 s frente a 5,7 s de C1; el punto de equilibrio no existe). El objetivo, los criterios y las hipótesis no cambian. | La corrida formal del Experimento B contradice el supuesto («cada consulta sobre ella cuesta menos que una consulta RAG»); la cifra sale del [notebook 31](../../notebooks/31-jss-resultados-finales.ipynb) (sección 4) y se reporta en el [documento 13](13-jss-conclusiones.md). Sube el entero porque se agrega una cifra, según la regla de este documento. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -211,8 +212,10 @@ pasaje es realmente el que corresponde), y corrección del rechazo ante pregunta
 incontestables (estrato E4). Métricas operativas: memoria residente, y **costo amortizado**:
 el punto de equilibrio en número de consultas a partir del cual compilar y consultar es más
 barato que consultar siempre por RAG. Construir la base cuesta una vez; cada consulta sobre
-ella cuesta menos que una consulta RAG. La pregunta es a partir de cuántas consultas se
-recupera la inversión.
+ella cuesta menos que una consulta RAG: ese era el supuesto del diseño. La pregunta es a partir de
+cuántas consultas se recupera la inversión. **Resultado:** el supuesto no se cumplió. En la corrida
+formal una consulta de C2 tarda 15,3 s y una de C1 5,7 s (2,7 veces más), así que el punto de
+equilibrio no existe ([documento 13](13-jss-conclusiones.md), sección 5; [notebook 31](../../notebooks/31-jss-resultados-finales.ipynb), sección 4).
 
 **Criterio de cumplimiento:** las tres condiciones evaluadas sobre el mismo banco de
 preguntas estratificado (E1–E4, ≥25 por estrato), con intervalos de confianza por *bootstrap*

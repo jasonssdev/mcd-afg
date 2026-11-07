@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 09 — Modelos y su justificación |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 12.4 |
-| **Fecha** | 2026-11-05 |
+| **Versión** | 13.0 |
+| **Fecha** | 2026-11-07 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -36,6 +36,7 @@
 | 12.2 | 2026-11-03 | Decisión 11 de la sección 11 (*recall* del filtro léxico): se registra que el filtro se mantiene y la pérdida se declara como limitación de la referencia de relaciones. No cambian modelos, condiciones ni cifras. | [ADR 0020](../decisions/0020-adr-se-mantiene-el-bloqueador-lexico.md), decisión de jss del 2026-11-03. |
 | 12.3 | 2026-11-05 | Sección 11 (estado del congelamiento): la ground truth, el banco de preguntas y el registro del congelamiento pasan de pendientes a congelados, y C3 queda listo para construirse. Solo sigue pendiente la verificación humana del juez. No cambian modelos, condiciones ni cifras. | [ADR 0022](../decisions/0022-adr-congelamiento-de-las-corridas-formales.md) y `config/freeze.json`; banco validado en #280 ([ADR 0021](../decisions/0021-adr-minimo-de-e3-segun-relaciones-disponibles.md)). |
 | 12.4 | 2026-11-05 | El tamaño del Experimento B pasa de «100 preguntas como mínimo» a 99 preguntas (24 en E3), unas 1.188 respuestas. No cambian modelos ni cifras de desarrollo. La tabla de la partición (sección 4) pasa de «0 escritas de 115 filas» a «99 validadas». | Banco cerrado ([ADR 0021](../decisions/0021-adr-minimo-de-e3-segun-relaciones-disponibles.md)). |
+| 13.0 | 2026-11-07 | Se corrigen seis afirmaciones que habían quedado atrás: ya existen resultados de evaluación, C3 se ejecutó, la verificación humana del juez está hecha (kappa de `correct` 0,807; `evidence_supported` 0,438) y las relaciones reales de la referencia se conocen (46, 37 en evaluación). Los modelos, las condiciones y las cifras de desarrollo no cambian. | Las corridas formales y la verificación humana quedaron completas (issue #294): [documento 10](10-jss-confiabilidad-de-la-referencia.md), [11](11-jss-resultados-experimento-a.md) y [12](12-jss-resultados-experimento-b.md), notebooks [29](../../notebooks/29-jss-anotacion-f3-referencia.ipynb) y [30](../../notebooks/30-jss-experimento-b.ipynb). Sube el entero porque se citan cifras nuevas. |
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
 > la evidencia que lo motivó**. El historial nunca se reescribe: se agrega una fila.
@@ -245,8 +246,8 @@ propone como posiblemente relacionadas, para anotar su relación; hay 92 de 3.07
 El reparto es deliberado: lo que se usa para elegir es poco y lo que se usa para reportar es la
 gran mayoría. Las 21 preguntas de calibración son todas de ES2015. El banco de evaluación tiene
 99 preguntas validadas (25 en E1, E2 y E4; 24 en E3, [ADR 0021](../decisions/0021-adr-minimo-de-e3-segun-relaciones-disponibles.md)),
-y todavía no existe ningún resultado sobre ellas: la primera corrida formal viene después del
-congelamiento. La reserva (18 series) no se ha medido ni tocado; está disponible si
+y la corrida formal se hizo después del congelamiento: sus resultados están en los
+[documentos 11](11-jss-resultados-experimento-a.md) y [12](12-jss-resultados-experimento-b.md). La reserva (18 series) no se ha medido ni tocado; está disponible si
 E3 necesita más material.
 
 ### 4.2 Congelar antes de evaluar
@@ -343,9 +344,9 @@ puntuales.
 **C3: la misma base, construida por personas.** Sin C3, una mala respuesta de C2 no se podría
 atribuir: no se sabría si la idea de la base no sirve o si la máquina la llenó mal. La distancia
 C1 → C3 permitiría estimar el valor del sistema compilado frente a un RAG convencional; C3 → C2, el efecto de construirla
-automáticamente, considerando también la fiabilidad de la referencia humana. Por eso las etiquetas de la ground truth las pone siempre una persona. **C3 todavía no
-se puede ejecutar**: depende de la anotación humana de las series y hoy lanza un error
-explícito de «sin implementar»; no hay ninguna cifra de C3 en este documento.
+automáticamente, considerando también la fiabilidad de la referencia humana. Por eso las etiquetas de la ground truth las pone siempre una persona. **C3 ya se ejecutó**:
+la anotación humana quedó completa (14 series, [documento 10](10-jss-confiabilidad-de-la-referencia.md)) y la corrida formal incluye C3, con una corrección total de 0,80
+([documento 12](12-jss-resultados-experimento-b.md), [notebook 30](../../notebooks/30-jss-experimento-b.ipynb), §2). Las cifras de este documento siguen siendo de desarrollo.
 
 **C0: referencia sin recuperación.** El generador responde sin evidencia recuperada. Desde el
 2026-11-02 forma parte de la corrida formal del Experimento B ([ADR 0019](../decisions/0019-adr-c0-en-la-corrida-formal-del-experimento-b.md)), con el mismo
@@ -956,13 +957,13 @@ Los controles 6 a 9 son los que el notebook 19 (sección 5.6) listaba antes de l
 | Umbral τ | 0,70 principal; 0,75 y 0,80 de sensibilidad (ADR 0012) | Congelado; concordancia del juez medida (86 %, kappa 0,716) |
 | *Prompts* de respuesta | C1: *prompt* propio con huella SHA-256 verificada por prueba (ADR 0014); C2 y C3: los de OpenKOS 0.7.0 | Congelado |
 | Criterio de éxito | D16/D17, escrito antes de ejecutar (ADR 0010) | Congelado |
-| Verificación humana del 20 % del juez | 20 % de las respuestas, kappa ≥ 0,70 | Pendiente (sobre el Experimento B) |
+| Verificación humana del 20 % del juez | 20 % de las respuestas, kappa ≥ 0,70 | Hecha sobre el Experimento B: kappa de `correct` 0,807 (cumple); `evidence_supported` 0,438 (no cumple) ([notebook 30](../../notebooks/30-jss-experimento-b.ipynb), §3) |
 | Registro del congelamiento | [ADR 0022](../decisions/0022-adr-congelamiento-de-las-corridas-formales.md) y `config/freeze.json` (14 series, *commit* `d29d707`); los comandos que leen series de evaluación se niegan a correr si algo difiere | Congelado |
 
 Lo congelado es lo que se pudo ajustar en desarrollo (C1, τ, los *prompts*, el criterio de
 éxito). Con el ADR 0022 también quedan congelados la ground truth, el banco de preguntas y el
-*commit* del código; lo único pendiente es la verificación humana del juez, que se hace sobre
-el Experimento B. Ya no queda ninguna decisión de modelo abierta. La regla de oro, la misma del ADR 0005: **nada se ajusta
+*commit* del código; la verificación humana del juez, que era lo único pendiente, se hizo sobre
+el Experimento B (kappa de `correct` 0,807; [documento 12](12-jss-resultados-experimento-b.md), sección 4). Ya no queda ninguna decisión de modelo abierta. La regla de oro, la misma del ADR 0005: **nada se ajusta
 ya con las series de evaluación**; si algo debe cambiar, se cambia con un ADR nuevo y sobre
 desarrollo, antes de la primera corrida.
 
@@ -978,8 +979,9 @@ desarrollo, antes de la primera corrida.
 - La ground truth está en español y se compara con una traducción automática al inglés; la
   traducción no es una etiqueta, pero introduce ruido propio. El banco y la calibración están en
   inglés, así que el desempeño con preguntas en español no se midió.
-- Todavía no se conocen las **relaciones reales** entre decisiones: la viabilidad de E3 es
-  plausible, no demostrada (documento 08).
+- Al redactar este documento no se conocían las **relaciones reales** entre decisiones. La referencia
+  final las contiene: 46 relaciones, 37 en las once series de evaluación y 24 de evolución, con las
+  que se armó E3 ([documento 10](10-jss-confiabilidad-de-la-referencia.md), [notebook 29](../../notebooks/29-jss-anotacion-f3-referencia.ipynb)).
 - La puntuación de relaciones de OE2 se midió solo en tres series de desarrollo (ES2015, IS1004 y TS3009) con
   9 relaciones de oro en total, y con un detector de OpenKOS que es experimental y no estaba medido
   en reuniones reales: es una señal y no una estimación ([notebook 22](../../notebooks/22-jss-relaciones-temporales-openkos.ipynb)). IS1004 se puntúa con la referencia de un solo anotador.
@@ -994,7 +996,8 @@ desarrollo, antes de la primera corrida.
   incluye parecido temático; la decisión (ADR 0015) se tomó por consistencia con OpenKOS tal como se distribuye y no por el mejor F1, y la pasada de decisiones es una opción fuera del valor por defecto.
 - El juez se calibró con 42 ítems de una serie, generados por el mismo generador y con un
   identificador que delataba su origen. Su validación con personas sobre el experimento real
-  sigue pendiente.
+  se hizo después: kappa de `correct` 0,807, `evidence_supported` 0,438 y, por condición, C0 0,484
+  ([documento 12](12-jss-resultados-experimento-b.md), sección 4).
 - El juez tiene dos sesgos vistos al etiquetar: es indulgente con una respuesta genérica que no
   se compromete (C0, q008) y estricto con una respuesta parcial correcta en lo sustancial (C2,
   q023, un falso negativo; también q011). Infla el piso de C0, puede subestimar a C2 y es una razón
