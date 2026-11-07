@@ -360,6 +360,30 @@ def read_worksheet_rows(path: Path) -> list[dict[str, str]]:
     return read_rows(path)
 
 
+def rule_attributed_failures(
+    c2_records: Sequence[Mapping[str, Any]], questions: Mapping[str, Question]
+) -> list[tuple[str, int]]:
+    """``(question_id, run)`` of the incorrect C2 E1 answers the rule attributes to synthesis.
+
+    These are the failures :func:`oe4_worksheet_rows` leaves out unless
+    ``include_rule_attributed`` is set: the whole reference is visible in the context blocks
+    (see :func:`~afg.experiments.c2_context.error_evidence`), so no person labels them.
+    """
+    only_c2 = [r for r in c2_records if str(r.get("condition")) == "C2"]
+    found: list[tuple[str, int]] = []
+    for run in sorted({int(r.get("run") or 0) for r in only_c2}):
+        run_records = [r for r in only_c2 if int(r.get("run") or 0) == run]
+        rows = [
+            row
+            for row in context_rows(run_records, [], questions)
+            if row.correct is False and row.stratum == "E1"
+        ]
+        for row, evidence in zip(rows, error_evidence(rows, run_records, questions), strict=True):
+            if evidence.rule_stage is not None:
+                found.append((row.question_id, run))
+    return found
+
+
 def count_stages(
     rule_stages: Iterable[str], worksheet: Sequence[Mapping[str, str]]
 ) -> dict[str, int]:
@@ -411,6 +435,7 @@ __all__ = [
     "oe4_worksheet_rows",
     "rank_bundle_objects",
     "read_worksheet_rows",
+    "rule_attributed_failures",
     "stage_shares",
     "suggested_stage",
     "write_oe4_worksheet",

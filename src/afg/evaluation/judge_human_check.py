@@ -63,6 +63,7 @@ __all__ = [
     "JudgeHumanCheck",
     "LabelVerdict",
     "check_judge_against_humans",
+    "check_judge_by_condition",
     "question_context_for",
     "read_csv_rows",
     "save_judge_human_check",
@@ -410,6 +411,27 @@ def check_judge_against_humans(
             + (UNDEFINED_KAPPA_NOTE if outdated.kappa is None else "")
         ),
     )
+
+
+def check_judge_by_condition(
+    key_rows: Sequence[Mapping[str, str]],
+    sheet_rows: Sequence[Mapping[str, str]],
+    *,
+    min_kappa: float,
+) -> dict[str, JudgeHumanCheck]:
+    """Judge-human agreement computed separately on the rows of each condition.
+
+    A descriptive breakdown of :func:`check_judge_against_humans`: the key's ``condition`` column
+    splits both the key and the sheet, and each condition is checked with the same threshold.
+    Conditions come back in sorted order.
+    """
+    by_condition: dict[str, JudgeHumanCheck] = {}
+    for condition in sorted({row["condition"] for row in key_rows}):
+        keys = [row for row in key_rows if row["condition"] == condition]
+        ids = {row["id"] for row in keys}
+        sheet = [row for row in sheet_rows if row["id"] in ids]
+        by_condition[condition] = check_judge_against_humans(keys, sheet, min_kappa=min_kappa)
+    return by_condition
 
 
 def _outdated_verdict(

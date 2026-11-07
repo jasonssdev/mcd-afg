@@ -19,6 +19,7 @@ from afg.experiments.c2_base_evidence import (
     oe4_worksheet_rows,
     rank_bundle_objects,
     read_worksheet_rows,
+    rule_attributed_failures,
     stage_shares,
     write_oe4_worksheet,
 )
@@ -344,3 +345,13 @@ def test_stage_shares_gives_count_and_fraction_per_stage_in_the_given_order() ->
 def test_stage_shares_of_no_failures_is_all_zero_not_a_division_error() -> None:
     shares = stage_shares({"recuperacion": 0, "extraccion": 0, "sintesis": 0})
     assert list(shares["share"]) == [0.0, 0.0, 0.0]
+
+
+def test_rule_attributed_failures_are_the_e1_failures_the_worksheet_leaves_out(
+    scenario: tuple[list[dict[str, Any]], dict[str, Question]],
+) -> None:
+    records, questions = scenario
+    second_run = [{**r, "run": 1} for r in records if r["question_id"] == "ES2015.q2"]
+    c1_noise = [{**records[1], "condition": "C1"}]
+    found = rule_attributed_failures([*records, *second_run, *c1_noise], questions)
+    assert found == [("ES2015.q2", 0), ("ES2015.q2", 1)]
