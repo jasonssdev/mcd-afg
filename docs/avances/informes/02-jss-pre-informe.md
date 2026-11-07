@@ -4,9 +4,9 @@
 |---|---|
 | **Documento** | 02 — Pre-informe AFG2, redactado después de los experimentos formales |
 | **Autores** | Jason Sepúlveda S., Germán Vega, Gustavo Martínez |
-| **Versión** | 0.2 (borrador para revisión del equipo) |
+| **Versión** | 1.0 |
 | **Fecha** | 2026-11-07 |
-| **Estado** | Borrador |
+| **Estado** | Versión para envío |
 
 ## Historial de versiones
 
@@ -14,6 +14,7 @@
 |---|---|---|---|
 | 0.1 | 2026-11-07 | Borrador inicial, redactado a partir de los avances 01 a 13 (en particular 10 a 13) y de las tablas finales. Documento aparte del [pre-informe 01](01-jss-pre-informe.md), que se escribió antes de los experimentos y no se modifica. No se ha enviado. | Las dos corridas formales, las verificaciones humanas y las conclusiones quedaron completas (épica #288); el pre-informe de AFG2 se entrega el 2026-11-09 y debe reportar resultados formales y no preliminares. |
 | 0.2 | 2026-11-07 | Se verifican en arXiv las dos referencias pendientes heredadas del 01 (título, autores y DOI coinciden; siguen como *preprint*) y la cita de OpenKOS apunta a la publicación de v0.7.0. | Pendientes de verificación heredados del pre-informe 01. |
+| 1.0 | 2026-11-07 | Versión para envío, sin cambios de contenido respecto de la 0.2. El PDF enviado se registra en una fila nueva al enviarse. | Decisión de jss de cerrar el borrador antes de la entrega del 2026-11-09. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (0.1 → 0.2). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero y **debe declarar la evidencia
