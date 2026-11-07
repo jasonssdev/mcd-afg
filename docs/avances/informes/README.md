@@ -7,7 +7,8 @@ no calcula ninguna cifra nueva.
 
 | Documento | Contenido |
 |---|---|
-| [`01-jss-pre-informe.md`](01-jss-pre-informe.md) | Pre-informe de AFG2 (entrega del 2026-11-09), base del informe final de AFG3 |
+| [`01-jss-pre-informe.md`](01-jss-pre-informe.md) | Pre-informe de AFG2 en su versión anterior a los experimentos formales (solo resultados de desarrollo); se conserva sin cambios |
+| [`02-jss-pre-informe.md`](02-jss-pre-informe.md) | Pre-informe de AFG2 posterior a los experimentos: reporta los resultados formales de OE1 a OE4 (entrega del 2026-11-09), base del informe final de AFG3 |
 
 ## Convención de nombres
 
