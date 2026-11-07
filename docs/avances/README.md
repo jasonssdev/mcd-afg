@@ -22,6 +22,7 @@ modelos.
 | [`09-jss-modelos-y-justificacion.md`](09-jss-modelos-y-justificacion.md) | Qué es «el modelo» en una tesis sin entrenamiento: los *pipelines* comparados, los modelos por rol, la búsqueda de parámetros, la línea base y las limitaciones |
 | [`10-jss-confiabilidad-de-la-referencia.md`](10-jss-confiabilidad-de-la-referencia.md) | Resultados de confiabilidad de OE1 (fases 1 y 2): kappa de existencia, tipo y dirección, y su lectura; composición final de la referencia (14 series, 358 decisiones, 46 relaciones) tras la Fase 3 |
 | [`11-jss-resultados-experimento-a.md`](11-jss-resultados-experimento-a.md) | Resultados del Experimento A (OE2): precisión, recall y F1 de decisiones, relaciones, validación manual de la alineación, límites y costo en tiempo |
+| [`12-jss-resultados-experimento-b.md`](12-jss-resultados-experimento-b.md) | Resultados del Experimento B (OE3 y OE4): corrección por condición y estrato, D16, H2, C0 como referencia, validez del juez, etapa del fallo de C2, citas y abstención, límites |
 | [`informes/`](informes/) | Los informes del curso como documentos vivos (pre-informe de AFG2 y, después, informe final de AFG3), armados a partir de estos avances |
 
 ## De dónde sale el contenido
