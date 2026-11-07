@@ -1,0 +1,1079 @@
+{
+  "n": 100,
+  "n_auto": 50,
+  "n_manual": 54,
+  "concordance": 0.8245614035087719,
+  "n_agree": 90,
+  "observed_agreement": 0.9,
+  "kappa": 0.8,
+  "confusion": {
+    "auto_si": {
+      "manual_si": 47,
+      "manual_no": 3
+    },
+    "auto_no": {
+      "manual_si": 7,
+      "manual_no": 43
+    }
+  },
+  "automatic_confirmed": {
+    "n": 50,
+    "n_manual_yes": 47
+  },
+  "automatic_missed": {
+    "n": 50,
+    "n_manual_yes": 7
+  },
+  "n_manual_shared_decision": 0,
+  "tau": 0.7,
+  "source": {
+    "run_name": "experimento-a-formal",
+    "series": [
+      "ES2002",
+      "ES2008",
+      "ES2014",
+      "ES2016",
+      "IS1003",
+      "IS1006",
+      "IS1008",
+      "IS1009",
+      "TS3003",
+      "TS3005",
+      "TS3011"
+    ],
+    "run": 0,
+    "records": "extracciones.jsonl",
+    "sha256": "55ca4384c1739cb4a29e70771dc2f0bd4ec1825675de871c776ea56ac8a1444b",
+    "n_candidate_pairs": 1805,
+    "n_automatic_matches": 85
+  },
+  "threshold": null,
+  "key": {
+    "tau": 0.7,
+    "seed": 42,
+    "sample_size": 100,
+    "source": {
+      "run_name": "experimento-a-formal",
+      "series": [
+        "ES2002",
+        "ES2008",
+        "ES2014",
+        "ES2016",
+        "IS1003",
+        "IS1006",
+        "IS1008",
+        "IS1009",
+        "TS3003",
+        "TS3005",
+        "TS3011"
+      ],
+      "run": 0,
+      "records": "extracciones.jsonl",
+      "sha256": "55ca4384c1739cb4a29e70771dc2f0bd4ec1825675de871c776ea56ac8a1444b",
+      "n_candidate_pairs": 1805,
+      "n_automatic_matches": 85
+    },
+    "pairs": [
+      {
+        "pair_id": "v-24fc14002b",
+        "serie": "ES2002",
+        "predicted_id": "decisions/we-decided-to-incorporate-a-jog-dial-into-the-design",
+        "reference_id": "ES2002c.d04",
+        "predicted_index": 42,
+        "reference_index": 17,
+        "similarity": 0.8144320737788291,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-d3b2c9c491",
+        "serie": "IS1006",
+        "predicted_id": "decisions/the-remote-control-will-initially-focus-on-television-and-later-be-extended-to-other-devices",
+        "reference_id": "IS1006b.d02",
+        "predicted_index": 22,
+        "reference_index": 7,
+        "similarity": 0.7541683862902754,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-7e2a4d4c07",
+        "serie": "IS1006",
+        "predicted_id": "decisions/we-should-make-a-remote-control-nothing-more-nothing-more-than-this-just-a-remote-control",
+        "reference_id": "IS1006b.d02",
+        "predicted_index": 38,
+        "reference_index": 7,
+        "similarity": 0.6645175726049679,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-28eb14c663",
+        "serie": "ES2002",
+        "predicted_id": "decisions/the-device-will-use-a-battery-and-not-include-kinetic-energy-as-a-power-source",
+        "reference_id": "ES2002d.d01",
+        "predicted_index": 11,
+        "reference_index": 23,
+        "similarity": 0.7224827702099286,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-230cc624f1",
+        "serie": "ES2016",
+        "predicted_id": "decisions/the-case-would-be-plastic",
+        "reference_id": "ES2016c.d01",
+        "predicted_index": 8,
+        "reference_index": 11,
+        "similarity": 0.5279998664539199,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-5a03ad3a91",
+        "serie": "ES2014",
+        "predicted_id": "decisions/the-team-decided-to-consider-using-kinetic-power-for-the-remote",
+        "reference_id": "ES2014c.d02-2",
+        "predicted_index": 24,
+        "reference_index": 15,
+        "similarity": 0.7760792682007602,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-fe5c5e652d",
+        "serie": "IS1008",
+        "predicted_id": "decisions/the-advanced-chip-on-print-refers-to-a-multiple-chip-design-that-is-maybe-printed-onto-the-circuit",
+        "reference_id": "IS1008c.d02-6",
+        "predicted_index": 9,
+        "reference_index": 6,
+        "similarity": 0.715861226174078,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-ce8aece815",
+        "serie": "TS3005",
+        "predicted_id": "decisions/the-volume-button-and-the-channel-buttons-are-the-two-most-important-buttons-on-the-remote-control",
+        "reference_id": "TS3005b.d07",
+        "predicted_index": 53,
+        "reference_index": 15,
+        "similarity": 0.5091659312927506,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-960bd0955f",
+        "serie": "TS3005",
+        "predicted_id": "decisions/instead-of-using-plastic-hard-plastic-or-titanium-the-remote-control-should-be-made-of-rubber",
+        "reference_id": "TS3005c.d01",
+        "predicted_index": 2,
+        "reference_index": 24,
+        "similarity": 0.5457235134518607,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-390c9f3134",
+        "serie": "ES2016",
+        "predicted_id": "decisions/the-case-would-be-plastic",
+        "reference_id": "ES2016c.d02",
+        "predicted_index": 8,
+        "reference_index": 12,
+        "similarity": 0.8915973704971213,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-3f4e953743",
+        "serie": "ES2014",
+        "predicted_id": "decisions/the-team-will-design-the-standby-button-as-a-separate-function-possibly-shaped-like-an-apple",
+        "reference_id": "ES2014c.d06",
+        "predicted_index": 33,
+        "reference_index": 18,
+        "similarity": 0.7858312457664113,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-0897c97815",
+        "serie": "IS1006",
+        "predicted_id": "decisions/users-can-pay-an-additional-two-euro-to-get-more-colours-on-the-lcd-screen",
+        "reference_id": "IS1006c.d01",
+        "predicted_index": 30,
+        "reference_index": 9,
+        "similarity": 0.8194595232125058,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-d77017cc0e",
+        "serie": "ES2008",
+        "predicted_id": "decisions/the-participants-decided-to-first-decide-on-a-form-which-of-the-three-different-shapes-they-want",
+        "reference_id": "ES2008d.d03",
+        "predicted_index": 15,
+        "reference_index": 26,
+        "similarity": 0.5082079219346269,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-48d5b60e6c",
+        "serie": "IS1008",
+        "predicted_id": "decisions/the-remote-control-should-be-easy-to-use-and-have-a-feature-to-help-users-find-it-quickly",
+        "reference_id": "IS1008b.d02-2",
+        "predicted_index": 29,
+        "reference_index": 1,
+        "similarity": 0.7314643951639456,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-41e22c6e7c",
+        "serie": "IS1006",
+        "predicted_id": "decisions/we-will-use-lithium-nickel-or-alkaline-batteries",
+        "reference_id": "IS1006c.d06",
+        "predicted_index": 42,
+        "reference_index": 14,
+        "similarity": 0.700864014375481,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-c7b19d08b4",
+        "serie": "ES2014",
+        "predicted_id": "decisions/we-decided-to-make-the-button-lemon-shaped",
+        "reference_id": "ES2014d.d05",
+        "predicted_index": 46,
+        "reference_index": 26,
+        "similarity": 0.7599051925951136,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-9ada59dcc5",
+        "serie": "TS3003",
+        "predicted_id": "decisions/the-costs-are-within-the-budget",
+        "reference_id": "TS3003d.d02",
+        "predicted_index": 10,
+        "reference_index": 24,
+        "similarity": 0.5148749045537002,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-d5f10206eb",
+        "serie": "ES2008",
+        "predicted_id": "decisions/case-material-is-rubber-and-it-s-a-special-colour",
+        "reference_id": "ES2008d.d08",
+        "predicted_index": 1,
+        "reference_index": 30,
+        "similarity": 0.7870867456947268,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-81f1acccbf",
+        "serie": "IS1008",
+        "predicted_id": "decisions/we-will-take-a-minimum-two-weeks-to-a-maximum-four-weeks-to-develop-prototypes-and-test-market-them",
+        "reference_id": "IS1008d.d04",
+        "predicted_index": 49,
+        "reference_index": 10,
+        "similarity": 0.5019350245406482,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-dfc927b980",
+        "serie": "TS3003",
+        "predicted_id": "decisions/the-remote-control-must-be-produced-for-twelve-and-a-half-euros",
+        "reference_id": "TS3003d.d03",
+        "predicted_index": 30,
+        "reference_index": 25,
+        "similarity": 0.6520361980884445,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-bf67ccab1c",
+        "serie": "TS3011",
+        "predicted_id": "decisions/the-device-should-use-infrared-light-to-communicate-with-the-tv-set",
+        "reference_id": "TS3011b.d06",
+        "predicted_index": 11,
+        "reference_index": 10,
+        "similarity": 0.521346179051802,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-679428688d",
+        "serie": "TS3005",
+        "predicted_id": "decisions/the-remote-control-should-be-somewhat-bigger-than-small-so-you-don-t-lose-it-that-much-anymore",
+        "reference_id": "TS3005b.d07",
+        "predicted_index": 36,
+        "reference_index": 15,
+        "similarity": 0.5055747978863709,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-f77f1b49ce",
+        "serie": "ES2016",
+        "predicted_id": "decisions/the-remote-control-will-have-either-push-buttons-or-a-scroll-wheel",
+        "reference_id": "ES2016c.d03-1",
+        "predicted_index": 32,
+        "reference_index": 13,
+        "similarity": 0.6450230906442833,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-80f181caa2",
+        "serie": "TS3003",
+        "predicted_id": "decisions/the-project-will-focus-on-the-international-market",
+        "reference_id": "TS3003a.d02",
+        "predicted_index": 27,
+        "reference_index": 1,
+        "similarity": 0.8245667119918811,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-a96b4eb82e",
+        "serie": "IS1009",
+        "predicted_id": "decisions/speech-recognition-will-be-considered-as-a-supplement-pending-research-on-its-cost",
+        "reference_id": "IS1009c.d03",
+        "predicted_index": 3,
+        "reference_index": 9,
+        "similarity": 0.7558394651923703,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-e75972a63d",
+        "serie": "IS1008",
+        "predicted_id": "decisions/the-microphone-will-be-placed-on-the-side",
+        "reference_id": "IS1008d.d01-2",
+        "predicted_index": 19,
+        "reference_index": 9,
+        "similarity": 0.8299441249631044,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-bcf916c9bd",
+        "serie": "ES2014",
+        "predicted_id": "decisions/the-team-will-use-rubber-rather-than-hard-plastic-for-the-buttons",
+        "reference_id": "ES2014c.d07-2",
+        "predicted_index": 37,
+        "reference_index": 20,
+        "similarity": 0.7808119933751564,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-735accf9ae",
+        "serie": "ES2016",
+        "predicted_id": "decisions/the-remote-can-use-rechargeable-batteries-or-solar-power",
+        "reference_id": "ES2016b.d11",
+        "predicted_index": 23,
+        "reference_index": 9,
+        "similarity": 0.5345755393780471,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-51e8d76c9b",
+        "serie": "ES2002",
+        "predicted_id": "decisions/we-will-incorporate-features-that-add-a-gimmicky-element-such-as-lighting-within-the-control",
+        "reference_id": "ES2002c.d09",
+        "predicted_index": 52,
+        "reference_index": 22,
+        "similarity": 0.5758793131071666,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-5b61bd1852",
+        "serie": "ES2016",
+        "predicted_id": "decisions/the-batteries-will-be-placed-in-the-area-represented-by-the-blue-bits-of-the-design",
+        "reference_id": "ES2016d.d03",
+        "predicted_index": 4,
+        "reference_index": 17,
+        "similarity": 0.5106061337353471,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-b6bc0444bb",
+        "serie": "ES2016",
+        "predicted_id": "decisions/the-remote-control-should-be-priced-at-about-twenty-five-euros",
+        "reference_id": "ES2016a.d01",
+        "predicted_index": 26,
+        "reference_index": 0,
+        "similarity": 0.8067450321143538,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-08cb729b72",
+        "serie": "TS3005",
+        "predicted_id": "decisions/screen-settings-will-be-implemented-as-a-sub-menu-under-the-main-menu",
+        "reference_id": "TS3005b.d05-9",
+        "predicted_index": 4,
+        "reference_index": 11,
+        "similarity": 0.8345007055437352,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-2b6ccae803",
+        "serie": "TS3005",
+        "predicted_id": "decisions/the-l-c-d-screen-should-be-three-quarters-of-the-remote-control-size",
+        "reference_id": "TS3005c.d01",
+        "predicted_index": 21,
+        "reference_index": 24,
+        "similarity": 0.5127667977789456,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-d399b31ab4",
+        "serie": "ES2016",
+        "predicted_id": "decisions/the-case-is-double-curved-and-made-from-a-single-mould",
+        "reference_id": "ES2016d.d04",
+        "predicted_index": 6,
+        "reference_index": 18,
+        "similarity": 0.8129304509567898,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-ff16c5ee7e",
+        "serie": "ES2014",
+        "predicted_id": "decisions/the-volume-related-buttons-are-separated-off-in-colour-from-the-channel-related-buttons-with-the",
+        "reference_id": "ES2014d.d03",
+        "predicted_index": 39,
+        "reference_index": 25,
+        "similarity": 0.7032287147406536,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-4a5e98e414",
+        "serie": "TS3011",
+        "predicted_id": "decisions/the-team-will-implement-speech-recognition-combined-with-the-find-the-remote-control-function",
+        "reference_id": "TS3011b.d06",
+        "predicted_index": 39,
+        "reference_index": 10,
+        "similarity": 0.5218753342761903,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-7aa6aa9aeb",
+        "serie": "IS1009",
+        "predicted_id": "decisions/money-will-determine-whether-we-can-address-features-for-subgroups-within-the-target-market",
+        "reference_id": "IS1009b.d03",
+        "predicted_index": 2,
+        "reference_index": 5,
+        "similarity": 0.5260057493588369,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-01ca9ebbca",
+        "serie": "ES2014",
+        "predicted_id": "decisions/the-team-will-make-it-easy-to-use-as-a-third-priority-so-perhaps-fewer-buttons-and-functions",
+        "reference_id": "ES2014c.d03",
+        "predicted_index": 36,
+        "reference_index": 16,
+        "similarity": 0.5043511307566975,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-0587f9aa24",
+        "serie": "IS1009",
+        "predicted_id": "decisions/the-case-material-is-decided-to-be-plastic-rubber-wood-and-special-colours",
+        "reference_id": "IS1009d.d04",
+        "predicted_index": 5,
+        "reference_index": 13,
+        "similarity": 0.7702965108739996,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-14deef63f7",
+        "serie": "ES2002",
+        "predicted_id": "decisions/cost-is-one-of-the-three-factors-that-will-have-an-impact",
+        "reference_id": "ES2002c.d09",
+        "predicted_index": 1,
+        "reference_index": 22,
+        "similarity": 0.5208418232932511,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-83c1894fa1",
+        "serie": "TS3003",
+        "predicted_id": "decisions/the-design-is-considered-easy-to-use",
+        "reference_id": "TS3003d.d08",
+        "predicted_index": 11,
+        "reference_index": 30,
+        "similarity": 0.5713118506925031,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-84c995fb8c",
+        "serie": "TS3003",
+        "predicted_id": "decisions/the-design-is-considered-functional",
+        "reference_id": "TS3003d.d01",
+        "predicted_index": 13,
+        "reference_index": 23,
+        "similarity": 0.5415440325962367,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-c2910f2d7e",
+        "serie": "TS3003",
+        "predicted_id": "decisions/the-design-is-considered-functional",
+        "reference_id": "TS3003d.d08",
+        "predicted_index": 13,
+        "reference_index": 30,
+        "similarity": 0.5346370392324555,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-34be01a460",
+        "serie": "TS3005",
+        "predicted_id": "decisions/the-teletext-functionality-will-be-implemented-but-not-directly-available-instead-it-will-be",
+        "reference_id": "TS3005b.d05-8",
+        "predicted_index": 50,
+        "reference_index": 10,
+        "similarity": 0.5369709611513522,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-501fc0e615",
+        "serie": "IS1006",
+        "predicted_id": "decisions/the-remote-control-should-be-adaptable-for-both-left-handed-and-right-handed-users",
+        "reference_id": "IS1006a.d05",
+        "predicted_index": 18,
+        "reference_index": 4,
+        "similarity": 0.8815966428294381,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-49181628ef",
+        "serie": "ES2002",
+        "predicted_id": "decisions/we-decided-to-incorporate-a-jog-dial-into-the-design",
+        "reference_id": "ES2002c.d02",
+        "predicted_index": 42,
+        "reference_index": 15,
+        "similarity": 0.5717749416646948,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-e70392742c",
+        "serie": "ES2008",
+        "predicted_id": "decisions/the-remote-control-should-use-lithium-batteries-that-last-longer-than-double-a-batteries",
+        "reference_id": "ES2008a.d03",
+        "predicted_index": 24,
+        "reference_index": 1,
+        "similarity": 0.5766886817238893,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-6fac4c2c30",
+        "serie": "IS1003",
+        "predicted_id": "decisions/we-can-stay-with-wood",
+        "reference_id": "IS1003c.d06",
+        "predicted_index": 44,
+        "reference_index": 12,
+        "similarity": 0.8432081882623661,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-b87f985949",
+        "serie": "TS3005",
+        "predicted_id": "decisions/the-remote-control-is-easier-to-use-than-a-regular-remote-control",
+        "reference_id": "TS3005d.d03",
+        "predicted_index": 34,
+        "reference_index": 33,
+        "similarity": 0.5426440518947714,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-7da9ca0158",
+        "serie": "TS3005",
+        "predicted_id": "decisions/the-device-should-use-batteries-that-can-be-recharged-through-a-docking-station",
+        "reference_id": "TS3005c.d02",
+        "predicted_index": 17,
+        "reference_index": 25,
+        "similarity": 0.8248549853517253,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-47ad465379",
+        "serie": "TS3011",
+        "predicted_id": "decisions/the-case-colour-is-yellow-and-the-buttons-are-grey",
+        "reference_id": "TS3011c.d04",
+        "predicted_index": 6,
+        "reference_index": 15,
+        "similarity": 0.5358931153612746,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-6717135fcf",
+        "serie": "IS1003",
+        "predicted_id": "decisions/a-remote-control-with-solar-energy-and-batteries-and-with-low-level-chips-and-wood",
+        "reference_id": "IS1003c.d03",
+        "predicted_index": 1,
+        "reference_index": 9,
+        "similarity": 0.546963374370703,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-f8ab1b5897",
+        "serie": "TS3011",
+        "predicted_id": "decisions/the-device-should-use-infrared-light-to-communicate-with-the-tv-set",
+        "reference_id": "TS3011b.d04",
+        "predicted_index": 11,
+        "reference_index": 8,
+        "similarity": 0.5156049093844192,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-4ed3c2cf5e",
+        "serie": "ES2008",
+        "predicted_id": "decisions/the-remote-will-be-marketed-as-a-separate-product-not-as-part-of-a-television",
+        "reference_id": "ES2008b.d02",
+        "predicted_index": 26,
+        "reference_index": 4,
+        "similarity": 0.7401779015386888,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-677a30a0e6",
+        "serie": "IS1003",
+        "predicted_id": "decisions/a-remote-control-with-solar-energy-and-batteries-and-with-low-level-chips-and-wood",
+        "reference_id": "IS1003c.d04",
+        "predicted_index": 1,
+        "reference_index": 10,
+        "similarity": 0.7033458279670034,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-c48f058fd3",
+        "serie": "TS3005",
+        "predicted_id": "decisions/there-should-be-an-advanced-chip-in-it-with-also-the-ability-to-facilitate-speaker-speech",
+        "reference_id": "TS3005c.d01",
+        "predicted_index": 54,
+        "reference_index": 24,
+        "similarity": 0.5453203018203279,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-7e1df17f0b",
+        "serie": "ES2002",
+        "predicted_id": "decisions/we-will-consider-volume-and-channel-control-on-and-off-and-skip-to-certain-channels-with-the",
+        "reference_id": "ES2002b.d04-1",
+        "predicted_index": 50,
+        "reference_index": 6,
+        "similarity": 0.5883957156151987,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-e47cce573a",
+        "serie": "IS1003",
+        "predicted_id": "decisions/there-will-be-four-push-buttons",
+        "reference_id": "IS1003d.d06",
+        "predicted_index": 42,
+        "reference_index": 20,
+        "similarity": 0.7331745917181662,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-f9d803c579",
+        "serie": "TS3003",
+        "predicted_id": "decisions/the-remote-control-has-to-be-simple",
+        "reference_id": "TS3003b.d01",
+        "predicted_index": 29,
+        "reference_index": 6,
+        "similarity": 0.675698843466418,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-b6ec9fa595",
+        "serie": "ES2014",
+        "predicted_id": "decisions/the-team-decided-to-use-standard-push-buttons-instead-of-a-scroll-wheel",
+        "reference_id": "ES2014c.d02-1",
+        "predicted_index": 26,
+        "reference_index": 14,
+        "similarity": 0.7896122597463355,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-d259cb09c5",
+        "serie": "TS3011",
+        "predicted_id": "decisions/the-energy-source-is-traditional-batteries-and-solar",
+        "reference_id": "TS3011c.d06",
+        "predicted_index": 13,
+        "reference_index": 17,
+        "similarity": 0.8153261694555693,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-74c6885446",
+        "serie": "TS3003",
+        "predicted_id": "decisions/the-production-cost-for-the-remote-control-is-maximal-twelve-and-a-half-euros",
+        "reference_id": "TS3003a.d03",
+        "predicted_index": 24,
+        "reference_index": 2,
+        "similarity": 0.8137787489919085,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-b9ec63994f",
+        "serie": "TS3005",
+        "predicted_id": "decisions/the-recharger-should-be-a-small-device-that-is-easy-to-use",
+        "reference_id": "TS3005b.d11",
+        "predicted_index": 30,
+        "reference_index": 19,
+        "similarity": 0.7186904485472905,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-96ef6cb707",
+        "serie": "IS1003",
+        "predicted_id": "decisions/we-will-have-one-scroll-wheel-with-a-push-button",
+        "reference_id": "IS1003d.d05",
+        "predicted_index": 48,
+        "reference_index": 19,
+        "similarity": 0.7923611213691248,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-e2dd37c923",
+        "serie": "IS1006",
+        "predicted_id": "decisions/automatic-on-off-control-is-not-possible",
+        "reference_id": "IS1006b.d03",
+        "predicted_index": 0,
+        "reference_index": 8,
+        "similarity": 0.7283560267067112,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-de21507a0b",
+        "serie": "ES2002",
+        "predicted_id": "decisions/the-product-will-use-regular-batteries-instead-of-rechargeable-ones",
+        "reference_id": "ES2002b.d08",
+        "predicted_index": 18,
+        "reference_index": 13,
+        "similarity": 0.894154827021879,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-02b5c81a1d",
+        "serie": "ES2008",
+        "predicted_id": "decisions/the-first-prototype-to-be-presented-is-the-one-with-the-rhombus-shape",
+        "reference_id": "ES2008d.d08",
+        "predicted_index": 7,
+        "reference_index": 30,
+        "similarity": 0.5118777131404644,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-574ca48695",
+        "serie": "ES2014",
+        "predicted_id": "decisions/we-ll-go-with-a-fairly-standard-case",
+        "reference_id": "ES2014c.d07-1",
+        "predicted_index": 51,
+        "reference_index": 19,
+        "similarity": 0.5744056176690577,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-3e2cef1626",
+        "serie": "ES2016",
+        "predicted_id": "decisions/the-team-acknowledged-that-the-product-is-not-highly-technologically-innovative",
+        "reference_id": "ES2016d.d05",
+        "predicted_index": 39,
+        "reference_index": 19,
+        "similarity": 0.5046684808964359,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-f0eada25bd",
+        "serie": "TS3003",
+        "predicted_id": "decisions/the-remote-control-will-use-a-rechargeable-battery",
+        "reference_id": "TS3003d.d01",
+        "predicted_index": 33,
+        "reference_index": 23,
+        "similarity": 0.7281296125045595,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-c0b2a47798",
+        "serie": "ES2008",
+        "predicted_id": "decisions/we-ll-go-with-type-pushbuttons-and-supplements-such-as-a-menu-button",
+        "reference_id": "ES2008c.d06",
+        "predicted_index": 38,
+        "reference_index": 18,
+        "similarity": 0.6828703162134051,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-fecf0c6282",
+        "serie": "TS3011",
+        "predicted_id": "decisions/we-have-three-different-casing-possibilities-the-uncurved-or-flat-case-a-curved-one-in-two",
+        "reference_id": "TS3011c.d04",
+        "predicted_index": 47,
+        "reference_index": 15,
+        "similarity": 0.7430635229339497,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-48c55090de",
+        "serie": "ES2014",
+        "predicted_id": "decisions/we-will-make-the-case-in-plastic-rather-than-rubber",
+        "reference_id": "ES2014d.d02",
+        "predicted_index": 64,
+        "reference_index": 24,
+        "similarity": 0.7664967432414318,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-37262004e8",
+        "serie": "IS1009",
+        "predicted_id": "decisions/the-costs-are-within-budget",
+        "reference_id": "IS1009d.d09",
+        "predicted_index": 7,
+        "reference_index": 23,
+        "similarity": 0.5546715169641202,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-03d191716b",
+        "serie": "ES2016",
+        "predicted_id": "decisions/we-have-an-advanced-chip-on-print",
+        "reference_id": "ES2016d.d03",
+        "predicted_index": 50,
+        "reference_index": 17,
+        "similarity": 0.8267734390558986,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-b9b14a3aa5",
+        "serie": "ES2008",
+        "predicted_id": "decisions/we-want-large-buttons-for-the-essential-things",
+        "reference_id": "ES2008b.d07",
+        "predicted_index": 44,
+        "reference_index": 9,
+        "similarity": 0.7843307506560687,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-943f853164",
+        "serie": "ES2008",
+        "predicted_id": "decisions/the-packaging-will-be-designed-like-a-lemon-peel-with-the-remote-control-inside",
+        "reference_id": "ES2008c.d07-4",
+        "predicted_index": 11,
+        "reference_index": 22,
+        "similarity": 0.5062200386367522,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-4e2ec37674",
+        "serie": "TS3005",
+        "predicted_id": "decisions/it-should-be-easy-to-use-especially-the-volume-buttons-the-channel-buttes-buttons-and-the-number",
+        "reference_id": "TS3005b.d15",
+        "predicted_index": 3,
+        "reference_index": 23,
+        "similarity": 0.5070554678780824,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-53581414b9",
+        "serie": "IS1009",
+        "predicted_id": "decisions/the-user-interface-will-use-push-buttons",
+        "reference_id": "IS1009c.d01",
+        "predicted_index": 21,
+        "reference_index": 7,
+        "similarity": 0.6635824898148159,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-1cf2fa792b",
+        "serie": "ES2014",
+        "predicted_id": "decisions/the-cost-implications-of-the-button-colouration-and-design-have-been-acknowledged-and-are-a",
+        "reference_id": "ES2014d.d01-2",
+        "predicted_index": 5,
+        "reference_index": 23,
+        "similarity": 0.5039724682407909,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-ee06547a52",
+        "serie": "ES2014",
+        "predicted_id": "decisions/the-team-decided-against-using-the-display-for-the-remote",
+        "reference_id": "ES2014c.d07-1",
+        "predicted_index": 22,
+        "reference_index": 19,
+        "similarity": 0.54557131173411,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-d1ad3284ed",
+        "serie": "ES2014",
+        "predicted_id": "decisions/we-decided-to-make-the-button-lemon-shaped",
+        "reference_id": "ES2014d.d06",
+        "predicted_index": 46,
+        "reference_index": 27,
+        "similarity": 0.5011340313095161,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-2a6b7fcbe1",
+        "serie": "TS3003",
+        "predicted_id": "decisions/we-will-design-two-different-remote-control-cases-one-with-a-wooden-cover-and-one-with-a-plastic",
+        "reference_id": "TS3003c.d04",
+        "predicted_index": 49,
+        "reference_index": 20,
+        "similarity": 0.7262957529606867,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-d60fd7bbd7",
+        "serie": "ES2002",
+        "predicted_id": "decisions/we-will-consider-volume-and-channel-control-on-and-off-and-skip-to-certain-channels-with-the",
+        "reference_id": "ES2002b.d05",
+        "predicted_index": 50,
+        "reference_index": 10,
+        "similarity": 0.5287733245801151,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-e818c0c8c1",
+        "serie": "ES2008",
+        "predicted_id": "decisions/the-price-limit-for-the-remote-is-twelve-and-a-half-euros",
+        "reference_id": "ES2008b.d06",
+        "predicted_index": 17,
+        "reference_index": 8,
+        "similarity": 0.5550715919355393,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-bd03aed095",
+        "serie": "IS1003",
+        "predicted_id": "decisions/we-can-stay-with-wood",
+        "reference_id": "IS1003c.d05",
+        "predicted_index": 44,
+        "reference_index": 11,
+        "similarity": 0.5774416576609531,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-d598a912b7",
+        "serie": "ES2016",
+        "predicted_id": "decisions/the-case-materials-are-plastic",
+        "reference_id": "ES2016d.d05",
+        "predicted_index": 7,
+        "reference_index": 19,
+        "similarity": 0.9031696967909758,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-bbcf6d6bcb",
+        "serie": "ES2002",
+        "predicted_id": "decisions/the-corporate-colour-and-slogan-of-the-company-will-be-incorporated-into-the-new-design",
+        "reference_id": "ES2002b.d03",
+        "predicted_index": 10,
+        "reference_index": 5,
+        "similarity": 0.7940485758374676,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-c2bb8ea90f",
+        "serie": "TS3005",
+        "predicted_id": "decisions/channel-settings-will-be-implemented-as-a-sub-menu-under-the-main-menu",
+        "reference_id": "TS3005b.d05-10",
+        "predicted_index": 1,
+        "reference_index": 12,
+        "similarity": 0.8427524642930874,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-5be9faa08e",
+        "serie": "TS3003",
+        "predicted_id": "decisions/you-scroll-and-push-to-see-the-numbers-on-the-l-c-d-display",
+        "reference_id": "TS3003d.d05",
+        "predicted_index": 60,
+        "reference_index": 27,
+        "similarity": 0.7055285668531796,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-d97b97e7b4",
+        "serie": "TS3005",
+        "predicted_id": "decisions/the-teletext-functionality-will-be-implemented-but-not-directly-available-instead-it-will-be",
+        "reference_id": "TS3005b.d07",
+        "predicted_index": 50,
+        "reference_index": 15,
+        "similarity": 0.7520137933830805,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-4fc1d94fee",
+        "serie": "TS3003",
+        "predicted_id": "decisions/we-should-make-very-few-buttons",
+        "reference_id": "TS3003b.d10",
+        "predicted_index": 45,
+        "reference_index": 15,
+        "similarity": 0.5528183466045076,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-a46e4cfda2",
+        "serie": "TS3005",
+        "predicted_id": "decisions/the-product-should-target-a-broad-market-including-the-elderly",
+        "reference_id": "TS3005b.d03",
+        "predicted_index": 28,
+        "reference_index": 2,
+        "similarity": 0.784702381909,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-91fb051805",
+        "serie": "ES2002",
+        "predicted_id": "decisions/the-company-has-decided-that-teletext-is-outdated-and-will-not-be-considered-in-the-functionality",
+        "reference_id": "ES2002b.d02",
+        "predicted_index": 8,
+        "reference_index": 4,
+        "similarity": 0.5822118990281057,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-72ff5730bd",
+        "serie": "ES2002",
+        "predicted_id": "decisions/the-target-age-group-will-be-fifteen-to-thirty-five",
+        "reference_id": "ES2002b.d06",
+        "predicted_index": 25,
+        "reference_index": 11,
+        "similarity": 0.8440107376635978,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-51d321ce84",
+        "serie": "ES2002",
+        "predicted_id": "decisions/the-team-decided-to-use-plastic-and-rubber-for-the-product",
+        "reference_id": "ES2002c.d05",
+        "predicted_index": 36,
+        "reference_index": 18,
+        "similarity": 0.7570580255021933,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-b89f8f1be2",
+        "serie": "TS3005",
+        "predicted_id": "decisions/the-batteries-should-be-long-lasting-not-be-empty-in-about-two-minutes-or-thirty-minutes-or-forty",
+        "reference_id": "TS3005c.d06",
+        "predicted_index": 6,
+        "reference_index": 29,
+        "similarity": 0.5020300545248697,
+        "auto_match": false
+      },
+      {
+        "pair_id": "v-4bb8a32169",
+        "serie": "TS3005",
+        "predicted_id": "decisions/the-case-is-to-be-made-from-hard-rubber",
+        "reference_id": "TS3005c.d05",
+        "predicted_index": 11,
+        "reference_index": 28,
+        "similarity": 0.8445557756461318,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-755a4f97eb",
+        "serie": "ES2014",
+        "predicted_id": "decisions/detailed-functions-will-be-kept-hidden-at-the-back-and-can-be-brought-out-when-needed",
+        "reference_id": "ES2014b.d04-8",
+        "predicted_index": 1,
+        "reference_index": 11,
+        "similarity": 0.7052381929256245,
+        "auto_match": true
+      },
+      {
+        "pair_id": "v-b7286c3e12",
+        "serie": "IS1006",
+        "predicted_id": "decisions/we-will-use-either-an-l-c-d-display-or-push-buttons",
+        "reference_id": "IS1006c.d03",
+        "predicted_index": 41,
+        "reference_index": 11,
+        "similarity": 0.5897203797704009,
+        "auto_match": false
+      }
+    ]
+  }
+}
