@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 06 — Metodología |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 10.1 |
-| **Fecha** | 2026-11-05 |
+| **Versión** | 11.0 |
+| **Fecha** | 2026-11-07 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -41,6 +41,7 @@
 | 9.1 | 2026-11-02 | Se registra el resultado de la concordancia del juez de τ con una persona sobre 50 pares (§1, §5–6), que la versión 6.0 dejó pendiente: acuerdo sustancial, juez más estricto que la persona, y por eso las cifras de alineación del Experimento A con τ = 0,70 son un piso conservador. Se mantiene τ = 0,70 y no cambian otros umbrales ni cifras. | Acuerdo de 43 de 50 pares (86 %), kappa 0,716 (IC 95 % de 0,520 a 0,880); los 7 desacuerdos son del juez en «no» y la persona en «sí»; por debajo de 0,70 el juez dice «sí» en el 21 % de los pares y la persona en el 42 % ([ADR 0012](../decisions/0012-adr-umbral-tau-del-experimento-a.md), [notebook 17](../../notebooks/17-jss-tau-referencia-en.ipynb) §8). Evidencia limitada: 24 pares bajo el umbral, una sola persona que además adjudica y mantiene el proyecto, y solo ES2015 y TS3009. Protocolo [`../protocols/alignment.md`](../protocols/alignment.md) 3.1. |
 | 10.0 | 2026-11-02 | C0, el mismo generador respondiendo sin ningún texto de apoyo, deja de ser solo un diagnóstico de desarrollo y entra en la corrida formal del Experimento B como referencia sin recuperación (§3–4, fase 3 y tamaño de la corrida). Las tres condiciones de la comparación principal no cambian, ni el criterio D16 ni las hipótesis. | Decisión del autor del proyecto del 2026-11-02, registrada en el [ADR 0019](../decisions/0019-adr-c0-en-la-corrida-formal-del-experimento-b.md). El avance anterior solo describía a C0 como diagnóstico de desarrollo. |
 | 10.1 | 2026-11-05 | Se sustituyen las cifras provisionales de E3 por las medidas: el mínimo es 24 (antes «≥ 25, hasta 40» y ≈ 37 relaciones proyectadas) y la adjudicación pendiente de las series de evaluación está cerrada. No cambian hipótesis, umbrales ni el criterio D16. | Medición de las relaciones de evolución de la referencia ([ADR 0021](../decisions/0021-adr-minimo-de-e3-segun-relaciones-disponibles.md), notebook 26) y cierre de la Fase 3 de anotación. |
+| 11.0 | 2026-11-07 | Punto de equilibrio amortizado (§7–8): el supuesto de que cada consulta sobre la base cuesta menos que una consulta RAG se conserva como diseño y se agrega el resultado observado (C2 15,3 s frente a 5,7 s de C1; el punto de equilibrio no existe). El método no cambia. | La corrida formal del Experimento B contradice el supuesto; cifras del [notebook 31](../../notebooks/31-jss-resultados-finales.ipynb) (sección 4), reportadas en el [documento 13](13-jss-conclusiones.md). Sube el entero porque se agrega una cifra. |
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
 > la evidencia que lo motivó**. El historial nunca se reescribe: se agrega una fila.
@@ -500,8 +501,10 @@ no se presenta como una comparación justa.
 *Qué queda como limitación.* (a) La medición de TS3005b contó cuántos objetos Decision admite su capa de anotación (3): es información de una serie de evaluación sobre la cantidad de decisiones, no sobre su contenido. (b) Cada valor se midió con pocas corridas (3 por brazo para TS3005a) y en dos reuniones; no se probó otro valor, y OpenKOS lo dice así. (c) Las reuniones cuyo largo cae entre 12.000 y 18.000 caracteres son las que un valor distinto cambiaría de camino; este documento no cuenta cuántas son por serie, porque esa cifra no sale todavía de ninguna función de `src/afg` ni de un notebook (el largo de cada reunión sí está en el manifiesto que muestra el [notebook 02](../../notebooks/02-jss-transcripciones.ipynb)). Si el análisis de resultados mostrara que la diferencia entre C2 y las demás condiciones se concentra en esas reuniones, esta limitación debe recalcularse con esa cuenta y reportarse junto a los resultados. No se enmienda el ADR 0005: sus consecuencias se cumplen en lo esencial, porque los valores no se ajustaron para acertar una respuesta de evaluación, y la excepción queda declarada aquí.
 
 **Punto de equilibrio amortizado**, la métrica operativa que reemplaza a la latencia aislada.
-Construir la base cuesta una vez; cada consulta sobre ella cuesta menos que una consulta
-RAG, que vuelve a leer las transcripciones. La pregunta no es cuánto tarda una consulta, sino
+Construir la base cuesta una vez; se suponía que cada consulta sobre ella costaría menos que una consulta
+RAG, que vuelve a leer las transcripciones. En la corrida formal ese supuesto no se cumplió: una consulta de C2
+tarda 15,3 s y una de C1 5,7 s, y el punto de equilibrio no existe ([documento 13](13-jss-conclusiones.md), sección 5;
+[notebook 31](../../notebooks/31-jss-resultados-finales.ipynb), sección 4). La pregunta no es cuánto tarda una consulta, sino
 a partir de cuántas consultas (n) se recupera lo invertido en construir:
 
 > `costo_compilación + n · costo_consulta_estructurada  <  n · costo_consulta_RAG`

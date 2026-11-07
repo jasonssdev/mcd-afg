@@ -22,6 +22,7 @@ from afg.experiments.final_tables import (
     b_paired_table,
     build_final_tables,
     cost_tables,
+    load_final_inputs,
     oe4_table,
     write_final_tables,
 )
@@ -277,6 +278,52 @@ def test_oe4_table_lists_stage_shares() -> None:
     assert list(table["stage"]) == ["extraccion", "recuperacion"]
     assert table["share"].tolist() == [0.25, 0.75]
     assert set(table["condition"]) == {"C2"}
+
+
+def test_oe4_table_adds_the_rule_attributed_failures_to_the_headline() -> None:
+    table = oe4_table([("run-x", OE4)], rule_failures={"run-x": 3})
+    todas = table[table["basis"] == "todas"].set_index("stage")
+    assert todas["cases"].to_dict() == {"extraccion": 1, "recuperacion": 3, "sintesis": 3}
+    assert todas["share"].round(4).to_dict() == {
+        "extraccion": round(1 / 7, 4),
+        "recuperacion": round(3 / 7, 4),
+        "sintesis": round(3 / 7, 4),
+    }
+    assert set(todas["n_failures"]) == {7}
+    etiquetadas = table[table["basis"] == "etiquetadas"]
+    assert etiquetadas["cases"].tolist() == [1, 3]
+    assert set(etiquetadas["n_failures"]) == {4}
+
+
+def test_oe4_table_without_rule_failures_keeps_only_the_labelled_rows() -> None:
+    table = oe4_table([("run-x", OE4)])
+    assert set(table["basis"]) == {"etiquetadas"}
+
+
+def test_load_final_inputs_counts_the_rule_attributed_failures(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _write_run_dirs(tmp_path / "reports", partition="evaluation")
+    seen: list[int] = []
+
+    def fake(records: Any, questions: Any) -> list[tuple[str, int]]:
+        seen.append(len(records))
+        return [("q1", 0), ("q1", 1)]
+
+    monkeypatch.setattr("afg.experiments.c2_base_evidence.rule_attributed_failures", fake)
+    inputs = load_final_inputs(
+        a_run="a-run",
+        b_runs=["b-c2"],
+        a_dir=tmp_path / "reports" / "experiment-a",
+        b_dir=tmp_path / "reports" / "experiment-b",
+        descriptive=False,
+        questions={},
+    )
+    assert inputs.b_runs[0].oe4_rule_failures == 2
+    assert len(seen) == 1
+    final = build_final_tables(inputs, descriptive=False)
+    todas = final.tables["oe4-stages"].query("basis == 'todas'")
+    assert set(todas["n_failures"]) == {6}
 
 
 def test_development_input_is_refused_without_the_descriptive_flag() -> None:

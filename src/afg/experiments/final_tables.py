@@ -17,7 +17,7 @@ import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 
@@ -28,6 +28,9 @@ from afg.experiments.cost_table import (
     cost_frame,
     extraction_manifest_cost,
 )
+
+if TYPE_CHECKING:
+    from afg.domain.question import Question
 
 STAMP = "desarrollo — no reportable"
 STATUS_COLUMN = "status"
@@ -60,6 +63,8 @@ class BRun:
     records: Sequence[Mapping[str, Any]]
     analysis: Mapping[str, Any]
     oe4: Mapping[str, Any] | None = None
+    oe4_rule_failures: int | None = None
+    """Incorrect C2 E1 answers the rule attributes to synthesis (left out of the sheet)."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -242,21 +247,48 @@ def _break_even(
     return pd.DataFrame(rows, columns=columns)
 
 
-def oe4_table(summaries: Sequence[tuple[str, Mapping[str, Any]]]) -> pd.DataFrame:
-    """Share of the failures per OE4 stage, one row per run, condition and stage."""
-    rows = [
-        {
-            "run": run,
-            "condition": summary["condition"],
-            "stage": stage,
-            "cases": cell["cases"],
-            "share": cell["share"],
-            "n_failures": summary["n_failures"],
-        }
-        for run, summary in summaries
-        for stage, cell in summary["stages"].items()
-    ]
-    return pd.DataFrame(rows, columns=["run", "condition", "stage", "cases", "share", "n_failures"])
+OE4_ALL = "todas"
+OE4_LABELLED = "etiquetadas"
+_OE4_REMAINDER_STAGE = "sintesis"
+
+
+def oe4_table(
+    summaries: Sequence[tuple[str, Mapping[str, Any]]],
+    rule_failures: Mapping[str, int] | None = None,
+) -> pd.DataFrame:
+    """Share of the failures per OE4 stage, one row per run, condition, basis and stage.
+
+    ``basis`` is ``etiquetadas`` for the failures a person labelled in the worksheet (the stored
+    summary) and, when ``rule_failures`` (run name -> count) is given, ``todas`` for all the
+    incorrect answers: the labelled ones plus the failures the rule attributes to synthesis, which
+    the worksheet leaves out by design. Those add to the ``sintesis`` stage; no other count changes.
+    """
+    rows: list[dict[str, Any]] = []
+    for run, summary in summaries:
+        stages = {stage: int(cell["cases"]) for stage, cell in summary["stages"].items()}
+        labelled = int(summary["n_failures"])
+        bases = [(OE4_LABELLED, stages, labelled)]
+        extra = (rule_failures or {}).get(run)
+        if extra is not None:
+            all_stages = dict(stages)
+            all_stages[_OE4_REMAINDER_STAGE] = all_stages.get(_OE4_REMAINDER_STAGE, 0) + extra
+            bases.insert(0, (OE4_ALL, all_stages, labelled + extra))
+        for basis, counts, total in bases:
+            for stage, cases in counts.items():
+                rows.append(
+                    {
+                        "run": run,
+                        "condition": summary["condition"],
+                        "stage": stage,
+                        "cases": cases,
+                        "share": cases / total if total else 0.0,
+                        "n_failures": total,
+                        "basis": basis,
+                    }
+                )
+    return pd.DataFrame(
+        rows, columns=["run", "condition", "stage", "cases", "share", "n_failures", "basis"]
+    )
 
 
 # --- assembly ---------------------------------------------------------------------------------
@@ -294,7 +326,12 @@ def build_final_tables(inputs: FinalInputs, *, descriptive: bool) -> FinalTables
         tables["break-even"] = cost["break_even"]
         oe4 = [(r.name, r.oe4) for r in inputs.b_runs if r.oe4 is not None]
         if oe4:
-            tables["oe4-stages"] = oe4_table(oe4)
+            rule = {
+                r.name: r.oe4_rule_failures
+                for r in inputs.b_runs
+                if r.oe4_rule_failures is not None
+            }
+            tables["oe4-stages"] = oe4_table(oe4, rule)
     if stamped:
         tables = {k: v.assign(**{STATUS_COLUMN: STAMP}) for k, v in tables.items()}
     return FinalTables(tables=tables, stamped=stamped)
@@ -358,16 +395,25 @@ def _stored_report(directory: Path, names: Sequence[str], command: str) -> Mappi
 
 
 def load_final_inputs(
-    *, a_run: str | None, b_runs: Sequence[str], a_dir: Path, b_dir: Path, descriptive: bool
+    *,
+    a_run: str | None,
+    b_runs: Sequence[str],
+    a_dir: Path,
+    b_dir: Path,
+    descriptive: bool,
+    questions: Mapping[str, Question] | None = None,
 ) -> FinalInputs:
     """Read the stored reports of the named runs; nothing is recomputed.
 
     The development file (``informe-descriptivo.json``, ``analisis-descriptivo.json``) is only
-    looked for with ``descriptive``; otherwise only the reportable file counts.
+    looked for with ``descriptive``; otherwise only the reportable file counts. With ``questions``
+    (the question bank by id) the C2 failures the OE4 rule attributes to synthesis are counted from
+    the run records of every run that has an OE4 summary.
 
     Raises:
         FileNotFoundError: a stored report is missing (the message names the command to run).
     """
+    from afg.experiments import c2_base_evidence
     from afg.experiments.runner import RECORDS_FILE, load_records
 
     a_report = None
@@ -385,15 +431,13 @@ def load_final_inputs(
         manifest = json.loads((folder / "manifest.json").read_text(encoding="utf-8"))
         oe4_path = folder / "oe4-resumen.json"
         oe4 = json.loads(oe4_path.read_text(encoding="utf-8")) if oe4_path.is_file() else None
-        runs.append(
-            BRun(
-                name,
-                manifest,
-                load_records(folder / RECORDS_FILE, latest_only=True),
-                analysis,
-                oe4,
-            )
+        records = load_records(folder / RECORDS_FILE, latest_only=True)
+        rule_failures = (
+            len(c2_base_evidence.rule_attributed_failures(records, questions))
+            if oe4 is not None and questions is not None
+            else None
         )
+        runs.append(BRun(name, manifest, records, analysis, oe4, rule_failures))
         extraction = manifest.get("c2_extraction")
         if extraction and (a_dir / extraction / "manifest.json").is_file():
             a_manifests[str(extraction)] = json.loads(

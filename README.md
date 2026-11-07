@@ -244,7 +244,7 @@ de forzar una resolución, sobre todo si el conflicto está en un CSV de anotaci
 | `README.md` | Esta guía | Todos, el primer día |
 | `CONTRIBUTING.md` | Flujo de trabajo, roles, convenciones (nombres, idioma, cifras, etiquetas humanas) | Todos, antes del primer PR |
 | `docs/propuesta.md` | La propuesta de tesis completa: texto original de AFG1, con enmiendas registradas en git (2026-09-21, 2026-10-07). Se cita por sección (§1.4, §5.4); sus revisiones pendientes se siguen en los issues abiertos del repositorio | Todos, para entender el diseño original |
-| `docs/avances/` | Los nueve documentos vivos (01 a 09): problema, fuente de datos, objetivos, bibliografía, ética, metodología, análisis exploratorio, métricas y criterio de éxito, modelos y justificación. Cada uno con versión e historial | Todos. Son la versión vigente del proyecto y de aquí salen las entregas |
+| `docs/avances/` | Los trece documentos vivos (01 a 13): problema, fuente de datos, objetivos, bibliografía, ética, metodología, análisis exploratorio, métricas y criterio de éxito, modelos y justificación, y los resultados (confiabilidad de la referencia, Experimento A, Experimento B y conclusiones). Cada uno con versión e historial | Todos. Son la versión vigente del proyecto y de aquí salen las entregas |
 | `docs/entregables/` | Lo que se entregó al curso, congelado tal como se envió: guiones de video, informe de la semana 4 | Quien prepara una entrega; se agrega, no se edita |
 | `docs/anotacion/` | **El trabajo humano**: quién anota qué, el manual paso a paso de los CSV, la definición del constructo | Anotadores y adjudicador |
 | `docs/protocols/` | El protocolo de alineamiento entre decisiones extraídas y de referencia (máquina) y el registro de congelamiento (`congelamiento.md`: qué se fija antes de las corridas formales y qué series bloquea) | Quien trabaje en OE2; el mantenedor al congelar |
@@ -372,14 +372,16 @@ uv run jupyter lab
 | 24 | `24-jss-figuras-pre-informe.ipynb` | Dos figuras del pre-informe |
 | 25 | `25-jss-canal-semantico-del-bloqueador.ipynb` | Qué aportaría un canal semántico al bloqueador léxico y cuánto costaría anotarlo |
 | 26 | `26-jss-minimo-e3-relaciones-disponibles.ipynb` | Relaciones de evolución disponibles en las once series de evaluación: respaldo del ADR 0021 (mínimo de E3 = 24) |
-| — | *(pendiente)* `NN-jss-experimento-a.ipynb` | OE2 — calidad de la extracción automática |
-| — | *(pendiente)* `NN-jss-experimento-b.ipynb` | OE3/OE4 — C1 vs C2 vs C3 y atribución del error (el 07 cubre solo el motor de corrida y la corrida de humo) |
+| 27 | `27-jss-relaciones-con-extremo-compuesto.ipynb` | Respaldo del ADR 0025: relaciones de la referencia con un extremo compuesto |
+| 28 | `28-jss-experimento-a.ipynb` | Resultados del Experimento A (OE2): corrida formal, precisión, recall y F1, relaciones y validación manual de la alineación |
+| 29 | `29-jss-anotacion-f3-referencia.ipynb` | Referencia final de OE1 (14 series, 358 decisiones, 46 relaciones) tras la Fase 3 |
+| 30 | `30-jss-experimento-b.ipynb` | Resultados del Experimento B (OE3 y OE4): corrección por condición y estrato, D16, validez del juez y etapa del fallo de C2 |
+| 31 | `31-jss-resultados-finales.ipynb` | Resultados finales: respuesta a cada objetivo y a cada hipótesis, costo y punto de equilibrio, validez del juez y limitaciones |
 
-La Fase 3 de anotación no tiene notebook propio: su resultado son los CSV de la referencia, y
-sus cifras se leen en los notebooks 18, 25 y 26.
+La Fase 3 de anotación no tiene notebook de acuerdo propio: su resultado son los CSV de la
+referencia, y sus cifras se leen en los notebooks 18, 25, 26 y 29.
 
-Los notebooks pendientes no tienen número reservado: cada uno toma el siguiente número libre
-al crearse.
+Cada notebook nuevo toma el siguiente número libre al crearse; no hay números reservados.
 
 Los notebooks son el **registro académico** del proyecto y se versionan con sus salidas, para
 que un revisor pueda leerlos sin ejecutar nada. Si tocas uno, re-ejecútalo de punta a punta
@@ -453,26 +455,40 @@ Tres convenciones que más se rompen sin querer:
 
 ## 8. Estado
 
-**Las corridas formales todavía no han empezado.** El corpus está descargado y auditado, y el
-conjunto de referencia (OE1) está cerrado: las 14 series anotadas, los desacuerdos de las
-series de doble anotación adjudicados y las traducciones al inglés hechas. El banco de preguntas está cerrado con 99
-preguntas validadas (E1 25, E2 25, E3 24 y E4 25; E3 queda en 24 porque las once series de
-evaluación ofrecen 24 relaciones de evolución distintas, ADR 0021), y el recall del bloqueador
-léxico se midió en 0,407 (ADR 0020).
+**Los dos experimentos formales, las verificaciones humanas y el análisis final están hechos.**
+Las corridas se hicieron sobre las once series de evaluación con el registro de congelamiento
+vigente (ADR 0025), con `qwen3:8b` como modelo local y un solo generador. Las cifras de esta
+sección salen del [notebook 31](notebooks/31-jss-resultados-finales.ipynb) y de los avances 10 a 13.
 
-Antes de la primera corrida formal una auditoría encontró defectos de código y huecos del
-registro de congelamiento; se corrigen en el PR #283 y el [ADR 0023](docs/decisions/0023-adr-recongelamiento-tras-la-auditoria.md)
-**reemplaza al ADR 0022**. Las corridas de los Experimentos A y B (OE2 y OE3) esperan solo a
-que ese ADR se fusione y se escriba `config/freeze.json` (#237). Hasta entonces el bloqueo de
-`afg` impide cualquier corrida sobre series de evaluación; las series de desarrollo (ES2015,
-IS1004, TS3009) corren sin registro y sus cifras no entran en resultados (ADR 0005).
+**Resultados principales.**
+
+- **OE1.** La referencia tiene 14 series, 358 decisiones y 46 relaciones. El acuerdo entre
+  anotadores es de kappa 0,783 en existencia y 0,554 en tipo; la dirección no tiene kappa por falta
+  de variación ([avance 10](docs/avances/10-jss-confiabilidad-de-la-referencia.md)).
+- **OE2.** La extracción automática encuentra 0,308 de las decisiones de la referencia, con una
+  precisión de 0,149 y un F1 de 0,201 (intervalo de 95 %: 0,161 a 0,240)
+  ([avance 11](docs/avances/11-jss-resultados-experimento-a.md), [notebook 28](notebooks/28-jss-experimento-a.ipynb)).
+- **OE3.** La corrección total es de 0,16 sin contexto (C0), 0,72 con RAG convencional (C1), 0,49 con
+  la base automática (C2) y 0,80 con la base con decisiones humanas (C3). El criterio principal (D16)
+  no se respalda y la dirección es la contraria: C1 supera a C2 en las preguntas de evolución. H2 y H3
+  quedan no concluyentes y H4 no se puede evaluar con el juez automático
+  ([avance 12](docs/avances/12-jss-resultados-experimento-b.md), [notebook 30](notebooks/30-jss-experimento-b.ipynb)).
+- **OE4.** De 43 respuestas incorrectas de C2 en hechos puntuales, 21 (48,8 %) vienen de la
+  extracción, 11 (25,6 %) de la recuperación y 11 (25,6 %) de la síntesis.
+- **Costo.** Una consulta de C2 tarda unas 2,7 veces lo que una de C1 y no existe punto de equilibrio
+  ([avance 13](docs/avances/13-jss-conclusiones.md), [notebook 31](notebooks/31-jss-resultados-finales.ipynb)).
+
+**Lectura.** La base de decisiones funciona cuando las decisiones son buenas (C3), pero obtenerlas
+automáticamente con un modelo local pequeño es el eslabón débil. Los límites (un solo modelo, una
+corrida por experimento, diseño y modelo de extracción confundidos, juez con kappa bajo en
+`evidence_supported`) están en el [avance 13](docs/avances/13-jss-conclusiones.md).
 
 | | Objetivo | Estado | Curso |
 |---|---|---|---|
 | **OE1** | Conjunto de referencia con relaciones entre reuniones | Cerrado | AFG1 → AFG2 |
-| **OE2** | Calidad de la extracción automática | Listo para correr, a la espera del registro de congelamiento | AFG2 |
-| **OE3** | Comparación C0 / C1 / C2 / C3 | Listo para correr, a la espera del registro de congelamiento | AFG2 |
-| **OE4** | Atribución del error a su etapa de origen | Código listo; las etiquetas de etapa las pone una persona tras la corrida de B | AFG3 |
+| **OE2** | Calidad de la extracción automática | Corrida formal y validación manual hechas | AFG2 |
+| **OE3** | Comparación C0 / C1 / C2 / C3 | Corrida formal y verificación del juez hechas | AFG2 |
+| **OE4** | Atribución del error a su etapa de origen | Hecho: 43 respuestas incorrectas atribuidas | AFG3 |
 
 Lo pendiente, por prioridad, está en los **issues de GitHub**.
 

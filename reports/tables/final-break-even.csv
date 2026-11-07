@@ -1,0 +1,2 @@
+structured_condition,compile_seconds,structured_query_seconds,rag_query_seconds,break_even_queries,reading
+C2,14174.027073,15.339692922134786,5.705432915134622,,no existe: C2 no es más barata por consulta que C1
