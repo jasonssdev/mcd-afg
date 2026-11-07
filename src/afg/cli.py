@@ -4331,6 +4331,7 @@ def experiment_b_sample(
             reference_answers={q.id: q.reference_answer or "" for q in bank},
             context_for=context_for,
             superseded_answers={q.id: q.superseded_answer or "" for q in bank},
+            question_texts={q.id: q.text for q in bank},
         )
         write_human_sample(
             run_dir / HUMAN_SHEET_FILE, run_dir / HUMAN_KEY_FILE, sample, force=force

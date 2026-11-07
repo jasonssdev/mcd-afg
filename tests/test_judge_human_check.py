@@ -138,6 +138,23 @@ def test_reference_answers_are_included_when_given() -> None:
         assert by_key[key["id"]]["reference_answer"] == expected
 
 
+def test_question_comes_from_the_bank_when_the_record_has_no_trace() -> None:
+    # C0 answers without retrieval and records no trace; the sheet still needs the question.
+    records = [_record(q, "C0", run, stratum="E1_point_fact") for q in range(5) for run in range(3)]
+    for record in records:
+        record["trace"] = None
+    texts = {f"ES2015.q{q:03d}": f"Bank question {q}?" for q in range(5)}
+    sample = select_human_sample(records, fraction=1.0, seed=7, question_texts=texts)
+    by_key = {k["id"]: s for k, s in zip(sample.key_rows, sample.sheet_rows, strict=True)}
+    for key in sample.key_rows:
+        assert by_key[key["id"]]["question"] == texts[key["question_id"]]
+
+
+def test_question_falls_back_to_the_trace_without_bank_texts() -> None:
+    sample = select_human_sample(_records(), fraction=0.2, seed=42)
+    assert all(row["question"].startswith("Question ") for row in sample.sheet_rows)
+
+
 def test_fraction_validation() -> None:
     with pytest.raises(ValueError):
         select_human_sample(_records(), fraction=0.0, seed=1)

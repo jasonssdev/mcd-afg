@@ -232,8 +232,14 @@ def select_human_sample(
     reference_answers: Mapping[str, str] | None = None,
     context_for: ContextFor | None = None,
     superseded_answers: Mapping[str, str] | None = None,
+    question_texts: Mapping[str, str] | None = None,
 ) -> HumanSample:
     """The seeded, stratified sample for the human check: one judged run per (question, condition).
+
+    The ``question`` column comes from ``question_texts`` (``question_id -> text``, the question
+    file) and falls back to the record's ``trace``. C0 answers without retrieval and records no
+    trace, so without the question file its rows would show no question and stand out as one
+    group in a sheet that must not reveal the condition.
 
     Raises:
         ValueError: ``fraction`` outside (0, 1], or no judged answer to sample from.
@@ -276,7 +282,8 @@ def select_human_sample(
         sheet.update(
             id=item_id,
             stratum=_stratum(record),
-            question=str((record.get("trace") or {}).get("question") or ""),
+            question=(question_texts or {}).get(str(record["question_id"]))
+            or str((record.get("trace") or {}).get("question") or ""),
             reference_answer=(reference_answers or {}).get(str(record["question_id"]), ""),
             answer_text=str((record.get("answer") or {}).get("text") or ""),
             pasaje_transcripcion=passage,
