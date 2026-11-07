@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "run_name": "experimento-b-formal",
+  "condition": "C2",
+  "sheet": "oe4-etapa-e1.csv",
+  "n_failures": 40,
+  "stages": {
+    "extraccion": {
+      "cases": 18,
+      "share": 0.45
+    },
+    "recuperacion": {
+      "cases": 11,
+      "share": 0.275
+    },
+    "sintesis": {
+      "cases": 11,
+      "share": 0.275
+    }
+  },
+  "rule_agreement": {
+    "with_suggestion": 6,
+    "without_suggestion": 34,
+    "agree": 6,
+    "disagree": 0,
+    "agreement_rate": 1.0
+  },
+  "disagreements": []
+}
