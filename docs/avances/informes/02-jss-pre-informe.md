@@ -4,7 +4,7 @@
 |---|---|
 | **Documento** | 02 — Pre-informe AFG2, redactado después de los experimentos formales |
 | **Autores** | Jason Sepúlveda S., Germán Vega, Gustavo Martínez |
-| **Versión** | 0.1 (borrador para revisión del equipo) |
+| **Versión** | 0.2 (borrador para revisión del equipo) |
 | **Fecha** | 2026-11-07 |
 | **Estado** | Borrador |
 
@@ -13,6 +13,7 @@
 | Versión | Fecha | Cambio | Motivo |
 |---|---|---|---|
 | 0.1 | 2026-11-07 | Borrador inicial, redactado a partir de los avances 01 a 13 (en particular 10 a 13) y de las tablas finales. Documento aparte del [pre-informe 01](01-jss-pre-informe.md), que se escribió antes de los experimentos y no se modifica. No se ha enviado. | Las dos corridas formales, las verificaciones humanas y las conclusiones quedaron completas (épica #288); el pre-informe de AFG2 se entrega el 2026-11-09 y debe reportar resultados formales y no preliminares. |
+| 0.2 | 2026-11-07 | Se verifican en arXiv las dos referencias pendientes heredadas del 01 (título, autores y DOI coinciden; siguen como *preprint*) y la cita de OpenKOS apunta a la publicación de v0.7.0. | Pendientes de verificación heredados del pre-informe 01. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (0.1 → 0.2). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero y **debe declarar la evidencia
@@ -262,7 +263,7 @@ Murray, G., Kleinbauer, T., Poller, P., Becker, T., Renals, S., & Kilgour, J. (2
 
 Panickssery, A., Bowman, S. R., & Feng, S. (2024). LLM evaluators recognize and favor their own generations. En *Advances in Neural Information Processing Systems 37 (NeurIPS 2024)* (pp. 68772–68802).
 
-Sepúlveda, J. (2026). *OpenKOS* (Versión 0.7.0) [Software]. GitHub. https://github.com/jasonssdev/openkos
+Sepúlveda, J. (2026). *OpenKOS* (Versión 0.7.0) [Software]. GitHub. https://github.com/jasonssdev/openkos/releases/tag/v0.7.0
 
 Tabassi, E. (2023). *Artificial intelligence risk management framework (AI RMF 1.0)* (NIST AI 100-1). National Institute of Standards and Technology. https://doi.org/10.6028/NIST.AI.100-1
 
@@ -359,7 +360,7 @@ Cada cifra del informe proviene de un avance; ninguna se calculó aquí. Las cif
 | Costos: 4,2; 5,7; 15,3; 14,5; 6,3 s; 11 h 48 min 42 s; 3 h 56 min 14 s; sin punto de equilibrio | 6.6 | Avance [13](../13-jss-conclusiones.md), §5; `final-cost-latency`, `final-break-even` |
 | Límites y trabajo futuro | 7.2, 7.4 | Avance [13](../13-jss-conclusiones.md), §7 y §8 |
 
-**Referencias con verificación pendiente** (heredadas del pre-informe 01; el equipo pidió reconfirmarlas antes del envío): arXiv.2607.22962 (Zhang y Li, 2026) y arXiv.2506.12367 (Cai y O'Connor, 2025). No hay una referencia citable de OpenKOS más allá de la cita del software.
+**Referencias verificadas el 2026-11-07** (pendientes heredados del pre-informe 01): arXiv.2607.22962 (Zhang y Li, 2026; v1 del 25 de julio de 2026) y arXiv.2506.12367 (Cai y O'Connor, 2025; v1 del 14 de junio de 2025) existen con el título, los autores y el DOI citados; ninguno registra publicación revisada por pares, por eso se mantienen como *preprint*. OpenKOS no tiene artículo ni DOI propio: se cita como software, con la versión y la publicación de v0.7.0 (2026-10-29), que es la forma válida en APA 7 para un programa.
 
 **Pendientes de redacción para el equipo.**
 
