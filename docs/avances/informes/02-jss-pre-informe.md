@@ -117,7 +117,7 @@ Anotar a mano los 3.071 pares tomaría unas 77 horas y casi todos no se relacion
 
 ### 5.1 Qué es «el modelo» y qué recibe cada condición
 
-Se evalúa el procedimiento completo con que cada condición responde. Los modelos ya entrenados se ejecutan localmente con Ollama. OpenKOS 0.7.0 (Sepúlveda, 2026) es el instrumento que compila y consulta la base.
+El proyecto **no entrena ningún modelo**. Se evalúa el procedimiento completo con que cada condición responde. Los modelos ya entrenados se ejecutan localmente con Ollama. OpenKOS 0.7.0 (Sepúlveda, 2026) es el instrumento que compila y consulta la base. Es un programa de código abierto desarrollado antes por un integrante del equipo, no un aporte de la tesis.
 
 **Tabla 2.** Condiciones del Experimento B. Las cuatro usan el mismo generador y reciben las mismas preguntas.
 
@@ -241,7 +241,7 @@ Tres principios organizan el trabajo, y cada uno se traduce en algo que se mide.
 
 ### 7.4 Conclusiones y próximos pasos
 
-En esta corrida, el RAG convencional obtuvo 0,72 de corrección total frente a 0,49 de la base automática, con menor tiempo por consulta. Al sustituir las decisiones y los enlaces por los de referencia bajo la misma consulta de OpenKOS, la corrección total llegó a 0,80. La extracción automática encontró el 30,8 % de las decisiones de referencia, lo que orienta el trabajo siguiente hacia la calidad del contenido de la base.
+En esta corrida, el RAG convencional obtuvo 0,72 de corrección total frente a 0,49 de la base automática, con menor tiempo por consulta en el RAG; no existe punto de equilibrio. Un resultado negativo es informativo: acota el valor de compilar en este dominio. Al sustituir las decisiones y los enlaces por los de referencia bajo la misma consulta de OpenKOS, la corrección total llegó a 0,80. La extracción automática encontró el 30,8 % de las decisiones de referencia, lo que orienta el trabajo siguiente hacia la calidad del contenido de la base.
 
 Los pasos siguientes hacia AFG3 son: (1) correr el modelo de mayor escala, ya configurado pero no ejecutado, para separar diseño de extracción y capacidad del modelo y evaluar la cláusula de tamaño de H3; (2) probar, como **hipótesis y no como resultado**, que personas confirmen o corrijan las decisiones al capturarlas, con la búsqueda de texto como respaldo, midiendo el esfuerzo humano; (3) un juez capaz de evaluar H4 y la evidencia; (4) ampliar la referencia con doble anotación de las series de un solo anotador; y (5) un contraste preregistrado de C3 frente a C1 y una medición de costo completa.
 
