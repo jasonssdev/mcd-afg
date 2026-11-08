@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 12 — Resultados del Experimento B (OE3 y OE4) |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.0 |
-| **Fecha** | 2026-11-07 |
+| **Versión** | 1.1 |
+| **Fecha** | 2026-11-08 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -13,6 +13,7 @@
 | Versión | Fecha | Cambio | Motivo |
 |---|---|---|---|
 | 1.0 | 2026-11-07 | Versión inicial. Resultados de la corrida formal del Experimento B (`experimento-b-formal`) sobre las once series de evaluación: las cuatro condiciones, D16, H2, la validez del juez automático y la etapa del fallo de C2 (OE4). | La corrida formal y su verificación quedaron completas (issue #294, épica #288) y ningún documento reportaba aún estos resultados. |
+| 1.1 | 2026-11-08 | Precisa la comparación entre condiciones y documenta el desacuerdo observado en q015, corrida 2. Actualiza los enlaces a los resultados finales. | Alinear la interpretación con los ADR 0013 y 0014 y con la muestra de verificación del juez. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -91,15 +92,16 @@ Experimento A. El comando de análisis del Experimento B guarda su informe en `a
 
 ### 2.2 Qué recibe cada condición
 
-Las cuatro condiciones usan el **mismo modelo generador** y la **misma pregunta**. Lo único que
-cambia es el material que se le entrega para contestar:
+Las cuatro condiciones usan el **mismo generador** y reciben la **misma pregunta**. Para interpretar
+la comparación entre C1 y C2 hay que distinguir el material recuperado del procedimiento que lo usa
+para responder.
 
 | Condición | En palabras simples | Qué recibe |
 |---|---|---|
 | **C0** | Sin ayuda | Nada. El modelo contesta solo con lo que ya sabe. Sirve de punto de referencia. |
-| **C1** | Leer el texto | Los 5 trozos de la transcripción más parecidos a la pregunta (la técnica usual llamada RAG). |
-| **C2** | La base automática | Objetos de una base de conocimiento construida por un modelo local a partir de las transcripciones: decisiones, conceptos, eventos, proyectos y fuentes. |
-| **C3** | La base con decisiones humanas | La misma base de C2, pero con la carpeta de decisiones reemplazada por las decisiones de la referencia hecha por personas (OE1), más las relaciones de la referencia. |
+| **C1** | Leer el texto | Recupera hasta cinco fragmentos de la transcripción y responde en una llamada con el flujo del RAG convencional. |
+| **C2** | La base automática | Recupera objetos de la base compilada y comprueba si el contexto alcanza antes de responder con OpenKOS. |
+| **C3** | La base con decisiones de referencia | Usa la consulta de C2 y sustituye las decisiones y sus enlaces por los de la referencia de OE1. |
 
 **Un ejemplo con la serie ES2002, repetición 0** (Notebook 30, §1; son archivos locales no
 versionados, por lo que la cifra proviene de la salida guardada del notebook):
@@ -108,13 +110,16 @@ versionados, por lo que la cifra proviene de la salida guardada del notebook):
   cortada en trozos.
 - **C2** lee la base construida automáticamente (`data/interim/openkos/experimento-a-formal/ES2002/run-0/bundle/`).
   Esa base tiene 54 decisiones, 19 conceptos, 2 eventos, 1 proyecto y 4 fuentes.
-- **C3** lee una copia de esa base donde solo cambian las decisiones: se reemplazan por las de la
-  referencia humana (`.../openkos-c3/experimento-a-formal/ES2002/run-0/bundle/`). Quedan 29
+- **C3** lee una copia de esa base con las decisiones y los enlaces de la referencia humana
+  (`.../openkos-c3/experimento-a-formal/ES2002/run-0/bundle/`). Quedan 29
   decisiones (la referencia tiene 31; 2 se descartaron por no tener evidencia). Los conceptos,
   eventos, proyectos y fuentes son los mismos de C2. La trazabilidad queda en su `c3-manifest.json`.
 
-Como C2 y C3 comparten el código que consulta la base, **la única diferencia entre ambas son las
-decisiones**. Por eso comparar C3 con C2 mide cuánto pesa la calidad de las decisiones.
+La diferencia C2 − C1 corresponde a los dos sistemas completos. Incluye el efecto de la
+representación y el del procedimiento de respuesta, incluida la comprobación de suficiencia de
+OpenKOS ([ADR 0014](../decisions/0014-adr-c1-como-rag-convencional.md)). C2 y C3 sí comparten la
+consulta, por lo que su contraste muestra el efecto conjunto de sustituir las decisiones y sus
+enlaces ([ADR 0013](../decisions/0013-adr-composicion-de-la-base-c3.md)).
 
 ### 2.3 Tipos de pregunta (estratos)
 
@@ -234,10 +239,9 @@ muestra por qué estas dos diferencias podrían estar algo infladas.
 
 ## 4. Validez del juez automático
 
-Toda la tabla anterior descansa en el juez. El protocolo exige contrastarlo con personas: se
-etiquetó a mano una muestra de 240 respuestas (60 por condición) sin ver la condición ni el
-veredicto del juez. Fuente: Notebook 30, §3 (`juez-humano.json`, `muestra-juez.csv` y
-`muestra-juez.clave.csv`).
+Germán verificó a ciegas 240 respuestas, 60 por condición. La hoja de anotación ocultaba la
+condición y el veredicto del juez. El Notebook 30 (§3) cruza esa hoja con su clave y comprueba
+el acuerdo registrado en `juez-humano.json`.
 
 ### 4.1 Acuerdo global
 
@@ -281,22 +285,23 @@ estricto con C0**. De ahí se desprende lo siguiente:
 - La corrección de C0 (0,16) **probablemente está subestimada**.
 - Las diferencias **C1 − C0 y C2 − C0 probablemente están sobreestimadas**; el tamaño del sesgo no
   está medido.
-- **D16 no se ve afectada**: compara C2 con C1, y ambas condiciones cumplen el umbral por
-  separado (0,899 y 0,718). Tampoco H2, que compara C3 con C2.
+- **D16 y H2 usan otras condiciones.** D16 compara C2 con C1, y H2 compara C3 con C2. El menor
+  acuerdo observado en C0 afecta la lectura de las comparaciones que incluyen esa condición.
+  El acuerdo por condición es exploratorio y el umbral se aplica a la muestra completa.
 
-### 4.4 Dos preguntas que un juez estricto podría rechazar de más
+### 4.4 Un desacuerdo comprobado y cuatro casos fuera de la muestra
 
-Dos preguntas de E1 muestran a C2 marcada como incorrecta en repeticiones donde la anotación de la
-sección 5 las describe de otra manera (Notebook 30, §3):
+En **q015, corrida 2**, el juez marcó la respuesta como incorrecta y Germán como correcta. El
+Notebook 30 (§3) muestra el desacuerdo al unir la hoja de verificación y su clave por `id`.
 
-| Pregunta | Repeticiones que el juez marcó incorrectas | Etapa que asigna la anotación | Qué se observa |
+| Pregunta | Corridas que el juez marcó incorrectas | Etapa OE4 | Verificación de la corrección |
 |---|---|---|---|
-| q015 | 0 y 2 (la 1 la marcó correcta) | síntesis | El objeto recuperado ya respalda lo que responde C2. |
-| q019 | 0, 1 y 2 | extracción | El objeto recuperado conserva el mecanismo general, pero no el detalle de la referencia. |
+| q015 | 0 y 2 | Síntesis | Germán marcó la 2 como correcta. La 0 quedó fuera de la muestra. |
+| q019 | 0, 1 y 2 | Extracción | Las tres quedaron fuera de la muestra. |
 
-Son **posibles falsos negativos** de un juez estricto: no están verificados por una persona (solo
-una de esas respuestas, la repetición 2 de q015, cayó en la muestra de verificación) y no se
-corrige ninguna cifra por ellos.
+El desacuerdo de q015 ilustra un error individual respecto de la etiqueta humana de verificación.
+Los cuatro casos restantes se mantienen como observaciones. El conteo formal usa el veredicto del
+juez bajo el criterio de acuerdo global fijado para la corrida.
 
 ## 5. OE4: en qué etapa falla C2
 
@@ -386,17 +391,15 @@ equivale a una cita precisa.
 
 ## 7. Lectura de conjunto
 
-- **El fallo está en la extracción, no en la consulta.** La etapa más frecuente del fallo de C2 en
-  E1 es la extracción (48,8 % de 43 respuestas incorrectas). Además, C2 y C3 comparten el código
-  de consulta y difieren solo en las decisiones del espacio de trabajo; al reemplazar las decisiones
-  automáticas por las de la referencia, la corrección en E3 pasa de 0,17 (C2) a 0,71 (C3), una
-  brecha de 0,54. Eso apunta a que lo que limita a C2 es el contenido de sus decisiones, no cómo se
-  consultan.
+- **La extracción es la etapa más frecuente en E1.** Representa 21 de los 43 fallos de C2 (48,8 %).
+  Recuperación y síntesis representan 11 cada una. En un contraste distinto, C3 conserva la consulta
+  de C2 y reemplaza las decisiones y sus enlaces. La corrección en E3 pasa de 0,17 a 0,71, una
+  diferencia de 0,54 en esta corrida.
 - **C2 no supera a C1** (D16 no se respalda, con dirección contraria) y H2 queda no concluyente.
 - **El juez es utilizable para la corrección,** no para la evidencia, y no permite evaluar H4.
-- **Lo que C3 es y no es.** C3 es una referencia solo para las decisiones: sus conceptos, eventos,
-  proyectos y fuentes siguen siendo los de la extracción automática. **No es un techo teórico** de
-  lo que OpenKOS podría lograr con una base perfecta.
+- **Cómo interpretar C3.** Las decisiones y enlaces de referencia también sirvieron para redactar
+  el banco de preguntas. Por eso C3 mide un escenario de control con acceso a ese contenido. Los
+  conceptos, eventos, proyectos y fuentes siguen siendo los de la extracción automática.
 
 ## 8. Límites
 
@@ -409,8 +412,8 @@ equivale a una cita precisa.
 - **`evidence_supported` no es confiable y H4 no es evaluable** con este juez (sección 4.1).
 - **Kappa por condición.** Es exploratorio (60 ítems por condición); en C0 queda bajo el umbral y
   las diferencias frente a C0 podrían estar sobreestimadas (sección 4.3).
-- **Posibles falsos negativos del juez** (q015 y q019, sección 4.4): no cambian ninguna cifra
-  publicada.
+- **Desacuerdo en la muestra.** q015, corrida 2, recibió juicios distintos del juez y de Germán.
+  La revisión humana de la corrección se limita a los ítems incluidos en la muestra (§4.4).
 - **La regla de síntesis es léxica.** Los 3 casos que atribuye la regla (sección 5.1) se basan en
   coincidencia de palabras, no de significado.
 - **Una sola corrida formal,** con un generador local pequeño, 25 preguntas por estrato (24 en E3) y
@@ -419,9 +422,10 @@ equivale a una cita precisa.
 
 ## 9. Qué sigue
 
-1. **Tablas finales** de la tesis con las cifras de la corrida formal de ambos experimentos.
-2. **Notebook 31**, que reúne las cifras para las tablas y figuras finales.
-3. **Avance de conclusiones**, que contrasta estos resultados con las hipótesis y los objetivos.
+Las [tablas finales](../../reports/tables/), el [Notebook 31](../../notebooks/31-jss-resultados-finales.ipynb)
+y el [avance de conclusiones](13-jss-conclusiones.md) reúnen los resultados de ambos experimentos.
+El [preinforme 02](informes/02-jss-pre-informe.md) integra las cifras y su interpretación para la
+entrega de AFG2.
 
 ## 10. Referencias
 
