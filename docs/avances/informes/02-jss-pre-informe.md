@@ -4,9 +4,9 @@
 |---|---|
 | **Documento** | 02 — Pre-informe AFG2, redactado después de los experimentos formales |
 | **Autores** | Jason Sepúlveda S., Germán Vega, Gustavo Martínez |
-| **Versión** | 1.0 |
-| **Fecha** | 2026-11-07 |
-| **Estado** | Versión para envío |
+| **Versión** | 1.1 |
+| **Fecha** | 2026-11-08 |
+| **Estado** | En revisión para envío |
 
 ## Historial de versiones
 
@@ -15,6 +15,7 @@
 | 0.1 | 2026-11-07 | Borrador inicial, redactado a partir de los avances 01 a 13 (en particular 10 a 13) y de las tablas finales. Documento aparte del [pre-informe 01](01-jss-pre-informe.md), que se escribió antes de los experimentos y no se modifica. No se ha enviado. | Las dos corridas formales, las verificaciones humanas y las conclusiones quedaron completas (épica #288); el pre-informe de AFG2 se entrega el 2026-11-09 y debe reportar resultados formales y no preliminares. |
 | 0.2 | 2026-11-07 | Se verifican en arXiv las dos referencias pendientes heredadas del 01 (título, autores y DOI coinciden; siguen como *preprint*) y la cita de OpenKOS apunta a la publicación de v0.7.0. | Pendientes de verificación heredados del pre-informe 01. |
 | 1.0 | 2026-11-07 | Versión para envío, sin cambios de contenido respecto de la 0.2. El PDF enviado se registra en una fila nueva al enviarse. | Decisión de jss de cerrar el borrador antes de la entrega del 2026-11-09. |
+| 1.1 | 2026-11-08 | Incorpora una figura del EDA, precisa el diseño de B, documenta el desacuerdo de q015 y corrige referencias. | Revisión con la rúbrica de AFG2 y contraste con el Notebook 30 y el Avance 12. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (0.1 → 0.2). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero y **debe declarar la evidencia
@@ -29,7 +30,7 @@
 
 ### 1.1 Tema y relevancia
 
-Las organizaciones graban y transcriben casi todas sus reuniones, pero no por ello recuerdan lo que decidieron. En una serie del corpus usado aquí, el resumen oficial de la cuarta reunión afirma que el equipo eliminó el botón «turbo» de un control remoto; al leer la transcripción completa, el botón se mantuvo. Ese registro daría una respuesta segura, bien redactada y falsa.
+Una transcripción conserva lo que se dijo en una reunión. Reconstruir lo acordado exige seguir la conversación y, a veces, contrastarla con el resumen. En la cuarta reunión de una serie del corpus, el resumen oficial afirma que el equipo eliminó el botón «turbo» de un control remoto. La transcripción muestra que el equipo decidió conservarlo.
 
 La respuesta habitual a «¿qué se decidió sobre X?» es la recuperación aumentada (RAG; Lewis et al., 2020): se buscan los fragmentos más parecidos a la pregunta y un modelo de lenguaje redacta con ellos. Este trabajo mide si conviene compilar las decisiones en una base persistente que registre su evolución, y cuánto cuesta que la construya una máquina que se equivoca. Importa porque un error de extracción en una base compilada se escribe una vez y se lee en cada consulta, y porque la evidencia disponible compara sistemas completos sin separar el valor de la estructura del de quien la construye (Edge et al., 2024).
 
@@ -46,7 +47,7 @@ La hipótesis principal (H1) es que la base compilada supera al RAG convencional
 
 ### 1.3 Alcance
 
-Este documento reporta los cuatro objetivos medidos. La referencia humana (OE1) está cerrada para las 14 series. Los experimentos formales se corrieron una vez cada uno sobre las 11 series de evaluación, con un solo modelo local pequeño: el Experimento A mide la extracción (OE2) y el B, la respuesta a preguntas y la atribución de errores (OE3 y OE4). Las cifras describen ese caso y no se generalizan.
+La referencia humana (OE1) cubre 14 series. Los experimentos formales usan las 11 series de evaluación y un generador local pequeño. El Experimento A mide la extracción (OE2). El B compara la respuesta a preguntas (OE3) y atribuye los fallos de la base automática en preguntas de hecho puntual (OE4). Los resultados corresponden a este corpus y a esta configuración.
 
 ## 2. Caracterización del problema
 
@@ -54,7 +55,7 @@ Este documento reporta los cuatro objetivos medidos. La referencia humana (OE1) 
 
 Las decisiones se pierden por tres razones: se reparten entre varios turnos (propuesta, objeción, acuerdo implícito); nadie las anuncia, así que nada distingue el pasaje donde se decidió algo de uno donde solo se conversó; y cuando se revisan en una reunión posterior, el cambio no queda escrito en ninguna transcripción. Ni las personas coinciden en qué es una decisión: Hsueh y Moore (2007) encontraron que son solo el 1,4 % de los actos de diálogo del corpus AMI, y Fernández et al. (2008) repitieron la marca con un criterio propio, con un acuerdo peor que el azar (kappa negativo, 12,22 % de solapamiento). Una etiqueta hay que medirla, venga de una persona o de un modelo.
 
-Un RAG tiene aquí tres límites que no se corrigen buscando mejor: no guarda memoria entre consultas; no ve la relación entre dos pasajes lejanos, porque «A revierte a B» es propiedad del par y no de cada fragmento; y recupera trozos de texto, no decisiones. Compilar una base los resuelve, pero un error de extracción persiste y, si nadie lo corrige, termina pareciendo un hecho.
+En el RAG convencional de este estudio, cada consulta recupera fragmentos de la transcripción. Para reconstruir una reversión, tiene que recuperar los dos pasajes pertinentes y el generador debe inferir cómo se relacionan. Una base compilada permite recuperar la decisión y su enlace directamente. Su utilidad depende de que la extracción haya registrado ambos con precisión.
 
 ### 2.2 Contextualización en el campo de estudio
 
@@ -92,7 +93,11 @@ Nada se entrena: la partición separa dónde se toman decisiones de diseño de d
 
 ### 4.1 Patrones, tendencias y anomalías
 
-La primera reunión de la serie es distinta de las otras tres: la mediana es de 3,5 decisiones en la reunión a, frente a 8,0, 6,5 y 7,0 en b, c y d, y la reunión a aporta 51 de las 343 frases candidatas (14,9 %). Una serie completa excede entre 1,6 y 2,8 veces la ventana de 12.288 tokens del modelo, de modo que ninguno puede leerla entera. Las decisiones sin evidencia no se distribuyen al azar: son 0 de 51 en la reunión a, 4,7 % en b, 11,2 % en c y 11,5 % en d.
+![Distribución de decisiones por posición de la reunión en la serie](../../entregables/figuras/eda-decisiones-por-posicion.png)
+
+**Figura 1.** Decisiones por reunión según su posición en las 14 series. Las cifras sobre cada caja indican la mediana.
+
+La mediana de la primera reunión es 3,5 decisiones y en las siguientes va de 6,5 a 8,0. La primera reunión aporta 51 de las 343 frases candidatas (14,9 %). La proporción de frases sin evidencia sube del 0 % en la primera al 11,5 % en la última. Así, las reuniones posteriores concentran más decisiones y también más casos cuyo respaldo requiere revisión. Una serie completa ocupa entre 1,6 y 2,8 veces la ventana de 12.288 tokens del generador, por lo que es necesario segmentar o recuperar contexto.
 
 ### 4.2 Sesgo por rol del hablante
 
@@ -100,7 +105,7 @@ Cada participante tiene un rol: jefe de proyecto (PM), diseñador industrial (ID
 
 ![El jefe de proyecto enuncia casi la mitad de las decisiones, en los tres sitios](../../entregables/figuras/eda-decisiones-por-rol.png)
 
-**Figura 1.** Porcentaje de los actos de diálogo que respaldan decisiones, por rol (izquierda, 685 actos en las 14 series), y porcentaje atribuido al PM en cada sitio (derecha). La línea punteada es el reparto uniforme.
+**Figura 2.** Porcentaje de los actos de diálogo que respaldan decisiones, por rol (izquierda, 685 actos en las 14 series), y porcentaje atribuido al PM en cada sitio (derecha). La línea punteada es el reparto uniforme.
 
 El PM respalda el 47,0 % de los actos, casi el doble de un reparto uniforme; siguen ID (22,8 %), ME (15,3 %) y UI (14,9 %), y en cada sitio el PM se mantiene entre 44 % y 50 %. Si el sistema recuperara mejor lo que dice quien preside, el diseñador que propuso una idea desaparecería del registro: amplificaría la jerarquía. Por eso los resultados se publican por rol solo como agregados (sección 6.2).
 
@@ -112,34 +117,34 @@ Anotar a mano los 3.071 pares tomaría unas 77 horas y casi todos no se relacion
 
 ### 5.1 Qué es «el modelo» y qué recibe cada condición
 
-El proyecto **no entrena ningún modelo**: los modelos de lenguaje (LLM) ya vienen entrenados y se ejecutan en un computador propio con Ollama, de modo que ningún dato sale de la máquina. Se evalúa si una forma de organizar la información responde mejor que otra, así que «el modelo» es el *pipeline* completo de cada condición; el juez es un instrumento de medida. OpenKOS (Sepúlveda, 2026), que compila y consulta la base, es un programa de código abierto desarrollado antes por un integrante del equipo: es el instrumento, no un aporte de la tesis.
+Se evalúa el procedimiento completo con que cada condición responde. Los modelos ya entrenados se ejecutan localmente con Ollama. OpenKOS 0.7.0 (Sepúlveda, 2026) es el instrumento que compila y consulta la base.
 
-**Tabla 2.** Las cuatro condiciones: mismo generador, *embeddings*, hardware y ventana de contexto; cambia solo el material que se entrega.
+**Tabla 2.** Condiciones del Experimento B. Las cuatro usan el mismo generador y reciben las mismas preguntas.
 
-| | Qué recibe el modelo para responder | Papel |
+| Condición | Qué recibe el modelo para responder | Papel |
 |---|---|---|
-| C0 | Nada: responde con lo que ya sabe | Referencia descriptiva |
-| C1 | Los 5 trozos de la transcripción cruda más parecidos a la pregunta (RAG convencional con búsqueda híbrida léxica y densa) | **Línea base** |
-| C2 | Objetos de una base compilada por máquina con OpenKOS 0.7.0 a partir de las transcripciones: decisiones, conceptos, eventos, proyectos y fuentes | Propuesta evaluada |
-| C3 | La misma base de C2, pero con las decisiones (y sus relaciones) reemplazadas por las de la referencia humana | Referencia para las decisiones |
+| C0 | Responde sin recuperar contexto. | Referencia descriptiva |
+| C1 | Recupera hasta cinco fragmentos de la transcripción mediante búsqueda híbrida y responde en una llamada. | **Línea base** |
+| C2 | Recupera objetos de la base compilada. OpenKOS comprueba si el contexto alcanza antes de responder. | Propuesta evaluada |
+| C3 | Aplica la consulta de C2 a una base con decisiones y enlaces de la referencia humana. | Control con decisiones de referencia |
 
-C2 y C3 comparten el código que consulta la base y difieren solo en las decisiones; por eso la distancia entre C3 y C2 mide el costo de los errores de extracción de la máquina. La distancia entre C1 y C2 no puede repartirse entre representación y etapa de respuesta, porque C1 y C2 también difieren en esta última (limitación declarada).
+C1–C2 compara dos sistemas completos, porque cambian la representación y el procedimiento de respuesta (ADR 0014). C2–C3 mantiene la consulta y mide el efecto conjunto de sustituir las decisiones y sus enlaces (ADR 0013).
 
 ### 5.2 Modelos, parámetros y su justificación
 
-Los cinco roles de modelo y sus candidatos están en el Anexo A. El **generador** es `qwen3:8b` en todas las condiciones, porque la regla del mismo modelo generativo lo exige, corre en local y es el de OpenKOS; los *embeddings* son `bge-m3`, multilingües y heredados de OpenKOS. El **extractor** `qwen3:8b` se eligió con un tamizaje de cuatro modelos con reglas fijadas antes de correr: `qwen3.6:27b` mejora el F1 de decisiones en desarrollo, pero tarda 3,6 y 1,8 veces más y no es el modelo del producto evaluado, de modo que usarlo modificaría el sistema que se mide. La verificación de suficiencia usa `gemma4:26b-a4b`, empaquetado en OpenKOS (solo C2 y C3). El **juez** es `gpt-oss:20b`, elegido entre tres candidatos con seis umbrales fijados antes de correr; es de otra familia que el generador, porque los modelos tienden a favorecer sus propias respuestas (Panickssery et al., 2024) y los jueces tienen otros sesgos (Wang et al., 2024), aunque pueden funcionar (Zheng et al., 2023).
+El generador es `qwen3:8b` en las cuatro condiciones. Se mantuvo también como extractor porque forma parte del sistema evaluado. En desarrollo, `qwen3.6:27b` mejoró el F1 con mayor tiempo de extracción (Anexo A). Se usa `bge-m3` para la recuperación densa y `gemma4:26b-a4b` para verificar la suficiencia en C2 y C3. El juez `gpt-oss:20b` se eligió por su acuerdo, estabilidad ante el orden y latencia. Su familia es distinta de la del generador para limitar el riesgo de autopreferencia (Panickssery et al., 2024; Wang et al., 2024; Zheng et al., 2023).
 
-Para C1 se hizo una grilla de 32 configuraciones con regla fijada antes de ver resultados y como métrica el recall de la evidencia que de verdad llega al modelo, sobre 17 preguntas de desarrollo. El umbral τ, que decide si una decisión extraída es «la misma» que una de referencia, se fijó en 0,70 (sensibilidad 0,75 y 0,80); como el juez de alineación fue más estricto que una persona (43 de 50 pares, 86 %, kappa 0,716), las cifras de extracción son un piso conservador. Temperatura (0,1; 0,0 en el juez), semilla (42), ventana (12.288 tokens) y 3 repeticiones se fijaron por diseño.
+C1 segmenta la transcripción con `RecursiveCharacterTextSplitter` de `langchain-text-splitters`. Se evaluaron 32 configuraciones sobre 17 preguntas de desarrollo y se eligió según el *recall* de la evidencia que llega al generador (ADR 0007 y 0014). Para alinear decisiones se fijó τ = 0,70 y se comprobó la sensibilidad a 0,75 y 0,80. Las temperaturas, la semilla, la ventana de contexto y las repeticiones se resumen en el Anexo A.
 
 ### 5.3 Métricas y criterio de éxito
 
 OE1 se mide con kappa de Cohen en existencia, tipo y dirección por separado, sin umbral. OE2, con precision, recall y F1 sobre τ, y con existencia, tipo y dirección de las relaciones. OE3, con la corrección de la respuesta calificada por el juez, por estrato: hecho puntual (E1), estado vigente (E2), evolución (E3) y sin respuesta (E4). OE4, con reglas fijas de una sola categoría por error.
 
-El éxito se juzga con una sola comparación fijada de antemano (D16): la corrección en E3 de C2 frente a C1, con el intervalo *bootstrap* del 95 % (10.000 remuestreos) de la diferencia pareada por pregunta. Si queda por completo sobre 0, H1 queda respaldada; si incluye el 0, es no concluyente; si queda bajo 0, es contrario. Personas revisan además el 20 % de las respuestas (kappa mínimo 0,70 frente al juez).
+La comparación principal (D16) mide la diferencia de corrección entre C2 y C1 en E3. Se calcula un intervalo *bootstrap* del 95 % con 10.000 remuestreos pareados por pregunta. H1 se respalda si todo el intervalo queda por encima de 0. Si incluye 0, la comparación es no concluyente. Si queda por debajo, la dirección es contraria a la hipótesis. Para la verificación de la corrección se fija un kappa mínimo de 0,70 entre el juez y la revisión de una muestra estratificada de aproximadamente el 20 % de las respuestas.
 
 ### 5.4 Línea base
 
-La línea base es **C1**, un RAG convencional híbrido: es lo que cualquier organización haría hoy y se ajustó con datos para que no sea débil. **C0** es una referencia descriptiva: indica cuánto aporta recuperar texto y cuánto la base compilada frente a no recuperar nada. La extracción no tiene línea base comparativa y se lee como curva sobre τ.
+**C1** es la línea base porque resuelve la misma tarea sobre las transcripciones con recuperación léxica y semántica, ajustada en desarrollo. **C0** da una referencia descriptiva del rendimiento del generador sin contexto recuperado. La evaluación de la extracción se presenta como una curva de sensibilidad a τ.
 
 ## 6. Resultados obtenidos
 
@@ -147,11 +152,11 @@ Los resultados son formales: una corrida por experimento sobre las 11 series de 
 
 ### 6.1 Confiabilidad de la referencia (OE1)
 
-Dos personas anotaron por separado y una tercera resolvió cada desacuerdo. La Figura 2 reporta la Fase 2 (cuatro series de control); la Fase 1 fue una calibración diagnóstica y no se reporta.
+Dos personas anotaron por separado y una tercera resolvió los desacuerdos. La Figura 3 reporta las cuatro series de control de la Fase 2. La Fase 1 se usó para calibrar la anotación.
 
 ![Kappa de Cohen y acuerdo simple por pregunta de anotación: existencia 0,783 con 37 pares, tipo 0,554 con 18 pares y dirección indefinida con 37 pares](../../entregables/figuras/referencia-acuerdo-oe1.png)
 
-**Figura 2.** Acuerdo entre las dos personas que anotan, Fase 2 (cuatro series de control). Izquierda: kappa de Cohen. Derecha: porcentaje de pares con la misma etiqueta.
+**Figura 3.** Acuerdo entre anotadores en la Fase 2. A la izquierda, kappa de Cohen. A la derecha, porcentaje de pares con la misma etiqueta.
 
 Las dos personas coinciden en si dos decisiones están enlazadas (kappa de 0,783; acuerdo de 89,2 % en 37 pares) y menos en la clase de enlace (kappa de 0,554; 72,2 % en 18 pares): sustancial y moderado en la escala convencional de lectura. La dirección no tiene kappa: en los 37 pares ambas marcaron la misma y, con un solo valor posible, el kappa no existe. De las 14 series, 6 tienen referencia adjudicada tras doble anotación y 8 tienen un solo anotador; en evaluación son 4 y 7, y esa parte no tiene medida de acuerdo. La referencia de evaluación tiene 278 decisiones y 37 relaciones (24 de evolución).
 
@@ -196,11 +201,13 @@ En E4 lo correcto es abstenerse; C2 y C3 lo hacen siempre, de modo que ese 1,00 
 
 ### 6.4 Validez del juez automático
 
-Dos personas etiquetaron a ciegas 240 respuestas (60 por condición). Para la corrección, el juez se mantiene: kappa de 0,807 (acuerdo de 0,904; umbral 0,70). Para `evidence_supported` no es confiable (kappa de 0,438; el juez es más estricto que las personas, 60,4 % de «sí» frente a 80,0 %), por lo que esa métrica no se usa para ninguna conclusión. Por condición, la corrección cumple en C1 (0,718), C2 (0,899) y C3 (0,896), pero no en C0 (0,484): el juez es más estricto que las personas con C0 (16,7 % de «sí» frente a 28,3 %). La corrección de C0 probablemente está subestimada y sus diferencias con C1 y C2 (0,56 y 0,33 en el total) probablemente sobreestimadas, aunque el tamaño del sesgo no está medido. D16 y H2 no se ven afectadas, porque comparan condiciones que sí cumplen el umbral.
+Germán verificó a ciegas 240 respuestas, 60 por condición. El kappa de corrección (0,807) supera el umbral global de 0,70. El de `evidence_supported` (0,438) queda por debajo y limita esa métrica a una lectura descriptiva. El desglose por condición es exploratorio. En C0 se observa el menor acuerdo (0,484) y menos respuestas correctas para el juez que para Germán (16,7 % frente a 28,3 %). Las diferencias frente a C0 podrían estar sobreestimadas. D16 y H2 comparan otras condiciones. El Notebook 30 (§3) presenta el desglose completo.
+
+En q015, corrida 2, el juez marcó la respuesta como incorrecta y Germán como correcta. La corrida 0 de q015 y las tres de q019 también fueron marcadas como incorrectas por el juez y quedaron fuera de la muestra. Las tasas formales usan el criterio de corrección fijado para la corrida.
 
 ### 6.5 Atribución del error (OE4)
 
-C2 respondió mal 43 veces en E1 (en las 3 repeticiones). La etapa más frecuente es la extracción: el dato no llegó a quedar en la base.
+El juez marcó 43 respuestas de C2 como incorrectas en E1, contando las tres repeticiones. La extracción fue la etapa más frecuente, con 21 de esos 43 casos.
 
 **Tabla 5.** Etapa del fallo de C2 en hechos puntuales.
 
@@ -220,13 +227,13 @@ Son tiempos de pared de una máquina concreta; los tokens y la memoria no se reg
 
 ### 7.1 Discusión frente a la literatura
 
-Que recuperar texto suba la corrección de 0,16 a 0,72 es coherente con la premisa del RAG (Lewis et al., 2020), aunque la distancia con C0 puede estar algo inflada por el juez (sección 6.4). La literatura de índices estructurados (Edge et al., 2024; Guo et al., 2025) no separa cuánto de su ventaja viene de la representación y cuánto de quien la construye; aquí C3 sí lo separa para las decisiones: con las mismas consultas, pasar de decisiones automáticas a humanas lleva la corrección en E3 de 0,17 a 0,71. Eso es coherente con que un error de extracción se propaga a lo que se calcula después (Cai y O'Connor, 2025), y la baja precision de la extracción (0,149) es compatible con el riesgo descrito de memoria contaminada (Zhang y Li, 2026), que este trabajo no midió. El kappa de existencia (0,783) no es comparable punto a punto con el negativo de Fernández et al. (2008), pero muestra que con guía y adjudicación sí hay acuerdo.
+Al recuperar texto, la corrección total sube de 0,16 a 0,72, en línea con la premisa del RAG (Lewis et al., 2020). El menor acuerdo con el juez en C0 limita la lectura de esa brecha (sección 6.4). Los estudios de índices estructurados comparan sistemas completos (Edge et al., 2024; Guo et al., 2025). Aquí se mantiene la consulta entre C2 y C3. Al incorporar las decisiones y enlaces de la referencia, la corrección en E3 pasa de 0,17 a 0,71. El resultado es consistente con la propagación de errores desde la extracción (Cai y O'Connor, 2025). La precisión de extracción de 0,149 también es compatible con el riesgo de memoria contaminada descrito por Zhang y Li (2026), cuya magnitud queda por medir. El kappa de existencia de 0,783 documenta el acuerdo con esta guía y este procedimiento de anotación, que difieren de los usados por Fernández et al. (2008).
 
 ### 7.2 Aprendizajes, fallas, riesgos y limitaciones
 
-**El cuello de botella es la extracción, no la consulta.** C2 y C3 comparten el código que consulta; la brecha entre ambas (0,54 en E3, 0,49 a 0,80 en el total) y el 48,8 % de fallos de extracción apuntan al contenido de las decisiones. Pero esa causa no se atribuye a una sola cosa: el diseño de la extracción de OpenKOS y la capacidad del modelo local (`qwen3:8b`) están **confundidos**, y el experimento no los separa. **C3 es una referencia para las decisiones, no un techo:** sus conceptos, eventos, proyectos y fuentes siguen siendo los de la extracción automática.
+**La extracción concentra la mayor proporción de fallos de C2 en E1** (48,8 %). El experimento prueba juntos el diseño de extracción y el modelo local. En C3, las decisiones y los enlaces provienen de la referencia que también se usó para redactar el banco de preguntas. El 0,80 total describe ese escenario de control (ADR 0013). Los conceptos, eventos, proyectos y fuentes siguen siendo de extracción automática.
 
-Otras limitaciones: un solo modelo y una sola corrida formal por experimento; referencia de un solo anotador en 7 de las 11 series; muestra pequeña (25 preguntas por estrato, 24 en E3), de modo que las cifras por estrato son descriptivas; pocas relaciones (24 y 27 casos en la vista condicionada, 11 en tipo y dirección), que dejan H3 sin conclusión; un juez no confiable para evidencia y para H4; dos posibles falsos negativos del juez no verificados por una persona, que no cambian ninguna cifra; un solo corpus y una referencia comparada en inglés. El Anexo A (Tabla A4) resume riesgos y mitigaciones.
+Los resultados proceden de un solo corpus y una corrida formal por experimento. Siete de las once series de evaluación tienen un solo anotador. Los intervalos son amplios con 25 preguntas por estrato (24 en E3), y los pocos enlaces detectados limitan H3. La verificación del juez deja abierta la evaluación de evidencia y de respuestas desactualizadas. El Anexo A resume estas limitaciones y su tratamiento.
 
 ### 7.3 Ética integrada
 
@@ -234,7 +241,7 @@ Tres principios organizan el trabajo, y cada uno se traduce en algo que se mide.
 
 ### 7.4 Conclusiones y próximos pasos
 
-Con un modelo local pequeño, compilar automáticamente las decisiones **todavía no** supera a recuperar texto: la base de máquina responde peor que el RAG en todos los estratos con respuesta (0,49 frente a 0,72 en el total), cada consulta es más lenta y no hay punto de equilibrio. En cambio, la misma base con decisiones humanas alcanza 0,80: la idea funciona cuando las decisiones son buenas, y lo que falla es obtenerlas automáticamente (la máquina encuentra 0,308 de las de la referencia). Un resultado negativo es informativo: acota el valor de compilar en este dominio.
+En esta corrida, el RAG convencional obtuvo 0,72 de corrección total frente a 0,49 de la base automática, con menor tiempo por consulta. Al sustituir las decisiones y los enlaces por los de referencia bajo la misma consulta de OpenKOS, la corrección total llegó a 0,80. La extracción automática encontró el 30,8 % de las decisiones de referencia, lo que orienta el trabajo siguiente hacia la calidad del contenido de la base.
 
 Los pasos siguientes hacia AFG3 son: (1) correr el modelo de mayor escala, ya configurado pero no ejecutado, para separar diseño de extracción y capacidad del modelo y evaluar la cláusula de tamaño de H3; (2) probar, como **hipótesis y no como resultado**, que personas confirmen o corrijan las decisiones al capturarlas, con la búsqueda de texto como respaldo, midiendo el esfuerzo humano; (3) un juez capaz de evaluar H4 y la evidencia; (4) ampliar la referencia con doble anotación de las series de un solo anotador; y (5) un contraste preregistrado de C3 frente a C1 y una medición de costo completa.
 
@@ -258,7 +265,7 @@ Hsueh, P.-Y., & Moore, J. D. (2007). What decisions have you made? Automatic dec
 
 Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N., Küttler, H., Lewis, M., Yih, W., Rocktäschel, T., Riedel, S., & Kiela, D. (2020). Retrieval-augmented generation for knowledge-intensive NLP tasks. En *Advances in Neural Information Processing Systems 33* (pp. 9459–9474).
 
-Liska, A., Kocisky, T., Gribovskaya, E., Terzi, T., Sezener, E., Agrawal, D., de Masson d'Autume, C., Scholtes, T., Zaheer, M., Young, S., Molloy, R., Lazaridou, A., & Blunsom, P. (2022). StreamingQA: A benchmark for adaptation to new knowledge over time in question answering models. En *Proceedings of the 39th International Conference on Machine Learning (ICML 2022)* (PMLR, vol. 162, pp. 13604–13622).
+Liska, A., Kocisky, T., Gribovskaya, E., Terzi, T., Sezener, E., Agrawal, D., De Masson D’Autume, C., Scholtes, T., Zaheer, M., Young, S., Gilsenan-Mcmahon, E., Austin, S., Blunsom, P., & Lazaridou, A. (2022). StreamingQA: A benchmark for adaptation to new knowledge over time in question answering models. En *Proceedings of the 39th International Conference on Machine Learning* (Vol. 162, pp. 13604–13622). PMLR. https://proceedings.mlr.press/v162/liska22a.html
 
 Murray, G., Kleinbauer, T., Poller, P., Becker, T., Renals, S., & Kilgour, J. (2009). Extrinsic summarization evaluation: A decision audit task. *ACM Transactions on Speech and Language Processing*, *6*(2).
 
@@ -272,7 +279,7 @@ Vu, T., Iyyer, M., Wang, X., Constant, N., Wei, J., Wei, J., Tar, C., Sung, Y.-H
 
 Walsh, J. P., & Ungson, G. R. (1991). Organizational memory. *Academy of Management Review*, *16*(1), 57–91. https://doi.org/10.5465/amr.1991.4278992
 
-Wang, P., Li, L., Chen, L., Cai, Z., Zhu, D., Lin, B., Cao, Y., Liu, Q., Liu, T., & Sui, Z. (2024). Large language models are not fair evaluators. En *Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (ACL 2024)* (pp. 9440–9450). Association for Computational Linguistics. https://doi.org/10.18653/v1/2024.acl-long.511
+Wang, P., Li, L., Chen, L., Cai, Z., Zhu, D., Lin, B., Cao, Y., Kong, L., Liu, Q., Liu, T., & Sui, Z. (2024). Large language models are not fair evaluators. En *Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (ACL 2024)* (pp. 9440–9450). Association for Computational Linguistics. https://doi.org/10.18653/v1/2024.acl-long.511
 
 Zhang, Y., & Li, S. (2026). *ConsistencyGate: Preventing memory contamination in LLM agents via self-consistency admission control* (arXiv:2607.22962) [Preprint, sin revisión por pares]. https://doi.org/10.48550/arXiv.2607.22962
 
@@ -281,6 +288,8 @@ Zheng, L., Chiang, W.-L., Sheng, Y., Zhuang, S., Wu, Z., Zhuang, Y., Lin, Z., Li
 ---
 
 ## Anexo A. Modelos por rol, candidatos y riesgos
+
+Parámetros fijados por diseño: temperatura de 0,1 en el generador y 0,0 en el juez, semilla 42, ventana de 12.288 tokens y tres repeticiones por pregunta.
 
 **Tabla A1.** Modelos por rol.
 
