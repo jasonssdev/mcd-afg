@@ -40,10 +40,10 @@ La respuesta habitual a «¿qué se decidió sobre X?» es la recuperación aume
 
 - **OE1.** Construir un *ground truth* de decisiones con enlaces de evolución, con confiabilidad medida por kappa de Cohen.
 - **OE2.** Medir la calidad de la extracción automática (precision, recall y F1) contra ese *ground truth*.
-- **OE3.** Medir la utilidad funcional de tres condiciones (RAG convencional, base de máquina y base con decisiones humanas) sobre un mismo banco de preguntas.
+- **OE3.** Medir la utilidad funcional de tres condiciones (RAG convencional, base de máquina (OpenKOS) y base con decisiones humanas) sobre un mismo banco de preguntas.
 - **OE4.** Atribuir cada error de la base de máquina a su etapa de origen: extracción, recuperación o síntesis.
 
-La hipótesis principal (H1) es que la base compilada supera al RAG convencional en preguntas de evolución de una decisión, con diferencia pequeña o nula en hechos puntuales. Otras tres, declaradas antes de ejecutar nada: la brecha entre base humana y de máquina es mayor en relaciones temporales que en decisiones (H2); la dirección de una relación es un modo de falla dominante (H3); y el RAG da más respuestas seguras pero desactualizadas (H4).
+La hipótesis principal (H1) es que la base compilada mediante OpenKOS supera al RAG convencional en preguntas de evolución de una decisión, con diferencia pequeña o nula en hechos puntuales. Otras tres, declaradas antes de ejecutar nada: la brecha entre base humana y de máquina es mayor en relaciones temporales que en decisiones (H2); la dirección de una relación es un modo de falla dominante (H3); y el RAG da más respuestas seguras pero desactualizadas (H4).
 
 ### 1.3 Alcance
 
@@ -53,23 +53,23 @@ La referencia humana (OE1) cubre 14 series. Los experimentos formales usan las 1
 
 ### 2.1 Identificación y análisis del problema
 
-Las decisiones se pierden por tres razones: se reparten entre varios turnos (propuesta, objeción, acuerdo implícito); nadie las anuncia, así que nada distingue el pasaje donde se decidió algo de uno donde solo se conversó; y cuando se revisan en una reunión posterior, el cambio no queda escrito en ninguna transcripción. Ni las personas coinciden en qué es una decisión: Hsueh y Moore (2007) encontraron que son solo el 1,4 % de los actos de diálogo del corpus AMI, y Fernández et al. (2008) repitieron la marca con un criterio propio, con un acuerdo peor que el azar (kappa negativo, 12,22 % de solapamiento). Una etiqueta hay que medirla, venga de una persona o de un modelo.
+Las decisiones se pierden por tres razones: se reparten entre varios turnos (propuesta, objeción, acuerdo implícito); nadie las anuncia, así que nada distingue el pasaje donde se decidió algo de uno donde solo se conversó; y cuando se revisan en una reunión posterior, el cambio no queda escrito en ninguna transcripción. Es tan complejo el tema, que ni las personas coinciden en qué es una decisión: Hsueh y Moore (2007) encontraron que son solo el 1,4 % de los actos de diálogo del corpus AMI, y Fernández et al. (2008) repitieron la marca con un criterio propio, con un acuerdo peor que el azar (kappa negativo, 12,22 % de solapamiento). Una etiqueta hay que medirla, venga de una persona o de un modelo.
 
 En el RAG convencional de este estudio, cada consulta recupera fragmentos de la transcripción. Para reconstruir una reversión, tiene que recuperar los dos pasajes pertinentes y el generador debe inferir cómo se relacionan. Una base compilada permite recuperar la decisión y su enlace directamente. Su utilidad depende de que la extracción haya registrado ambos con precisión.
 
 ### 2.2 Contextualización en el campo de estudio
 
-Sobre AMI, Hsueh y Moore (2007) y Fernández et al. (2008) intentaron detectar decisiones automáticamente, y Murray et al. (2009) mostraron con personas que reconstruir la historia de una decisión es difícil. GraphRAG (Edge et al., 2024) y LightRAG (Guo et al., 2025) construyen un índice estructurado antes de consultar, pero comparan sistemas completos y no separan el aporte del índice del de quien lo construyó. Las respuestas que cambian con la fecha (Liska et al., 2022; Vu et al., 2024) sustentan H4, y la memoria organizacional (Walsh y Ungson, 1991) y la racionalidad de diseño (Buckingham Shum y Hammond, 1994) discuten el costo de registrar decisiones.
+Hsueh y Moore (2007) y Fernández et al. (2008) intentaron detectar decisiones automáticamente sobre el dataset AMI, y Murray et al. (2009) mostraron con personas que reconstruir la historia de una decisión es difícil. GraphRAG (Edge et al., 2024) y LightRAG (Guo et al., 2025) construyen un índice estructurado antes de consultar, pero comparan sistemas completos y no separan el aporte del índice del de quien lo construyó. Las respuestas que cambian con la fecha (Liska et al., 2022; Vu et al., 2024) sustentan H4, y la memoria organizacional (Walsh y Ungson, 1991) y la racionalidad de diseño (Buckingham Shum y Hammond, 1994) discuten el costo de registrar decisiones.
 
-El vacío es verificable. AMI diseñó una capa de anotación, `decisionlink`, para enlazar decisiones, pero solo enlaza una decisión con una frase del resumen de la *misma* reunión y no distribuye datos: 47 archivos de decisiones, 288 decisiones marcadas y cero enlaces entre ellas. Falta, entonces, una medición controlada que separe el valor de compilar las decisiones frente a un RAG convencional, el costo de los errores de su extracción y la contribución de representar su evolución temporal.
+El vacío es verificable. AMI diseñó una capa de anotación, `decisionlink`, para enlazar decisiones, pero solo enlaza una decisión con una frase del resumen (hechas por personas) de la *misma* reunión y no distribuye datos: 47 archivos de decisiones, 288 decisiones marcadas y cero enlaces entre ellas. Falta, entonces, una medición controlada que separe el valor de compilar las decisiones (crear una especie de indice) frente a un RAG convencional, el costo de los errores de su extracción y la contribución de representar su evolución temporal.
 
 ## 3. Caracterización de los datos
 
 ### 3.1 Origen, permisos, tipo y relevancia
 
-Los datos son el AMI Meeting Corpus (Carletta et al., 2006): unas 100 horas de reuniones grabadas en tres centros europeos, cerca de dos tercios con un escenario en que un equipo de cuatro personas, cada una con un rol asignado, diseña un control remoto en cuatro reuniones consecutivas. La licencia es CC BY 4.0, que permite usar y redistribuir citando la fuente (AMI Meeting Corpus, s.f.); se verificó en la página oficial y no en los artículos del corpus, que describen un régimen anterior más restrictivo. Los participantes están anonimizados y no se intenta reidentificarlos.
+Los datos son el AMI Meeting Corpus (Carletta et al., 2006): unas 100 horas de reuniones grabadas en tres centros europeos, donde un equipo de cuatro personas, cada una con un rol asignado, diseña un control remoto en cuatro reuniones consecutivas. La licencia es CC BY 4.0, que permite usar y redistribuir citando la fuente (AMI Meeting Corpus, s.f.); se verificó en la página oficial y no en los artículos del corpus, que describen un régimen anterior más restrictivo. Los participantes están anonimizados y no se intenta reidentificarlos.
 
-Cada equipo se reúne cuatro veces; ese bloque es una **serie**, la unidad con que se elige y se anota. Una decisión es una frase del apartado de decisiones del resumen, y su evidencia son los actos de diálogo enlazados a ella. De 33 series completas se seleccionaron 14, equilibradas por sitio: 56 reuniones, 343 frases candidatas de decisión y 3.071 pares entre reuniones, de los que un filtro léxico deja 92 para anotación humana (sección 4.3). Tras el etiquetado humano, la referencia final tiene **358 decisiones** (las personas descartaron 49 frases que no eran decisiones y reemplazaron 24 frases compuestas por 88 decisiones hijas) y **46 relaciones**.
+Cada equipo se reúne cuatro veces; ese bloque es una **serie**, la unidad con que se elige y se anota. Una decisión es una frase del apartado de "decisiones del resumen", y su evidencia son los actos de diálogo enlazados a ella. De 33 series completas se seleccionaron 14, equilibradas por sitio: 56 reuniones, 343 frases candidatas de decisión y 3.071 pares entre reuniones, de los que un filtro léxico deja 92 para anotación humana (sección 4.3). Tras el etiquetado humano, la referencia final tiene **358 decisiones** (las personas descartaron 49 frases que no eran decisiones y reemplazaron 24 frases compuestas por 88 decisiones hijas) y **46 relaciones**.
 
 ### 3.2 Partición y fuga declarada
 
@@ -87,7 +87,13 @@ Nada se entrena: la partición separa dónde se toman decisiones de diseño de d
 
 **Calidad.** De 77 variables, solo tres tienen celdas vacías: hora de inicio (32 de 56 reuniones, 57,1 %), lengua materna (64 de 224 hablantes, 28,6 %) y evidencia de la decisión (26 de 343, 7,6 %); los dos primeros son estructurales. No se imputa nada: estimar la evidencia de una decisión fabricaría un respaldo inexistente. Hay 4 frases idénticas y 8 casi idénticas, siempre en reuniones consecutivas (decisiones reafirmadas), y 15 reuniones atípicas; todo se conservó con una marca.
 
-**Limitaciones.** (i) *Dominio único* y *habla actuada*: no se afirma generalización. (ii) *El material de origen contiene errores*, como el resumen del botón turbo; se contrasta contra la transcripción. (iii) *Lengua y sitio van juntos*: de 189 participantes, 91 son nativos de inglés, 96 no nativos y 2 desconocidos; se balancea por sitio. (iv) *Referencia traducida* al inglés para comparar texto con texto; la traducción nunca es una etiqueta. (v) *Muestra no aleatoria*: los resultados describen estas 14 series. (vi) *Referencia de un solo anotador* en 7 de las 11 series de evaluación (sección 6.1).
+**Limitaciones.** 
+- (i) *Dominio único* y *habla actuada*: no se afirma generalización. 
+- (ii) *El material de origen contiene errores*, como el resumen del botón turbo; se contrasta contra la transcripción. 
+- (iii) *Lengua y sitio van juntos*: de 189 participantes, 91 son nativos de inglés, 96 no nativos y 2 desconocidos; se balancea por sitio. 
+- (iv) *Referencia traducida* al inglés para comparar texto con texto; la traducción nunca es una etiqueta. 
+- (v) *Muestra no aleatoria*: los resultados describen estas 14 series. 
+- (vi) *Referencia de un solo anotador* en 7 de las 11 series de evaluación (sección 6.1).
 
 ## 4. Análisis exploratorio de datos
 
@@ -105,13 +111,36 @@ Cada participante tiene un rol: jefe de proyecto (PM), diseñador industrial (ID
 
 ![El jefe de proyecto enuncia casi la mitad de las decisiones, en los tres sitios](../../entregables/figuras/eda-decisiones-por-rol.png)
 
-**Figura 2.** Porcentaje de los actos de diálogo que respaldan decisiones, por rol (izquierda, 685 actos en las 14 series), y porcentaje atribuido al PM en cada sitio (derecha). La línea punteada es el reparto uniforme.
+**Figura 2.** Porcentaje de los actos de diálogo que respaldan decisiones, por rol (izquierda, 685 actos en las 14 series), y porcentaje atribuido al PM en cada sitio fisico donde se realizo la reunion (ES: Universidad de Edinburgh, IS: Instituto Idiap, TS: Oraganizacion TNO). La línea punteada es el reparto uniforme.
 
 El PM respalda el 47,0 % de los actos, casi el doble de un reparto uniforme; siguen ID (22,8 %), ME (15,3 %) y UI (14,9 %), y en cada sitio el PM se mantiene entre 44 % y 50 %. Si el sistema recuperara mejor lo que dice quien preside, el diseñador que propuso una idea desaparecería del registro: amplificaría la jerarquía. Por eso los resultados se publican por rol solo como agregados (sección 6.2).
 
 ### 4.3 El filtro léxico y su recall
 
 Anotar a mano los 3.071 pares tomaría unas 77 horas y casi todos no se relacionan, así que un filtro léxico conserva los pares con *overlap coefficient* (palabras compartidas sobre las de la frase más corta) de al menos 0,30 y al menos 2 palabras de contenido en común: quedan 92 pares (3,0 %, unas 2,3 horas). Se prefirió a Jaccard porque una reversión suele ser una frase corta que apunta a una larga: sobre el par de control del botón turbo Jaccard da 0,118 y lo pierde, y el *overlap coefficient* da 0,400. El filtro tiene un sesgo medido contra las frases muy cortas, y su *recall*, medido con 200 pares rechazados, es 0,407 (intervalo de Wilson al 95 % de 0,245 a 0,596); por eso 92 es lo máximo que deja anotar y no el número de relaciones del corpus (ADR 0020).
+
+### Propuesta de redacción
+
+> ### 4.3 El filtro léxico (*blocking*) y su sensibilidad (*recall*)
+>
+> Para construir la verdad fundamental (*ground truth*) de evolución temporal, se deben comparar las decisiones tomadas en distintas reuniones de un mismo equipo. Sin embargo, el espacio combinatorio completo abarca **3.071 pares posibles**, de los cuales la gran mayoría no guardan relación alguna. Etiquetar manualmente este volumen exhaustivo requeriría cerca de 77 horas de trabajo humano.
+>
+> Para hacer viable la anotación, se implementó una etapa de **bloqueo (*blocking*) léxico** que actúa como filtro de candidatos. El filtro conserva únicamente aquellos pares que comparten al menos 2 palabras de contenido y alcanzan un coeficiente de solapamiento (*overlap coefficient*) $\ge 0,30$, definido como la intersección de términos dividida por la longitud de la frase más corta:
+>
+> $$\text{Overlap}(A, B) = \frac{|A \cap B|}{\min(|A|, |B|)}$$
+>
+> **Selección de la métrica (Overlap vs. Jaccard):**  
+> Se prefirió el coeficiente de solapamiento por sobre el índice de Jaccard debido a la asimetría de longitud en el lenguaje natural de las reuniones. Una reversión o actualización de decisión suele formularse como una frase muy breve que apunta a una decisión previa extensa y detallada. En estos escenarios, Jaccard penaliza severamente el tamaño del conjunto unión; por ejemplo, en un caso de control donde se elimina una funcionalidad previamente aprobada («botón turbo»), Jaccard arroja solo 0,118 (descartando el par como falso negativo), mientras que el *overlap coefficient* alcanza 0,400 y lo rescata exitosamente.
+>
+> Con este criterio, el espacio de búsqueda se redujo a **92 pares candidatos** (el 3,0 % del total, equivalente a unas 2,3 horas de anotación).
+>
+> **Cuantificación de la pérdida:**  
+> Todo mecanismo de bloqueo heurístico introduce un sesgo (en este caso, hacia pares con frases muy cortas o vocabulario idéntico). Para auditar cuántas relaciones reales quedaron fuera de los candidatos, se anotó una muestra aleatoria de control de 200 pares rechazados por el filtro. La sensibilidad (*recall*) estimada del filtro fue de **0,407** (IC 95 % de Wilson: $[0,245;\, 0,596]$).
+>
+> **Implicancia metodológica:**  
+> Este resultado evidencia que el filtro descarta aproximadamente el 59 % de las relaciones temporales verdaderas. En consecuencia, los 92 pares finales representan el límite de lo que el filtro léxico permite rescatar para anotación y **no el universo total de relaciones del corpus**, limitación declarada formalmente en el protocolo del estudio ([ADR 0020](file:///Users/macbook/Documents/workspace/mcd-afg/docs/decisions/0020-adr-se-mantiene-el-bloqueador-lexico.md)) para evitar sobreestimar la cobertura de la base de referencia.
+
+---
 
 ## 5. Modelo de aprendizaje de máquinas
 
@@ -126,21 +155,21 @@ El proyecto **no entrena ningún modelo**. Se evalúa el procedimiento completo 
 | C0 | Responde sin recuperar contexto. | Referencia descriptiva |
 | C1 | Recupera hasta cinco fragmentos de la transcripción mediante búsqueda híbrida y responde en una llamada. | **Línea base** |
 | C2 | Recupera objetos de la base compilada. OpenKOS comprueba si el contexto alcanza antes de responder. | Propuesta evaluada |
-| C3 | Aplica la consulta de C2 a una base con decisiones y enlaces de la referencia humana. | Control con decisiones de referencia |
+| C3 | Aplica parte de la arquitectura de C2 a una base con decisiones y enlaces refinada por personas. | Control con decisiones de referencia |
 
 C1–C2 compara dos sistemas completos, porque cambian la representación y el procedimiento de respuesta (ADR 0014). C2–C3 mantiene la consulta y mide el efecto conjunto de sustituir las decisiones y sus enlaces (ADR 0013).
 
 ### 5.2 Modelos, parámetros y su justificación
 
-El generador es `qwen3:8b` en las cuatro condiciones. Se mantuvo también como extractor porque forma parte del sistema evaluado. En desarrollo, `qwen3.6:27b` mejoró el F1 con mayor tiempo de extracción (Anexo A). Se usa `bge-m3` para la recuperación densa y `gemma4:26b-a4b` para verificar la suficiencia en C2 y C3. El juez `gpt-oss:20b` se eligió por su acuerdo, estabilidad ante el orden y latencia. Su familia es distinta de la del generador para limitar el riesgo de autopreferencia (Panickssery et al., 2024; Wang et al., 2024; Zheng et al., 2023).
+El generador es `qwen3:8b` en las cuatro condiciones. Se mantuvo también como extractor porque forma parte del sistema evaluado (OpenKOS). En desarrollo, `qwen3.6:27b` mejoró el F1 con mayor tiempo de extracción (Anexo A). Se usa `bge-m3` para la recuperación densa y `gemma4:26b-a4b` para verificar la suficiencia en C2 y C3. El juez `gpt-oss:20b` se eligió por su estabilidad ante el orden y latencia. Ademas, su familia es distinta de la del generador para limitar el riesgo de autopreferencia (Panickssery et al., 2024; Wang et al., 2024; Zheng et al., 2023).
 
 C1 segmenta la transcripción con `RecursiveCharacterTextSplitter` de `langchain-text-splitters`. Se evaluaron 32 configuraciones sobre 17 preguntas de desarrollo y se eligió según el *recall* de la evidencia que llega al generador (ADR 0007 y 0014). Para alinear decisiones se fijó τ = 0,70 y se comprobó la sensibilidad a 0,75 y 0,80. Las temperaturas, la semilla, la ventana de contexto y las repeticiones se resumen en el Anexo A.
 
 ### 5.3 Métricas y criterio de éxito
 
-OE1 se mide con kappa de Cohen en existencia, tipo y dirección por separado, sin umbral. OE2, con precision, recall y F1 sobre τ, y con existencia, tipo y dirección de las relaciones. OE3, con la corrección de la respuesta calificada por el juez, por estrato: hecho puntual (E1), estado vigente (E2), evolución (E3) y sin respuesta (E4). OE4, con reglas fijas de una sola categoría por error.
+OE1 se mide con kappa de Cohen en existencia, tipo y dirección (de las relaciones) por separado, sin umbral. OE2, con precision, recall y F1 sobre τ, y con existencia, tipo y dirección de las relaciones. OE3, con la corrección de la respuesta calificada por el juez, por estrato: hecho puntual (E1), estado vigente (E2), evolución (E3) y sin respuesta (E4). OE4, con reglas fijas de una sola categoría por error.
 
-La comparación principal (D16) mide la diferencia de corrección entre C2 y C1 en E3. Se calcula un intervalo *bootstrap* del 95 % con 10.000 remuestreos pareados por pregunta. H1 se respalda si todo el intervalo queda por encima de 0. Si incluye 0, la comparación es no concluyente. Si queda por debajo, la dirección es contraria a la hipótesis. Para la verificación de la corrección se fija un kappa mínimo de 0,70 entre el juez y la revisión de una muestra estratificada de aproximadamente el 20 % de las respuestas.
+La comparación principal (D16) mide la diferencia de corrección entre C2 y C1 en E3, es decir, sobre las decisiones de evolucion. Se calcula un intervalo *bootstrap* del 95 % con 10.000 remuestreos pareados por pregunta. H1 se respalda si todo el intervalo queda por encima de 0. Si incluye 0, la comparación es no concluyente. Si queda por debajo, la dirección es contraria a la hipótesis. Para la verificación de la corrección se fija un kappa mínimo de 0,70 entre el juez y la revisión de una muestra estratificada de aproximadamente el 20 % de las respuestas.
 
 ### 5.4 Línea base
 
@@ -191,9 +220,11 @@ Se hicieron 99 preguntas (25 en E1, 25 en E2, 24 en E3 y 25 en E4), cada una a l
 | C2 | 0,43 | 0,35 | 0,17 | 1,00 | 0,49 [0,39; 0,58] |
 | C3 | 0,72 | 0,76 | 0,71 | 1,00 | 0,80 [0,72; 0,87] |
 
+<<E1 (hecho puntual), E2 (estado vigente), E3 (evolución), E4 (sin respuesta)>>
+
 En E4 lo correcto es abstenerse; C2 y C3 lo hacen siempre, de modo que ese 1,00 no mide capacidad de responder.
 
-**Criterio principal (D16): no se respalda.** La diferencia C2 − C1 en E3 es −0,38 y su intervalo de 95 % va de −0,61 a −0,14: queda por completo por debajo de 0, es decir, la dirección observada es la contraria a la esperada y C1 supera a C2. La herramienta de análisis imprime «inconclusive», porque ese rótulo cubre todo lo que no queda por encima de 0 y no distingue «sin evidencia» de «evidencia en contra»; se lee el intervalo, no el rótulo. El resultado es el mismo en hechos puntuales (−0,29 [−0,49; −0,08]) y estado vigente (−0,29 [−0,51; −0,08]), y en el total (−0,23 [−0,33; −0,13]). H1 no se respalda para C2.
+**Criterio principal (D16): no se respalda.** La diferencia C2 − C1 en E3 es −0,37 y su intervalo de 95 % va de −0,61 a −0,14: queda por completo por debajo de 0, es decir, la dirección observada es la contraria a la esperada y C1 supera a C2. La herramienta de análisis imprime «inconclusive», porque ese rótulo cubre todo lo que no queda por encima de 0 y no distingue «sin evidencia» de «evidencia en contra»; se lee el intervalo, no el rótulo. El resultado es el mismo en hechos puntuales (−0,29 [−0,49; −0,08]) y estado vigente (−0,29 [−0,51; −0,08]), y en el total (−0,23 [−0,33; −0,13]). H1 no se respalda para C2.
 
 **H2: no concluyente.** La brecha C3 − C2 es de 0,54 en E3 y de 0,29 en E1; la diferencia (0,25) tiene intervalo de −0,04 a 0,54, que incluye 0. **H3: no concluyente.** Es una medida del Experimento A: de los 11 enlaces detectados, 0 con la dirección equivocada (cota superior de 0,259) y 5 con el tipo equivocado; son pocos casos y solo se midió una escala de modelo, así que la cláusula sobre el tamaño del modelo no se evalúa. **H4: no evaluable.** Ni el juez ni las personas marcaron ninguna respuesta como desactualizada (42 ítems), de modo que no hay tasa que comparar.
 
@@ -221,7 +252,7 @@ De los 43 casos, 40 los etiquetó una persona y 3 los atribuye a la síntesis un
 
 ### 6.6 Costo y latencia
 
-Son tiempos de pared de una máquina concreta; los tokens y la memoria no se registraron. Una consulta tarda 4,2 s en C0, 5,7 s en C1, 15,3 s en C2 y 14,5 s en C3 (C2 tarda unas 2,7 veces C1); el juez tarda 6,3 s por respuesta. Extraer las once series (tres repeticiones) tomó 11 h 48 min 42 s y compilar la base de una repetición, 3 h 56 min 14 s. El diseño suponía que, tras construir la base, cada consulta costaría menos que una consulta RAG, y que en algún número de consultas se recuperaría la inversión. La segunda parte no se cumplió: como una consulta a la base es más lenta que una de texto, el punto de equilibrio **no existe**.
+Son tiempos de una máquina concreta; los tokens y la memoria no se registraron. Una consulta tarda 4,2 s en C0, 5,7 s en C1, 15,3 s en C2 y 14,5 s en C3 (C2 tarda unas 2,7 veces C1); el juez tarda 6,3 s por respuesta. Extraer las once series (tres repeticiones) tomó 11 h 48 min 42 s y compilar la base de una repetición, 3 h 56 min 14 s. El diseño suponía que, tras construir la base, cada consulta costaría menos que una consulta RAG, y que en algún número de consultas se recuperaría la inversión. La segunda parte no se cumplió: como una consulta a la base es más lenta que una de texto, el punto de equilibrio **no existe**.
 
 ## 7. Discusión y conclusiones
 
