@@ -33,6 +33,16 @@ openkos_version = "0.7.0"
 "gemma4:26b-a4b" = "001e5dafc3c77684c2307ebc6ab8e336e10c9b18eca52acf547d72fc83c3ca8c"
 "bge-m3" = "7907646426070047a77226ac3e684fbbe8410524f7b4a74d02837e43f2146bab"
 
+[execution_hardware]
+# Descriptive, not enforced: the machine on which the formal runs (Experiments A and B, the
+# judge and the base compilation) were executed. Every wall-clock figure in avance 13 and the
+# pre-informe (`final-cost-latency`, `final-break-even`) refers to this setup. Models ran locally
+# through Ollama on the Apple GPU with unified memory; no token or memory counters were recorded.
+machine = "MacBook Pro 16-inch (2024)"
+chip = "Apple M4 Pro"
+memory_gb = 48
+os = "macOS 27"
+
 [retrieval]
 answer_limit = 5                     # read by the Experiment A/B code; keep. `--limit` of `openkos query` for C2 and C3 (OpenKOS default, ADR 0006). Kept on purpose: the three conditions share a TEXT budget, not an equal K (ADR 0007). C1 uses [retrieval.c1].k
 rrf_k = 60                           # reciprocal rank fusion constant, as in openkos retrieval/fusion.py
