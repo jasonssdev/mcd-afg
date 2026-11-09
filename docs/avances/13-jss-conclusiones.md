@@ -4,8 +4,8 @@
 |---|---|
 | **Documento** | 13 — Conclusiones del proyecto |
 | **Autor** | Jason Sepúlveda S. |
-| **Versión** | 1.0 |
-| **Fecha** | 2026-11-07 |
+| **Versión** | 1.1 |
+| **Fecha** | 2026-11-09 |
 | **Estado** | Vigente |
 
 ## Historial de versiones
@@ -13,6 +13,7 @@
 | Versión | Fecha | Cambio | Motivo |
 |---|---|---|---|
 | 1.0 | 2026-11-07 | Versión inicial. Reúne en un solo lugar la respuesta a los cuatro objetivos específicos y a las hipótesis, el costo, lo que los resultados significan, sus límites y el trabajo futuro. | Los dos experimentos formales, las verificaciones humanas y el análisis final quedaron completos (issue #294, épica #288) y el [notebook 31](../../notebooks/31-jss-resultados-finales.ipynb) reúne las cifras; ningún documento contrastaba aún los resultados con los objetivos y las hipótesis. |
+| 1.1 | 2026-11-09 | La sección 5 identifica la máquina en que se midieron los tiempos (MacBook Pro de 16 pulgadas de 2024, Apple M4 Pro, 48 GB de memoria unificada, macOS 27), registrada también en `config/experiments.toml` (`[execution_hardware]`). Sin cambios de cifras. | Los tiempos de pared no se pueden interpretar ni reproducir sin conocer el equipo; la revisión del pre-informe 02 para lectura externa detectó la omisión. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -164,8 +165,11 @@ compilado gane; el aporte es la medición, no el sistema».
 
 ## 5. Costos
 
-Tiempos de pared de una máquina concreta (los tokens y la memoria no se registraron). Fuente:
-notebook 31, sección 4, y las tablas `final-cost-latency` y `final-break-even`.
+Tiempos de pared de una máquina concreta: un MacBook Pro de 16 pulgadas (2024) con chip Apple
+M4 Pro, 48 GB de memoria unificada y macOS 27, con los modelos ejecutados localmente mediante
+Ollama (`config/experiments.toml`, sección `[execution_hardware]`). Los tokens y la memoria no se
+registraron. Fuente: notebook 31, sección 4, y las tablas `final-cost-latency` y
+`final-break-even`.
 
 | Concepto | Valor |
 |---|---|
