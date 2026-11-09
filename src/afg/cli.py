@@ -293,6 +293,9 @@ experiment_app = typer.Typer(
     help="OE2/OE3: corre el Experimento A y el Experimento B (tesis, sección 3)."
 )
 skills_app = typer.Typer(help="Instala, verifica y enlaza las skills de .agents/skills/.")
+informe_app = typer.Typer(
+    help="Versiones derivadas de los informes (carpeta docs/avances/informes/)."
+)
 freeze_app = typer.Typer(
     help="Registro del congelamiento: lo que deben cumplir las corridas sobre las series de "
     "evaluación."
@@ -306,6 +309,7 @@ app.add_typer(c1_app, name="c1", rich_help_panel=_PANEL_MAINTENANCE)
 app.add_typer(c3_app, name="c3", rich_help_panel=_PANEL_MAINTENANCE)
 app.add_typer(experiment_app, name="experiment", rich_help_panel=_PANEL_MAINTENANCE)
 app.add_typer(skills_app, name="skills", rich_help_panel=_PANEL_MAINTENANCE)
+app.add_typer(informe_app, name="informe", rich_help_panel=_PANEL_MAINTENANCE)
 app.add_typer(freeze_app, name="freeze", rich_help_panel=_PANEL_MAINTENANCE)
 
 
@@ -4546,6 +4550,72 @@ def experiment_b_oe4_summary(
             f"Guardado en {_short(out_path)}."
         )
     console.print(table)
+
+
+# --- informe ----------------------------------------------------------------------------
+
+
+_UC_WORD_TEMPLATE = SKILLS_DIR / "deck-uc" / "assets" / "word-uc-sin-texto.docx"
+_EXPORT_DIR = PROJECT_ROOT / "exportados"
+
+
+@informe_app.command("docx")
+def informe_docx(
+    source: Annotated[
+        Path, typer.Argument(exists=True, dir_okay=False, help="Informe en markdown.")
+    ],
+    out: Annotated[
+        Path | None,
+        typer.Option(
+            "--out", help="Archivo de salida; por defecto exportados/<nombre>-v<versión>.docx."
+        ),
+    ] = None,
+    template: Annotated[
+        Path,
+        typer.Option("--template", help="Plantilla Word UC; por defecto la de la skill deck-uc."),
+    ] = _UC_WORD_TEMPLATE,
+    short_title: Annotated[
+        str | None,
+        typer.Option(
+            "--short-title",
+            help="Texto del encabezado corrido; por defecto, el título hasta los dos puntos.",
+        ),
+    ] = None,
+    no_template: Annotated[
+        bool,
+        typer.Option("--no-template", help="Documento genérico sin la marca UC (para pruebas)."),
+    ] = False,
+) -> None:
+    """Genera la versión Word del informe, con la marca UC, desde su markdown.
+
+    El Word es un derivado: se regenera desde el markdown y no se versiona (exportados/ está
+    en .gitignore). Necesita los archivos de la skill deck-uc (`make skill-assets`) y el
+    grupo de dependencias `deck` (`uv sync --group deck`).
+    """
+    try:
+        from afg.reports.docx_export import export_docx
+        from afg.reports.metadata import default_output_path, parse_metadata
+    except ImportError as error:
+        console.print(
+            "[red]Faltan las dependencias del grupo deck.[/red] Ejecuta `uv sync --group deck`."
+        )
+        raise typer.Exit(code=1) from error
+    if not no_template and not template.is_file():
+        console.print(
+            f"[red]No se encontró la plantilla {escape(str(template))}.[/red] "
+            "Ejecuta `make skill-assets` para instalarla."
+        )
+        raise typer.Exit(code=1)
+    try:
+        meta = parse_metadata(source.read_text(encoding="utf-8"))
+        target = out or default_output_path(source, meta, _EXPORT_DIR)
+        written = export_docx(
+            source, target, template=None if no_template else template, short_title=short_title
+        )
+    except (ValueError, FileNotFoundError) as error:
+        console.print(f"[bold red]{escape(str(error))}[/bold red]")
+        raise typer.Exit(code=1) from error
+    console.print(f"Versión {meta.version} escrita en {_short(written)}.")
 
 
 # --- report ---------------------------------------------------------------------------------

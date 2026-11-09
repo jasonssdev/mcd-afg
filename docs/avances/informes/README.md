@@ -32,3 +32,22 @@ avances:
 El PDF que se envía en cada fecha de entrega se registra en el historial de versiones del
 informe, con la fecha de envío y la versión que se envió. Así, el documento que se entregó
 siempre se puede reconstruir, aunque el texto vivo siga cambiando.
+
+## Versión en Word
+
+El Word de un informe es un derivado del markdown: no se edita a mano ni se versiona. Se genera
+en `exportados/`, carpeta que está en `.gitignore`, con la identidad visual UC (portada con el
+escudo, estilos semánticos, encabezado corrido y numeración de páginas). Necesita los archivos
+institucionales de la skill `deck-uc`, que se instalan con `make skill-assets`, y el grupo de
+dependencias `deck` (`uv sync --group dev --group deck`).
+
+Para regenerarlo después de cualquier cambio en el markdown:
+
+```bash
+uv run afg informe docx docs/avances/informes/02-jss-pre-informe.md \
+  --short-title "Compilar o recuperar · Pre-informe AFG II"
+```
+
+El resultado queda en `exportados/02-jss-pre-informe-v<versión>.docx`; la versión se lee de la
+fila **Versión** de la cabecera. El PDF de entrega lo exporta el equipo desde ese Word, y su
+registro en el historial de versiones sigue la regla de la sección anterior.

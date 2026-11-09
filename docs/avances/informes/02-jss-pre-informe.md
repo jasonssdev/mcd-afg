@@ -10,7 +10,7 @@ Pre-informe de la Actividad Final de Graduación II, redactado después de los e
 | **Curso** | MDS 3060, Actividad Final de Graduación II |
 | **Autores** | Jason Sepúlveda S., Germán Vega, Gustavo Martínez |
 | **Tutor** | Jean Philipe Fuentes Bordagaray |
-| **Versión** | 1.3 |
+| **Versión** | 1.4 |
 | **Fecha** | 2026-11-09 |
 | **Estado** | En revisión para envío |
 
@@ -24,6 +24,7 @@ Pre-informe de la Actividad Final de Graduación II, redactado después de los e
 | 1.1 | 2026-11-08 | Incorpora una figura del EDA, precisa el diseño de B, documenta el desacuerdo de q015 y corrige referencias. | Revisión con la rúbrica de AFG2 y contraste con el Notebook 30 y el Avance 12. |
 | 1.2 | 2026-11-09 | Revisión para un lector externo: se retiran o definen los identificadores internos (registros de decisión, criterio D16, cuadernos, avances, claves de pregunta), se definen los términos que el texto usaba sin explicar (tipos de relación, control nulo, vista estricta, concordancia del alineamiento, sitios ES/IS/TS, fases de anotación, abstención), se explica que los 111 enlaces son 37 relaciones por 3 repeticiones, se declara el origen del banco de preguntas y el equipo donde se midieron los tiempos, se agregan referencias (Cohen, Landis y Koch, modelos y bibliotecas, repositorio del proyecto), el Anexo C pasa a ser de reproducibilidad y se completa la portada. Ninguna cifra cambia. | Las personas que evalúan no tienen acceso al repositorio; el tutor confirmó el encuadre de la sección 5 («el modelo» es el procedimiento completo con que cada condición responde). |
 | 1.3 | 2026-11-09 | Incorpora las observaciones de G. Vega (PR #320), adaptadas a la v1.2: la sección 4.3 se reescribe con la fórmula del *overlap coefficient*, la comparación con Jaccard y la lectura de la pérdida del filtro; OpenKOS se nombra en OE3, H1 y 5.2; se definen el resumen redactado a mano y el acto de diálogo; las limitaciones de datos pasan a lista; se agregan la leyenda de estratos de la Tabla 4, los sitios en la Figura 2 y el valor sin redondear de la diferencia principal (−0,375), que explica por qué restar la Tabla 4 da −0,37. Ninguna cifra cambia. | Aporte de un integrante del equipo, revisado contra las fuentes (registro de decisión 0020, tablas finales del Experimento B). |
+| 1.4 | 2026-11-09 | El Anexo C cita «Qwen Team (2025)» en lugar de «Yang et al. (2025)», como el cuerpo y la lista de referencias. Ninguna cifra cambia. | Inconsistencia detectada al revisar la versión en Word. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (0.1 → 0.2). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero y **debe declarar la evidencia
@@ -427,4 +428,4 @@ Cada cifra del informe proviene de un documento de avance del proyecto; ninguna 
 | Costos: promedios 4,2; 5,7; 15,3; 14,5; 6,3 s; 11,8 h; 3,9 h; sin punto de equilibrio | 6.6 | Avance 13, §5; tablas `final-cost-latency` y `final-break-even` |
 | Límites y trabajo futuro | 7.2, 7.4 | Avance 13, §7 y §8 |
 
-Referencias verificadas el 2026-11-07 y el 2026-11-09: las dos entradas de arXiv heredadas del pre-informe 01 (Zhang y Li, 2026; Cai y O'Connor, 2025) existen con el título, los autores y el DOI citados y siguen sin publicación revisada por pares; OpenKOS se cita como software con su versión y publicación; Cohen (1960), Landis y Koch (1977), Murray et al. (2009), Hsueh y Moore (2007), Fernández et al. (2008), Yang et al. (2025), Chen et al. (2024) y OpenAI (2025) se cotejaron con sus registros de DOI, ACL Anthology o arXiv.
+Referencias verificadas el 2026-11-07 y el 2026-11-09: las dos entradas de arXiv heredadas del pre-informe 01 (Zhang y Li, 2026; Cai y O'Connor, 2025) existen con el título, los autores y el DOI citados y siguen sin publicación revisada por pares; OpenKOS se cita como software con su versión y publicación; Cohen (1960), Landis y Koch (1977), Murray et al. (2009), Hsueh y Moore (2007), Fernández et al. (2008), Qwen Team (2025), Chen et al. (2024) y OpenAI (2025) se cotejaron con sus registros de DOI, ACL Anthology o arXiv.

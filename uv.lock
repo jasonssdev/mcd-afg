@@ -1467,6 +1467,7 @@ llm = [
 
 [package.dev-dependencies]
 deck = [
+    { name = "markdown-it-py" },
     { name = "python-docx" },
     { name = "python-pptx" },
 ]
@@ -1508,6 +1509,7 @@ provides-extras = ["instrument", "llm", "embeddings"]
 
 [package.metadata.requires-dev]
 deck = [
+    { name = "markdown-it-py", specifier = ">=3.0" },
     { name = "python-docx", specifier = ">=1.1" },
     { name = "python-pptx", specifier = ">=1.0" },
 ]

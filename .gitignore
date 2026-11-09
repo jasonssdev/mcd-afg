@@ -300,3 +300,7 @@ odd/
 # person installs them locally with `make skill-assets`. Only the placeholder is tracked.
 .agents/skills/*/assets/*
 !.agents/skills/*/assets/README.md
+
+# Exported deliverables (DOCX/PDF) are derived binaries generated from the markdown sources;
+# never versioned.
+exportados/
