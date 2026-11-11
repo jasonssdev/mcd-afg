@@ -40,3 +40,25 @@ Los JSON son salidas de extracción sobre series de desarrollo, como
 `reports/experiment-a/es2015-explora-r*/extracciones.jsonl`, y se versionan igual que ellas
 para que el notebook se pueda releer sin rehacer las corridas (unos 3,7 MB). No contienen
 datos de las series de evaluación ni copias de la referencia adjudicada.
+
+## Extensión con Qwen3.8 27B
+
+Las corridas de `extension-qwen38-27b/` se ejecutaron el 2026-11-10 y se leen desde la
+sección final del notebook 15. Cada JSON contiene cinco corridas nuevas de una serie de
+desarrollo, ES2015 o TS3009, con sus cuatro reuniones. Un piloto previo de TS3009 sirvió
+para comprobar la carga y estimar el tiempo. Los archivos de esta extensión corresponden
+a las diez corridas posteriores al piloto.
+
+| Campo | Valor |
+|---|---|
+| Modelo y digest | `qwen3.8:27b`, `aaee06c39dcf` |
+| Equipo | Mac con 24 GB de memoria unificada |
+| Ollama | 0.34.3 |
+| Arnés | OpenKOS 0.6.0, commit `28ed7bedbd395f87d6d9cc1706578f7fdb0d2482`, árbol limpio |
+| Configuración | Pase `pass`, prompt `6d3962b0dd75650c`, contexto 12288, generación 8192, máximo 25 decisiones por reunión y un reintento por ventana fallida |
+| Referencia y métrica | Referencia adjudicada en español, `bge-m3` y la misma regla de selección del screen con τ = 0,60 |
+
+El notebook recalcula las métricas con `afg.experiments.model_screen` y las compara con
+las corridas históricas. Durante la comprobación también se cotejaron contra
+`thesis_metric.py` del mismo commit de OpenKOS. Los tiempos nuevos corresponden al Mac
+de 24 GB y los históricos al equipo de la ejecución original.
