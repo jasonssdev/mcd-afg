@@ -21,6 +21,7 @@ from afg.eda.figures import (
     plot_funnel,
     plot_grouped_bars,
     plot_hbars,
+    plot_kappa_bands,
     plot_labeled_scatter,
     plot_level_sizes,
     plot_position_boxes,
@@ -258,6 +259,56 @@ class TestPlotHbars:
     def test_annotations_must_match_the_bars(self) -> None:
         with pytest.raises(ValueError, match="annotations"):
             plot_hbars({"a": 1.0}, annotations=[], xlabel="x")
+
+
+class TestPlotHbarsHighlight:
+    def test_highlighted_bars_keep_the_accent_and_the_rest_is_grey(self) -> None:
+        fig = plot_hbars(
+            {"a": 0.2, "b": 0.8, "c": 0.5},
+            annotations=["x", "y", "z"],
+            xlabel="v",
+            highlight={"b"},
+        )
+        colors = [p.get_facecolor() for p in fig.axes[0].patches]
+        assert colors[0] == colors[2]
+        assert colors[1] != colors[0]
+
+    def test_unknown_highlight_label_is_rejected(self) -> None:
+        with pytest.raises(ValueError, match="highlight"):
+            plot_hbars({"a": 1.0}, annotations=["x"], xlabel="v", highlight={"zzz"})
+
+    def test_subtitle_is_written_under_the_title(self) -> None:
+        fig = plot_hbars(
+            {"a": 1.0}, annotations=["x"], xlabel="v", title="T", subtitle="detalle de la cifra"
+        )
+        assert "detalle de la cifra" in {t.get_text() for t in fig.axes[0].texts}
+
+
+class TestSpanishTicks:
+    def test_value_axes_use_a_decimal_comma(self) -> None:
+        fig = plot_hbars({"a": 0.4, "b": 0.9}, annotations=["x", "y"], xlabel="v")
+        fig.canvas.draw()
+        ticks = [t.get_text() for t in fig.axes[0].get_xticklabels()]
+        assert "0,2" in ticks and not any("." in t for t in ticks)
+        fig = plot_grouped_bars(["u"], {"g": [0.4]}, ylabel="v", ylim=(0, 1))
+        fig.canvas.draw()
+        assert "0,2" in [t.get_text() for t in fig.axes[0].get_yticklabels()]
+
+
+class TestPlotKappaBands:
+    def test_bars_start_at_zero_with_the_kappa_values_and_band_names(self) -> None:
+        fig = plot_kappa_bands(
+            {"Existencia": 0.783, "Tipo": 0.554}, highlight={"Existencia"}, title="T"
+        )
+        ax = fig.axes[0]
+        assert list(ax.containers[0].datavalues) == [0.783, 0.554]
+        assert ax.get_ylim()[0] == 0.0
+        texts = {t.get_text() for t in ax.texts}
+        assert {"0,783", "0,554", "Sustancial", "Moderado"} <= texts
+
+    def test_an_undefined_kappa_is_rejected(self) -> None:
+        with pytest.raises(ValueError, match="kappa"):
+            plot_kappa_bands({"Dirección": float("nan")})
 
 
 def _roles_frame() -> pd.DataFrame:
