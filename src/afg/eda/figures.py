@@ -8,7 +8,7 @@ never shows or saves it. Call them inside ``with video_style():``.
 
 from __future__ import annotations
 
-from collections.abc import Iterator, Mapping, Sequence
+from collections.abc import Collection, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, cast
@@ -22,6 +22,7 @@ from afg.eda.tables import format_thousands as _es
 
 FIGURE_DPI = 150
 _COLORS = ["#0173B2", "#DE8F05", "#029E73", "#D55E00"]  # colour-blind-safe (seaborn "colorblind")
+_GREY = "#B4BAC0"  # de-emphasised bars next to a highlighted one
 
 
 def apply_style() -> None:
@@ -222,6 +223,13 @@ def plot_position_boxes(
     return fig
 
 
+def _comma_axis(axis: Any) -> None:
+    """Write the tick labels of a linear axis with a Spanish decimal comma."""
+    axis.set_major_formatter(
+        FuncFormatter(lambda v, _: _es(v) if float(v).is_integer() else _es(v, 1))
+    )
+
+
 def _format_value(value: float) -> str:
     """Spanish number: no decimals for a whole value, one decimal otherwise."""
     return _es(value) if float(value).is_integer() else _es(value, 1)
@@ -262,6 +270,7 @@ def plot_grouped_bars(
     ax.set_ylabel(ylabel)
     if ylim is not None:
         ax.set_ylim(*ylim)
+    _comma_axis(ax.yaxis)
     ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.12), ncol=len(groups), frameon=False)
     if title:
         ax.set_title(title, loc="left")
@@ -307,27 +316,81 @@ def plot_hbars(
     xlabel: str,
     title: str = "",
     log_x: bool = False,
+    highlight: Collection[str] | None = None,
+    subtitle: str = "",
 ) -> Figure:
     """Horizontal bars in the given order, each followed by its annotation text.
 
+    With ``highlight`` the named bars keep the accent colour and the others turn grey, so the
+    eye lands on the key value; ``subtitle`` adds a second line under the title.
+
     Raises:
-        ValueError: if ``annotations`` does not have one text per bar.
+        ValueError: if ``annotations`` does not have one text per bar or ``highlight`` names a
+            bar that does not exist.
     """
     if len(annotations) != len(values):
         raise ValueError("annotations needs one text per bar.")
+    if highlight is not None and not set(highlight) <= set(values):
+        raise ValueError(f"highlight names unknown bars: {sorted(set(highlight) - set(values))}.")
     fig, ax = plt.subplots()
     labels = list(values)
     widths = list(values.values())
-    ax.barh(labels, widths, color=_COLORS[0], height=0.6)
+    colors = [_COLORS[0] if highlight is None or k in highlight else _GREY for k in labels]
+    ax.barh(labels, widths, color=colors, height=0.6)
     ax.invert_yaxis()
     if log_x:
         ax.set_xscale("log")
         _plain_log_axis(ax.xaxis, min(widths), max(widths))
+    else:
+        _comma_axis(ax.xaxis)
     ax.grid(axis="y", visible=False)
+    gap = max(widths) * 0.015
     for y, (width, text) in enumerate(zip(widths, annotations, strict=True)):
-        ax.text(width * 1.08 if log_x else width * 1.01, y, text, va="center")
+        ax.text(width * 1.08 if log_x else width + gap, y, text, va="center")
     ax.set_xlim(right=max(widths) * (6 if log_x else 1.35))
     ax.set_xlabel(xlabel)
+    if title:
+        ax.set_title(title, loc="left", pad=40 if subtitle else 6)
+    if subtitle:
+        ax.text(0, 1.03, subtitle, transform=ax.transAxes, va="bottom", color="#444444")
+    return fig
+
+
+# Landis and Koch (1977) reading of Cohen's kappa: (lower, upper, Spanish name).
+KAPPA_BANDS = (
+    (0.0, 0.4, "Leve o aceptable"),
+    (0.4, 0.6, "Moderado"),
+    (0.6, 0.8, "Sustancial"),
+    (0.8, 1.0, "Casi perfecto"),
+)
+
+
+def plot_kappa_bands(
+    kappas: Mapping[str, float], *, highlight: Collection[str] | None = None, title: str = ""
+) -> Figure:
+    """Bars of Cohen's kappa from zero, over the Landis and Koch agreement bands.
+
+    Each bar carries its value; with ``highlight`` the other bars turn grey.
+
+    Raises:
+        ValueError: if a kappa is undefined (NaN): it must not be drawn as a bar.
+    """
+    if any(pd.isna(k) for k in kappas.values()):
+        raise ValueError("an undefined kappa (NaN) cannot be drawn as a bar.")
+    fig, ax = plt.subplots()
+    n = len(kappas)
+    for i, (low, high, name) in enumerate(KAPPA_BANDS):
+        ax.axhspan(low, high, color="#EEF1F4" if i % 2 == 0 else "#E2E7EC", zorder=0)
+        ax.text(n + 0.45, (low + high) / 2, name, ha="right", va="center", color="#555555")
+    colors = [_COLORS[0] if highlight is None or k in highlight else _GREY for k in kappas]
+    ax.bar(list(kappas), list(kappas.values()), width=0.5, color=colors, zorder=3)
+    for x, value in enumerate(kappas.values()):
+        ax.text(x, value + 0.015, _es(value, 3), ha="center", va="bottom", fontweight="bold")
+    ax.set_xlim(-0.6, n + 0.5)
+    ax.set_ylim(0, 1)
+    ax.set_ylabel("Kappa de Cohen")
+    ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: _es(v, 1)))
+    ax.grid(visible=False)
     if title:
         ax.set_title(title, loc="left")
     return fig
