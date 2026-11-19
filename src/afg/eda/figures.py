@@ -91,6 +91,23 @@ def save_figure(fig: Figure, path: Path, *, dpi: int = FIGURE_DPI) -> Path:
     return path
 
 
+def save_untitled(fig: Figure, path: Path, *, dpi: int = FIGURE_DPI) -> Path:
+    """Save ``fig`` as a PNG without its main title (for slides that already carry it).
+
+    Only the title of each axes is hidden while saving; any subtitle (a text, not a title) is
+    kept and the figure is left exactly as it was.
+    """
+    # The left-aligned title artist is hidden (not blanked) so its padding survives the save.
+    titles = [ax._left_title for ax in fig.axes]  # type: ignore[attr-defined]
+    for title in titles:
+        title.set_visible(False)
+    try:
+        return save_figure(fig, path, dpi=dpi)
+    finally:
+        for title in titles:
+            title.set_visible(True)
+
+
 def plot_level_sizes(sizes: Mapping[str, int], *, title: str = "") -> Figure:
     """Horizontal bars with the number of rows of each analysis level, on a log axis."""
     fig, ax = plt.subplots()
