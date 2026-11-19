@@ -4,11 +4,11 @@
 |---|---|
 | **Entrega** | Video de avance #3 de AFG2 (semana 7) — resultados preliminares |
 | **Fecha de envío** | Pendiente |
-| **Versión** | 1.0 |
+| **Versión** | 1.1 |
 | **Construido desde** | `docs/avances/13-jss-conclusiones.md` v1.1 (fuente principal de las cifras) · `docs/avances/10-jss-confiabilidad-de-la-referencia.md`, `11-jss-resultados-experimento-a.md` y `12-jss-resultados-experimento-b.md` · `docs/avances/informes/02-jss-pre-informe.md` v1.4 (título y encuadre para un lector externo) · `notebooks/32-jss-figuras-video-resultados.ipynb` (seis figuras exportadas a `docs/entregables/figuras/resultados-*.png`) · `notebooks/15-jss-screen-de-modelos-openkos.ipynb` (última sección, solo para la frase sobre un modelo más nuevo) |
 | **Duración objetivo** | 9:00 a 145 palabras por minuto (máximo de la rúbrica: 10:00) |
 | **Formato** | Tres presentadores en cuatro bloques consecutivos, en este orden: Jason, Germán, Gustavo, Jason. Con diapositivas de apoyo, que se construyen después de este guion |
-| **Extensión hablada** | 1.295 palabras: 255 + 375 + 260 + 405. A 145 palabras por minuto son 8:56; a 140, 9:15 |
+| **Extensión hablada** | 1.297 palabras: 255 + 375 + 260 + 407. A 145 palabras por minuto son 8:57; a 140, 9:16 |
 
 > **Por qué existe este documento.** El profesor evalúa solo el video, así que los resultados
 > deben verse y oírse en él. Este guion cuenta una historia: una promesa que falla y la
@@ -26,6 +26,7 @@
 | Versión | Fecha | Cambio | Motivo |
 |---|---|---|---|
 | 1.0 | 2026-11-19 | Versión inicial: guion del tercer video de avance de AFG2, centrado en los resultados preliminares, con plan de láminas. | Pauta de la semana 7 y avance 13 v1.1. Las láminas se construyen después, desde este guion. |
+| 1.1 | 2026-11-19 | Los próximos pasos dejan de presentarse como plan de AFG3 y pasan a ser: un extractor más capaz, también un modelo no local; cambios al código abierto de OpenKOS; y un juez que pueda evaluar H4. Se retiran la ampliación de la doble anotación y la persona que confirma decisiones. La lámina 3 se describe con la pregunta de cada objetivo, como en la presentación. Ninguna cifra cambia. | Decisión del equipo tras revisar la presentación: no se repetirá trabajo manual de anotación ni adjudicación. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -58,9 +59,9 @@ validan o cuestionan la propuesta metodológica.
 | 1 Gancho (0:00 – 0:45) y 2 Contexto y vara de medir (0:45 – 1:50) | Jason | 255 | 0:00 – 1:50 | La promesa (organizar decisiones en una base), el problema, las cuatro condiciones C0 a C3 y los cuatro objetivos OE1 a OE4 |
 | 3 OE1 (1:50 – 2:45) y 4 OE3 (2:45 – 4:30) | Germán | 375 | 1:50 – 4:30 | Referencia confiable; la base automática responde peor que buscar en el texto; criterio D16 no respaldado |
 | 5 El giro: C3 como control (4:30 – 6:15) | Gustavo | 260 | 4:30 – 6:15 | La diferencia entre C3 y C2 mide el costo de la extracción: la máquina encuentra 3 de cada 10 decisiones y la mitad de los errores nace al extraer |
-| 6 Impacto y costo (6:15 – 7:20), 7 Limitaciones (7:20 – 8:10) y 8 Próximos pasos y cierre (8:10 – 9:00) | Jason | 405 | 6:15 – 9:00 | Con buenas decisiones la base gana; cuesta 2,7 veces más por consulta; veredicto por objetivo; límites; AFG3 |
+| 6 Impacto y costo (6:15 – 7:20), 7 Limitaciones (7:20 – 8:10) y 8 Próximos pasos y cierre (8:10 – 9:00) | Jason | 407 | 6:15 – 9:00 | Con buenas decisiones la base gana; cuesta 2,7 veces más por consulta; veredicto por objetivo; límites; próximos pasos |
 
-Reparto por persona: Jason 255 + 405 palabras, Germán 375, Gustavo 260. Los tiempos por
+Reparto por persona: Jason 255 + 407 palabras, Germán 375, Gustavo 260. Los tiempos por
 sección están en los títulos de cada una; las palabras por sección, en la tabla de trazabilidad
 de más abajo.
 
@@ -104,7 +105,7 @@ Hola, soy **Jason**. Junto a Germán y Gustavo presentamos los resultados prelim
 >
 > **▶ Lámina 3 — se muestra al decir «Los objetivos son cuatro».**
 >
-> Título (conclusión): «Cada objetivo se cierra con un resultado». Visual: tira de cuatro casillas, una por objetivo, vacías de resultado (se completan en la lámina 13). Texto en pantalla: OE1 referencia humana · OE2 qué encuentra la máquina · OE3 quién responde mejor · OE4 dónde nace el error.
+> Título (conclusión): «Cada objetivo se cierra con un resultado». Visual: tira de cuatro casillas, una por objetivo, cada una con la pregunta que responde (los resultados se muestran en la lámina 13). Texto en pantalla: OE1 referencia humana · OE2 qué encuentra la máquina · OE3 quién responde mejor · OE4 dónde nace el error.
 
 Comparamos **cuatro condiciones**, de menos a más ayuda. **C0**, sin ayuda: el modelo responde solo con lo que ya sabe; es nuestro piso, lo mínimo que se obtiene sin ninguna ayuda. **C1**, la línea base, o *baseline*: busca en el texto los fragmentos más parecidos a la pregunta, la técnica llamada **RAG**, recuperación aumentada por generación. **C2**, la base automática: un sistema llamado OpenKOS, con el modelo **qwen3:8b**, extrae las decisiones de las transcripciones y las guarda en una base. **C3**, el control: la misma base, pero con decisiones hechas por personas.
 
@@ -194,15 +195,15 @@ Las **limitaciones**. Usamos un solo modelo local pequeño y una corrida formal 
 
 ### Sección 8 — Próximos pasos y cierre (8:10 – 9:00)
 
-> **▶ Lámina 15 — se muestra al decir «Para AFG3».**
+> **▶ Lámina 15 — se muestra al decir «Como próximos pasos».**
 >
-> Título (conclusión): «Tres pasos para AFG3: la extracción, el juez y la referencia». Visual: tres casillas numeradas. Texto en pantalla: 1 extractor más grande (H3) · 2 un juez que pueda evaluar H4 · 3 ampliar la doble anotación.
+> Título (conclusión): «Tres próximos pasos: un extractor más capaz, mejoras a OpenKOS y un juez para H4». Visual: tres casillas numeradas. Texto en pantalla: 1 extractor más capaz, también no local (H3) · 2 cambios al código abierto de OpenKOS · 3 un juez que pueda evaluar H4.
 >
 > **▶ Lámina 16 — se muestra al decir «Volviendo a la pregunta inicial».**
 >
 > Título (conclusión): «La idea funciona cuando las decisiones son buenas; falla obtenerlas automáticamente». Visual: solo texto, con la pregunta de la lámina 1 y la respuesta. Texto en pantalla: «Decisiones buenas: C3 0,80 · Extracción automática con un modelo pequeño: C2 0,49».
 
-Para **AFG3** proponemos tres pasos. Probar un extractor más grande, un modelo de mayor escala que ya está configurado pero no se corrió, y que pondría a prueba la hipótesis H3: si la dirección de las relaciones sigue fallando con modelos mayores. Construir un juez que pueda evaluar H4, con respuestas desactualizadas preparadas a propósito, porque hoy el juez automático no permite ponerla a prueba. Y ampliar la doble anotación a las series que tienen un solo anotador. Además, una hipótesis a probar: que una persona confirme las decisiones al capturarlas, con la búsqueda de texto como respaldo. Volviendo a la pregunta inicial: la idea funciona cuando las decisiones son buenas; lo que falla es obtenerlas automáticamente con un modelo pequeño. Muchas gracias por su atención.
+Como **próximos pasos** proponemos tres. Primero, probar un extractor más capaz: un modelo de mayor escala y también un modelo más avanzado que no corra en local, de los que se usan como servicio, para ver si extrae mejor las decisiones; eso pondría a prueba la hipótesis H3: si la dirección de las relaciones sigue fallando con modelos mayores. Segundo, OpenKOS es de código abierto, así que proponemos cambios a su código para mejorar la extracción. Tercero, construir un juez que pueda evaluar H4, con respuestas desactualizadas preparadas a propósito, porque hoy el juez automático no permite ponerla a prueba. Volviendo a la pregunta inicial: la idea funciona cuando las decisiones son buenas; lo que falla es obtenerlas automáticamente con un modelo pequeño. Muchas gracias por su atención.
 
 ---
 
@@ -231,7 +232,7 @@ Cada fila lista una cifra, dónde se dice y su fuente. Las series son de evaluac
 | 6 |  | Veredicto por objetivo (OE1 a OE4) | 13, «En una página» y §2 |
 | 7 | 137 | Un modelo pequeño, una corrida formal, 99 preguntas, intervalos anchos; H4 no evaluable; juez más estricto con C0 | 13, §7 y §3 |
 | 7 |  | Extractor elegido con series de desarrollo; Qwen3.8 27B con F1 bajo qwen3.6:27b y margen no cumplido en TS3009; no cambia la elección del extractor | nb. 15, última sección («Qwen3.8 27B en el *screen*») y ADR 0015 |
-| 8 | 126 | Extractor más grande y H3; juez que pueda evaluar H4; ampliar la doble anotación; una persona en el circuito como hipótesis | 13, §6 y §8; §8.3 (juez para H4) |
+| 8 | 128 | Extractor más capaz, también no local, y H3; cambios al código de OpenKOS; juez que pueda evaluar H4 | 13, §8.1 (modelo de mayor escala) y §8.3 (juez para H4); extractor no local y cambios a OpenKOS: decisión del equipo (2026-11-19), sin cifras |
 
 Las fuentes se citan por número de avance (13 = `docs/avances/13-jss-conclusiones.md`, 12 = `12-jss-resultados-experimento-b.md`, 10 = `10-jss-confiabilidad-de-la-referencia.md`), sección y notebook (nb.).
 
@@ -243,7 +244,7 @@ El mazo se construye después de este guion, a partir de esta tabla. Una idea po
 |---|---|---|---|---|
 | 1 | Ordenar las decisiones en una base parecía mejor que buscar en el texto | Texto grande: pregunta y adelanto de la respuesta | Jason | 0:00 – 0:45 |
 | 2 | Cuatro condiciones, de menos a más ayuda | Tabla C0 a C3 | Jason | 0:45 – 1:20 |
-| 3 | Cada objetivo se cierra con un resultado | Tira de cuatro casillas OE1 a OE4 (vacía) | Jason | 1:20 – 1:50 |
+| 3 | Cada objetivo se cierra con un resultado | Tira de cuatro casillas OE1 a OE4 con la pregunta de cada objetivo | Jason | 1:20 – 1:50 |
 | 4 | Dos personas coinciden bien en qué es una relación | `resultados-oe1-kappa.png` | Germán | 1:50 – 2:45 |
 | 5 | La base automática responde peor que buscar en el texto | `resultados-oe3-total.png` | Germán | 2:45 – 3:20 |
 | 6 | La brecha crece en las preguntas de evolución | `resultados-oe3-por-tipo.png` | Germán | 3:20 – 4:05 |
@@ -255,5 +256,5 @@ El mazo se construye después de este guion, a partir de esta tabla. Una idea po
 | 12 | Cada consulta a la base cuesta 2,7 veces más tiempo que buscar en el texto | `resultados-costo-latencia.png` | Jason | 6:45 – 7:05 |
 | 13 | Los cuatro objetivos tienen un resultado | Tira OE1 a OE4 completa | Jason | 7:05 – 7:20 |
 | 14 | Las cifras describen este caso y no se generalizan | Lista de limitaciones | Jason | 7:20 – 8:10 |
-| 15 | Tres pasos para AFG3: la extracción, el juez y la referencia | Tres casillas numeradas | Jason | 8:10 – 8:40 |
+| 15 | Tres próximos pasos: un extractor más capaz, mejoras a OpenKOS y un juez para H4 | Tres casillas numeradas | Jason | 8:10 – 8:40 |
 | 16 | La idea funciona cuando las decisiones son buenas; falla obtenerlas automáticamente | Texto: pregunta inicial y respuesta | Jason | 8:40 – 9:00 |
