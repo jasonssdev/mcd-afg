@@ -31,6 +31,7 @@ from afg.eda.figures import (
     plot_semantic_channel,
     report_style,
     save_figure,
+    save_untitled,
     video_style,
 )
 
@@ -76,6 +77,33 @@ class TestSaveFigure:
         fig, _ = plt.subplots()
         with pytest.raises(ValueError, match="png"):
             save_figure(fig, tmp_path / "figura.jpg")
+
+
+class TestSaveUntitled:
+    def test_saves_a_png_without_the_title_and_keeps_the_figure_titled(
+        self, tmp_path: Path
+    ) -> None:
+        fig = plot_hbars(
+            {"a": 1.0, "b": 2.0}, annotations=["1", "2"], xlabel="x", title="Conclusión"
+        )
+        titled = save_figure(fig, tmp_path / "con.png")
+        untitled = save_untitled(fig, tmp_path / "sin.png")
+        assert untitled.read_bytes().startswith(PNG_SIGNATURE)
+        assert untitled.stat().st_size != titled.stat().st_size
+        assert fig.axes[0].get_title(loc="left") == "Conclusión"
+        assert fig.axes[0]._left_title.get_visible()
+
+    def test_keeps_the_subtitle(self, tmp_path: Path) -> None:
+        fig = plot_hbars(
+            {"a": 1.0}, annotations=["1"], xlabel="x", title="T", subtitle="Precisión 0,5"
+        )
+        save_untitled(fig, tmp_path / "sin.png")
+        assert "Precisión 0,5" in [t.get_text() for t in fig.axes[0].texts]
+
+    def test_rejects_a_non_png_target(self, tmp_path: Path) -> None:
+        fig, _ = plt.subplots()
+        with pytest.raises(ValueError, match="png"):
+            save_untitled(fig, tmp_path / "figura.jpg")
 
 
 class TestPlotLevelSizes:
