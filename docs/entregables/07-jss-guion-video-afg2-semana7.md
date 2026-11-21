@@ -28,6 +28,7 @@
 | 1.0 | 2026-11-19 | Versión inicial: guion del tercer video de avance de AFG2, centrado en los resultados preliminares, con plan de láminas. | Pauta de la semana 7 y avance 13 v1.1. Las láminas se construyen después, desde este guion. |
 | 1.1 | 2026-11-19 | Los próximos pasos dejan de presentarse como plan de AFG3 y pasan a ser: un extractor más capaz, también un modelo no local; cambios al código abierto de OpenKOS; y un juez que pueda evaluar H4. Se retiran la ampliación de la doble anotación y la persona que confirma decisiones. La lámina 3 se describe con la pregunta de cada objetivo, como en la presentación. Ninguna cifra cambia. | Decisión del equipo tras revisar la presentación: no se repetirá trabajo manual de anotación ni adjudicación. |
 | 1.2 | 2026-11-21 | Se explicita que C3 sustituye decisiones y relaciones, se define la precisión como coincidencia con la referencia, se incorpora el acuerdo global del juez de corrección y se aclaran las tres repeticiones. El costo se expresa como tiempo en el equipo medido. Se redistribuyen los tiempos de las láminas y se precisan las indicaciones visuales. Se mantienen como limitaciones la corrida formal única y la confusión entre diseño y modelo en OE4, y se simplifica la mención de Qwen3.8. | Revisión del guion y de las notas de la presentación contra los avances 11 y 12. Propuesta para revisión antes de grabar. |
+| 1.3 | 2026-11-21 | Se modifica la redaccion de la lamina 4 | Hacer mas entendible los resultados. Se mantienen los resultados y puntos relevantes |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -130,8 +131,14 @@ Los **objetivos son cuatro**. **OE1**: construir una referencia humana, lo que s
 >
 > Título (conclusión): «Dos personas coinciden bien en qué es una relación». Visual: `resultados-oe1-kappa.png` (kappa de existencia y de tipo sobre las bandas de Landis y Koch). Texto en pantalla: «14 series · 358 decisiones · 46 relaciones». Pie: «7 de 11 series de evaluación anotadas por una sola persona».
 
-Soy **Germán**. Parto por OE1, la referencia. Dos personas anotaron por separado qué decisiones se relacionan entre reuniones. El resultado es una referencia de **14 series, 358 decisiones y 46 relaciones**. Para saber si es confiable usamos el **kappa de Cohen**, que mide cuánto coinciden dos personas descontando el azar. Una relación ocurre cuando una decisión posterior cambia o matiza una anterior. Para decidir si existe una relación, el kappa es **0,783**: en la escala de Landis y Koch, un acuerdo sustancial, una guía de lectura y no una prueba. Para decidir de qué tipo es la relación, **0,554**: moderado. La dirección de la relación no tiene kappa, porque casi no hubo variación: el acuerdo fue del 100 %. Una limitación importante: en 7 de las 11 series de evaluación anotó una sola persona, y ahí no hay medida de acuerdo.
+Soy Germán. Parto por el OE1, la referencia. Dos personas anotamos por separado qué decisiones se conectan a lo largo de las reuniones. El resultado es una referencia consolidada de **14 series, 358 decisiones y 46 relaciones**.
+Para saber si el criterio fue consistente usamos el **kappa de Cohen**, que mide el acuerdo real descontando lo que ocurriría por simple azar. La tarea se dividió en dos pasos:
 
+- Determinar si existe la relación: decidir si dos decisiones están vinculadas; es decir, si una decisión posterior cambia, matiza o actualiza a una previa. En este nivel el kappa es 0,783, lo que en la escala de Landis y Koch se clasifica como un acuerdo sustancial.
+- Determinar de qué tipo es la relacion: una vez que coincidimos en que sí hay vínculo, definir la naturaleza exacta del cambio. Al ser una distinción más fina y con varias categorías posibles, el kappa es 0,554, considerado moderado.
+
+En ambos casos, tomamos la escala de Landis y Koch como una guía de lectura metodológica y no como una regla rigida.
+La dirección de la relación no tiene kappa, porque casi no hubo variación: el acuerdo fue del 100 %. Una limitación importante: en 7 de las 11 series de evaluación anotó una sola persona, y ahí no hay medida de acuerdo.
 ### Sección 4 — OE3: la comparación (2:45 – 4:30)
 
 > **▶ Lámina 5 — se muestra al decir «Sigo con OE3».**
