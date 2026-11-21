@@ -4,11 +4,11 @@
 |---|---|
 | **Entrega** | Video de avance #3 de AFG2 (semana 7) — resultados preliminares |
 | **Fecha de envío** | Pendiente |
-| **Versión** | 1.2 |
+| **Versión** | 1.3 |
 | **Construido desde** | `docs/avances/13-jss-conclusiones.md` v1.1 (fuente principal de las cifras) · `docs/avances/10-jss-confiabilidad-de-la-referencia.md`, `11-jss-resultados-experimento-a.md` y `12-jss-resultados-experimento-b.md` · `docs/avances/informes/02-jss-pre-informe.md` v1.4 (título y encuadre para un lector externo) · `notebooks/32-jss-figuras-video-resultados.ipynb` (seis figuras exportadas a `docs/entregables/figuras/resultados-*.png`) · `notebooks/15-jss-screen-de-modelos-openkos.ipynb` (última sección, solo para la frase sobre un modelo más nuevo) |
 | **Duración objetivo** | 9:00 a 145 palabras por minuto (máximo de la rúbrica: 10:00) |
 | **Formato** | Tres presentadores en cuatro bloques consecutivos, en este orden: Jason, Germán, Gustavo, Jason. El plan de láminas sirve de referencia para alinear las diapositivas de apoyo |
-| **Extensión hablada** | 1.215 palabras, repartidas en 255 + 392 + 218 + 350. A 145 palabras por minuto son 8:23 y a 140, 8:41. El objetivo de 9:00 incluye pausas y cambios de lámina |
+| **Extensión hablada** | 1.290 palabras, repartidas en 255 + 467 + 218 + 350. A 145 palabras por minuto son 8:54 y a 140, 9:13. El objetivo de 9:00 incluye pausas y cambios de lámina |
 
 > **Por qué existe este documento.** El profesor evalúa solo el video, así que los resultados
 > deben verse y oírse en él. Este guion cuenta una historia: una promesa que falla y la
@@ -28,6 +28,7 @@
 | 1.0 | 2026-11-19 | Versión inicial: guion del tercer video de avance de AFG2, centrado en los resultados preliminares, con plan de láminas. | Pauta de la semana 7 y avance 13 v1.1. Las láminas se construyen después, desde este guion. |
 | 1.1 | 2026-11-19 | Los próximos pasos dejan de presentarse como plan de AFG3 y pasan a ser: un extractor más capaz, también un modelo no local; cambios al código abierto de OpenKOS; y un juez que pueda evaluar H4. Se retiran la ampliación de la doble anotación y la persona que confirma decisiones. La lámina 3 se describe con la pregunta de cada objetivo, como en la presentación. Ninguna cifra cambia. | Decisión del equipo tras revisar la presentación: no se repetirá trabajo manual de anotación ni adjudicación. |
 | 1.2 | 2026-11-21 | Se explicita que C3 sustituye decisiones y relaciones, se define la precisión como coincidencia con la referencia, se incorpora el acuerdo global del juez de corrección y se aclaran las tres repeticiones. El costo se expresa como tiempo en el equipo medido. Se redistribuyen los tiempos de las láminas y se precisan las indicaciones visuales. Se mantienen como limitaciones la corrida formal única y la confusión entre diseño y modelo en OE4, y se simplifica la mención de Qwen3.8. | Revisión del guion y de las notas de la presentación contra los avances 11 y 12. Propuesta para revisión antes de grabar. |
+| 1.3 | 2026-11-21 | Se modifica la redacción de la lámina 4. | Hacer más entendibles los resultados. Se mantienen los resultados y los puntos relevantes. |
 
 > **Cómo versionar.** Un cambio de redacción sube el decimal (1.0 → 1.1). Un cambio que
 > altera una decisión, un objetivo o una cifra sube el entero (1.x → 2.0) y **debe declarar
@@ -58,11 +59,11 @@ validan o cuestionan la propuesta metodológica.
 | Bloque | Persona | Palabras | Tiempo previsto | Mensaje central |
 |---|---|---|---|---|
 | 1 Gancho (0:00 – 0:45) y 2 Contexto y vara de medir (0:45 – 1:50) | Jason | 255 | 0:00 – 1:50 | La promesa (organizar decisiones en una base), el problema, las cuatro condiciones C0 a C3 y los cuatro objetivos OE1 a OE4 |
-| 3 OE1 (1:50 – 2:45) y 4 OE3 (2:45 – 4:30) | Germán | 392 | 1:50 – 4:30 | Referencia confiable; la base automática responde peor que buscar en el texto; criterio D16 no respaldado |
+| 3 OE1 (1:50 – 2:45) y 4 OE3 (2:45 – 4:30) | Germán | 467 | 1:50 – 4:30 | Referencia confiable; la base automática responde peor que buscar en el texto; criterio D16 no respaldado |
 | 5 El giro: C3 como control (4:30 – 6:15) | Gustavo | 218 | 4:30 – 6:15 | El control muestra la mejora con decisiones y relaciones de referencia. La máquina encuentra 3 de cada 10 decisiones y la extracción concentra casi la mitad de los fallos |
 | 6 Impacto y costo (6:15 – 7:25), 7 Limitaciones (7:25 – 8:10) y 8 Próximos pasos y cierre (8:10 – 9:00) | Jason | 350 | 6:15 – 9:00 | Mejora con la referencia humana, tiempo por consulta de 2,7 veces el RAG, veredicto por objetivo, límites y próximos pasos |
 
-Reparto por persona: Jason 255 + 350 palabras, Germán 392, Gustavo 218. Los tiempos por
+Reparto por persona: Jason 255 + 350 palabras, Germán 467, Gustavo 218. Los tiempos por
 sección están en los títulos de cada una; las palabras por sección, en la tabla de trazabilidad
 de más abajo.
 
@@ -130,8 +131,14 @@ Los **objetivos son cuatro**. **OE1**: construir una referencia humana, lo que s
 >
 > Título (conclusión): «Dos personas coinciden bien en qué es una relación». Visual: `resultados-oe1-kappa.png` (kappa de existencia y de tipo sobre las bandas de Landis y Koch). Texto en pantalla: «14 series · 358 decisiones · 46 relaciones». Pie: «7 de 11 series de evaluación anotadas por una sola persona».
 
-Soy **Germán**. Parto por OE1, la referencia. Dos personas anotaron por separado qué decisiones se relacionan entre reuniones. El resultado es una referencia de **14 series, 358 decisiones y 46 relaciones**. Para saber si es confiable usamos el **kappa de Cohen**, que mide cuánto coinciden dos personas descontando el azar. Una relación ocurre cuando una decisión posterior cambia o matiza una anterior. Para decidir si existe una relación, el kappa es **0,783**: en la escala de Landis y Koch, un acuerdo sustancial, una guía de lectura y no una prueba. Para decidir de qué tipo es la relación, **0,554**: moderado. La dirección de la relación no tiene kappa, porque casi no hubo variación: el acuerdo fue del 100 %. Una limitación importante: en 7 de las 11 series de evaluación anotó una sola persona, y ahí no hay medida de acuerdo.
+Soy **Germán**. Parto por el OE1, la referencia. Dos personas anotamos por separado qué decisiones se conectan a lo largo de las reuniones. El resultado es una referencia consolidada de **14 series, 358 decisiones y 46 relaciones**.
+Para saber si el criterio fue consistente usamos el **kappa de Cohen**, que mide el acuerdo real descontando lo que ocurriría por simple azar. La tarea se dividió en dos pasos:
 
+- Determinar si existe la relación: decidir si dos decisiones están vinculadas; es decir, si una decisión posterior cambia, matiza o actualiza a una previa. En este nivel el kappa es **0,783**, lo que en la escala de Landis y Koch se clasifica como un acuerdo sustancial.
+- Determinar de qué tipo es la relación: una vez que coincidimos en que sí hay vínculo, definir la naturaleza exacta del cambio. Al ser una distinción más fina y con varias categorías posibles, el kappa es **0,554**, considerado moderado.
+
+En ambos casos, tomamos la escala de Landis y Koch como una guía de lectura metodológica y no como una regla rígida.
+La dirección de la relación no tiene kappa, porque casi no hubo variación: el acuerdo fue del 100 %. Una limitación importante: en 7 de las 11 series de evaluación anotó una sola persona, y ahí no hay medida de acuerdo.
 ### Sección 4 — OE3: la comparación (2:45 – 4:30)
 
 > **▶ Lámina 5 — se muestra al decir «Sigo con OE3».**
@@ -224,7 +231,7 @@ Cada fila lista una cifra, dónde se dice y su fuente. Las series son de evaluac
 |---|---|---|---|
 | 1 | 100 | Sin cifras; el problema y la hipótesis | 13, «En una página» y §1 |
 | 2 | 155 | Cuatro condiciones C0 a C3; objetivos OE1 a OE4; generador `qwen3:8b`, juez `gpt-oss:20b` | 13, §1 y §2; 12, tabla de configuración (modelo generador y juez) |
-| 3 | 141 | 14 series, 358 decisiones, 46 relaciones | 13, §2 (OE1); nb. 31 §2.1 |
+| 3 | 216 | 14 series, 358 decisiones, 46 relaciones | 13, §2 (OE1); nb. 31 §2.1 |
 | 3 |  | kappa 0,783 (existencia) y 0,554 (tipo); acuerdo del 100 % en la dirección; sustancial y moderado (Landis y Koch) | 13, §2 (OE1); 10 (escala de Landis y Koch); nb. 32 §1, figura `resultados-oe1-kappa.png` |
 | 3 |  | 7 de las 11 series de evaluación con un solo anotador | 13, §2.1 y §7 |
 | 4 | 251 | Corrección total: C0 0,16 · C1 0,72 · C2 0,49 · C3 0,80; 99 preguntas | 13, §2.3 y §7; nb. 32 §2, `resultados-oe3-total.png` |
