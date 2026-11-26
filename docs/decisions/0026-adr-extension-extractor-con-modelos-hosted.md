@@ -76,6 +76,32 @@ Se agrega una **segunda línea base**: `qwen3:8b` con OpenKOS 0.7.2, con la mism
 
 Esta enmienda se decide después de ver el puente (una serie, una repetición) y se declara como tal. No se vio ninguna cifra de modelos de pago.
 
+## Segunda enmienda (2026-11-26, antes de cualquier corrida con modelos de pago)
+
+### Contexto
+
+OpenKOS 0.7.3 (2026-11-26) agrega dos cosas que esta extensión necesita:
+
+- **Tokens por reunión.** Cada `ingest` imprime una línea `tokens:` con el número de llamadas al modelo y los tokens de entrada (*prompt*), de salida (*completion*) y el total. El total es el que informa el proveedor, así que incluye el razonamiento oculto que algunos modelos cobran y que no aparece en la salida. La línea cuenta también las llamadas de un `ingest` que falló o que se cortó por el límite de salida, porque esas llamadas se cobran igual.
+- **Estado de la extracción.** Cuando un `ingest` no produce ningún objeto derivado, la fuente lleva en su encabezado la clave `extraction_status`. Puede tomar uno de cuatro valores: `failed`, `no-concepts-found`, `no-extractable-text` o `blocked-by-sensitivity`. El código de OpenKOS 0.7.3 muestra que un `ingest` cuya extracción falla termina con código de salida 0 y deja escrita la fuente. Por eso el código de salida no basta para saber si una reunión tiene extracción.
+
+En el momento de esta enmienda, la segunda línea base `experimento-a-base-0-7-2` está incompleta: tiene 16 de los 33 pares serie × repetición. Ninguna fuente de la corrida formal, del puente ni de esos 16 pares tiene `extraction_status`, así que sus cifras de completitud no cambian con la nueva definición.
+
+### Decisión
+
+1. **Versión.** Los seis modelos de pago se corren con OpenKOS 0.7.3, instalado aparte del entorno congelado igual que antes. El pin 0.7.0 del entorno congelado y la corrida formal no cambian.
+2. **Línea base de la misma versión.** La segunda línea base pasa a ser `experimento-a-base-0-7-3`: `qwen3:8b` con OpenKOS 0.7.3 en el Ollama local, con la configuración del puente y las once series de evaluación con tres repeticiones. Cumple los tres usos de la primera enmienda, incluido el de decidir cuando las dos comparaciones dan veredictos distintos. La comparación de esta línea base contra la formal se informa como «efecto de versión» y no cuenta en el Bonferroni.
+3. **Lo que queda de 0.7.2.** El puente y los 16 pares de `experimento-a-base-0-7-2` se conservan como evidencia y se mencionan en el notebook. No entran en ningún veredicto. La corrida 0.7.2 no se completa.
+4. **Reunión con extracción (decisión 8).** Una reunión cuenta como extraída si su `ingest` terminó con código 0 y su fuente en `bundle/sources/` no tiene la clave `extraction_status`. Se informa por separado cuántas reuniones quedaron con cada uno de los cuatro valores. Para *precision* y *recall*, una reunión sin extracción aporta cero decisiones, como ya se hacía con las corridas fallidas. No se reintenta ninguna reunión fuera de los reintentos que OpenKOS hace por su cuenta.
+5. **Costo (decisión 8).** El costo se calcula con los tokens en vez de leerse en el panel de cada proveedor:
+   - **Qué se registra:** por reunión, las llamadas, las llamadas que informaron tokens y los tokens de entrada, salida y total.
+   - **Fórmula:** costo = entrada × precio de entrada + (total − entrada) × precio de salida. Así se cobra como salida el razonamiento oculto que el total incluye y la salida no.
+   - **Precios:** se fijan en `config/hosted_extraction.toml` por modelo, en dólares por millón de tokens, con la fecha y la página de precios de cada proveedor. Se fijan antes del piloto.
+   - **Carácter:** sigue siendo un indicador descriptivo. Si alguna llamada no informó tokens, el costo de esa reunión se informa como cota inferior. El panel del proveedor puede usarse como control, pero no reemplaza al cálculo.
+6. **Lo que no cambia.** `evidence_quote` sigue apagado en los seis modelos, aunque OpenKOS lo recomiende para algunos, por la razón de la alternativa descartada. `reasoning_effort = "low"`, las métricas, la regla de mejora, los indicadores de tiempo y el carácter descriptivo de la extensión siguen igual.
+
+Esta enmienda se decide antes de cualquier corrida con modelos de pago. No se vio ninguna cifra de esos modelos.
+
 ## Alternativas descartadas
 
 - **Medir C2 completo (respuestas + juez).** Multiplica el costo y mezcla la extracción con la recuperación y la síntesis. La pregunta del avance 13 es sobre la extracción.
