@@ -202,6 +202,7 @@ DERIVATION_IDENTITY_DEFAULTS: Mapping[str, Any] = {
     "c2_derived_from": None,
     "c2_openkos_executable": None,
     "sufficiency_check": True,
+    "environment": "formal",
 }
 """Provenance keys that identify a run beyond its extraction name, with the value of the formal
 setup (which never writes them)."""
@@ -225,7 +226,8 @@ def _changed_identity(
         if provenance is not None and key in provenance and previous.get(key) != provenance[key]
     ]
     if provenance is not None:
-        # Derived query workspaces and the sufficiency setting (ADR 0026, amendment 3). The keys
+        # Derived query workspaces, the sufficiency setting and the environment (ADR 0026,
+        # amendments 3 and 4). The keys
         # are written only for a non-formal run, so an absent key reads as its formal default.
         changed += [
             key

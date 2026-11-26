@@ -10,6 +10,19 @@ required_version = "0.7.3"            # installed apart from the frozen 0.7.0 (A
 # Executable of the separate 0.7.3 install; override with AFG_HOSTED_OPENKOS_EXECUTABLE.
 executable = "data/interim/openkos-0.7.3/bin/openkos"
 
+[ollama]
+# ADR 0026, fourth amendment: every local run of the extension (baseline 0.7.3, embeddings of the
+# paid extractions, Experiment B) uses this Ollama server version. It is pinned here and not in
+# [pinned_environment] of config/experiments.toml, which stays at the formal 0.32.9. The harness
+# checks it before every run and records it in the manifest.
+required_version = "0.40.16"
+# Server settings of the extension. They belong to the server process, so no code changes them;
+# they are documented here and in docs/protocols/extraccion-hosted.md and verified by hand in the
+# `server config` line of the server log:
+#   OLLAMA_CONTEXT_LENGTH = 32768   (default context of the server; only the judge uses it)
+#   OLLAMA_FLASH_ATTENTION = on
+#   OLLAMA_KV_CACHE_TYPE = q8_0
+
 [shared]
 series_partition = "evaluation"       # the eleven evaluation series of config/corpus.toml
 runs_per_model = 3                    # same as [shared_budget].runs_per_config

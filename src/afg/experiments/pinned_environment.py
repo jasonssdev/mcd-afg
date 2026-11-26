@@ -13,7 +13,7 @@ OpenKOS is only checked (and recorded) when the command runs it; Ollama is alway
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 
 from afg.experiments.provenance import ProvenanceProbe, _digest_of, _with_tag
@@ -70,13 +70,20 @@ def check_pinned_environment(
     models: Sequence[str],
     needs_openkos: bool,
     pins: PinnedEnvironment | None = None,
+    ollama_version: str | None = None,
 ) -> dict[str, Any]:
     """Compare the installed environment with the pins; return the manifest record.
 
     ``models`` are the models the command will call. Raises :class:`PinnedEnvironmentError`
     listing every mismatch.
+
+    ``ollama_version`` replaces the pinned Ollama version (and nothing else: model digests and the
+    OpenKOS pin stay those of ``[pinned_environment]``). It is the extension environment of the
+    ADR 0026 fourth amendment; omitted, the formal pin applies.
     """
     pinned = pins if pins is not None else load_pinned_environment()
+    if ollama_version is not None:
+        pinned = replace(pinned, ollama_version=ollama_version)
     pin_by_tag = {_with_tag(name): digest for name, digest in pinned.model_digests.items()}
     installed = probe.model_digests()
     mismatches: list[str] = []

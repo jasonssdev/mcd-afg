@@ -16,7 +16,9 @@ OK_RECORD: dict[str, Any] = {
 }
 
 
-def passing_guard(models: Sequence[str], *, needs_openkos: bool) -> dict[str, Any]:
+def passing_guard(
+    models: Sequence[str], *, needs_openkos: bool, ollama_version: str | None = None
+) -> dict[str, Any]:
     return OK_RECORD
 
 
@@ -24,7 +26,9 @@ def tripwire(monkeypatch: pytest.MonkeyPatch) -> list[tuple[list[str], bool]]:
     """Replace the guard with one that records its arguments and refuses (exit code 1)."""
     calls: list[tuple[list[str], bool]] = []
 
-    def refusing(models: Sequence[str], *, needs_openkos: bool) -> dict[str, Any]:
+    def refusing(
+        models: Sequence[str], *, needs_openkos: bool, ollama_version: str | None = None
+    ) -> dict[str, Any]:
         calls.append((list(models), needs_openkos))
         raise typer.Exit(code=1)
 

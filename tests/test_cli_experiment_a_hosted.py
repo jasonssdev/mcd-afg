@@ -31,6 +31,13 @@ class RecordingFactory:
         return self.adapter
 
 
+class ExtensionProbe(FakeProbe):
+    """The local server of the extension: Ollama 0.40.16 (ADR 0026, fourth amendment)."""
+
+    def ollama_version(self) -> str | None:
+        return "0.40.16"
+
+
 @pytest.fixture
 def fake(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> RecordingFactory:
     factory = RecordingFactory(tmp_path)
@@ -42,7 +49,7 @@ def fake(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> RecordingFactory:
     monkeypatch.setattr(
         afg_cli,
         "make_provenance_probe",
-        lambda: FakeProbe({"qwen3:8b": "d-gen", "bge-m3:latest": "d-emb"}),
+        lambda: ExtensionProbe({"qwen3:8b": "d-gen", "bge-m3:latest": "d-emb"}),
     )
     monkeypatch.setattr(
         afg_cli, "make_hosted_runner", lambda: FakeRunner(version_output="openkos 0.7.3\n")
@@ -147,6 +154,30 @@ def test_a_missing_key_stops_before_creating_anything(
     assert API_KEY_ENV in " ".join(result.output.split())
     assert fake.adapter.calls == []
     assert not (tmp_path / "out").exists()
+
+
+@pytest.mark.parametrize("flag", [["--model", "openai-small", "--pilot"], ["--local-baseline"]])
+def test_another_ollama_version_stops_every_mode_before_any_call(
+    tmp_path: Path, fake: RecordingFactory, monkeypatch: pytest.MonkeyPatch, flag: list[str]
+) -> None:
+    monkeypatch.setattr(
+        afg_cli, "make_provenance_probe", lambda: FakeProbe({"qwen3:8b": "d", "bge-m3:latest": "e"})
+    )  # reports Ollama 0.9.9
+
+    result = _run(*flag)
+
+    assert result.exit_code == 1
+    assert "0.40.16" in " ".join(result.output.split())
+    assert fake.adapter.calls == []
+    assert not (tmp_path / "out").exists()
+
+
+def test_the_manifest_records_the_ollama_version(tmp_path: Path, fake: RecordingFactory) -> None:
+    assert _run("--model", "openai-small", "--pilot").exit_code == 0
+    manifest = json.loads(
+        (tmp_path / "out" / "experimento-a-piloto-openai-small" / "manifest.json").read_text()
+    )
+    assert manifest["ollama_version"] == "0.40.16"
 
 
 def test_model_xor_bridge_is_required(fake: RecordingFactory) -> None:

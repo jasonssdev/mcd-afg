@@ -10,7 +10,7 @@ import pytest
 from typer.testing import CliRunner
 
 import afg.cli as afg_cli
-from tests.test_hosted_answers import FORMAL, _formal, _records, answer_run_name
+from tests.test_hosted_answers import C1_NOW, FORMAL, _formal, _now, _records, answer_run_name
 
 
 def _write_run(root: Path, name: str, records: list[dict[str, Any]]) -> None:
@@ -46,10 +46,11 @@ def test_reports_pending_models_when_no_run_exists(root: Path) -> None:
 
 def test_compares_a_finished_model_against_c1(root: Path) -> None:
     _write_run(root, FORMAL, _formal())
+    _write_run(root, C1_NOW, _now())
     _write_run(root, answer_run_name("openai-small"), _records("C2", lambda i: i < 2))
     result = _invoke("--models", "openai-small")
     assert result.exit_code == 0, result.output
-    assert "queda bajo C1 formal" in " ".join(result.output.split())
+    assert "queda bajo C1 actual" in " ".join(result.output.split())
     payload = json.loads(
         (root / "hosted-comparison" / "respuestas-comparacion.json").read_text(encoding="utf-8")
     )
@@ -66,6 +67,7 @@ def test_unknown_label_is_refused(root: Path) -> None:
 def test_development_records_are_refused(root: Path) -> None:
     dev = [dict(r, partition="development") for r in _formal()]
     _write_run(root, FORMAL, dev)
+    _write_run(root, C1_NOW, [dict(r, partition="development") for r in _now()])
     _write_run(
         root,
         answer_run_name("openai-small"),
@@ -73,3 +75,17 @@ def test_development_records_are_refused(root: Path) -> None:
     )
     result = _invoke("--models", "openai-small")
     assert result.exit_code == 1
+
+
+def test_reports_the_infrastructure_effect_and_accepts_another_c1_run(root: Path) -> None:
+    _write_run(root, FORMAL, _formal())
+    _write_run(root, "mi-c1", _records("C1", lambda i: i < 4))
+    _write_run(root, answer_run_name("openai-small"), _records("C2", lambda i: True))
+    result = _invoke("--models", "openai-small", "--c1-run", "mi-c1")
+    assert result.exit_code == 0, result.output
+    assert "infraestructura" in " ".join(result.output.split()).lower()
+    payload = json.loads(
+        (root / "hosted-comparison" / "respuestas-comparacion.json").read_text(encoding="utf-8")
+    )
+    assert payload["runs"]["c1_actual"] == "mi-c1"
+    assert payload["infrastructure_effect"]["comparison"]["difference"] == pytest.approx(-0.5)

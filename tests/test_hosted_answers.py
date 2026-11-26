@@ -27,6 +27,7 @@ from afg.experiments.hosted_answers import (
 )
 
 FORMAL = "experimento-b-formal"
+C1_NOW = "experimento-b-c1-ollama-0-40-16"
 BASE = "experimento-b-base-0-7-3"
 SPEC = AnswerComparisonSpec(
     models=("m-a", "m-b"),
@@ -35,6 +36,7 @@ SPEC = AnswerComparisonSpec(
     min_questions=3,
     formal_run=FORMAL,
     base_run=BASE,
+    c1_run=C1_NOW,
 )
 QUESTIONS = [f"q{i}" for i in range(1, 9)]
 
@@ -80,6 +82,15 @@ def _formal() -> list[dict[str, Any]]:
     return _records("C1", lambda i: True) + _records("C2", lambda i: i < 4)
 
 
+def _now(**kw: Any) -> list[dict[str, Any]]:
+    """C1 of the current infrastructure: right on every question, like the formal C1."""
+    return _records("C1", lambda i: True, **kw)
+
+
+def test_the_default_c1_control_run_is_the_one_of_the_fourth_amendment() -> None:
+    assert AnswerComparisonSpec(("a",), 0.05, SPEC.interval, 3).c1_run == C1_NOW
+
+
 def test_run_names_follow_the_extraction_labels() -> None:
     assert answer_run_name("openai-small") == "experimento-b-hosted-openai-small"
 
@@ -111,7 +122,12 @@ def _build(records: dict[str, Sequence[dict[str, Any]] | None]) -> dict[str, Any
 def test_a_model_above_c1_is_reported_with_the_bonferroni_level() -> None:
     # model run answers worse than C1 on the first half only: strictly below C1
     payload = _build(
-        {FORMAL: _formal(), answer_run_name("m-a"): _records("C2", lambda i: i < 2), BASE: None}
+        {
+            FORMAL: _formal(),
+            C1_NOW: _now(),
+            answer_run_name("m-a"): _records("C2", lambda i: i < 2),
+            BASE: None,
+        }
     )
     assert payload["family"] == {"alpha": 0.05, "n_models": 2, "level": pytest.approx(1 - 0.05 / 2)}
     model = payload["models"]["m-a"]
@@ -120,11 +136,11 @@ def test_a_model_above_c1_is_reported_with_the_bonferroni_level() -> None:
     assert (primary["stratum"], primary["metric"], primary["reference"]) == (
         "E3",
         "correct",
-        "C1 formal",
+        "C1 actual",
     )
     assert primary["difference"] == pytest.approx(0.25 - 1.0)
     assert primary["n_pairs"] == 8
-    assert primary["verdict"] == "queda bajo C1 formal"
+    assert primary["verdict"] == "queda bajo C1 actual"
     assert primary["upper"] < 0
 
 
@@ -132,7 +148,7 @@ def test_the_difference_is_the_paired_bootstrap_of_the_existing_analysis() -> No
     from afg.experiments.analysis import analyze_runs
 
     subject = _records("C2", lambda i: i % 2 == 0)
-    payload = _build({FORMAL: _formal(), answer_run_name("m-a"): subject})
+    payload = _build({FORMAL: _formal(), C1_NOW: _now(), answer_run_name("m-a"): subject})
     level = 1 - 0.05 / 2
     settings = IntervalSettings(n_resamples=400, confidence_level=level, seed=1)
     merged = _records("C1", lambda i: True) + [dict(r, condition="C2") for r in subject]
@@ -158,14 +174,26 @@ def test_pending_runs_are_reported_as_pendiente_without_failing() -> None:
     assert payload["baseline_0_7_3"]["status"] == "pendiente"
 
 
-def test_missing_formal_run_marks_everything_pending() -> None:
-    payload = _build({answer_run_name("m-a"): _records("C2", lambda i: True)})
+def test_missing_current_c1_run_marks_the_models_pending() -> None:
+    payload = _build({FORMAL: _formal(), answer_run_name("m-a"): _records("C2", lambda i: True)})
     assert payload["models"]["m-a"]["status"] == "pendiente"
-    assert "formal" in payload["models"]["m-a"]["reason"]
+    assert C1_NOW in payload["models"]["m-a"]["reason"]
+    assert payload["infrastructure_effect"]["status"] == "pendiente"
+
+
+def test_the_primary_comparison_does_not_need_the_formal_run() -> None:
+    payload = _build({C1_NOW: _now(), answer_run_name("m-a"): _records("C2", lambda i: True)})
+    model = payload["models"]["m-a"]
+    assert model["status"] == "ok" and model["primary"]["reference"] == "C1 actual"
+    assert model["secondary"]["vs_c1_formal"] == {"status": "pendiente", "reason": "sin corrida"}
+    assert model["secondary"]["vs_c2_formal"]["status"] == "pendiente"
+    assert payload["infrastructure_effect"]["status"] == "pendiente"
 
 
 def test_a_run_without_c2_records_is_pending() -> None:
-    payload = _build({FORMAL: _formal(), answer_run_name("m-a"): _records("C1", lambda i: True)})
+    payload = _build(
+        {FORMAL: _formal(), C1_NOW: _now(), answer_run_name("m-a"): _records("C1", lambda i: True)}
+    )
     assert payload["models"]["m-a"]["status"] == "pendiente"
     assert "C2" in payload["models"]["m-a"]["reason"]
 
@@ -173,10 +201,18 @@ def test_a_run_without_c2_records_is_pending() -> None:
 def test_secondary_comparisons_use_c2_formal_and_the_0_7_3_baseline() -> None:
     base = _records("C2", lambda i: i < 2)
     payload = _build(
-        {FORMAL: _formal(), BASE: base, answer_run_name("m-a"): _records("C2", lambda i: i < 6)}
+        {
+            FORMAL: _formal(),
+            C1_NOW: _now(),
+            BASE: base,
+            answer_run_name("m-a"): _records("C2", lambda i: i < 6),
+        }
     )
     model = payload["models"]["m-a"]
     vs_formal, vs_base = model["secondary"]["vs_c2_formal"], model["secondary"]["vs_c2_base_0_7_3"]
+    vs_c1_formal = model["secondary"]["vs_c1_formal"]
+    assert vs_c1_formal["reference"] == "C1 formal"
+    assert vs_c1_formal["difference"] == pytest.approx(0.75 - 1.0)
     assert vs_formal["difference"] == pytest.approx(0.75 - 0.5)
     assert vs_base["difference"] == pytest.approx(0.75 - 0.25)
     assert vs_formal["reference"] == "C2 formal"
@@ -186,7 +222,9 @@ def test_secondary_comparisons_use_c2_formal_and_the_0_7_3_baseline() -> None:
 
 
 def test_secondary_is_pending_when_its_reference_is_missing() -> None:
-    payload = _build({FORMAL: _formal(), answer_run_name("m-a"): _records("C2", lambda i: True)})
+    payload = _build(
+        {FORMAL: _formal(), C1_NOW: _now(), answer_run_name("m-a"): _records("C2", lambda i: True)}
+    )
     secondary = payload["models"]["m-a"]["secondary"]
     assert secondary["vs_c2_base_0_7_3"] == {"status": "pendiente", "reason": "sin corrida"}
     assert secondary["vs_c2_formal"]["status"] == "ok"
@@ -196,8 +234,8 @@ def test_strata_report_the_secondary_metrics_beside_the_reference() -> None:
     e1 = {"stratum": "E1_point_fact", "prefix": "e1-"}
     subject = _records("C2", lambda i: True, abstained=True, seconds=4.0, **e1)
     subject += _records("C2", lambda i: i < 4)
-    formal = _formal() + _records("C1", lambda i: True, seconds=1.0, **e1)
-    payload = _build({FORMAL: formal, answer_run_name("m-a"): subject})
+    now = _now() + _records("C1", lambda i: True, seconds=1.0, **e1)
+    payload = _build({FORMAL: _formal(), C1_NOW: now, answer_run_name("m-a"): subject})
     rows = {r["stratum"]: r for r in payload["models"]["m-a"]["strata"]}
     assert set(rows) == {"E1", "E3", "ALL"}
     e1 = rows["E1"]
@@ -214,7 +252,11 @@ def test_strata_report_the_secondary_metrics_beside_the_reference() -> None:
 def test_a_short_stratum_is_flagged_not_silenced() -> None:
     short = [r for r in _formal() if r["question_id"] in {"q1", "q2"}]
     payload = _build(
-        {FORMAL: short, answer_run_name("m-a"): [r for r in short if r["condition"] == "C2"]}
+        {
+            FORMAL: short,
+            C1_NOW: [r for r in short if r["condition"] == "C1"],
+            answer_run_name("m-a"): [r for r in short if r["condition"] == "C2"],
+        }
     )
     primary = payload["models"]["m-a"]["primary"]
     assert primary["sample_sufficient"] is False
@@ -223,7 +265,7 @@ def test_a_short_stratum_is_flagged_not_silenced() -> None:
 
 def test_a_run_that_covers_fewer_questions_than_c1_warns() -> None:
     subject = [r for r in _records("C2", lambda i: True) if r["question_id"] != "q8"]
-    payload = _build({FORMAL: _formal(), answer_run_name("m-a"): subject})
+    payload = _build({FORMAL: _formal(), C1_NOW: _now(), answer_run_name("m-a"): subject})
     warnings = payload["models"]["m-a"]["warnings"]
     assert any("7" in w and "8" in w for w in warnings)
     assert payload["models"]["m-a"]["primary"]["n_pairs"] == 7
@@ -237,6 +279,7 @@ def test_development_records_are_refused() -> None:
         _build(
             {
                 FORMAL: dev,
+                C1_NOW: [dict(r, partition="development") for r in _now()],
                 answer_run_name("m-a"): [
                     dict(r, partition="development") for r in _records("C2", lambda i: True)
                 ],
@@ -249,15 +292,27 @@ def test_payload_never_carries_answer_or_decision_text() -> None:
     for record in records:
         record["answer"]["text"] = "SENSITIVE-ANSWER"
         record["verdict"]["rationale"] = "SENSITIVE-RATIONALE"
-    payload = _build({FORMAL: records, answer_run_name("m-a"): _records("C2", lambda i: True)})
+    payload = _build(
+        {
+            FORMAL: records,
+            C1_NOW: [dict(r, answer=dict(r["answer"], text="SENSITIVE-ANSWER")) for r in _now()],
+            answer_run_name("m-a"): _records("C2", lambda i: True),
+        }
+    )
     assert "SENSITIVE" not in json.dumps(payload, ensure_ascii=False)
 
 
 def test_rows_and_writer_emit_json_and_csv(tmp_path: Path) -> None:
     payload = _build(
-        {FORMAL: _formal(), BASE: None, answer_run_name("m-a"): _records("C2", lambda i: i < 6)}
+        {
+            FORMAL: _formal(),
+            C1_NOW: _now(),
+            BASE: None,
+            answer_run_name("m-a"): _records("C2", lambda i: i < 6),
+        }
     )
     rows = answer_comparison_rows(payload)
+    assert any(r["model"] == "infraestructura" and r["status"] == "ok" for r in rows)
     primaries = [r for r in rows if r["comparison"] == "primary" and r["status"] == "ok"]
     assert [r["model"] for r in primaries] == ["m-a"]
     assert any(r["status"] == "pendiente" and r["model"] == "m-b" for r in rows)
@@ -277,3 +332,65 @@ def test_only_limits_the_entries_but_keeps_the_family_size() -> None:
 def test_only_refuses_an_unknown_label() -> None:
     with pytest.raises(ValueError, match="zzz"):
         build_answer_comparison({}, SPEC, only=("zzz",))
+
+
+def _infrastructure(current: Any) -> dict[str, Any]:
+    payload = _build(
+        {
+            FORMAL: _formal(),
+            C1_NOW: _records("C1", current),
+            answer_run_name("m-a"): _records("C2", lambda i: True),
+        }
+    )
+    return payload["infrastructure_effect"]
+
+
+def test_the_infrastructure_effect_is_c1_now_minus_c1_formal_at_the_nominal_level() -> None:
+    from afg.experiments.analysis import analyze_runs
+
+    current = _records("C1", lambda i: i % 2 == 0)
+    effect = _infrastructure(lambda i: i % 2 == 0)
+    assert effect["status"] == "ok" and effect["level"] == pytest.approx(0.95)
+    assert effect["runs"] == {"current": C1_NOW, "formal": FORMAL}
+    comparison = effect["comparison"]
+    assert (comparison["stratum"], comparison["metric"]) == ("E3", "correct")
+    assert comparison["reference"] == "C1 formal"
+    assert comparison["difference"] == pytest.approx(0.5 - 1.0)
+    settings = IntervalSettings(n_resamples=400, confidence_level=0.95, seed=1)  # not Bonferroni
+    merged = [dict(r, condition="C2") for r in current] + _records("C1", lambda i: True)
+    expected = next(
+        c for c in analyze_runs(merged, settings=settings, min_questions=3).comparisons if c.primary
+    )
+    assert (comparison["lower"], comparison["upper"]) == (
+        expected.difference_lower,
+        expected.difference_upper,
+    )
+
+
+def test_the_infrastructure_effect_reports_every_stratum() -> None:
+    e1 = {"stratum": "E1_point_fact", "prefix": "e1-"}
+    payload = _build(
+        {
+            FORMAL: _formal() + _records("C1", lambda i: True, **e1),
+            C1_NOW: _now() + _records("C1", lambda i: i < 4, **e1),
+            answer_run_name("m-a"): _records("C2", lambda i: True),
+        }
+    )
+    strata = {r["stratum"]: r for r in payload["infrastructure_effect"]["strata"]}
+    assert set(strata) == {"E1", "E3", "ALL"}
+    assert strata["E1"]["differences"]["correct"]["difference"] == pytest.approx(0.5 - 1.0)
+    assert strata["E3"]["differences"]["correct"]["difference"] == pytest.approx(0.0)
+
+
+def test_the_infrastructure_effect_is_pending_without_either_c1_run() -> None:
+    payload = _build({C1_NOW: _now()})
+    assert payload["infrastructure_effect"]["status"] == "pendiente"
+    payload = _build({FORMAL: _formal()})
+    assert payload["infrastructure_effect"]["status"] == "pendiente"
+
+
+def test_the_payload_names_the_current_c1_as_the_reference_of_the_fourth_amendment() -> None:
+    payload = _build({C1_NOW: _now()})
+    assert payload["amendment"] == 4
+    assert payload["reference"] == "C1 actual"
+    assert payload["runs"]["c1_actual"] == C1_NOW

@@ -1,18 +1,21 @@
-"""Answer comparison of the hosted extractors against C1 and C2 formal (ADR 0026, amendment 3).
+"""Answer comparison of the hosted extractors against C1 (ADR 0026, amendments 3 and 4).
 
 For each paid model, Experiment B ran C2 alone over the workspaces derived from the model's
 extraction (``afg experiment b-derive``). This module compares those answers with the formal
 run, reading only the stored records of ``reports/experiment-b/<run>/``:
 
-* **Primary**: the paired difference "C2 with that extractor minus C1 formal" in the correctness
+* **Primary** (fourth amendment): the paired difference "C2 with that extractor minus C1 of the
+  current infrastructure" (Ollama 0.40.16, ``experimento-b-c1-ollama-0-40-16``) in the correctness
   of E3, computed by the existing analysis (:func:`afg.experiments.analysis.analyze_runs`, the D16
   bootstrap of ADR 0010: runs averaged per question, questions resampled) at the Bonferroni level
   ``1 - family_alpha / n_models``. The verdict reads the interval against 0: *supera a C1*
   (entirely above), *no se distingue de C1* (contains 0) or *queda bajo C1* (entirely below).
-* **Secondary**: the same difference against C2 formal and against C2 over the 0.7.3 baseline
-  (to attribute an improvement to the model and not to the OpenKOS version), and, per stratum and
-  in total, correctness, abstention, ``evidence_supported``, ``citation_correct``,
+* **Secondary**: the same difference against C1 formal, against C2 formal and against C2 over the
+  0.7.3 baseline (to attribute an improvement to the model and not to the OpenKOS version), and,
+  per stratum and in total, correctness, abstention, ``evidence_supported``, ``citation_correct``,
   ``outdated_among_answered`` (H4) and ``answer_seconds`` beside the reference.
+* **Infrastructure effect**: "C1 current minus C1 formal" per stratum and in E3, at the nominal 95 %
+  level (it is not part of the Bonferroni family): how much the change of Ollama moved C1 alone.
 
 A run that does not exist yet, or has no C2 records, is reported as ``pendiente``. The comparison
 is descriptive: the figures of C1 and C2 formal were seen before the amendment (decision 6), so it
@@ -59,6 +62,8 @@ BELOW = "queda bajo"
 PENDING = "pendiente"
 NO_RUN = "sin corrida"
 C1_FORMAL = "C1 formal"
+C1_NOW = "C1 actual"
+NOMINAL_LEVEL = 0.95
 C2_FORMAL = "C2 formal"
 C2_BASE = "C2 de la línea base 0.7.3"
 BASELINE_KEY = "baseline_0_7_3"
@@ -67,6 +72,7 @@ SUBJECT, REFERENCE = "C2", "C1"
 relabelled to them, so the primary comparison is the very one :func:`analyze_runs` flags."""
 CELL_METRICS = ("correct", "evidence_supported", "citation_correct", "outdated_among_answered")
 PAIRED_METRICS = ("correct", "evidence_supported")
+INFRASTRUCTURE_ROW = "infraestructura"
 CSV_COLUMNS = (
     "model",
     "comparison",
@@ -98,6 +104,8 @@ class AnswerComparisonSpec:
     min_questions: MinQuestions
     formal_run: str = "experimento-b-formal"
     base_run: str = "experimento-b-base-0-7-3"
+    c1_run: str = "experimento-b-c1-ollama-0-40-16"
+    """C1 control with the extension's infrastructure (fourth amendment, decision 2)."""
     min_runs: int = 3
 
     @property
@@ -194,14 +202,18 @@ def _pair(
     reference_label: str,
     spec: AnswerComparisonSpec,
     with_warnings: bool,
+    level: float | None = None,
 ) -> dict[str, Any]:
-    """The paired comparison of ``subject`` (a C2 run) against ``reference`` records."""
+    """The paired comparison of ``subject`` against ``reference`` records.
+
+    ``level`` replaces the Bonferroni confidence level (the infrastructure effect uses 95 %).
+    """
     merged = [{**r, "condition": SUBJECT} for r in subject] + [
         {**r, "condition": REFERENCE} for r in reference
     ]
     report = analyze_runs(
         merged,
-        settings=replace(spec.interval, confidence_level=spec.level),
+        settings=replace(spec.interval, confidence_level=spec.level if level is None else level),
         min_questions=spec.min_questions,
         min_runs=spec.min_runs,
     )
@@ -258,21 +270,21 @@ def _model_entry(
             "status": PENDING,
             "reason": "sin registros de C2" if has_run else NO_RUN,
         }
-    formal = records_by_run.get(spec.formal_run)
-    c1 = _of(formal, "C1")
+    c1 = _of(records_by_run.get(spec.c1_run), REFERENCE)
     if not c1:
         return {
             "run": run,
             "status": PENDING,
-            "reason": f"sin la corrida formal con C1 ({spec.formal_run})",
+            "reason": f"sin la corrida de C1 con la infraestructura actual ({spec.c1_run})",
         }
-    primary = _pair(subject, c1, reference_label=C1_FORMAL, spec=spec, with_warnings=True)
+    primary = _pair(subject, c1, reference_label=C1_NOW, spec=spec, with_warnings=True)
     secondary: dict[str, Any] = {}
-    for key, source, reference_label in (
-        ("vs_c2_formal", spec.formal_run, C2_FORMAL),
-        ("vs_c2_base_0_7_3", spec.base_run, C2_BASE),
+    for key, source, condition, reference_label in (
+        ("vs_c1_formal", spec.formal_run, REFERENCE, C1_FORMAL),
+        ("vs_c2_formal", spec.formal_run, SUBJECT, C2_FORMAL),
+        ("vs_c2_base_0_7_3", spec.base_run, SUBJECT, C2_BASE),
     ):
-        reference = _of(records_by_run.get(source), SUBJECT)
+        reference = _of(records_by_run.get(source), condition)
         if not reference:
             secondary[key] = {"status": PENDING, "reason": NO_RUN}
             continue
@@ -290,6 +302,41 @@ def _model_entry(
     }
 
 
+def _infrastructure_effect(
+    records_by_run: Mapping[str, Sequence[Record] | None], spec: AnswerComparisonSpec
+) -> dict[str, Any]:
+    """C1 of the current infrastructure minus C1 formal, per stratum, at the nominal level."""
+    runs = {"current": spec.c1_run, "formal": spec.formal_run}
+    current = _of(records_by_run.get(spec.c1_run), REFERENCE)
+    formal = _of(records_by_run.get(spec.formal_run), REFERENCE)
+    if not current or not formal:
+        missing = [runs[k] for k, found in (("current", current), ("formal", formal)) if not found]
+        return {
+            "status": PENDING,
+            "reason": f"sin C1 en {', '.join(missing)}",
+            "runs": runs,
+            "level": NOMINAL_LEVEL,
+        }
+    pair = _pair(
+        current,
+        formal,
+        reference_label=C1_FORMAL,
+        spec=spec,
+        with_warnings=False,
+        level=NOMINAL_LEVEL,
+    )
+    effect: dict[str, Any] = {
+        "status": pair["comparison"]["status"],
+        "runs": runs,
+        "level": NOMINAL_LEVEL,
+        "comparison": pair["comparison"],
+        "strata": pair["strata"],
+    }
+    if effect["status"] != "ok":
+        effect["reason"] = pair["comparison"]["reason"]
+    return effect
+
+
 def build_answer_comparison(
     records_by_run: Mapping[str, Sequence[Record] | None],
     spec: AnswerComparisonSpec,
@@ -299,9 +346,10 @@ def build_answer_comparison(
     """The comparison payload (JSON-ready) from the stored records of each Experiment B run.
 
     ``records_by_run`` maps a run folder name to its latest records, ``None`` (or empty) when the
-    run does not exist yet. It must hold ``spec.formal_run`` (C1 and C2 formal), ``spec.base_run``
-    (the 0.7.3 baseline) and ``answer_run_name(label)`` for every model reported. ``only`` limits
-    the models reported; the Bonferroni family stays the whole of ``spec.models``.
+    run does not exist yet. It must hold ``spec.c1_run`` (C1 of the current infrastructure),
+    ``spec.formal_run`` (C1 and C2 formal), ``spec.base_run`` (the 0.7.3 baseline) and
+    ``answer_run_name(label)`` for every model reported. ``only`` limits the models reported;
+    the Bonferroni family stays the whole of ``spec.models``.
 
     Raises:
         ValueError: ``only`` names a label that is not in ``spec.models``.
@@ -313,9 +361,9 @@ def build_answer_comparison(
         raise ValueError(f"Unknown model label(s): {', '.join(unknown)}.")
     return {
         "adr": "0026",
-        "amendment": 3,
+        "amendment": 4,
         "descriptive": True,
-        "reference": C1_FORMAL,
+        "reference": C1_NOW,
         "family": {
             "alpha": spec.family_alpha,
             "n_models": len(spec.models),
@@ -326,7 +374,12 @@ def build_answer_comparison(
             "seed": spec.interval.seed,
             "confidence_level": spec.level,
         },
-        "runs": {"formal": spec.formal_run, "baseline_0_7_3": spec.base_run},
+        "runs": {
+            "c1_actual": spec.c1_run,
+            "formal": spec.formal_run,
+            "baseline_0_7_3": spec.base_run,
+        },
+        "infrastructure_effect": _infrastructure_effect(records_by_run, spec),
         "models": {
             label: _model_entry(label, answer_run_name(label), records_by_run, spec)
             for label in labels
@@ -359,6 +412,17 @@ def answer_comparison_rows(payload: Mapping[str, Any]) -> list[dict[str, Any]]:
                     **{k: comparison.get(k, "") for k in CSV_COLUMNS[2:] if k != "reason"},
                 }
             )
+    effect = payload["infrastructure_effect"]
+    comparison = effect.get("comparison", {})
+    rows.append(
+        {
+            "model": INFRASTRUCTURE_ROW,
+            "comparison": "infrastructure_effect",
+            "reason": effect.get("reason") or comparison.get("reason", ""),
+            **{k: comparison.get(k, "") for k in CSV_COLUMNS[2:] if k != "reason"},
+            "status": effect["status"],
+        }
+    )
     return rows
 
 

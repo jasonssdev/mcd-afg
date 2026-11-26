@@ -28,6 +28,7 @@ __all__ = [
     "bridge_state",
     "format_es",
     "format_interval",
+    "infrastructure_effect_frame",
     "local_baseline_state",
     "models_frame",
     "operation_table",
@@ -424,7 +425,7 @@ def _difference_cell(comparison: Mapping[str, Any]) -> str:
 
 
 def answers_frame(payload: Mapping[str, Any]) -> pd.DataFrame:
-    """One row per model (and the 0.7.3 baseline): E3 difference with C1, verdict and secondaries.
+    """One row per model (and the 0.7.3 baseline): E3 difference with C1 actual and secondaries.
 
     Missing runs read ``pendiente`` in every figure column, so the table can be shown before any
     run of the answer measurement exists.
@@ -439,9 +440,12 @@ def answers_frame(payload: Mapping[str, Any]) -> pd.DataFrame:
             {
                 "Modelo": label,
                 "Corrida": entry["run"],
-                "Diferencia con C1 formal en E3": _difference_cell(primary),
+                "Diferencia con C1 actual en E3": _difference_cell(primary),
                 "Veredicto": primary.get("verdict", PENDING),
                 "Preguntas pareadas": str(primary["n_pairs"]) if done else PENDING,
+                "Frente a C1 formal (secundaria)": _difference_cell(
+                    secondary.get("vs_c1_formal", {})
+                ),
                 "Frente a C2 formal": _difference_cell(secondary.get("vs_c2_formal", {})),
                 "Frente a C2 de la línea base 0.7.3": _difference_cell(
                     secondary.get("vs_c2_base_0_7_3", {})
@@ -449,3 +453,36 @@ def answers_frame(payload: Mapping[str, Any]) -> pd.DataFrame:
             }
         )
     return pd.DataFrame(rows)
+
+
+def infrastructure_effect_frame(payload: Mapping[str, Any]) -> pd.DataFrame:
+    """C1 with the current Ollama minus C1 formal, per stratum (ADR 0026, fourth amendment).
+
+    Correctness of each C1 run and their difference with its 95 % interval (nominal level, not the
+    Bonferroni one). Without both C1 runs the table is a single row of ``pendiente``.
+    """
+    columns = ["Estrato", "C1 actual", "C1 formal", "Diferencia (IC 95 %)"]
+    effect = payload.get("infrastructure_effect") or {}
+    if effect.get("status") != "ok":
+        return pd.DataFrame([dict.fromkeys(columns, PENDING)])
+    rows = []
+    for row in effect["strata"]:
+        difference = row["differences"].get("correct")
+        now, formal = row["subject"].get("correct"), row["reference"].get("correct")
+        rows.append(
+            {
+                "Estrato": "Total" if row["stratum"] == "ALL" else row["stratum"],
+                "C1 actual": format_es(now["point"]) if now else PENDING,
+                "C1 formal": format_es(formal["point"]) if formal else PENDING,
+                "Diferencia (IC 95 %)": (
+                    format_interval(
+                        difference["difference"],
+                        (difference["lower"], difference["upper"]),
+                        signed=True,
+                    )
+                    if difference
+                    else PENDING
+                ),
+            }
+        )
+    return pd.DataFrame(rows, columns=columns)

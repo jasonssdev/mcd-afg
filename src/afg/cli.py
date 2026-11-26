@@ -3036,6 +3036,7 @@ def experiment_a_hosted(
             runner=make_hosted_runner(),
             env=os.environ,
             ollama_models=probe.model_digests,
+            ollama_version=probe.ollama_version,
             executable_exists=_executable_exists,
             bridge_model=settings.generative_model if local_mode else None,
         )
@@ -3055,6 +3056,7 @@ def experiment_a_hosted(
         local_baseline=local_baseline,
         git_commit=current_git_commit(),
         git_dirty=probe.git_dirty(),
+        ollama_version=probe.ollama_version(),
         local_model_digests={
             name: digest
             for name, digest in digests.items()
@@ -3671,17 +3673,25 @@ def make_provenance_probe(openkos_executable: str | None = None) -> ProvenancePr
     return LiveProbe(openkos_executable=openkos_executable or get_settings().openkos_executable)
 
 
-def require_pinned_environment(models: Sequence[str], *, needs_openkos: bool) -> dict[str, Any]:
+def require_pinned_environment(
+    models: Sequence[str], *, needs_openkos: bool, ollama_version: str | None = None
+) -> dict[str, Any]:
     """Stop the command (exit code 1) unless the installed environment is the pinned one.
 
     Call it before the first model call. ``models`` are the models the command uses and
     ``needs_openkos`` whether it runs OpenKOS. The returned record (``pinned_environment_ok`` and
     the pins) goes into the manifest of the run. There is no bypass: fix the environment or, as a
     reviewed decision, the pins in ``[pinned_environment]`` of ``config/experiments.toml``.
+
+    ``ollama_version`` is only given by the extension environment (ADR 0026, fourth amendment):
+    it replaces the pinned Ollama version, never the model digests.
     """
     try:
         return check_pinned_environment(
-            make_provenance_probe(), models=models, needs_openkos=needs_openkos
+            make_provenance_probe(),
+            models=models,
+            needs_openkos=needs_openkos,
+            ollama_version=ollama_version,
         )
     except (PinnedEnvironmentError, ValueError) as exc:
         console.print(f"[bold red]{escape(str(exc))}[/bold red]")
@@ -3701,6 +3711,9 @@ def _openkos_models() -> list[str]:
 JUDGE_ORDER: PresentationOrder = "reference_first"
 JUDGE_TEMPERATURE = 0.0
 """The judge configuration of the calibration's primary run (reference first, temperature 0)."""
+
+FORMAL_B_RUN_PREFIX = "experimento-b-formal"
+"""Run names of the frozen formal Experiment B; the extension environment never writes to them."""
 
 C2_EXTRACTION_REQUIRED = (
     "Las condiciones C2 y C3 necesitan `--c2-extraction <nombre>`: el `--run-name` de la corrida "
@@ -4109,6 +4122,14 @@ def experiment_b_hosted_compare(
         str,
         typer.Option("--formal-run", help="Corrida formal del Experimento B (C1 y C2 formales)."),
     ] = "experimento-b-formal",
+    c1_run: Annotated[
+        str,
+        typer.Option(
+            "--c1-run",
+            help="C1 de control con la infraestructura de la extensión (Ollama 0.40.16): "
+            "referencia de la comparación principal (ADR 0026, enmienda 4).",
+        ),
+    ] = "experimento-b-c1-ollama-0-40-16",
     base_run: Annotated[
         str,
         typer.Option(
@@ -4116,15 +4137,17 @@ def experiment_b_hosted_compare(
         ),
     ] = "experimento-b-base-0-7-3",
 ) -> None:
-    """Compara las respuestas de C2 con cada extractor de pago frente a C1 (ADR 0026, enm. 3).
+    """Compara las respuestas de C2 con cada extractor de pago frente a C1 (ADR 0026, enm. 3 y 4).
 
     Para cada modelo toma `reports/experiment-b/experimento-b-hosted-<etiqueta>/` y calcula, con
     el bootstrap pareado del criterio D16 y nivel Bonferroni `1 - alpha/6`, la diferencia de
-    corrección en E3 de «C2 con ese extractor - C1 formal»: «supera a C1», «no se distingue de
-    C1» o «queda bajo C1». Agrega la misma diferencia frente a C2 formal y frente a C2 de la
-    línea base 0.7.3, y por estrato corrección, abstención, `evidence_supported`,
-    `citation_correct`, H4 y tiempo de respuesta. Las corridas que no existen se informan como
-    «pendiente». Escribe `respuestas-comparacion.json` y `.csv` en
+    corrección en E3 de «C2 con ese extractor - C1 actual» (`--c1-run`, Ollama 0.40.16):
+    «supera a C1», «no se distingue de C1» o «queda bajo C1». Agrega la misma diferencia frente a
+    C1 formal, a C2 formal y a C2 de la línea base 0.7.3, el efecto de infraestructura («C1 actual
+    - C1 formal», por estrato y en E3 al 95 % nominal, fuera del Bonferroni) y, por estrato,
+    corrección, abstención, `evidence_supported`, `citation_correct`, H4 y tiempo de respuesta.
+    Las corridas que no existen se informan como «pendiente». Escribe
+    `respuestas-comparacion.json` y `.csv` en
     `reports/experiment-b/hosted-comparison/`. Es descriptivo y no llama a ningún modelo.
     """
     from rich.table import Table
@@ -4157,8 +4180,9 @@ def experiment_b_hosted_compare(
         ),
         formal_run=formal_run,
         base_run=base_run,
+        c1_run=c1_run,
     )
-    runs = {formal_run, base_run, *(answer_run_name(label) for label in labels)}
+    runs = {formal_run, base_run, c1_run, *(answer_run_name(label) for label in labels)}
     records = {
         name: load_records(EXPERIMENT_B_DIR / name / RECORDS_FILE, latest_only=True) or None
         for name in runs
@@ -4171,7 +4195,7 @@ def experiment_b_hosted_compare(
     json_path, csv_path = write_answer_comparison(payload, EXPERIMENT_B_DIR / "hosted-comparison")
 
     table = Table(
-        title=f"C2 con cada extractor frente a C1 formal, E3 (nivel {spec.level:.4f}, descriptivo)"
+        title=f"C2 con cada extractor frente a C1 actual, E3 (nivel {spec.level:.4f}, descriptivo)"
     )
     for column in ("Modelo", "Corrida", "Diferencia", "IC", "Veredicto"):
         table.add_column(column)
@@ -4190,6 +4214,16 @@ def experiment_b_hosted_compare(
             primary["verdict"],
         )
     console.print(table)
+    effect = payload["infrastructure_effect"]
+    if effect["status"] == "ok":
+        found = effect["comparison"]
+        console.print(
+            f"Efecto de infraestructura (C1 actual - C1 formal, E3, nivel "
+            f"{effect['level']:.2f}): {found['difference']:+.3f} "
+            f"[{found['lower']:+.3f}, {found['upper']:+.3f}]"
+        )
+    else:
+        console.print(f"Efecto de infraestructura: pendiente ({escape(effect['reason'])}).")
     for label, entry in entries.items():
         for warning in entry.get("warnings", []):
             console.print(f"[yellow]{escape(label)}: {escape(warning)}[/yellow]")
@@ -4386,6 +4420,17 @@ def experiment_b(
     limit_questions: Annotated[
         int | None, typer.Option("--limit-questions", min=1, help="Solo las N primeras preguntas.")
     ] = None,
+    environment: Annotated[
+        str | None,
+        typer.Option(
+            "--environment",
+            help="`formal` (por defecto): la versión de Ollama fijada en `[pinned_environment]`. "
+            "`hosted`: la de la extensión (`[ollama]` de config/hosted_extraction.toml, ADR 0026, "
+            "enmienda 4); las huellas de los modelos se siguen verificando contra "
+            "`[pinned_environment]`. `--c2-derived` lo implica y no admite `formal`. Se niega "
+            f"con las corridas `{FORMAL_B_RUN_PREFIX}*`; reanudar con otro entorno se rechaza.",
+        ),
+    ] = None,
 ) -> None:
     """Experimento B: preguntas x condiciones x corridas, con juicio y citación (OE3).
 
@@ -4403,10 +4448,36 @@ def experiment_b(
     de respuestas de la tercera enmienda del ADR 0026): solo se admite C2, se consulta con el
     ejecutable de OpenKOS de la derivación y la corrida registra la derivación, su origen, el
     ejecutable y `sufficiency_check`; reanudar con otros valores se rechaza.
+
+    Con `--environment hosted` (implícito con `--c2-derived`) la versión de Ollama se verifica
+    contra la de la extensión y la corrida registra `environment: hosted`; sirve también para el
+    C1 de control `experimento-b-c1-ollama-0-40-16` (cuarta enmienda del ADR 0026).
     """
     from datetime import UTC, datetime
 
     quiet_http_logs()
+    if environment not in (None, "formal", "hosted"):
+        console.print(
+            f"[bold red]Entorno desconocido: {escape(environment)}. Opciones: formal, hosted."
+            "[/bold red]"
+        )
+        raise typer.Exit(code=1)
+    if c2_derived is not None:
+        if environment == "formal":
+            console.print(
+                "[bold red]`--c2-derived` se consulta en el entorno de la extensión: no "
+                "admite `--environment formal`.[/bold red]"
+            )
+            raise typer.Exit(code=1)
+        environment = "hosted"
+    extension_environment = environment == "hosted"
+    if extension_environment and run_name is not None and run_name.startswith(FORMAL_B_RUN_PREFIX):
+        console.print(
+            f"[bold red]`--environment hosted` no se admite con la corrida formal "
+            f"{escape(run_name)!r}: la corrida formal no se mezcla con la infraestructura de la "
+            "extensión.[/bold red]"
+        )
+        raise typer.Exit(code=1)
     wanted = [c.strip().lower() for c in conditions.split(",") if c.strip()]
     unknown = [c for c in wanted if c not in EXPERIMENT_B_CONDITIONS]
     if not wanted or unknown:
@@ -4517,6 +4588,13 @@ def experiment_b(
     # runs), not the pinned one on PATH: the pin guard then checks the models and Ollama only, and
     # the version the derived executable reports must be the one the derivation recorded.
     probe = make_provenance_probe(derived.executable) if derived is not None else None
+    # Formal default: the call keeps its original arguments. The extension environment adds only
+    # the Ollama version of config/hosted_extraction.toml; digests still come from the formal pins.
+    pin_overrides: dict[str, str] = {}
+    if extension_environment:
+        from afg.experiments.hosted_extraction import load_hosted_config
+
+        pin_overrides["ollama_version"] = load_hosted_config().ollama_version
     pinned = require_pinned_environment(
         [
             settings.generative_model,
@@ -4525,6 +4603,7 @@ def experiment_b(
             configured_embedding_model(),
         ],
         needs_openkos=derived is None,
+        **pin_overrides,
     )
     if (
         derived is not None
@@ -4551,6 +4630,8 @@ def experiment_b(
         c3_workspaces=_short(OPENKOS_C3_WORKSPACES_DIR) if "c3" in wanted else None,
     )
     provenance.update(pinned)
+    if extension_environment:
+        provenance["environment"] = "hosted"  # absent in formal runs, so their manifests are intact
     if derived is not None:
         # Written only for derived runs, so the manifests of the formal setup keep their shape.
         provenance.update(

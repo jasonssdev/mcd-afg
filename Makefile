@@ -1,4 +1,4 @@
-.PHONY: help setup setup-full setup-deck skill-assets skill-link deck-render lint fmt typecheck test check corpus inventory biblio lab hosted-bridge hosted-local-baseline hosted-pilot hosted-run hosted-compare hosted-derive hosted-derive-baseline hosted-answers hosted-answers-baseline hosted-answers-compare hosted-notebook clean
+.PHONY: help setup setup-full setup-deck skill-assets skill-link deck-render lint fmt typecheck test check corpus inventory biblio lab hosted-bridge hosted-local-baseline hosted-pilot hosted-run hosted-compare hosted-derive hosted-derive-baseline hosted-answers-c1 hosted-answers hosted-answers-baseline hosted-answers-compare hosted-notebook clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
@@ -82,6 +82,9 @@ hosted-derive: ## Hosted answers: derive the query workspaces of one model (no m
 hosted-derive-baseline: ## Hosted answers: derive the query workspaces of the 0.7.3 baseline (no model call)
 	uv run afg experiment b-derive --source experimento-a-base-0-7-3
 
+hosted-answers-c1: ## Hosted answers: control C1 on the extension infrastructure (Ollama 0.40.16, local, long; ADR 0026 amendment 4)
+	uv run afg experiment b --questions "$(QUESTIONS)" --conditions c1 --environment hosted --run-name experimento-b-c1-ollama-0-40-16
+
 hosted-answers: ## Hosted answers: Experiment B of C2 over the derived workspaces of one model (local Ollama, long): make hosted-answers LABEL=<label>
 	@test -n "$(LABEL)" || { echo "Usage: make hosted-answers LABEL=<label> (run make hosted-derive LABEL=<label> first)"; exit 2; }
 	uv run afg experiment b --questions "$(QUESTIONS)" --conditions c2 --c2-derived "experimento-a-hosted-$(LABEL)-consulta" --run-name "experimento-b-hosted-$(LABEL)"
@@ -89,7 +92,7 @@ hosted-answers: ## Hosted answers: Experiment B of C2 over the derived workspace
 hosted-answers-baseline: ## Hosted answers: Experiment B of C2 over the derived 0.7.3 baseline (local Ollama, long)
 	uv run afg experiment b --questions "$(QUESTIONS)" --conditions c2 --c2-derived experimento-a-base-0-7-3-consulta --run-name experimento-b-base-0-7-3
 
-hosted-answers-compare: ## Hosted answers: paired comparison of every C2 run with C1 formal (reads stored runs)
+hosted-answers-compare: ## Hosted answers: paired comparison of every C2 run with the current C1, plus the infrastructure effect (reads stored runs)
 	uv run afg experiment b-hosted-compare
 
 hosted-notebook: ## Hosted extension: re-execute notebook 33 in place
