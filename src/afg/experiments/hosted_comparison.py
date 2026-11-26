@@ -48,6 +48,7 @@ __all__ = [
     "bridge_check",
     "build_comparison",
     "compare_to_baseline",
+    "ingest_time_summary",
     "load_run_data",
     "meeting_counts",
     "paired_bootstrap",
@@ -302,6 +303,18 @@ def _ingest_profile(data: RunData, series: Collection[str]) -> _IngestProfile:
     return _IngestProfile(
         {m: statistics.fmean(v) for m, v in per_meeting.items()}, complete, expected
     )
+
+
+def ingest_time_summary(data: RunData, series: Collection[str] | None = None) -> dict[str, Any]:
+    """Median ingest seconds per meeting and how many meetings finished (descriptive)."""
+    selected = series if series is not None else _series_of(data)
+    profile = _ingest_profile(data, selected)
+    return {
+        "median_s": statistics.median(profile.seconds.values()) if profile.seconds else None,
+        "n_meetings": len(profile.seconds),
+        "complete": profile.complete,
+        "expected": profile.expected,
+    }
 
 
 def _time_ratio(

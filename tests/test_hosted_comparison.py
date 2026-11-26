@@ -498,3 +498,20 @@ def test_write_comparison_produces_json_and_a_csv_with_one_row_per_tau(tmp_path:
     assert [r["tau"] for r in ok] == ["0.7", "0.75", "0.8"]
     assert ok[0]["verdict"] in {"mejora", "empeora", "sin diferencia demostrada"}
     assert {r["status"] for r in rows} == {"ok", "sin corrida"}
+
+
+def test_ingest_time_summary_gives_the_median_and_the_completeness(tmp_path: Path) -> None:
+    from afg.experiments.hosted_comparison import ingest_time_summary
+
+    _write_run(
+        tmp_path,
+        "base",
+        _all({"ES2015": _meetings("ES2015", "abcd")}, runs=1),
+        ingest_seconds={"ES2015a": 10.0, "ES2015b": 20.0, "ES2015c": 30.0, "ES2015d": 40.0},
+    )
+
+    summary = ingest_time_summary(_load(tmp_path, "base"))
+
+    assert summary["median_s"] == 25.0
+    assert summary["n_meetings"] == 4
+    assert summary["complete"] == 4 and summary["expected"] == 4
