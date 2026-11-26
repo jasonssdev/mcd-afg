@@ -111,6 +111,24 @@ def test_bundle_resolver_accepts_several_series_and_rejects_others(tmp_path: Pat
         bundle_resolver({"series": ["ES2015"]}, base_dir=tmp_path)
 
 
+def test_bundle_resolver_follows_the_workspaces_dir_of_a_derived_run(tmp_path: Path) -> None:
+    manifest = {
+        "c2_extraction": "derived",
+        "c2_workspaces_dir": "data/interim/openkos-query",
+        "series": ["ES2015"],
+    }
+    resolve = bundle_resolver(manifest)
+    assert (
+        resolve("ES2015", 1)
+        .as_posix()
+        .endswith("data/interim/openkos-query/derived/ES2015/run-1/bundle")
+    )
+    # an explicit base_dir still wins (tests and callers that relocate the workspaces)
+    assert bundle_resolver(manifest, base_dir=tmp_path)("ES2015", 1) == (
+        tmp_path / "derived" / "ES2015" / "run-1" / "bundle"
+    )
+
+
 def test_worksheet_reads_the_bundle_of_each_series(tmp_path: Path) -> None:
     manifest = {"c2_extraction": "extr", "series": ["ES2015", "IS1003"]}
     _write(

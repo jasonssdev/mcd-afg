@@ -10,6 +10,8 @@ import pytest
 
 from afg.experiments.hosted_extraction import load_hosted_config
 from afg.experiments.hosted_notebook import (
+    answers_frame,
+    answers_state,
     baseline_figures,
     bridge_frame,
     bridge_state,
@@ -412,3 +414,66 @@ def test_local_baseline_state_reports_progress(tmp_path: Path) -> None:
     (tmp_path / config.local_baseline.run_name / "extracciones.jsonl").write_text("{}\n")
     ready = local_baseline_state(config, runs_root=tmp_path, evaluation_series=series)
     assert ready["state"] == "lista"
+
+
+def _answers_payload() -> dict[str, Any]:
+    primary = {
+        "status": "ok",
+        "reference": "C1 formal",
+        "stratum": "E3",
+        "metric": "correct",
+        "n_pairs": 25,
+        "difference": -0.12,
+        "lower": -0.31,
+        "upper": 0.05,
+        "verdict": "no se distingue de C1 formal",
+        "sample_sufficient": True,
+    }
+    secondary = {
+        "vs_c2_formal": {**primary, "reference": "C2 formal", "difference": 0.2, "verdict": "x"},
+        "vs_c2_base_0_7_3": {"status": "pendiente", "reason": "sin corrida"},
+    }
+    return {
+        "family": {"alpha": 0.05, "n_models": 6, "level": 0.99},
+        "models": {
+            "openai-small": {
+                "run": "experimento-b-hosted-openai-small",
+                "status": "ok",
+                "primary": primary,
+                "secondary": secondary,
+                "strata": [],
+                "warnings": [],
+            },
+            "google-large": {
+                "run": "experimento-b-hosted-google-large",
+                "status": "pendiente",
+                "reason": "sin corrida",
+            },
+        },
+        "baseline_0_7_3": {
+            "run": "experimento-b-base-0-7-3",
+            "status": "pendiente",
+            "reason": "sin corrida",
+        },
+    }
+
+
+def test_answers_state_is_none_until_the_comparison_exists(tmp_path: Path) -> None:
+    assert answers_state(tmp_path / "missing.json") is None
+    path = tmp_path / "r.json"
+    path.write_text(json.dumps(_answers_payload()), encoding="utf-8")
+    assert answers_state(path) == _answers_payload()
+
+
+def test_answers_frame_shows_the_verdict_and_marks_missing_runs_pendiente() -> None:
+    frame = answers_frame(_answers_payload())
+    rows = {row["Modelo"]: row for _, row in frame.iterrows()}
+    done = rows["openai-small"]
+    assert done["Diferencia con C1 formal en E3"] == "-0,12 [-0,31; +0,05]"
+    assert done["Veredicto"] == "no se distingue de C1 formal"
+    assert done["Frente a C2 formal"] == "+0,20 [-0,31; +0,05]"
+    assert done["Frente a C2 de la línea base 0.7.3"] == "pendiente"
+    assert done["Preguntas pareadas"] == "25"
+    assert rows["google-large"]["Veredicto"] == "pendiente"
+    assert rows["google-large"]["Diferencia con C1 formal en E3"] == "pendiente"
+    assert rows["línea base 0.7.3"]["Veredicto"] == "pendiente"

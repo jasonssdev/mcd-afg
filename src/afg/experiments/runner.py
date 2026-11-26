@@ -197,6 +197,16 @@ def _compared_settings(settings: Mapping[str, Any]) -> dict[str, Any]:
 # --- engine ------------------------------------------------------------------------------------
 
 
+DERIVATION_IDENTITY_DEFAULTS: Mapping[str, Any] = {
+    "c2_workspaces_dir": None,
+    "c2_derived_from": None,
+    "c2_openkos_executable": None,
+    "sufficiency_check": True,
+}
+"""Provenance keys that identify a run beyond its extraction name, with the value of the formal
+setup (which never writes them)."""
+
+
 def _changed_identity(
     previous: Mapping[str, Any],
     conditions: list[str],
@@ -214,6 +224,14 @@ def _changed_identity(
         for key in ("questions_sha256", "c2_extraction")
         if provenance is not None and key in provenance and previous.get(key) != provenance[key]
     ]
+    if provenance is not None:
+        # Derived query workspaces and the sufficiency setting (ADR 0026, amendment 3). The keys
+        # are written only for a non-formal run, so an absent key reads as its formal default.
+        changed += [
+            key
+            for key, default in DERIVATION_IDENTITY_DEFAULTS.items()
+            if previous.get(key, default) != provenance.get(key, default)
+        ]
     return changed
 
 

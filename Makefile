@@ -1,4 +1,4 @@
-.PHONY: help setup setup-full setup-deck skill-assets skill-link deck-render lint fmt typecheck test check corpus inventory biblio lab hosted-bridge hosted-local-baseline hosted-pilot hosted-run hosted-compare hosted-notebook clean
+.PHONY: help setup setup-full setup-deck skill-assets skill-link deck-render lint fmt typecheck test check corpus inventory biblio lab hosted-bridge hosted-local-baseline hosted-pilot hosted-run hosted-compare hosted-derive hosted-derive-baseline hosted-answers hosted-answers-baseline hosted-answers-compare hosted-notebook clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
@@ -72,6 +72,25 @@ hosted-run: ## Hosted extension: full run of one model + descriptive report: mak
 
 hosted-compare: ## Hosted extension: paired comparison of every model with both baselines (+ bridge check)
 	uv run afg experiment a-hosted-compare --include-bridge
+
+QUESTIONS ?= data/processed/questions/banco-preguntas.csv
+
+hosted-derive: ## Hosted answers: derive the query workspaces of one model (no model call): make hosted-derive LABEL=<label>
+	@test -n "$(LABEL)" || { echo "Usage: make hosted-derive LABEL=<label> (see config/hosted_extraction.toml)"; exit 2; }
+	uv run afg experiment b-derive --source "experimento-a-hosted-$(LABEL)"
+
+hosted-derive-baseline: ## Hosted answers: derive the query workspaces of the 0.7.3 baseline (no model call)
+	uv run afg experiment b-derive --source experimento-a-base-0-7-3
+
+hosted-answers: ## Hosted answers: Experiment B of C2 over the derived workspaces of one model (local Ollama, long): make hosted-answers LABEL=<label>
+	@test -n "$(LABEL)" || { echo "Usage: make hosted-answers LABEL=<label> (run make hosted-derive LABEL=<label> first)"; exit 2; }
+	uv run afg experiment b --questions "$(QUESTIONS)" --conditions c2 --c2-derived "experimento-a-hosted-$(LABEL)-consulta" --run-name "experimento-b-hosted-$(LABEL)"
+
+hosted-answers-baseline: ## Hosted answers: Experiment B of C2 over the derived 0.7.3 baseline (local Ollama, long)
+	uv run afg experiment b --questions "$(QUESTIONS)" --conditions c2 --c2-derived experimento-a-base-0-7-3-consulta --run-name experimento-b-base-0-7-3
+
+hosted-answers-compare: ## Hosted answers: paired comparison of every C2 run with C1 formal (reads stored runs)
+	uv run afg experiment b-hosted-compare
 
 hosted-notebook: ## Hosted extension: re-execute notebook 33 in place
 	uv run jupyter nbconvert --to notebook --execute --inplace --ExecutePreprocessor.timeout=900 notebooks/33-jss-extraccion-con-modelos-de-pago.ipynb

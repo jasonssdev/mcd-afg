@@ -16,7 +16,9 @@ from afg.extraction.openkos.workspace import (
     OpenKosCommandError,
     OpenKosRunSettings,
     WorkspaceNotEmptyError,
+    drop_config_keys,
     ensure_config_keys,
+    read_config_value,
     redact_secrets,
     run_series_workspace,
     stage_meeting_body,
@@ -192,6 +194,19 @@ def test_ensure_config_keys_replaces_uncomments_and_appends() -> None:
     assert "# seed: 42" not in lines
     assert lines[-1] == "extra_key: 1"
     assert "# temperature: 0.1" in lines  # untouched
+
+
+def test_drop_config_keys_removes_active_lines_only() -> None:
+    text = "model: a\nbase_url: http://x  # note\n# base_url: http://y\nseed: 1\n"
+    out = drop_config_keys(text, ("base_url", "missing"))
+    assert out.splitlines() == ["model: a", "# base_url: http://y", "seed: 1"]
+
+
+def test_read_config_value_reads_the_active_value_without_comment() -> None:
+    text = "backend: ollama  # default\n# seed: 9\ncontext_window: 12288\n"
+    assert read_config_value(text, "backend") == "ollama"
+    assert read_config_value(text, "context_window") == "12288"
+    assert read_config_value(text, "seed") is None  # commented lines are not active
 
 
 def test_stage_meeting_body_writes_the_body_without_front_matter(tmp_path: Path) -> None:
