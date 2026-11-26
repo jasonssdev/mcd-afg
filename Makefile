@@ -1,4 +1,4 @@
-.PHONY: help setup setup-full setup-deck skill-assets skill-link deck-render lint fmt typecheck test check corpus inventory biblio lab clean
+.PHONY: help setup setup-full setup-deck skill-assets skill-link deck-render lint fmt typecheck test check corpus inventory biblio lab hosted-bridge hosted-local-baseline hosted-pilot hosted-run hosted-compare hosted-notebook clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
@@ -52,6 +52,29 @@ biblio: ## Bibliography coverage audit
 
 lab: ## Launch Jupyter Lab
 	uv run jupyter lab
+
+hosted-bridge: ## Hosted extension: continuity bridge (historical, done on OpenKOS 0.7.2; refuses to re-run)
+	uv run afg experiment a-hosted --bridge
+
+hosted-local-baseline: ## Hosted extension: secondary baseline (qwen3:8b on OpenKOS 0.7.3, 11 series x 3 runs, local Ollama; resumable)
+	uv run afg experiment a-hosted --local-baseline
+
+hosted-pilot: ## Hosted extension: pilot of one model (ES2002 x 1): make hosted-pilot LABEL=<label>
+	@test -n "$(LABEL)" || { echo "Usage: make hosted-pilot LABEL=<label> (see config/hosted_extraction.toml)"; exit 2; }
+	@test -n "$$OPENKOS_OPENAI_API_KEY" || { echo "OPENKOS_OPENAI_API_KEY is not set: export the key of the provider of $(LABEL) in your shell first (never in a file)."; exit 2; }
+	uv run afg experiment a-hosted --model "$(LABEL)" --pilot
+
+hosted-run: ## Hosted extension: full run of one model + descriptive report: make hosted-run LABEL=<label>
+	@test -n "$(LABEL)" || { echo "Usage: make hosted-run LABEL=<label> (see config/hosted_extraction.toml)"; exit 2; }
+	@test -n "$$OPENKOS_OPENAI_API_KEY" || { echo "OPENKOS_OPENAI_API_KEY is not set: export the key of the provider of $(LABEL) in your shell first (never in a file)."; exit 2; }
+	uv run afg experiment a-hosted --model "$(LABEL)"
+	uv run afg experiment a-report --c2-extraction "experimento-a-hosted-$(LABEL)" --descriptive
+
+hosted-compare: ## Hosted extension: paired comparison of every model with both baselines (+ bridge check)
+	uv run afg experiment a-hosted-compare --include-bridge
+
+hosted-notebook: ## Hosted extension: re-execute notebook 33 in place
+	uv run jupyter nbconvert --to notebook --execute --inplace --ExecutePreprocessor.timeout=900 notebooks/33-jss-extraccion-con-modelos-de-pago.ipynb
 
 clean: ## Remove caches and build artifacts
 	rm -rf .pytest_cache .ruff_cache .mypy_cache build dist *.egg-info

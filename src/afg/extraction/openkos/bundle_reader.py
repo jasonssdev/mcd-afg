@@ -77,6 +77,14 @@ NO_EXCERPT = "no_excerpt"
 AMBIGUOUS = "ambiguous"
 SOURCE_TYPE = "Source"
 SOURCES_DIRNAME = "sources"
+EXTRACTION_STATUS_KEY = "extraction_status"
+# OpenKOS 0.7.3: a source that produced no derived object carries one of these in its header.
+EXTRACTION_STATUSES = (
+    "failed",
+    "no-concepts-found",
+    "no-extractable-text",
+    "blocked-by-sensitivity",
+)
 _CONCEPT_SKIPPED_DIRNAMES = frozenset({DECISIONS_DIRNAME, SOURCES_DIRNAME})
 
 
@@ -130,6 +138,24 @@ def _split_front_matter(text: str, path: Path) -> tuple[dict[str, object], str]:
     if not isinstance(loaded, dict):
         raise BundleFormatError(f"{path}: front matter is not a mapping.")
     return {str(key): value for key, value in loaded.items()}, match.group(2)
+
+
+def read_extraction_status(bundle_dir: Path, meeting_id: str) -> str | None:
+    """The ``extraction_status`` of the source of ``meeting_id`` (OpenKOS 0.7.3), else ``None``.
+
+    The source is ``bundle_dir/sources/<meeting id lowercased>.md`` (the slug is the lowercased
+    stem of the ingested file). ``None`` means the source has no status, so extraction produced
+    objects; it also covers a missing source or bundle, as in workspaces of earlier versions.
+
+    Raises:
+        BundleFormatError: the source exists but its front matter is malformed.
+    """
+    path = bundle_dir / SOURCES_DIRNAME / f"{meeting_id.casefold()}.md"
+    if not path.is_file():
+        return None
+    metadata, _ = _split_front_matter(path.read_text(encoding="utf-8"), path)
+    value = metadata.get(EXTRACTION_STATUS_KEY)
+    return None if value is None else str(value).strip()
 
 
 def _required_text(metadata: dict[str, object], key: str, path: Path) -> str:

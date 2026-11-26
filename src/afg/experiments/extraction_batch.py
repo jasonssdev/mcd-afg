@@ -26,6 +26,7 @@ from pathlib import Path
 from typing import Any, Protocol
 
 from afg.extraction.openkos.commands import OpenKosError
+from afg.extraction.openkos.workspace import redact_secrets
 from afg.extraction.openkos_adapter import SeriesExtraction
 
 __all__ = ["BatchConflictError", "SeriesExtractor", "batch_summary_lines", "run_batch"]
@@ -56,7 +57,32 @@ def _now() -> str:
     return datetime.now(UTC).isoformat()
 
 
-def _load_resumable(run_dir: Path, series_ids: Sequence[str], runs: int) -> dict[str, Any]:
+_SETTING_KEYS = ("backend", "base_url", "reasoning_effort")
+
+
+def _check_same_settings(name: str, stored: Mapping[str, Any], current: Mapping[str, Any]) -> None:
+    """Refuse to resume under other OpenKOS settings; only keys both manifests carry count.
+
+    A formal batch stored neither ``backend`` nor ``base_url`` nor ``reasoning_effort``, so its
+    resume is unchanged (the model is compared only for batches that recorded a backend).
+    """
+    keys = list(_SETTING_KEYS)
+    if "backend" in stored:
+        keys.insert(0, "generative_model")
+    for key in keys:
+        if key in stored and key in current and stored[key] != current[key]:
+            raise BatchConflictError(
+                f"{name} se corrió con openkos.{key}={stored[key]!r} y ahora se pide "
+                f"{current[key]!r}; no se reanuda con otra configuración. Usa otro --run-name."
+            )
+
+
+def _load_resumable(
+    run_dir: Path,
+    series_ids: Sequence[str],
+    runs: int,
+    current_openkos: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     """The manifest of an existing batch directory, checked against the request."""
     name = run_dir.name
     manifest_path = run_dir / MANIFEST_FILENAME
@@ -74,6 +100,7 @@ def _load_resumable(run_dir: Path, series_ids: Sequence[str], runs: int) -> dict
             f"{manifest.get('runs')} corrida(s) por serie; para reanudarlo se piden las mismas "
             "series y corridas. Usa otro --run-name para un lote distinto."
         )
+    _check_same_settings(name, manifest.get("openkos") or {}, current_openkos or {})
     return manifest
 
 
@@ -125,7 +152,7 @@ def run_batch(
     records_path = run_dir / RECORDS_FILENAME
     manifest_path = run_dir / MANIFEST_FILENAME
     if run_dir.exists():
-        manifest = _load_resumable(run_dir, series_ids, runs)
+        manifest = _load_resumable(run_dir, series_ids, runs, base_manifest.get("openkos"))
         _prepare_resume(run_dir, manifest)
     else:
         manifest = {
@@ -167,12 +194,12 @@ def run_batch(
             except (OpenKosError, FileNotFoundError) as exc:
                 entry.update(
                     status=STATUS_FAILED,
-                    error=f"{type(exc).__name__}: {exc}",
+                    error=redact_secrets(f"{type(exc).__name__}: {exc}"),
                     finished_at=_now(),
                     seconds=round(time.monotonic() - clock, 3),
                 )
                 save()
-                report(f"{series_id} corrida {run} fallida: {exc}")
+                report(f"{series_id} corrida {run} fallida: {redact_secrets(str(exc))}")
                 continue
             with records_path.open("a", encoding="utf-8") as handle:
                 handle.write(json.dumps(extraction.to_record(), ensure_ascii=False) + "\n")

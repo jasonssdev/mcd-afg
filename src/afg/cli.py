@@ -226,6 +226,7 @@ from afg.extraction.openkos.gold_bundle import (
     load_gold_relations,
 )
 from afg.extraction.openkos.settings import openkos_run_settings
+from afg.extraction.openkos.workspace import OpenKosRunSettings
 from afg.extraction.openkos_adapter import OpenKosAdapter
 from afg.shared.config import Settings, get_settings, load_corpus_config, load_experiments_config
 from afg.shared.csvio import CsvFormatError
@@ -2872,6 +2873,346 @@ def experiment_a_batch(
         raise typer.Exit(code=1)
 
 
+def make_hosted_runner() -> SubprocessRunner:
+    """The process runner of the hosted-extraction preflight (a seam for tests)."""
+    return SubprocessRunner()
+
+
+def _executable_exists(path: str) -> bool:
+    import shutil
+
+    return shutil.which(path) is not None
+
+
+def make_hosted_adapter(base_dir: Path, settings: OpenKosRunSettings) -> OpenKosAdapter:
+    """The adapter of a hosted run: the hosted-extension ``settings``, not the frozen ones."""
+    meetings_xml = AMI_DIR / "corpusResources" / "meetings.xml"
+    return OpenKosAdapter(
+        runner=SubprocessRunner(),
+        settings=settings,
+        base_dir=base_dir,
+        transcripts_dir=TRANSCRIPTS_DIR,
+        meetings_xml=meetings_xml if meetings_xml.exists() else None,
+    )
+
+
+@experiment_app.command("a-hosted")
+def experiment_a_hosted(
+    model: Annotated[
+        str | None,
+        typer.Option(
+            "--model",
+            help="Etiqueta del modelo de pago de config/hosted_extraction.toml (por ejemplo "
+            "openai-small).",
+        ),
+    ] = None,
+    bridge: Annotated[
+        bool,
+        typer.Option(
+            "--bridge",
+            help="Puente de continuidad (histórico, OpenKOS 0.7.2): ya no se vuelve a correr.",
+        ),
+    ] = False,
+    local_baseline: Annotated[
+        bool,
+        typer.Option(
+            "--local-baseline",
+            help="Segunda línea base: qwen3:8b con OpenKOS 0.7.3 en el Ollama local, "
+            "con los ajustes del puente, sobre las once series de evaluación.",
+        ),
+    ] = False,
+    series: Annotated[
+        list[str] | None,
+        typer.Option("--series", help="Serie de evaluación; se repite para varias."),
+    ] = None,
+    runs: Annotated[
+        int | None,
+        typer.Option("--runs", min=1, help="Corridas por serie (por defecto, las de la config)."),
+    ] = None,
+    pilot: Annotated[
+        bool,
+        typer.Option("--pilot", help="Piloto: una serie (ES2002) y una repetición por defecto."),
+    ] = False,
+) -> None:
+    """Extensión del Experimento A con modelos de pago (ADR 0026): extracción de C2.
+
+    Corre `a-batch` con OpenKOS 0.7.3 y el *backend* `openai-compatible` sobre las series de
+    evaluación, en `reports/experiment-a/experimento-a-hosted-<etiqueta>/` (piloto:
+    `experimento-a-piloto-<etiqueta>`; segunda línea base local: `experimento-a-base-0-7-3`; el
+    puente `experimento-a-puente-0-7-2` es evidencia histórica). La clave del proveedor se lee de
+    `OPENKOS_OPENAI_API_KEY`, nunca se escribe. Es descriptivo: no toca `config/experiments.toml`
+    ni `config/freeze.json`, y su informe se pide con
+    `afg experiment a-report --c2-extraction <carpeta> --descriptive`. Repetir el comando
+    reanuda la corrida.
+    """
+    import os
+    import time
+
+    from afg.experiments.extraction_batch import (
+        BatchConflictError,
+        batch_summary_lines,
+        run_batch,
+    )
+    from afg.experiments.hosted_extraction import (
+        HostedConfigError,
+        HostedPreflightError,
+        bridge_run_settings,
+        hosted_manifest,
+        hosted_run_name,
+        hosted_run_settings,
+        load_hosted_config,
+        preflight,
+        resolve_executable,
+    )
+
+    def refuse(message: str, code: int) -> typer.Exit:
+        console.print(f"[bold red]{escape(message)}[/bold red]")
+        return typer.Exit(code=code)
+
+    config = load_hosted_config()
+    if (model is not None) + bridge + local_baseline != 1:
+        raise refuse("Indica exactamente uno: --model <etiqueta>, --bridge o --local-baseline.", 2)
+    if model is not None and model not in config.models:
+        raise refuse(f"Etiqueta desconocida {model!r}; válidas: {', '.join(config.models)}.", 2)
+    local_mode = bridge or local_baseline
+    if local_mode and (series or runs is not None or pilot):
+        raise refuse(
+            "--bridge y --local-baseline usan las series y las corridas de la config; "
+            "no admiten otras.",
+            2,
+        )
+
+    if bridge and config.bridge.openkos_version != config.required_version:
+        raise refuse(
+            f"El puente se hizo con OpenKOS {config.bridge.openkos_version} y es evidencia "
+            f"histórica: el ejecutable actual es {config.required_version}, no se vuelve a correr.",
+            2,
+        )
+    executable = resolve_executable(config, os.environ)
+    if local_mode:
+        if local_baseline:
+            run_name = config.local_baseline.run_name
+            series_ids = _evaluation_series()
+            n_runs = config.local_baseline.runs
+        else:
+            run_name = config.bridge.run_name
+            series_ids = list(config.bridge.series)
+            n_runs = config.bridge.runs
+        settings = bridge_run_settings(openkos_run_settings(), executable=executable)
+    else:
+        assert model is not None
+        run_name = hosted_run_name(model, pilot=pilot)
+        series_ids = list(
+            dict.fromkeys(series or ([config.bridge.series[0]] if pilot else _evaluation_series()))
+        )
+        n_runs = runs if runs is not None else (1 if pilot else config.runs_per_model)
+        settings = hosted_run_settings(config, model, executable=executable)
+
+    partition_of = configured_partition_of()
+    not_evaluation = [s for s in series_ids if partition_of(s) != "evaluation"]
+    if not_evaluation:
+        raise refuse(
+            f"Esta extensión corre solo las series de evaluación; no lo son: "
+            f"{', '.join(not_evaluation)}. No se llamó a ningún modelo.",
+            1,
+        )
+    probe = make_provenance_probe()
+    try:
+        preflight(
+            config,
+            label=None if local_mode else model,
+            executable=executable,
+            runner=make_hosted_runner(),
+            env=os.environ,
+            ollama_models=probe.model_digests,
+            executable_exists=_executable_exists,
+            bridge_model=settings.generative_model if local_mode else None,
+        )
+    except (HostedPreflightError, HostedConfigError) as exc:
+        raise refuse(str(exc), 1) from exc
+
+    digests = probe.model_digests() or {}
+    local_models = [settings.embedding_model, *([settings.generative_model] if local_mode else [])]
+    base_manifest = hosted_manifest(
+        config,
+        run_name=run_name,
+        label=None if local_mode else model,
+        series_ids=series_ids,
+        n_runs=n_runs,
+        settings=settings,
+        pilot=pilot,
+        local_baseline=local_baseline,
+        git_commit=current_git_commit(),
+        git_dirty=probe.git_dirty(),
+        local_model_digests={
+            name: digest
+            for name, digest in digests.items()
+            if name.removesuffix(":latest") in {m.removesuffix(":latest") for m in local_models}
+        },
+    )
+    run_dir = EXPERIMENT_A_DIR / run_name
+    console.print(
+        f"{run_name}: {', '.join(series_ids)}, {n_runs} corrida(s) por serie -> {_short(run_dir)}"
+    )
+    started = time.monotonic()
+    try:
+        manifest = run_batch(
+            make_hosted_adapter(OPENKOS_WORKSPACES_DIR / run_name, settings),
+            run_dir=run_dir,
+            workspace_root=OPENKOS_WORKSPACES_DIR / run_name,
+            series_ids=series_ids,
+            runs=n_runs,
+            base_manifest=base_manifest,
+            report=lambda line: console.print(escape(line)),
+        )
+    except BatchConflictError as exc:
+        raise refuse(str(exc), 1) from exc
+    for line in batch_summary_lines(manifest, elapsed_seconds=time.monotonic() - started):
+        console.print(escape(line))
+    console.print(f"Manifiesto en {_short(run_dir / 'manifest.json')}.")
+    if manifest["status"] != "ok":
+        raise typer.Exit(code=1)
+
+
+@experiment_app.command("a-hosted-compare")
+def experiment_a_hosted_compare(
+    models: Annotated[
+        list[str] | None,
+        typer.Option("--models", help="Etiqueta a comparar; se repite. Por defecto, todas."),
+    ] = None,
+    include_bridge: Annotated[
+        bool,
+        typer.Option("--include-bridge", help="Agrega la verificación del puente de continuidad."),
+    ] = False,
+    pilot: Annotated[
+        bool,
+        typer.Option("--pilot", help="Compara las corridas piloto en vez de las completas."),
+    ] = False,
+    baseline: Annotated[
+        str,
+        typer.Option(
+            "--baseline",
+            help="Línea base: formal (corrida congelada), local (qwen3:8b con OpenKOS 0.7.3) "
+            "o both (ambas).",
+        ),
+    ] = "both",
+) -> None:
+    """Compara cada modelo de pago con la línea base `qwen3:8b` (ADR 0026, decisiones 7 y 8).
+
+    Hay dos líneas base: la formal (principal) y la local, `qwen3:8b` con OpenKOS 0.7.3
+    (secundaria, enmienda del ADR). Con la local presente se agrega el efecto de versión
+    (local contra formal), que no cuenta en el nivel Bonferroni.
+
+    Bootstrap pareado por reunión de la diferencia (modelo - línea base) en precision, recall y
+    F1, con nivel Bonferroni por los modelos de la config, solo sobre las series que cubre cada
+    corrida. Agrega tiempo por reunión, extracciones completas, decisiones por reunión y costo.
+    Escribe `comparacion.json` y `comparacion.csv` en `reports/experiment-a/hosted-comparison/`;
+    las etiquetas sin carpeta se informan como «sin corrida». Es descriptivo.
+    """
+    from rich.table import Table
+
+    from afg.experiments.hosted_comparison import (
+        BASELINE_CHOICES,
+        build_comparison,
+        write_comparison,
+    )
+    from afg.experiments.hosted_extraction import load_hosted_config
+
+    config = load_hosted_config()
+    if baseline not in BASELINE_CHOICES:
+        console.print(
+            f"[bold red]--baseline debe ser uno de: {escape(', '.join(BASELINE_CHOICES))}."
+            "[/bold red]"
+        )
+        raise typer.Exit(code=2)
+    labels = list(dict.fromkeys(models)) if models else list(config.models)
+    unknown = [label for label in labels if label not in config.models]
+    if unknown:
+        console.print(
+            f"[bold red]Etiqueta(s) desconocida(s): {escape(', '.join(unknown))}; "
+            f"válidas: {escape(', '.join(config.models))}.[/bold red]"
+        )
+        raise typer.Exit(code=2)
+
+    def reference_of(series_id: str) -> Sequence[ReferenceDecision]:
+        return load_series_reference(series_id, language="en").decisions
+
+    try:
+        payload = build_comparison(
+            config=config,
+            labels=labels,
+            include_bridge=include_bridge,
+            pilot=pilot,
+            baseline=baseline,
+            runs_root=EXPERIMENT_A_DIR,
+            workspaces_root=OPENKOS_WORKSPACES_DIR,
+            reference_of=reference_of,
+            similarity=make_alignment_similarity(),
+        )
+    except (FileNotFoundError, NotAdjudicatedError, TranslationError) as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+        raise typer.Exit(code=1) from exc
+
+    table = Table(title="Extensión con modelos de pago: modelo - línea base (τ principal)")
+    for column in (
+        "Modelo", "Línea base", "Series", "Δ Precision", "Δ Recall", "Δ F1", "Veredicto", "Tiempo",
+    ):  # fmt: skip
+        table.add_column(column)
+    primary = f"{float(payload['primary_tau']):.2f}"
+
+    def add_row(label: str, base: str, block: dict[str, Any]) -> None:
+        if block["status"] != "ok":
+            table.add_row(label, base, "-", "-", "-", "-", block["status"], "-")
+            return
+        diff = block["taus"][primary]["diff"]
+
+        def cell(name: str) -> str:
+            low, high = diff[name]["interval"]
+            return escape(f"{diff[name]['estimate']:+.3f} [{low:+.3f}, {high:+.3f}]")
+
+        table.add_row(
+            label,
+            base,
+            str(block["n_series"]),
+            cell("precision"),
+            cell("recall"),
+            cell("f1"),
+            block["verdict"],
+            block["operation"]["time"]["verdict"],
+        )
+
+    for item in payload["candidates"]:
+        if item["status"] != "ok":
+            table.add_row(item["label"], "-", "-", "-", "-", "-", item["status"], "-")
+            continue
+        for name in ("formal", "local"):
+            if f"vs_{name}" in item:
+                add_row(item["label"], name, item[f"vs_{name}"])
+    effect = payload["version_effect"]
+    if effect is not None:
+        add_row(f"{effect.get('label', 'qwen3:8b@0.7.3')} (efecto de versión)", "formal", effect)
+    console.print(table)
+    bridge = payload["bridge"]
+    if bridge is not None:
+        if bridge["status"] != "ok":
+            console.print(f"Puente: {bridge['status']}.")
+        else:
+            console.print(
+                "Puente de continuidad: "
+                + (
+                    "dentro del rango formal."
+                    if bridge["all_inside"]
+                    else "FUERA del rango formal."
+                )
+            )
+    json_path, csv_path = write_comparison(payload, EXPERIMENT_A_DIR / "hosted-comparison")
+    console.print(f"Escrito: {_short(json_path)} y {_short(csv_path)}.")
+
+
+def _evaluation_series() -> list[str]:
+    return list(load_corpus_config()["oe1"]["evaluation_series"])
+
+
 def make_alignment_similarity() -> SimilarityFn:
     """Cosine similarity over the alignment embeddings (model from the config, cached per text)."""
     from afg.evaluation.alignment_analysis import embedding_similarity
@@ -3030,6 +3371,17 @@ def experiment_a_relations(
         raise typer.Exit(code=1)
 
 
+def _is_hosted_extension(run_dir: Path) -> bool:
+    """Whether the run's manifest marks it as the paid-model extension of ADR 0026."""
+    import json
+
+    try:
+        manifest = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8"))
+    except OSError, ValueError:
+        return False
+    return manifest.get("extension") == "hosted"
+
+
 def _interval_cell(figures: dict[str, Any], metric: str) -> str:
     low, high = figures["intervals"][metric]
     return escape(f"{figures[metric]:.2f} [{low:.2f}, {high:.2f}]")
@@ -3084,7 +3436,15 @@ def experiment_a_report(
             f"`afg experiment a-batch --run-name {escape(c2_extraction)}`.[/bold red]"
         )
         raise typer.Exit(code=1)
-    _require_run_frozen(run_dir, descriptive=descriptive, check_questions=False)
+    extension = _is_hosted_extension(run_dir)
+    if extension and not descriptive:
+        console.print(
+            f"[bold red]{_short(run_dir)} es una extensión con modelos de pago (ADR 0026): "
+            "solo tiene informe descriptivo. Usa --descriptive.[/bold red]"
+        )
+        raise typer.Exit(code=1)
+    if not extension:
+        _require_run_frozen(run_dir, descriptive=descriptive, check_questions=False)
     runs = load_extraction_runs([run_dir])
     relations_path = run_dir / "relaciones.json"
     relations = (
@@ -3121,6 +3481,9 @@ def experiment_a_report(
         console.print(f"[bold red]{escape(str(exc))}[/bold red]")
         raise typer.Exit(code=1) from exc
     report["reference_kinds"] = dict(reference_kinds)
+    if extension:
+        report["reportable"] = False  # descriptive extension: never replaces informe.json
+        report["extension"] = "hosted"
 
     label = (
         "reportable" if report["reportable"] else f"DESCRIPTIVO, partición {report['partition']}"

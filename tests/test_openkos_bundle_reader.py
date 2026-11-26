@@ -281,3 +281,33 @@ def test_malformed_file_raises_a_clear_error(
     write_decision(bundle, "bad", mutate(REAL_SINGLE))
     with pytest.raises(BundleFormatError, match=message):
         _read(bundle, transcripts)
+
+
+# --- extraction_status of a source (OpenKOS 0.7.3) -------------------------------------------
+
+
+def _source(bundle: Path, slug: str, front: str) -> None:
+    folder = bundle / "sources"
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / f"{slug}.md").write_text(f"---\n{front}\n---\nPM: hello\n", encoding="utf-8")
+
+
+@pytest.mark.parametrize(
+    "status", ["failed", "no-concepts-found", "no-extractable-text", "blocked-by-sensitivity"]
+)
+def test_the_extraction_status_of_a_source_is_read_from_its_front_matter(
+    tmp_path: Path, status: str
+) -> None:
+    from afg.extraction.openkos.bundle_reader import read_extraction_status
+
+    _source(tmp_path, "es2015a", f"type: Source\nextraction_status: {status}")
+    assert read_extraction_status(tmp_path, "ES2015a") == status
+
+
+def test_a_source_without_the_key_or_a_missing_source_has_no_status(tmp_path: Path) -> None:
+    from afg.extraction.openkos.bundle_reader import read_extraction_status
+
+    _source(tmp_path, "es2015a", "type: Source")
+    assert read_extraction_status(tmp_path, "ES2015a") is None
+    assert read_extraction_status(tmp_path, "ES2015b") is None  # no file (pre-0.7.3 workspace)
+    assert read_extraction_status(tmp_path / "no-bundle", "ES2015a") is None

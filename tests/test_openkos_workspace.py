@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from afg.extraction.openkos.capabilities import MissingCapabilitiesError
+from afg.extraction.openkos.commands import CommandResult
 from afg.extraction.openkos.workspace import (
     IngestDriftError,
     IngestRefusedError,
@@ -16,6 +17,7 @@ from afg.extraction.openkos.workspace import (
     OpenKosRunSettings,
     WorkspaceNotEmptyError,
     ensure_config_keys,
+    redact_secrets,
     run_series_workspace,
     stage_meeting_body,
 )
@@ -199,3 +201,199 @@ def test_stage_meeting_body_writes_the_body_without_front_matter(tmp_path: Path)
     staged = stage_meeting_body("ES2015a", src, tmp_path / "out")
     assert staged.read_text() == "PM: hi\n\nME: yo\n"
     assert staged.name == "ES2015a.md"
+
+
+HOSTED_TEMPLATE = (
+    CONFIG_TEMPLATE
+    + "# backend: openai-compatible\n"
+    + "# base_url: http://127.0.0.1:8080\n"
+    + "# embedding_base_url: http://127.0.0.1:8081\n"
+    + "# reasoning_effort: low\n"
+    + "max_generation_tokens: 4096\n"
+    + "# evidence_quote: true\n"
+)
+
+HOSTED = OpenKosRunSettings(
+    executable="openkos",
+    generative_model="gpt-5-mini",
+    embedding_model="bge-m3",
+    base_seed=None,
+    temperature=None,
+    backend="openai-compatible",
+    base_url="https://api.example.test",
+    embedding_base_url="http://127.0.0.1:11434",
+    reasoning_effort="low",
+    max_generation_tokens=8192,
+    evidence_quote=False,
+)
+
+
+def test_hosted_settings_write_provider_keys_and_leave_seed_and_temperature_unset(
+    tmp_path: Path,
+) -> None:
+    runner = FakeRunner(config_template=HOSTED_TEMPLATE)
+    result = run_series_workspace(
+        runner,
+        series_id="ES2015",
+        run=1,
+        base_dir=tmp_path / "ws",
+        settings=HOSTED,
+        sources=_sources(tmp_path),
+    )
+    text = (tmp_path / "ws" / "ES2015" / "run-1" / "openkos.yaml").read_text()
+    assert "backend: openai-compatible" in text
+    assert "base_url: https://api.example.test" in text
+    assert "embedding_base_url: http://127.0.0.1:11434" in text
+    assert "reasoning_effort: low" in text
+    assert "max_generation_tokens: 8192" in text
+    assert "evidence_quote: false" in text
+    assert "transcript_decisions: true" in text
+    assert "# seed: 42" in text and "# temperature: 0.1" in text  # still commented: unset
+    manifest = json.loads(result.manifest_path.read_text())
+    settings = manifest["settings"]
+    assert settings["backend"] == "openai-compatible"
+    assert settings["base_url"] == "https://api.example.test"
+    assert settings["reasoning_effort"] == "low"
+    assert settings["seed"] is None and settings["temperature"] is None
+    assert manifest["openkos_version"] == "0.6.0"
+
+
+def test_hosted_settings_never_write_an_api_key(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("OPENKOS_OPENAI_API_KEY", "sk-secret-value")
+    runner = FakeRunner(config_template=HOSTED_TEMPLATE)
+    result = run_series_workspace(
+        runner,
+        series_id="ES2015",
+        run=0,
+        base_dir=tmp_path / "ws",
+        settings=HOSTED,
+        sources=_sources(tmp_path),
+    )
+    written = (tmp_path / "ws" / "ES2015" / "run-0" / "openkos.yaml").read_text()
+    assert "sk-secret-value" not in written
+    assert "sk-secret-value" not in result.manifest_path.read_text()
+
+
+def test_hosted_backend_requires_a_version_that_knows_the_key(tmp_path: Path) -> None:
+    with pytest.raises(MissingCapabilitiesError):
+        run_series_workspace(
+            FakeRunner(),  # template without a backend key
+            series_id="ES2015",
+            run=0,
+            base_dir=tmp_path / "ws",
+            settings=HOSTED,
+            sources=_sources(tmp_path),
+        )
+
+
+def test_baseline_settings_keep_the_manifest_block_without_provider_keys(tmp_path: Path) -> None:
+    result = _run(tmp_path, FakeRunner())
+    settings = json.loads(result.manifest_path.read_text())["settings"]
+    assert set(settings) == {
+        "generative_model",
+        "embedding_model",
+        "seed",
+        "temperature",
+        "transcript_decisions",
+    }
+
+
+def test_the_api_key_is_redacted_from_stderr_tails_and_errors(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("OPENKOS_OPENAI_API_KEY", "sk-secret-123")
+    monkeypatch.setenv("OPENKOS_OPENAI_EMBEDDING_API_KEY", "sk-embed-456")
+
+    class Echo(FakeRunner):
+        def run(self, args, *, cwd=None):  # type: ignore[no-untyped-def]
+            result = super().run(args, cwd=cwd)
+            if result.returncode:
+                return CommandResult(
+                    returncode=result.returncode,
+                    stdout="",
+                    stderr="bad key sk-secret-123 / sk-embed-456 end",
+                    duration_s=0.01,
+                )
+            return result
+
+    runner = Echo(ingest_codes={"ES2015b.md": [1]})
+    with pytest.raises(IngestRefusedError) as caught:
+        _run(tmp_path, runner)
+
+    assert "sk-secret-123" not in str(caught.value)
+    assert "sk-embed-456" not in str(caught.value)
+    assert "***" in str(caught.value)
+    text = (tmp_path / "ws" / "ES2015" / "run-0.manifest.json").read_text()
+    assert "sk-secret-123" not in text and "sk-embed-456" not in text
+    assert "***" in text
+
+
+def test_redaction_ignores_an_empty_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("OPENKOS_OPENAI_API_KEY", "")
+    assert redact_secrets("plain text") == "plain text"
+
+
+# --- token capture (OpenKOS 0.7.3) ----------------------------------------------------------
+
+
+def _ingest_entries(manifest: dict) -> list[dict]:  # type: ignore[type-arg]
+    return [
+        c
+        for c in manifest["commands"]
+        if c["argv"][1] == "ingest" and not c["argv"][2].startswith("-")
+    ]
+
+
+def test_ingest_commands_store_the_parsed_token_record(tmp_path: Path) -> None:
+    runner = FakeRunner(
+        ingest_stdout={
+            "ES2015a.md": "  tokens: 14 calls, prompt 52310, completion 9120, total 61430\n",
+            "ES2015b.md": "  tokens: 12 of 14 calls reported, prompt 1, completion 2, total 3\n",
+            "ES2015c.md": "  tokens: not reported by the backend (5 calls)\n",
+        }
+    )
+    manifest = json.loads(_run(tmp_path, runner).manifest_path.read_text())
+    entries = _ingest_entries(manifest)
+    assert entries[0]["tokens"] == {
+        "calls": 14,
+        "reported_calls": 14,
+        "prompt": 52310,
+        "completion": 9120,
+        "total": 61430,
+    }
+    assert entries[1]["tokens"]["reported_calls"] == 12
+    assert entries[2]["tokens"] == {
+        "calls": 5,
+        "reported_calls": 0,
+        "prompt": None,
+        "completion": None,
+        "total": None,
+    }
+    assert "tokens" not in entries[3]  # no line: no chat call, no key
+
+
+def test_non_ingest_commands_and_full_stdout_are_never_stored(tmp_path: Path) -> None:
+    runner = FakeRunner(
+        ingest_stdout={
+            "ES2015a.md": "secret body\n  tokens: 1 call, prompt 1, completion 1, total 2\n"
+        }
+    )
+    text = _run(tmp_path, runner).manifest_path.read_text()
+    assert "secret body" not in text
+    manifest = json.loads(text)
+    assert all(
+        "tokens" not in c for c in manifest["commands"] if c not in _ingest_entries(manifest)
+    )
+
+
+def test_a_drift_retry_logs_one_token_record_per_ingest_command(tmp_path: Path) -> None:
+    runner = FakeRunner(
+        ingest_codes={"ES2015b.md": [3, 0]},
+        ingest_stdout={"ES2015b.md": "  tokens: 2 calls, prompt 4, completion 2, total 6\n"},
+    )
+    manifest = json.loads(_run(tmp_path, runner).manifest_path.read_text())
+    b_entries = [c for c in _ingest_entries(manifest) if c["argv"][2].endswith("ES2015b.md")]
+    assert [e["returncode"] for e in b_entries] == [3, 0]
+    assert all(e["tokens"]["total"] == 6 for e in b_entries)

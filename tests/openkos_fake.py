@@ -39,6 +39,7 @@ class FakeRunner:
     query_help: str = QUERY_HELP
     config_template: str = CONFIG_TEMPLATE
     ingest_codes: dict[str, list[int]] = field(default_factory=dict)
+    ingest_stdout: dict[str, str] = field(default_factory=dict)
     init_code: int = 0
     reindex_code: int = 0
     calls: list[tuple[tuple[str, ...], Path | None]] = field(default_factory=list)
@@ -65,7 +66,11 @@ class FakeRunner:
             name = Path(rest[1]).name
             codes = self.ingest_codes.get(name)
             code = codes.pop(0) if codes else 0
-            return ok(returncode=code, stderr="boom" if code else "")
+            return ok(
+                stdout=self.ingest_stdout.get(name, ""),
+                returncode=code,
+                stderr="boom" if code else "",
+            )
         return ok(returncode=2, stderr=f"unexpected command: {argv}")
 
     def subcommands(self) -> list[tuple[str, ...]]:
