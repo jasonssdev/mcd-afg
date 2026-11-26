@@ -255,3 +255,48 @@ def test_a_hosted_run_is_refused_without_the_descriptive_flag(
     assert result.exit_code == 1
     assert "--descriptive" in result.output
     assert not (run_dir / "informe.json").exists()
+
+
+# --- a-hosted-compare ---------------------------------------------------------------------------
+
+
+def test_compare_writes_json_and_csv_and_reports_missing_runs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from tests.relations_workspace import reference_decision, text_similarity
+    from tests.test_hosted_comparison import _all, _meetings, _reference_of, _write_run
+
+    _write_run(tmp_path, "experimento-a-formal", _all({"ES2015": _meetings("ES2015", "a")}))
+    _write_run(
+        tmp_path, "experimento-a-hosted-openai-small", _all({"ES2015": _meetings("ES2015", "abcd")})
+    )
+    del reference_decision
+    monkeypatch.setattr(afg_cli, "EXPERIMENT_A_DIR", tmp_path / "out")
+    monkeypatch.setattr(afg_cli, "OPENKOS_WORKSPACES_DIR", tmp_path / "ws")
+    monkeypatch.setattr(afg_cli, "make_alignment_similarity", lambda: text_similarity)
+    monkeypatch.setattr(
+        afg_cli,
+        "load_series_reference",
+        lambda series, language="es": type("R", (), {"decisions": _reference_of(series)})(),
+    )
+
+    result = CliRunner().invoke(
+        afg_cli.app,
+        ["experiment", "a-hosted-compare", "--models", "openai-small", "--models", "google-large"],
+    )
+
+    assert result.exit_code == 0, result.output
+    out = tmp_path / "out" / "hosted-comparison"
+    payload = json.loads((out / "comparacion.json").read_text())
+    assert {c["label"]: c["status"] for c in payload["candidates"]} == {
+        "openai-small": "ok",
+        "google-large": "sin corrida",
+    }
+    assert (out / "comparacion.csv").is_file()
+    assert "sin corrida" in result.output
+    assert "openai-small" in result.output
+
+
+def test_compare_with_an_unknown_label_exits_with_a_message(tmp_path: Path) -> None:
+    result = CliRunner().invoke(afg_cli.app, ["experiment", "a-hosted-compare", "--models", "nope"])
+    assert result.exit_code == 2

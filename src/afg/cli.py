@@ -3048,6 +3048,103 @@ def experiment_a_hosted(
         raise typer.Exit(code=1)
 
 
+@experiment_app.command("a-hosted-compare")
+def experiment_a_hosted_compare(
+    models: Annotated[
+        list[str] | None,
+        typer.Option("--models", help="Etiqueta a comparar; se repite. Por defecto, todas."),
+    ] = None,
+    include_bridge: Annotated[
+        bool,
+        typer.Option("--include-bridge", help="Agrega la verificación del puente de continuidad."),
+    ] = False,
+    pilot: Annotated[
+        bool,
+        typer.Option("--pilot", help="Compara las corridas piloto en vez de las completas."),
+    ] = False,
+) -> None:
+    """Compara cada modelo de pago con la línea base `qwen3:8b` (ADR 0026, decisiones 7 y 8).
+
+    Bootstrap pareado por reunión de la diferencia (modelo - línea base) en precision, recall y
+    F1, con nivel Bonferroni por los modelos de la config, solo sobre las series que cubre cada
+    corrida. Agrega tiempo por reunión, extracciones completas, decisiones por reunión y costo.
+    Escribe `comparacion.json` y `comparacion.csv` en `reports/experiment-a/hosted-comparison/`;
+    las etiquetas sin carpeta se informan como «sin corrida». Es descriptivo.
+    """
+    from rich.table import Table
+
+    from afg.experiments.hosted_comparison import build_comparison, write_comparison
+    from afg.experiments.hosted_extraction import load_hosted_config
+
+    config = load_hosted_config()
+    labels = list(dict.fromkeys(models)) if models else list(config.models)
+    unknown = [label for label in labels if label not in config.models]
+    if unknown:
+        console.print(
+            f"[bold red]Etiqueta(s) desconocida(s): {escape(', '.join(unknown))}; "
+            f"válidas: {escape(', '.join(config.models))}.[/bold red]"
+        )
+        raise typer.Exit(code=2)
+
+    def reference_of(series_id: str) -> Sequence[ReferenceDecision]:
+        return load_series_reference(series_id, language="en").decisions
+
+    try:
+        payload = build_comparison(
+            config=config,
+            labels=labels,
+            include_bridge=include_bridge,
+            pilot=pilot,
+            runs_root=EXPERIMENT_A_DIR,
+            workspaces_root=OPENKOS_WORKSPACES_DIR,
+            reference_of=reference_of,
+            similarity=make_alignment_similarity(),
+        )
+    except (FileNotFoundError, NotAdjudicatedError, TranslationError) as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+        raise typer.Exit(code=1) from exc
+
+    table = Table(title="Extensión con modelos de pago: modelo - línea base (τ principal)")
+    for column in ("Modelo", "Series", "Δ Precision", "Δ Recall", "Δ F1", "Veredicto", "Tiempo"):
+        table.add_column(column)
+    primary = f"{float(payload['primary_tau']):.2f}"
+    for item in payload["candidates"]:
+        if item["status"] != "ok":
+            table.add_row(item["label"], "-", "-", "-", "-", item["status"], "-")
+            continue
+        diff = item["taus"][primary]["diff"]
+
+        def cell(name: str, diff: dict[str, Any] = diff) -> str:
+            low, high = diff[name]["interval"]
+            return escape(f"{diff[name]['estimate']:+.3f} [{low:+.3f}, {high:+.3f}]")
+
+        table.add_row(
+            item["label"],
+            str(item["n_series"]),
+            cell("precision"),
+            cell("recall"),
+            cell("f1"),
+            item["verdict"],
+            item["operation"]["time"]["verdict"],
+        )
+    console.print(table)
+    bridge = payload["bridge"]
+    if bridge is not None:
+        if bridge["status"] != "ok":
+            console.print(f"Puente: {bridge['status']}.")
+        else:
+            console.print(
+                "Puente de continuidad: "
+                + (
+                    "dentro del rango formal."
+                    if bridge["all_inside"]
+                    else "FUERA del rango formal."
+                )
+            )
+    json_path, csv_path = write_comparison(payload, EXPERIMENT_A_DIR / "hosted-comparison")
+    console.print(f"Escrito: {_short(json_path)} y {_short(csv_path)}.")
+
+
 def _evaluation_series() -> list[str]:
     return list(load_corpus_config()["oe1"]["evaluation_series"])
 

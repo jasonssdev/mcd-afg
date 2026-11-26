@@ -1,0 +1,678 @@
+"""Paired comparison of the hosted extractors against the formal baseline (ADR 0026).
+
+Reads stored Experiment A run folders (``reports/experiment-a/<run>/`` plus the OpenKOS
+workspace manifests under ``data/interim/openkos/<run>/``) and compares a candidate with the
+baseline ``qwen3:8b`` run over the series the candidate covers.
+
+Primary question (decision 7): does the candidate recall more of the reference decisions? Each
+system is scored with :func:`~afg.evaluation.scoring.score_series` (scope ``origin_meetings``,
+gold in English, the same similarity as ``a-report``); the hits are tallied per meeting and
+averaged over the repetitions of a series. A *paired* meeting-cluster bootstrap then resamples
+the same meetings for both systems and takes the percentile interval of the candidate minus
+baseline differences in pooled precision, recall and F1, at the Bonferroni level
+``1 - family_alpha / n_models``.
+
+Secondary operation indicators (decision 8): ingest time per meeting (paired bootstrap of the
+log ratio), the share of meetings whose ingest finished, extracted decisions per meeting, and an
+optional cost in dollars passed through from the configuration.
+
+The similarity is injected, so nothing here needs Ollama.
+"""
+
+from __future__ import annotations
+
+import csv
+import json
+import math
+import statistics
+from collections import defaultdict
+from collections.abc import Callable, Collection, Mapping, Sequence
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+
+from afg.domain.decision import Decision
+from afg.evaluation.reference import ReferenceDecision
+from afg.evaluation.scoring import SimilarityFn, score_series
+from afg.experiments.extraction_runs import ExtractionRun, load_extraction_runs
+from afg.experiments.hosted_extraction import ComparisonSpec, HostedConfig, hosted_run_name
+from afg.extraction.openkos.event_dates import POSITION_LETTERS
+
+__all__ = [
+    "DiffInterval",
+    "MeetingCounts",
+    "PairedResult",
+    "RunData",
+    "bridge_check",
+    "build_comparison",
+    "compare_to_baseline",
+    "load_run_data",
+    "meeting_counts",
+    "paired_bootstrap",
+    "verdict_for",
+    "write_comparison",
+]
+
+ReferenceOf = Callable[[str], Sequence[ReferenceDecision]]
+METRICS = ("precision", "recall", "f1")
+NO_RUN = "sin corrida"
+UNDETERMINED = "sin diferencia demostrada"
+
+
+@dataclass(frozen=True, slots=True)
+class MeetingCounts:
+    """Hits and totals of one meeting, averaged over the repetitions of its series.
+
+    ``hits_p``/``n_p``: extracted decisions of the meeting that matched / that were scored.
+    ``hits_r``/``n_r``: reference decisions of the meeting that were covered / that exist.
+    """
+
+    hits_p: float
+    n_p: float
+    hits_r: float
+    n_r: float
+
+
+@dataclass(frozen=True, slots=True)
+class DiffInterval:
+    estimate: float
+    interval: tuple[float, float]
+
+
+@dataclass(frozen=True, slots=True)
+class PairedResult:
+    """Point estimates of both systems and the paired differences (candidate - baseline)."""
+
+    baseline: Mapping[str, float]
+    candidate: Mapping[str, float]
+    precision: DiffInterval
+    recall: DiffInterval
+    f1: DiffInterval
+    n_meetings: int
+
+
+@dataclass(frozen=True, slots=True)
+class RunData:
+    """A stored run: its extractions, manifest and the folder of its OpenKOS workspaces."""
+
+    name: str
+    runs: tuple[ExtractionRun, ...]
+    manifest: Mapping[str, Any]
+    workspace_root: Path
+
+
+def load_run_data(run_dir: Path, workspace_root: Path) -> RunData:
+    """Read ``manifest.json`` and ``extracciones.jsonl`` of ``run_dir``."""
+    runs = load_extraction_runs([run_dir])
+    manifest = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8"))
+    return RunData(run_dir.name, tuple(runs), manifest, workspace_root)
+
+
+def _series_of(data: RunData) -> list[str]:
+    return sorted({r.record["series_id"] for r in data.runs})
+
+
+# --- precision / recall / F1 -----------------------------------------------------------------
+
+
+def _f1(precision: float, recall: float) -> float:
+    total = precision + recall
+    return 2 * precision * recall / total if total else 0.0
+
+
+def _figures(totals: Sequence[float]) -> dict[str, float]:
+    hits_p, n_p, hits_r, n_r = totals
+    precision = hits_p / n_p if n_p else 0.0
+    recall = hits_r / n_r if n_r else 0.0
+    return {"precision": precision, "recall": recall, "f1": _f1(precision, recall)}
+
+
+def meeting_counts(
+    runs: Sequence[ExtractionRun],
+    *,
+    reference_of: ReferenceOf,
+    similarity: SimilarityFn,
+    tau: float,
+    series: Collection[str] | None = None,
+) -> dict[str, MeetingCounts]:
+    """Per-meeting counts at ``tau`` (scope ``origin_meetings``), averaged over the runs."""
+    selected = [r for r in runs if series is None or r.record["series_id"] in series]
+    references: dict[str, Sequence[ReferenceDecision]] = {}
+    sums: dict[str, list[float]] = defaultdict(lambda: [0.0, 0.0, 0.0, 0.0])
+    runs_of: dict[str, int] = defaultdict(int)
+    meetings_of: dict[str, set[str]] = defaultdict(set)
+    for item in selected:
+        series_id = item.record["series_id"]
+        if series_id not in references:
+            references[series_id] = reference_of(series_id)
+        score = score_series(
+            series_id,
+            references[series_id],
+            [Decision(**d) for d in item.decisions],
+            similarity,
+            tau=tau,
+            alignment_scope="origin_meetings",
+        )
+        runs_of[series_id] += 1
+        for meeting, hit in zip(score.predicted_meetings, score.predicted_hits, strict=True):
+            sums[meeting][0] += int(hit)
+            sums[meeting][1] += 1
+            meetings_of[series_id].add(meeting)
+        for meeting, hit in zip(score.reference_meetings, score.reference_hits, strict=True):
+            sums[meeting][2] += int(hit)
+            sums[meeting][3] += 1
+            meetings_of[series_id].add(meeting)
+    divisor = {m: runs_of[s] for s, ms in meetings_of.items() for m in ms}
+    return {m: MeetingCounts(*(v / divisor[m] for v in vals)) for m, vals in sums.items()}
+
+
+def _percentiles(values: np.ndarray, level: float) -> tuple[float, float]:
+    ordered = np.sort(values)
+    n = len(ordered)
+    alpha = 1.0 - level
+    return (
+        float(ordered[max(0, int(alpha / 2 * n))]),
+        float(ordered[min(n - 1, int((1 - alpha / 2) * n))]),
+    )
+
+
+def _as_array(counts: Mapping[str, MeetingCounts], meetings: Sequence[str]) -> np.ndarray:
+    zero = MeetingCounts(0.0, 0.0, 0.0, 0.0)
+    return np.array(
+        [[c.hits_p, c.n_p, c.hits_r, c.n_r] for c in (counts.get(m, zero) for m in meetings)],
+        dtype=float,
+    )
+
+
+def _ratio_columns(totals: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Precision, recall and F1 of each row of ``totals`` (a zero denominator gives 0)."""
+    with np.errstate(divide="ignore", invalid="ignore"):
+        precision = np.where(totals[:, 1] > 0, totals[:, 0] / totals[:, 1], 0.0)
+        recall = np.where(totals[:, 3] > 0, totals[:, 2] / totals[:, 3], 0.0)
+        denominator = precision + recall
+        f1 = np.where(denominator > 0, 2 * precision * recall / denominator, 0.0)
+    return precision, recall, f1
+
+
+def paired_bootstrap(
+    baseline: Mapping[str, MeetingCounts],
+    candidate: Mapping[str, MeetingCounts],
+    *,
+    resamples: int,
+    seed: int,
+    level: float,
+) -> PairedResult:
+    """Paired cluster bootstrap over meetings of the candidate - baseline differences.
+
+    Every resample draws the same meetings for both systems (a meeting a system lacks counts as
+    zero). Deterministic for ``seed``.
+    """
+    meetings = sorted(set(baseline) | set(candidate))
+    if not meetings:
+        raise ValueError("There are no meetings to compare.")
+    base_array, cand_array = _as_array(baseline, meetings), _as_array(candidate, meetings)
+    draws = np.random.default_rng(seed).integers(0, len(meetings), size=(resamples, len(meetings)))
+    base_boot = _ratio_columns(base_array[draws].sum(axis=1))
+    cand_boot = _ratio_columns(cand_array[draws].sum(axis=1))
+    base_point = _figures(base_array.sum(axis=0).tolist())
+    cand_point = _figures(cand_array.sum(axis=0).tolist())
+    diffs = {
+        name: DiffInterval(
+            estimate=cand_point[name] - base_point[name],
+            interval=_percentiles(cand_boot[i] - base_boot[i], level),
+        )
+        for i, name in enumerate(METRICS)
+    }
+    return PairedResult(
+        baseline=base_point,
+        candidate=cand_point,
+        precision=diffs["precision"],
+        recall=diffs["recall"],
+        f1=diffs["f1"],
+        n_meetings=len(meetings),
+    )
+
+
+def verdict_for(
+    recall_interval: tuple[float, float],
+    precision_interval: tuple[float, float],
+    *,
+    precision_margin: float,
+) -> str:
+    """ADR 0026, decision 7: ``mejora``, ``empeora`` or ``sin diferencia demostrada``."""
+    if recall_interval[0] > 0 and precision_interval[0] >= precision_margin:
+        return "mejora"
+    if recall_interval[1] < 0:
+        return "empeora"
+    return UNDETERMINED
+
+
+# --- operation indicators (ADR 0026, decision 8) ----------------------------------------------
+
+
+def _run_pairs(data: RunData, series: Collection[str]) -> list[tuple[str, int]]:
+    """Every ``(series, run)`` the run attempted, failed ones included."""
+    declared = data.manifest.get("pairs")
+    if declared:
+        found = {(str(p["series"]), int(p["run"])) for p in declared.values()}
+    else:
+        found = {(r.record["series_id"], r.run) for r in data.runs}
+    return sorted(pair for pair in found if pair[0] in series)
+
+
+def _ingest_meeting(argv: Sequence[str]) -> str | None:
+    if len(argv) >= 3 and argv[1] == "ingest" and not argv[2].startswith("-"):
+        return Path(argv[2]).stem
+    return None
+
+
+@dataclass(frozen=True, slots=True)
+class _IngestProfile:
+    seconds: dict[str, float]  # meeting -> ingest seconds averaged over its complete runs
+    complete: int
+    expected: int
+
+
+def _ingest_profile(data: RunData, series: Collection[str]) -> _IngestProfile:
+    per_meeting: dict[str, list[float]] = defaultdict(list)
+    complete = expected = 0
+    for series_id, run in _run_pairs(data, series):
+        path = data.workspace_root / series_id / f"run-{run}.manifest.json"
+        manifest: dict[str, Any] = (
+            json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
+        )
+        meetings = manifest.get("meetings") or [f"{series_id}{x}" for x in POSITION_LETTERS]
+        failed_meeting = manifest.get("failed_meeting")
+        seconds: dict[str, float] = defaultdict(float)
+        finished: set[str] = set()
+        for command in manifest.get("commands", []):
+            meeting = _ingest_meeting(command.get("argv", []))
+            if meeting is None:
+                continue
+            seconds[meeting] += float(command.get("duration_s", 0.0))
+            if command.get("returncode", 0) == 0 and meeting != failed_meeting:
+                finished.add(meeting)
+        for meeting in meetings:
+            expected += 1
+            if meeting in finished:
+                complete += 1
+                per_meeting[meeting].append(seconds[meeting])
+    return _IngestProfile(
+        {m: statistics.fmean(v) for m, v in per_meeting.items()}, complete, expected
+    )
+
+
+def _time_ratio(
+    baseline: Mapping[str, float],
+    candidate: Mapping[str, float],
+    *,
+    resamples: int,
+    seed: int,
+    level: float,
+) -> dict[str, Any]:
+    shared = sorted(
+        m for m in set(baseline) & set(candidate) if baseline[m] > 0 and candidate[m] > 0
+    )
+    result: dict[str, Any] = {
+        "baseline_median_s": statistics.median(baseline.values()) if baseline else None,
+        "candidate_median_s": statistics.median(candidate.values()) if candidate else None,
+        "n_meetings": len(shared),
+        "per_meeting_s": {m: {"baseline": baseline[m], "candidate": candidate[m]} for m in shared},
+    }
+    if not shared:
+        return {**result, "ratio": None, "verdict": "sin datos"}
+    logs = np.log(np.array([candidate[m] / baseline[m] for m in shared]))
+    draws = np.random.default_rng(seed).integers(0, len(shared), size=(resamples, len(shared)))
+    low, high = _percentiles(logs[draws].mean(axis=1), level)
+    interval = (math.exp(low), math.exp(high))
+    verdict = "más rápido" if interval[1] < 1 else "más lento" if interval[0] > 1 else UNDETERMINED
+    return {
+        **result,
+        "ratio": {"estimate": math.exp(float(logs.mean())), "interval": list(interval)},
+        "verdict": verdict,
+    }
+
+
+def _decisions_per_meeting(data: RunData, series: Collection[str]) -> dict[str, float | None]:
+    per_meeting: dict[str, list[int]] = defaultdict(list)
+    for item in data.runs:
+        if item.record["series_id"] not in series:
+            continue
+        counts: dict[str, int] = defaultdict(int)
+        for decision in item.decisions:
+            if decision.get("status") == "accepted":
+                counts[decision["meeting_id"]] += 1
+        for letter in POSITION_LETTERS:
+            meeting = f"{item.record['series_id']}{letter}"
+            per_meeting[meeting].append(counts[meeting])
+    averaged = [statistics.fmean(v) for v in per_meeting.values()]
+    return {
+        "mean": statistics.fmean(averaged) if averaged else None,
+        "median": statistics.median(averaged) if averaged else None,
+    }
+
+
+def _completeness(profile: _IngestProfile) -> dict[str, Any]:
+    share = profile.complete / profile.expected if profile.expected else None
+    return {"complete": profile.complete, "expected": profile.expected, "share": share}
+
+
+# --- comparison -------------------------------------------------------------------------------
+
+
+def _tau_key(tau: float) -> str:
+    return f"{tau:.2f}"
+
+
+def compare_to_baseline(
+    baseline: RunData,
+    candidate: RunData,
+    *,
+    reference_of: ReferenceOf,
+    similarity: SimilarityFn,
+    spec: ComparisonSpec,
+    n_models: int,
+    cost_usd: float | None = None,
+) -> dict[str, Any]:
+    """Compare ``candidate`` with ``baseline`` over the series the candidate covers."""
+    series = _series_of(candidate)
+    missing = [s for s in series if s not in set(_series_of(baseline))]
+    if missing:
+        raise ValueError(f"The baseline run has no runs of {', '.join(missing)}.")
+    level = 1 - spec.family_alpha / n_models
+    taus: dict[str, Any] = {}
+    n_meetings = 0
+    for tau in (spec.tau, *spec.sensitivity_taus):
+        paired = paired_bootstrap(
+            meeting_counts(
+                baseline.runs,
+                reference_of=reference_of,
+                similarity=similarity,
+                tau=tau,
+                series=series,
+            ),
+            meeting_counts(
+                candidate.runs,
+                reference_of=reference_of,
+                similarity=similarity,
+                tau=tau,
+                series=series,
+            ),
+            resamples=spec.bootstrap_resamples,
+            seed=spec.bootstrap_seed,
+            level=level,
+        )
+        n_meetings = paired.n_meetings
+        taus[_tau_key(tau)] = {
+            "tau": tau,
+            "baseline": dict(paired.baseline),
+            "candidate": dict(paired.candidate),
+            "diff": {
+                name: {"estimate": d.estimate, "interval": list(d.interval)}
+                for name, d in (
+                    ("precision", paired.precision),
+                    ("recall", paired.recall),
+                    ("f1", paired.f1),
+                )
+            },
+            "verdict": verdict_for(
+                paired.recall.interval,
+                paired.precision.interval,
+                precision_margin=spec.precision_margin,
+            ),
+        }
+    base_profile = _ingest_profile(baseline, series)
+    cand_profile = _ingest_profile(candidate, series)
+    runs_per_series = {
+        s: len({r.run for r in candidate.runs if r.record["series_id"] == s}) for s in series
+    }
+    return {
+        "run_name": candidate.name,
+        "baseline_run_name": baseline.name,
+        "series_covered": series,
+        "n_series": len(series),
+        "n_meetings": n_meetings,
+        "runs_per_series": runs_per_series,
+        "scope_note": (
+            f"La comparación cubre solo las series de la corrida candidata ({', '.join(series)}); "
+            "la línea base se restringe a esas mismas series."
+        ),
+        "baseline": {"series": series},
+        "n_models": n_models,
+        "family_alpha": spec.family_alpha,
+        "interval_level": level,
+        "resamples": spec.bootstrap_resamples,
+        "seed": spec.bootstrap_seed,
+        "primary_tau": spec.tau,
+        "precision_margin": spec.precision_margin,
+        "taus": taus,
+        "verdict": taus[_tau_key(spec.tau)]["verdict"],
+        "operation": {
+            "time": _time_ratio(
+                base_profile.seconds,
+                cand_profile.seconds,
+                resamples=spec.bootstrap_resamples,
+                seed=spec.bootstrap_seed,
+                level=level,
+            ),
+            "completeness": {
+                "baseline": _completeness(base_profile),
+                "candidate": _completeness(cand_profile),
+            },
+            "decisions_per_meeting": {
+                "baseline": _decisions_per_meeting(baseline, series),
+                "candidate": _decisions_per_meeting(candidate, series),
+            },
+            "cost_usd": cost_usd,
+        },
+    }
+
+
+# --- bridge -----------------------------------------------------------------------------------
+
+
+def _run_figures(
+    data: RunData, reference_of: ReferenceOf, similarity: SimilarityFn, tau: float
+) -> dict[str, list[dict[str, float]]]:
+    """Per series, the precision / recall / F1 of each of its runs."""
+    figures: dict[str, list[dict[str, float]]] = defaultdict(list)
+    for item in data.runs:
+        series_id = item.record["series_id"]
+        score = score_series(
+            series_id,
+            reference_of(series_id),
+            [Decision(**d) for d in item.decisions],
+            similarity,
+            tau=tau,
+            alignment_scope="origin_meetings",
+        )
+        figures[series_id].append(
+            {"precision": score.precision, "recall": score.recall, "f1": score.f1}
+        )
+    return figures
+
+
+def bridge_check(
+    *,
+    bridge: RunData,
+    formal: RunData,
+    reference_of: ReferenceOf,
+    similarity: SimilarityFn,
+    tau: float,
+) -> dict[str, Any]:
+    """Whether the bridge run falls inside the min-max range of the formal runs, per series."""
+    bridge_figures = _run_figures(bridge, reference_of, similarity, tau)
+    formal_figures = _run_figures(formal, reference_of, similarity, tau)
+    series: dict[str, Any] = {}
+    for series_id, runs in sorted(bridge_figures.items()):
+        reference_runs = formal_figures.get(series_id)
+        if not reference_runs:
+            series[series_id] = {"inside": None, "note": "la corrida formal no tiene esta serie"}
+            continue
+        value = {m: statistics.fmean(r[m] for r in runs) for m in METRICS}
+        spread = {
+            m: [min(r[m] for r in reference_runs), max(r[m] for r in reference_runs)]
+            for m in METRICS
+        }
+        outside = [m for m in METRICS if not spread[m][0] <= value[m] <= spread[m][1]]
+        series[series_id] = {
+            "bridge": value,
+            "formal_range": spread,
+            "n_formal_runs": len(reference_runs),
+            "outside_metrics": outside,
+            "inside": not outside,
+        }
+    verdicts = [s["inside"] for s in series.values()]
+    return {
+        "tau": tau,
+        "series": series,
+        "all_inside": bool(verdicts) and all(v is True for v in verdicts),
+    }
+
+
+# --- orchestration and files ------------------------------------------------------------------
+
+
+def build_comparison(
+    *,
+    config: HostedConfig,
+    labels: Sequence[str],
+    include_bridge: bool,
+    pilot: bool,
+    runs_root: Path,
+    workspaces_root: Path,
+    reference_of: ReferenceOf,
+    similarity: SimilarityFn,
+) -> dict[str, Any]:
+    """The whole comparison: every label's candidate (``sin corrida`` if its folder is absent)."""
+
+    def load(name: str) -> RunData | None:
+        run_dir = runs_root / name
+        complete = (run_dir / "manifest.json").is_file() and (
+            run_dir / "extracciones.jsonl"
+        ).is_file()
+        return load_run_data(run_dir, workspaces_root / name) if complete else None
+
+    baseline = load(config.baseline_run_name)
+    if baseline is None:
+        raise FileNotFoundError(f"The baseline run {config.baseline_run_name} is not stored.")
+    candidates: list[dict[str, Any]] = []
+    for label in labels:
+        name = hosted_run_name(label, pilot=pilot)
+        data = load(name)
+        if data is None:
+            candidates.append({"label": label, "run_name": name, "status": NO_RUN})
+            continue
+        spec = config.models[label]
+        candidates.append(
+            {
+                "label": label,
+                "provider": spec.provider,
+                "model": spec.model,
+                "status": "ok",
+                **compare_to_baseline(
+                    baseline,
+                    data,
+                    reference_of=reference_of,
+                    similarity=similarity,
+                    spec=config.comparison,
+                    n_models=len(config.models),
+                    cost_usd=config.costs_usd.get(label),
+                ),
+            }
+        )
+    payload: dict[str, Any] = {
+        "adr": "0026",
+        "descriptive": True,
+        "baseline_run_name": config.baseline_run_name,
+        "primary_tau": config.comparison.tau,
+        "n_models": len(config.models),
+        "candidates": candidates,
+        "bridge": None,
+    }
+    if include_bridge:
+        bridge = load(config.bridge.run_name)
+        payload["bridge"] = (
+            {"run_name": config.bridge.run_name, "status": NO_RUN}
+            if bridge is None
+            else {
+                "run_name": config.bridge.run_name,
+                "status": "ok",
+                **bridge_check(
+                    bridge=bridge,
+                    formal=baseline,
+                    reference_of=reference_of,
+                    similarity=similarity,
+                    tau=config.comparison.tau,
+                ),
+            }
+        )
+    return payload
+
+
+CSV_COLUMNS = (
+    "label", "model", "run_name", "status", "series", "n_meetings", "tau",
+    "baseline_precision", "baseline_recall", "baseline_f1",
+    "candidate_precision", "candidate_recall", "candidate_f1",
+    "diff_precision", "diff_precision_low", "diff_precision_high",
+    "diff_recall", "diff_recall_low", "diff_recall_high",
+    "diff_f1", "diff_f1_low", "diff_f1_high",
+    "verdict", "time_ratio", "time_ratio_low", "time_ratio_high", "time_verdict",
+    "complete_share", "decisions_per_meeting", "cost_usd",
+)  # fmt: skip
+
+
+def comparison_rows(payload: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """One CSV row per candidate and tau; a candidate without a run gets a single row."""
+    rows: list[dict[str, Any]] = []
+    for item in payload["candidates"]:
+        head = {
+            "label": item["label"],
+            "model": item.get("model"),
+            "run_name": item["run_name"],
+            "status": item["status"],
+        }
+        if item["status"] != "ok":
+            rows.append(head)
+            continue
+        operation = item["operation"]
+        ratio = operation["time"]["ratio"] or {"estimate": None, "interval": [None, None]}
+        for entry in item["taus"].values():
+            diff = entry["diff"]
+            row: dict[str, Any] = {
+                **head,
+                "series": ",".join(item["series_covered"]),
+                "n_meetings": item["n_meetings"],
+                "tau": entry["tau"],
+                "verdict": entry["verdict"],
+                "time_ratio": ratio["estimate"],
+                "time_ratio_low": ratio["interval"][0],
+                "time_ratio_high": ratio["interval"][1],
+                "time_verdict": operation["time"]["verdict"],
+                "complete_share": operation["completeness"]["candidate"]["share"],
+                "decisions_per_meeting": operation["decisions_per_meeting"]["candidate"]["mean"],
+                "cost_usd": operation["cost_usd"],
+            }
+            for name in METRICS:
+                row[f"baseline_{name}"] = entry["baseline"][name]
+                row[f"candidate_{name}"] = entry["candidate"][name]
+                row[f"diff_{name}"] = diff[name]["estimate"]
+                row[f"diff_{name}_low"] = diff[name]["interval"][0]
+                row[f"diff_{name}_high"] = diff[name]["interval"][1]
+            rows.append(row)
+    return rows
+
+
+def write_comparison(payload: Mapping[str, Any], out_dir: Path) -> tuple[Path, Path]:
+    """Write ``comparacion.json`` and ``comparacion.csv`` into ``out_dir``."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    json_path = out_dir / "comparacion.json"
+    csv_path = out_dir / "comparacion.csv"
+    json_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    with csv_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=CSV_COLUMNS, restval="")
+        writer.writeheader()
+        writer.writerows(comparison_rows(payload))
+    return json_path, csv_path
