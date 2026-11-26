@@ -199,3 +199,100 @@ def test_stage_meeting_body_writes_the_body_without_front_matter(tmp_path: Path)
     staged = stage_meeting_body("ES2015a", src, tmp_path / "out")
     assert staged.read_text() == "PM: hi\n\nME: yo\n"
     assert staged.name == "ES2015a.md"
+
+
+HOSTED_TEMPLATE = (
+    CONFIG_TEMPLATE
+    + "# backend: openai-compatible\n"
+    + "# base_url: http://127.0.0.1:8080\n"
+    + "# embedding_base_url: http://127.0.0.1:8081\n"
+    + "# reasoning_effort: low\n"
+    + "max_generation_tokens: 4096\n"
+    + "# evidence_quote: true\n"
+)
+
+HOSTED = OpenKosRunSettings(
+    executable="openkos",
+    generative_model="gpt-5-mini",
+    embedding_model="bge-m3",
+    base_seed=None,
+    temperature=None,
+    backend="openai-compatible",
+    base_url="https://api.example.test",
+    embedding_base_url="http://127.0.0.1:11434",
+    reasoning_effort="low",
+    max_generation_tokens=8192,
+    evidence_quote=False,
+)
+
+
+def test_hosted_settings_write_provider_keys_and_leave_seed_and_temperature_unset(
+    tmp_path: Path,
+) -> None:
+    runner = FakeRunner(config_template=HOSTED_TEMPLATE)
+    result = run_series_workspace(
+        runner,
+        series_id="ES2015",
+        run=1,
+        base_dir=tmp_path / "ws",
+        settings=HOSTED,
+        sources=_sources(tmp_path),
+    )
+    text = (tmp_path / "ws" / "ES2015" / "run-1" / "openkos.yaml").read_text()
+    assert "backend: openai-compatible" in text
+    assert "base_url: https://api.example.test" in text
+    assert "embedding_base_url: http://127.0.0.1:11434" in text
+    assert "reasoning_effort: low" in text
+    assert "max_generation_tokens: 8192" in text
+    assert "evidence_quote: false" in text
+    assert "transcript_decisions: true" in text
+    assert "# seed: 42" in text and "# temperature: 0.1" in text  # still commented: unset
+    manifest = json.loads(result.manifest_path.read_text())
+    settings = manifest["settings"]
+    assert settings["backend"] == "openai-compatible"
+    assert settings["base_url"] == "https://api.example.test"
+    assert settings["reasoning_effort"] == "low"
+    assert settings["seed"] is None and settings["temperature"] is None
+    assert manifest["openkos_version"] == "0.6.0"
+
+
+def test_hosted_settings_never_write_an_api_key(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("OPENKOS_OPENAI_API_KEY", "sk-secret-value")
+    runner = FakeRunner(config_template=HOSTED_TEMPLATE)
+    result = run_series_workspace(
+        runner,
+        series_id="ES2015",
+        run=0,
+        base_dir=tmp_path / "ws",
+        settings=HOSTED,
+        sources=_sources(tmp_path),
+    )
+    written = (tmp_path / "ws" / "ES2015" / "run-0" / "openkos.yaml").read_text()
+    assert "sk-secret-value" not in written
+    assert "sk-secret-value" not in result.manifest_path.read_text()
+
+
+def test_hosted_backend_requires_a_version_that_knows_the_key(tmp_path: Path) -> None:
+    with pytest.raises(MissingCapabilitiesError):
+        run_series_workspace(
+            FakeRunner(),  # template without a backend key
+            series_id="ES2015",
+            run=0,
+            base_dir=tmp_path / "ws",
+            settings=HOSTED,
+            sources=_sources(tmp_path),
+        )
+
+
+def test_baseline_settings_keep_the_manifest_block_without_provider_keys(tmp_path: Path) -> None:
+    result = _run(tmp_path, FakeRunner())
+    settings = json.loads(result.manifest_path.read_text())["settings"]
+    assert set(settings) == {
+        "generative_model",
+        "embedding_model",
+        "seed",
+        "temperature",
+        "transcript_decisions",
+    }

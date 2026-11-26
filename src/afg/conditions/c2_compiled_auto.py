@@ -166,7 +166,10 @@ class CompiledAutoCondition:
 
         Caches are shared with the original, so re-seeding does not read a bundle twice.
         """
-        run = seed - self.settings.base_seed
+        base_seed = self.settings.base_seed
+        if base_seed is None:
+            raise ValueError("Seeded runs need a base seed; these settings send none.")
+        run = seed - base_seed
         if run < 0:
             raise ValueError(
                 f"Seed {seed} is below the base seed {self.settings.base_seed}: "
@@ -243,10 +246,12 @@ class CompiledAutoCondition:
         report = run_query(
             self.runner, self.settings.executable, workspace, question.text, limit=self.limit
         )
+        expected_seed = self.settings.seed_for(self.run)
+        expected_temperature = self.settings.temperature
+        if expected_seed is None or expected_temperature is None:
+            raise ValueError("Reproducible queries need a seed and a temperature; none is set.")
         require_reproducible(
-            report,
-            expected_seed=self.settings.seed_for(self.run),
-            expected_temperature=self.settings.temperature,
+            report, expected_seed=expected_seed, expected_temperature=expected_temperature
         )
 
         spans: list[EvidenceSpan] = []

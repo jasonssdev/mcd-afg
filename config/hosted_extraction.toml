@@ -72,3 +72,13 @@ model = "gemini-3.8-flash"
 [models.google-large]
 provider = "google"
 model = "gemini-4-argon"
+
+# Optional, descriptive: dollars billed per model for its full run, read by hand from each
+# provider's dashboard after the run and passed through to the comparison (ADR 0026, decision 8).
+# [costs]
+# openai-small = 0.00
+# openai-large = 0.00
+# anthropic-small = 0.00
+# anthropic-large = 0.00
+# google-small = 0.00
+# google-large = 0.00

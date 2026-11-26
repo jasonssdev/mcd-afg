@@ -71,12 +71,38 @@ class OpenKosRunSettings:
     executable: str
     generative_model: str
     embedding_model: str
-    base_seed: int
-    temperature: float
+    base_seed: int | None
+    temperature: float | None
+    backend: str | None = None
+    base_url: str | None = None
+    embedding_base_url: str | None = None
+    reasoning_effort: str | None = None
+    max_generation_tokens: int | None = None
+    evidence_quote: bool | None = None
 
-    def seed_for(self, run: int) -> int:
-        """Generation seed of run ``run`` (Experiment B convention: base + run)."""
-        return self.base_seed + run
+    def seed_for(self, run: int) -> int | None:
+        """Generation seed of run ``run`` (Experiment B convention: base + run).
+
+        ``None`` when the run sends no seed (hosted providers refuse or ignore it).
+        """
+        return None if self.base_seed is None else self.base_seed + run
+
+    def provider_values(self) -> dict[str, str | int]:
+        """The provider keys of ``openkos.yaml`` this run sets; unset ones are absent.
+
+        The API key is never part of it: OpenKOS reads it only from the
+        ``OPENKOS_OPENAI_API_KEY`` environment variable.
+        """
+        values: dict[str, str | int | None] = {
+            "backend": self.backend,
+            "base_url": self.base_url,
+            "embedding_base_url": self.embedding_base_url,
+            "reasoning_effort": self.reasoning_effort,
+            "max_generation_tokens": self.max_generation_tokens,
+        }
+        if self.evidence_quote is not None:
+            values["evidence_quote"] = "true" if self.evidence_quote else "false"
+        return {key: value for key, value in values.items() if value is not None}
 
 
 @dataclass(frozen=True, slots=True)
@@ -228,12 +254,14 @@ def run_series_workspace(
         capabilities, need_event_date=any(s.event_date is not None for s in ordered)
     )
 
-    config_values = {
-        DECISION_PASS_KEY: "true",
-        "seed": str(settings.seed_for(run)),
-        "temperature": str(settings.temperature),
-        "review": "false",
-    }
+    provider_values = settings.provider_values()
+    config_values = {DECISION_PASS_KEY: "true"}
+    if settings.seed_for(run) is not None:
+        config_values["seed"] = str(settings.seed_for(run))
+    if settings.temperature is not None:
+        config_values["temperature"] = str(settings.temperature)
+    config_values["review"] = "false"
+    config_values.update({key: str(value) for key, value in provider_values.items()})
     manifest: dict[str, Any] = {
         "series_id": series_id,
         "run": run,
@@ -247,6 +275,7 @@ def run_series_workspace(
             "seed": settings.seed_for(run),
             "temperature": settings.temperature,
             "transcript_decisions": True,
+            **provider_values,
         },
         "meetings": [source.meeting_id for source in ordered],
         "event_dates_passed": any(s.event_date is not None for s in ordered),
@@ -297,6 +326,10 @@ def run_series_workspace(
             executable=settings.executable,
             version=capabilities.version,
         )
+        for key in provider_values:
+            require_config_key(
+                template, key, executable=settings.executable, version=capabilities.version
+            )
         config_path.write_text(ensure_config_keys(template, config_values), encoding="utf-8")
         for current in ordered:
             _ingest_one(recorder, settings.executable, current, workspace)
