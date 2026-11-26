@@ -6,9 +6,9 @@
 # the OPENKOS_OPENAI_API_KEY environment variable (one provider per run); it never goes in a file.
 
 [openkos]
-required_version = "0.7.2"            # installed apart from the frozen 0.7.0 (ADR 0026, decision 5)
-# Executable of the separate 0.7.2 install; override with AFG_HOSTED_OPENKOS_EXECUTABLE.
-executable = "data/interim/openkos-0.7.2/bin/openkos"
+required_version = "0.7.3"            # installed apart from the frozen 0.7.0 (ADR 0026, second amendment)
+# Executable of the separate 0.7.3 install; override with AFG_HOSTED_OPENKOS_EXECUTABLE.
+executable = "data/interim/openkos-0.7.3/bin/openkos"
 
 [shared]
 series_partition = "evaluation"       # the eleven evaluation series of config/corpus.toml
@@ -26,16 +26,20 @@ run_name = "experimento-a-formal"     # frozen qwen3:8b run, never re-run
 model = "qwen3:8b"
 
 [bridge]
-# Continuity check: qwen3:8b on OpenKOS 0.7.2, local Ollama backend, baseline settings.
+# Continuity check, done once on OpenKOS 0.7.2 (local Ollama backend, baseline settings). It is
+# kept as historical evidence only: its stored run stays readable by the comparison, but the
+# command refuses to run it again because the executable is now 0.7.3 (second amendment, item 3).
 run_name = "experimento-a-puente-0-7-2"
+openkos_version = "0.7.2"
 series = ["ES2002"]
 runs = 1
 
 [local_baseline]
-# ADR 0026 amendment: secondary baseline, decided after seeing the bridge (which came out slightly
-# above the range of the formal runs). Same settings as the bridge (OpenKOS 0.7.2, Ollama backend,
-# formal seed, temperature and transcript_decisions) over the whole evaluation partition.
-run_name = "experimento-a-base-0-7-2"
+# ADR 0026 second amendment: baseline of the same version as the hosted models. Same settings as
+# the bridge (OpenKOS 0.7.3 now, Ollama backend, formal seed, temperature and
+# transcript_decisions) over the whole evaluation partition. The 16 pairs of the unfinished
+# `experimento-a-base-0-7-2` run are historical evidence and are not read by the comparison.
+run_name = "experimento-a-base-0-7-3"
 model = "qwen3:8b"
 series_partition = "evaluation"
 runs = 3
@@ -82,9 +86,24 @@ model = "gemini-3.8-flash"
 provider = "google"
 model = "gemini-4-argon"
 
-# Optional, descriptive: dollars billed per model for its full run, read by hand from each
-# provider's dashboard after the run and passed through to the comparison (ADR 0026, decision 8).
-# [costs]
+# Public price of each model, in US dollars per million tokens (ADR 0026, second amendment,
+# decision 5). They are UNSET on purpose: fill them in, with the date on which they were read and
+# the provider's pricing page, BEFORE the pilot. While a model has no [prices.<label>] table its
+# cost is reported as "pendiente", never as 0. Cost of a meeting =
+#   prompt * input + (total - prompt) * output, per million tokens.
+# Uncomment and complete one block per model (all four keys are required):
+#
+# [prices.openai-small]
+# input_usd_per_mtok = <USD per million input tokens>
+# output_usd_per_mtok = <USD per million output tokens>
+# prices_date = "<YYYY-MM-DD on which the price was read>"
+# pricing_url = "<pricing page of the provider>"
+#
+# (same block for openai-large, anthropic-small, anthropic-large, google-small, google-large)
+
+# Optional cross-check, not a source of the cost: dollars billed per model for its full run, read
+# by hand from each provider's dashboard after the run. It is shown next to the computed cost.
+# [dashboard_usd]
 # openai-small = 0.00
 # openai-large = 0.00
 # anthropic-small = 0.00

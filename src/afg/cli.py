@@ -2885,7 +2885,7 @@ def _executable_exists(path: str) -> bool:
 
 
 def make_hosted_adapter(base_dir: Path, settings: OpenKosRunSettings) -> OpenKosAdapter:
-    """The adapter of a hosted/bridge run: the 0.7.2 ``settings`` instead of the frozen ones."""
+    """The adapter of a hosted run: the hosted-extension ``settings``, not the frozen ones."""
     meetings_xml = AMI_DIR / "corpusResources" / "meetings.xml"
     return OpenKosAdapter(
         runner=SubprocessRunner(),
@@ -2910,14 +2910,14 @@ def experiment_a_hosted(
         bool,
         typer.Option(
             "--bridge",
-            help="Puente de continuidad: qwen3:8b con OpenKOS 0.7.2 en el Ollama local.",
+            help="Puente de continuidad (histórico, OpenKOS 0.7.2): ya no se vuelve a correr.",
         ),
     ] = False,
     local_baseline: Annotated[
         bool,
         typer.Option(
             "--local-baseline",
-            help="Segunda línea base: qwen3:8b con OpenKOS 0.7.2 en el Ollama local, "
+            help="Segunda línea base: qwen3:8b con OpenKOS 0.7.3 en el Ollama local, "
             "con los ajustes del puente, sobre las once series de evaluación.",
         ),
     ] = False,
@@ -2936,12 +2936,12 @@ def experiment_a_hosted(
 ) -> None:
     """Extensión del Experimento A con modelos de pago (ADR 0026): extracción de C2.
 
-    Corre `a-batch` con OpenKOS 0.7.2 y el *backend* `openai-compatible` sobre las series de
+    Corre `a-batch` con OpenKOS 0.7.3 y el *backend* `openai-compatible` sobre las series de
     evaluación, en `reports/experiment-a/experimento-a-hosted-<etiqueta>/` (piloto:
-    `experimento-a-piloto-<etiqueta>`; puente: `experimento-a-puente-0-7-2`; segunda línea
-    base local: `experimento-a-base-0-7-2`). La clave del
-    proveedor se lee de `OPENKOS_OPENAI_API_KEY`, nunca se escribe. Es descriptivo: no toca
-    `config/experiments.toml` ni `config/freeze.json`, y su informe se pide con
+    `experimento-a-piloto-<etiqueta>`; segunda línea base local: `experimento-a-base-0-7-3`; el
+    puente `experimento-a-puente-0-7-2` es evidencia histórica). La clave del proveedor se lee de
+    `OPENKOS_OPENAI_API_KEY`, nunca se escribe. Es descriptivo: no toca `config/experiments.toml`
+    ni `config/freeze.json`, y su informe se pide con
     `afg experiment a-report --c2-extraction <carpeta> --descriptive`. Repetir el comando
     reanuda la corrida.
     """
@@ -2982,6 +2982,12 @@ def experiment_a_hosted(
             2,
         )
 
+    if bridge and config.bridge.openkos_version != config.required_version:
+        raise refuse(
+            f"El puente se hizo con OpenKOS {config.bridge.openkos_version} y es evidencia "
+            f"histórica: el ejecutable actual es {config.required_version}, no se vuelve a correr.",
+            2,
+        )
     executable = resolve_executable(config, os.environ)
     if local_mode:
         if local_baseline:
@@ -3086,14 +3092,14 @@ def experiment_a_hosted_compare(
         str,
         typer.Option(
             "--baseline",
-            help="Línea base: formal (corrida congelada), local (qwen3:8b con OpenKOS 0.7.2) "
+            help="Línea base: formal (corrida congelada), local (qwen3:8b con OpenKOS 0.7.3) "
             "o both (ambas).",
         ),
     ] = "both",
 ) -> None:
     """Compara cada modelo de pago con la línea base `qwen3:8b` (ADR 0026, decisiones 7 y 8).
 
-    Hay dos líneas base: la formal (principal) y la local, `qwen3:8b` con OpenKOS 0.7.2
+    Hay dos líneas base: la formal (principal) y la local, `qwen3:8b` con OpenKOS 0.7.3
     (secundaria, enmienda del ADR). Con la local presente se agrega el efecto de versión
     (local contra formal), que no cuenta en el nivel Bonferroni.
 
@@ -3184,7 +3190,7 @@ def experiment_a_hosted_compare(
                 add_row(item["label"], name, item[f"vs_{name}"])
     effect = payload["version_effect"]
     if effect is not None:
-        add_row(f"{effect.get('label', 'qwen3:8b@0.7.2')} (efecto de versión)", "formal", effect)
+        add_row(f"{effect.get('label', 'qwen3:8b@0.7.3')} (efecto de versión)", "formal", effect)
     console.print(table)
     bridge = payload["bridge"]
     if bridge is not None:

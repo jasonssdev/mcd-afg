@@ -20,7 +20,7 @@ from afg.experiments.hosted_comparison import (
     paired_bootstrap,
     verdict_for,
 )
-from afg.experiments.hosted_extraction import ComparisonSpec
+from afg.experiments.hosted_extraction import ComparisonSpec, ModelPrice
 from tests.relations_workspace import reference_decision, text_similarity
 
 SPEC = ComparisonSpec(
@@ -77,6 +77,8 @@ def _write_run(
     configured: tuple[list[str], int] | None = None,
     manifest_extra: dict[str, object] | None = None,
     drop_workspace_manifest: tuple[str, int] | None = None,
+    statuses: dict[tuple[str, int], dict[str, str]] | None = None,
+    tokens: dict[str, dict[str, object]] | None = None,
 ) -> Path:
     """A run folder: ``found`` maps ``(series, run)`` to the meetings whose gold it extracts."""
     run_dir = root / "out" / name
@@ -112,10 +114,21 @@ def _write_run(
                     ],
                     "returncode": code,
                     "duration_s": seconds,
+                    **({"tokens": tokens[meeting]} if tokens and meeting in tokens else {}),
                 }
             )
             if code:
                 break
+        if statuses is not None:  # OpenKOS 0.7.3 sources; others carry no extraction_status
+            sources = workspace_root / series / f"run-{run}" / "bundle" / "sources"
+            sources.mkdir(parents=True, exist_ok=True)
+            for letter in LETTERS:
+                meeting = f"{series}{letter}"
+                status = statuses.get((series, run), {}).get(meeting)
+                extra = f"extraction_status: {status}\n" if status else ""
+                (sources / f"{meeting.lower()}.md").write_text(
+                    f"---\ntype: Source\n{extra}---\nPM: hello\n", encoding="utf-8"
+                )
         manifest_path = workspace_root / series / f"run-{run}.manifest.json"
         manifest_path.parent.mkdir(parents=True, exist_ok=True)
         manifest_path.write_text(
@@ -363,12 +376,74 @@ def test_extracted_decisions_per_meeting_are_descriptive(tmp_path: Path) -> None
     assert per_meeting["candidate"]["mean"] == pytest.approx(1.0)
 
 
-def test_cost_is_passed_through_when_given(tmp_path: Path) -> None:
+def test_cost_is_pending_without_a_price_and_dashboard_is_a_cross_check(
+    tmp_path: Path,
+) -> None:
+    found = _all({"ES2015": _meetings("ES2015", "a")}, runs=1)
+    _write_run(tmp_path, "base", found)
+    _write_run(tmp_path, "cand", found, tokens={"ES2015a": USAGE})
+
+    operation = _compare(tmp_path)["operation"]
+    assert operation["cost"]["status"] == "pendiente"
+    assert operation["cost_usd"] is None  # pending, never 0
+    assert operation["dashboard_usd"] is None
+    assert _compare(tmp_path, dashboard_usd=12.5)["operation"]["dashboard_usd"] == 12.5
+
+
+USAGE = {
+    "calls": 3,
+    "reported_calls": 3,
+    "prompt": 1_000_000,
+    "completion": 100_000,
+    "total": 1_500_000,
+}
+PRICE = ModelPrice(2.0, 10.0, "2026-11-26", "https://example.test/pricing")
+
+
+def test_tokens_and_cost_come_from_the_ingest_commands_of_the_workspace_manifests(
+    tmp_path: Path,
+) -> None:
+    found = _all({"ES2015": _meetings("ES2015", "ab")}, runs=2)
+    _write_run(tmp_path, "base", found)
+    _write_run(
+        tmp_path,
+        "cand",
+        found,
+        tokens={"ES2015a": USAGE, "ES2015b": {**USAGE, "total": 1_100_000}},
+    )
+
+    operation = _compare(tmp_path, price=PRICE)["operation"]
+
+    # 2 runs x (a: 2 + 5, b: 2 + 1) = 20 dollars over 4 meeting-runs; median of 7, 7, 3, 3 = 5.
+    assert operation["cost"]["status"] == "ok"
+    assert operation["cost"]["total_usd"] == pytest.approx(20.0)
+    assert operation["cost_usd"] == pytest.approx(20.0)
+    assert operation["cost"]["median_per_meeting_usd"] == pytest.approx(5.0)
+    assert operation["cost"]["lower_bound"] is False
+    tokens = operation["tokens"]["candidate"]
+    assert (tokens["calls"], tokens["prompt"], tokens["total"]) == (12, 4_000_000, 5_200_000)
+    assert operation["tokens"]["baseline"] is None  # the baseline run has no token records
+
+
+def test_a_partial_report_flags_the_cost_as_a_lower_bound(tmp_path: Path) -> None:
+    found = _all({"ES2015": _meetings("ES2015", "a")}, runs=1)
+    _write_run(tmp_path, "base", found)
+    _write_run(tmp_path, "cand", found, tokens={"ES2015a": {**USAGE, "reported_calls": 2}})
+
+    cost = _compare(tmp_path, price=PRICE)["operation"]["cost"]
+
+    assert cost["lower_bound"] is True and cost["n_lower_bound_meetings"] == 1
+
+
+def test_a_run_without_token_records_has_no_cost_data_even_with_a_price(tmp_path: Path) -> None:
     found = _all({"ES2015": _meetings("ES2015", "a")}, runs=1)
     _write_run(tmp_path, "base", found)
     _write_run(tmp_path, "cand", found)
-    assert _compare(tmp_path, cost_usd=12.5)["operation"]["cost_usd"] == 12.5
-    assert _compare(tmp_path)["operation"]["cost_usd"] is None
+
+    operation = _compare(tmp_path, price=PRICE)["operation"]
+
+    assert operation["cost"]["status"] == "sin datos"
+    assert operation["cost_usd"] is None
 
 
 # --- bridge -----------------------------------------------------------------------------------
@@ -478,20 +553,30 @@ def test_a_missing_baseline_is_an_error(tmp_path: Path) -> None:
         _build(tmp_path)
 
 
-def test_costs_come_from_the_config_table(tmp_path: Path) -> None:
+def test_prices_and_dashboard_come_from_the_config(tmp_path: Path) -> None:
     import dataclasses
 
     from afg.experiments.hosted_extraction import load_hosted_config
 
-    config = dataclasses.replace(load_hosted_config(), costs_usd={"openai-small": 3.25})
+    config = dataclasses.replace(
+        load_hosted_config(),
+        prices={"openai-small": PRICE},
+        dashboard_usd={"openai-small": 3.25},
+    )
     _write_run(tmp_path, "experimento-a-formal", _all({"ES2015": _meetings("ES2015", "a")}))
     _write_run(
-        tmp_path, "experimento-a-hosted-openai-small", _all({"ES2015": _meetings("ES2015", "a")})
+        tmp_path,
+        "experimento-a-hosted-openai-small",
+        _all({"ES2015": _meetings("ES2015", "a")}),
+        tokens={"ES2015a": USAGE},
     )
 
     payload = _build(tmp_path, config=config, labels=["openai-small"])
 
-    assert payload["candidates"][0]["vs_formal"]["operation"]["cost_usd"] == 3.25
+    operation = payload["candidates"][0]["vs_formal"]["operation"]
+    assert operation["dashboard_usd"] == 3.25
+    assert operation["cost"]["total_usd"] == pytest.approx(7.0 * 2)  # 2 runs
+    assert payload["candidates"][0]["vs_local"]["status"] == "sin corrida"
 
 
 def test_write_comparison_produces_json_and_a_csv_with_one_row_per_tau(tmp_path: Path) -> None:
@@ -657,10 +742,10 @@ def test_build_comparison_takes_model_and_provider_from_the_run_manifest(tmp_pat
     )
 
 
-# --- the secondary baseline: qwen3:8b on OpenKOS 0.7.2 (ADR 0026 amendment) -------------------
+# --- the secondary baseline: qwen3:8b on OpenKOS 0.7.3 (ADR 0026 amendment) -------------------
 
 FORMAL = "experimento-a-formal"
-LOCAL = "experimento-a-base-0-7-2"
+LOCAL = "experimento-a-base-0-7-3"
 CAND = "experimento-a-hosted-openai-small"
 
 
@@ -736,7 +821,7 @@ def test_the_version_effect_compares_the_local_baseline_with_the_formal_one(
 
     effect = payload["version_effect"]
     assert effect["status"] == "ok"
-    assert effect["label"] == "qwen3:8b@0.7.2"
+    assert effect["label"] == "qwen3:8b@0.7.3"
     assert effect["run_name"] == LOCAL
     assert effect["baseline_run_name"] == FORMAL
     assert effect["n_models"] == 6  # not counted in the family: same level as the models
@@ -760,7 +845,7 @@ def test_the_csv_has_a_baseline_column_and_a_version_effect_row(tmp_path: Path) 
     assert by_key == {
         ("openai-small", "formal"),
         ("openai-small", "local"),
-        ("qwen3:8b@0.7.2", "formal"),
+        ("qwen3:8b@0.7.3", "formal"),
     }
     assert len([r for r in rows if r["label"] == "openai-small" and r["baseline"] == "local"]) == 3
 
@@ -778,3 +863,126 @@ def test_the_csv_marks_a_missing_local_baseline_per_candidate(tmp_path: Path) ->
     rows = list(csv.DictReader(csv_path.open(encoding="utf-8")))
     local = [r for r in rows if r["baseline"] == "local"]
     assert [r["status"] for r in local] == ["sin corrida"]
+
+
+# --- exact extraction (ADR 0026 second amendment, decision 4) ---------------------------------
+
+ZERO_STATUSES = {
+    "failed": 0,
+    "no-concepts-found": 0,
+    "no-extractable-text": 0,
+    "blocked-by-sensitivity": 0,
+}
+
+
+def test_a_meeting_whose_ingest_exited_zero_but_failed_is_not_extracted(tmp_path: Path) -> None:
+    found = _all({"ES2015": _meetings("ES2015", "abd")}, runs=1)
+    _write_run(tmp_path, "base", found)
+    _write_run(
+        tmp_path,
+        "cand",
+        found,
+        statuses={("ES2015", 0): {"ES2015c": "failed", "ES2015d": "no-concepts-found"}},
+    )
+
+    operation = _compare(tmp_path)["operation"]
+
+    assert operation["completeness"]["candidate"] == {"complete": 2, "expected": 4, "share": 0.5}
+    assert operation["extraction_status"]["candidate"] == {
+        **ZERO_STATUSES,
+        "failed": 1,
+        "no-concepts-found": 1,
+    }
+    assert operation["extraction_status"]["baseline"] == ZERO_STATUSES
+
+
+def test_a_meeting_with_a_status_is_also_not_extracted_when_ingest_failed_hard(
+    tmp_path: Path,
+) -> None:
+    found = _all({"ES2015": _meetings("ES2015", "a")}, runs=1)
+    _write_run(tmp_path, "base", found)
+    _write_run(
+        tmp_path,
+        "cand",
+        found,
+        failed={("ES2015", 0): "ES2015c"},
+        statuses={("ES2015", 0): {"ES2015a": "no-extractable-text"}},
+    )
+
+    operation = _compare(tmp_path)["operation"]
+
+    assert operation["completeness"]["candidate"]["complete"] == 1  # only ES2015b
+    assert operation["extraction_status"]["candidate"]["no-extractable-text"] == 1
+
+
+def test_old_workspaces_without_sources_or_status_keep_their_completeness(
+    tmp_path: Path,
+) -> None:
+    found = _all({"ES2015": _meetings("ES2015", "abcd")}, runs=2)
+    _write_run(tmp_path, "base", found)
+    _write_run(tmp_path, "cand", found)  # no bundle/sources at all: formal, bridge, 0.7.2 runs
+
+    operation = _compare(tmp_path)["operation"]
+
+    assert operation["completeness"]["candidate"] == {"complete": 8, "expected": 8, "share": 1.0}
+    assert operation["extraction_status"]["candidate"] == ZERO_STATUSES
+
+
+def test_a_meeting_without_extraction_contributes_zero_decisions_to_precision_and_recall(
+    tmp_path: Path,
+) -> None:
+    # Meeting c failed: OpenKOS writes no decision objects, so none are scored for it, and its
+    # reference decision counts as missed.
+    base = _all({"ES2015": _meetings("ES2015", "abcd")}, runs=1)
+    cand = _all({"ES2015": _meetings("ES2015", "abd")}, runs=1)
+    _write_run(tmp_path, "base", base)
+    _write_run(tmp_path, "cand", cand, statuses={("ES2015", 0): {"ES2015c": "failed"}})
+
+    result = _compare(tmp_path)["taus"]["0.70"]["candidate"]
+
+    assert result["precision"] == pytest.approx(1.0)  # no scored decision for the failed meeting
+    assert result["recall"] == pytest.approx(3 / 4)  # its reference decision is missed
+
+
+def test_status_counts_add_over_every_run_and_series(tmp_path: Path) -> None:
+    found = _all({s: _meetings(s, "abcd") for s in SERIES}, runs=2)
+    _write_run(tmp_path, "base", found)
+    _write_run(
+        tmp_path,
+        "cand",
+        found,
+        statuses={
+            ("ES2015", 0): {"ES2015a": "failed"},
+            ("IS1004", 1): {"IS1004b": "failed", "IS1004c": "blocked-by-sensitivity"},
+        },
+    )
+
+    counts = _compare(tmp_path)["operation"]["extraction_status"]["candidate"]
+
+    assert counts == {**ZERO_STATUSES, "failed": 2, "blocked-by-sensitivity": 1}
+
+
+def test_the_csv_carries_tokens_and_cost_columns(tmp_path: Path) -> None:
+    import csv
+    import dataclasses
+
+    from afg.experiments.hosted_comparison import write_comparison
+    from afg.experiments.hosted_extraction import load_hosted_config
+
+    config = dataclasses.replace(load_hosted_config(), prices={"openai-small": PRICE})
+    found = _all({"ES2015": _meetings("ES2015", "a")}, runs=1)
+    _write_run(tmp_path, "experimento-a-formal", found)
+    _write_run(
+        tmp_path,
+        "experimento-a-hosted-openai-small",
+        found,
+        tokens={"ES2015a": {**USAGE, "reported_calls": 2}},
+    )
+    payload = _build(tmp_path, config=config, labels=["openai-small"], baseline="formal")
+
+    _, csv_path = write_comparison(payload, tmp_path / "cmp")
+
+    row = next(csv.DictReader(csv_path.open(encoding="utf-8")))
+    assert row["tokens_prompt"] == "1000000" and row["tokens_total"] == "1500000"
+    assert row["cost_status"] == "ok" and float(row["cost_usd"]) == pytest.approx(7.0)
+    assert row["cost_lower_bound"] == "True"

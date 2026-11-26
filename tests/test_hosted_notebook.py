@@ -39,8 +39,32 @@ def _informe() -> dict[str, Any]:
     return {"curve": [{"tau": 0.7, "origin_meetings": {"pooled": pooled}}]}
 
 
+def _cost(total: float | None, *, lower_bound: bool = False) -> dict[str, Any]:
+    if total is None:
+        return {
+            "status": "pendiente",
+            "total_usd": None,
+            "median_per_meeting_usd": None,
+            "lower_bound": False,
+            "n_lower_bound_meetings": 0,
+            "prices": None,
+        }
+    return {
+        "status": "ok",
+        "total_usd": total,
+        "median_per_meeting_usd": total / 10,
+        "lower_bound": lower_bound,
+        "n_lower_bound_meetings": 1 if lower_bound else 0,
+        "prices": {"input_usd_per_mtok": 1.0, "output_usd_per_mtok": 2.0},
+    }
+
+
 def _block(
-    *, ratio: dict[str, Any] | None, cost: float | None, shift: float = 0.0
+    *,
+    ratio: dict[str, Any] | None,
+    cost: float | None,
+    shift: float = 0.0,
+    lower_bound: bool = False,
 ) -> dict[str, Any]:
     entry = {
         "tau": 0.7,
@@ -77,9 +101,31 @@ def _block(
                 "baseline": {"mean": 6.0, "median": 6.0},
                 "candidate": {"mean": 2.5, "median": 2.0},
             },
+            "extraction_status": {
+                "baseline": dict.fromkeys(STATUSES, 0),
+                "candidate": {**dict.fromkeys(STATUSES, 0), "failed": 1},
+            },
+            "tokens": {
+                "baseline": None,
+                "candidate": {
+                    "n_meetings": 4,
+                    "calls": 40,
+                    "reported_calls": 40,
+                    "prompt": 1_234_567,
+                    "completion": 89_000,
+                    "total": 1_500_000,
+                    "median_total_per_meeting": 375_000,
+                    "lower_bound": lower_bound,
+                },
+            },
+            "cost": _cost(cost, lower_bound=lower_bound),
             "cost_usd": cost,
+            "dashboard_usd": None,
         },
     }
+
+
+STATUSES = ("failed", "no-concepts-found", "no-extractable-text", "blocked-by-sensitivity")
 
 
 def _candidate(label: str, *, ratio: dict[str, Any] | None, cost: float | None) -> dict[str, Any]:
@@ -105,8 +151,8 @@ def _payload() -> dict[str, Any]:
         ],
         "version_effect": {
             "status": "ok",
-            "label": "qwen3:8b@0.7.2",
-            "run_name": "experimento-a-base-0-7-2",
+            "label": "qwen3:8b@0.7.3",
+            "run_name": "experimento-a-base-0-7-3",
             **_block(ratio={"estimate": 1.1, "interval": [0.9, 1.3]}, cost=None, shift=-0.18),
         },
         "bridge": None,
@@ -263,11 +309,24 @@ def test_operation_table_shows_time_completeness_decisions_and_cost() -> None:
     assert first["Línea base (s)"] == "300"
     assert first["Razón de tiempos"] == "0,20 [0,10; 0,30]"
     assert first["Tiempo"] == "más rápido"
-    assert first["Extracciones completas"] == "3 de 4 (75 %)"
+    assert first["Reuniones con extracción"] == "3 de 4 (75 %)"
     assert first["Decisiones por reunión"] == "2,5"
     assert first["Costo (USD)"] == "1,50"
     assert second["Razón de tiempos"] == "sin datos"
-    assert second["Costo (USD)"] == "sin registrar"
+    assert second["Costo (USD)"] == "pendiente"  # no price yet: never shown as 0
+
+
+def test_operation_table_shows_tokens_extraction_status_and_the_lower_bound() -> None:
+    payload = _payload()
+    payload["candidates"][0]["vs_formal"] = _block(
+        ratio={"estimate": 0.2, "interval": [0.1, 0.3]}, cost=1.5, lower_bound=True
+    )
+    first = operation_table(payload).iloc[0]
+    assert first["Costo (USD)"] == "≥ 1,50"
+    assert first["Tokens de entrada"] == "1.234.567"
+    assert first["Tokens totales"] == "1.500.000"
+    assert first["Sin extracción"] == "1 failed"
+    assert first["Costo mediano por reunión (USD)"] == "≥ 0,15"
 
 
 def test_empty_payload_gives_empty_tables() -> None:
@@ -309,7 +368,7 @@ def test_version_effect_table_shows_the_local_baseline_against_the_formal_run() 
 
     assert len(table) == 1
     row = table.iloc[0]
-    assert row["Comparación"] == "qwen3:8b en 0.7.2 contra qwen3:8b formal (efecto de versión)"
+    assert row["Comparación"] == "qwen3:8b en 0.7.3 contra qwen3:8b formal (efecto de versión)"
     assert row["Δ Recall"] == "+0,02 [+0,10; +0,30]"
     assert row["Precision"] == "0,30"
 

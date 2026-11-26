@@ -13,8 +13,10 @@ baseline differences in pooled precision, recall and F1, at the Bonferroni level
 ``1 - family_alpha / n_models``.
 
 Secondary operation indicators (decision 8): ingest time per meeting (paired bootstrap of the
-log ratio), the share of meetings whose ingest finished, extracted decisions per meeting, and an
-optional cost in dollars passed through from the configuration.
+log ratio), the share of meetings with an exact extraction (ingest exit 0 and no
+``extraction_status`` in the source, with a count per status), extracted decisions per meeting,
+and the tokens of each ingest with the cost they imply at the prices of the configuration (a
+lower bound when a call did not report).
 
 The similarity is injected, so nothing here needs Ollama.
 """
@@ -37,8 +39,16 @@ from afg.domain.decision import Decision
 from afg.evaluation.reference import ReferenceDecision
 from afg.evaluation.scoring import SimilarityFn, score_series
 from afg.experiments.extraction_runs import ExtractionRun, load_extraction_runs
-from afg.experiments.hosted_extraction import ComparisonSpec, HostedConfig, hosted_run_name
+from afg.experiments.hosted_cost import MeetingTokens, summarize_cost, summarize_tokens
+from afg.experiments.hosted_extraction import (
+    ComparisonSpec,
+    HostedConfig,
+    ModelPrice,
+    hosted_run_name,
+)
+from afg.extraction.openkos.bundle_reader import EXTRACTION_STATUSES, read_extraction_status
 from afg.extraction.openkos.event_dates import POSITION_LETTERS
+from afg.extraction.openkos.tokens import TokenUsage
 
 __all__ = [
     "BASELINE_CHOICES",
@@ -351,14 +361,18 @@ def _ingest_meeting(argv: Sequence[str]) -> str | None:
 
 @dataclass(frozen=True, slots=True)
 class _IngestProfile:
-    seconds: dict[str, float]  # meeting -> ingest seconds averaged over its complete runs
-    complete: int
+    seconds: dict[str, float]  # meeting -> ingest seconds averaged over its finished ingests
+    complete: int  # meetings with extraction: exit 0, not the failed meeting, no extraction_status
     expected: int
+    statuses: dict[str, int]  # extraction_status value -> meetings (the four keys, 0 when absent)
+    tokens: list[MeetingTokens]  # one per (series, run, meeting) with a ``tokens:`` record
 
 
 def _ingest_profile(data: RunData, series: Collection[str]) -> _IngestProfile:
     per_meeting: dict[str, list[float]] = defaultdict(list)
     complete = expected = 0
+    statuses = dict.fromkeys(EXTRACTION_STATUSES, 0)
+    tokens: list[MeetingTokens] = []
     for series_id, run in _run_pairs(data, series):
         path = data.workspace_root / series_id / f"run-{run}.manifest.json"
         if not path.is_file() and _pair_status(data, series_id, run) == "ok":
@@ -373,20 +387,36 @@ def _ingest_profile(data: RunData, series: Collection[str]) -> _IngestProfile:
         failed_meeting = manifest.get("failed_meeting")
         seconds: dict[str, float] = defaultdict(float)
         finished: set[str] = set()
+        run_tokens: dict[str, MeetingTokens] = {}
         for command in manifest.get("commands", []):
             meeting = _ingest_meeting(command.get("argv", []))
             if meeting is None:
                 continue
             seconds[meeting] += float(command.get("duration_s", 0.0))
+            if command.get("tokens") is not None:  # billed also when the ingest failed
+                run_tokens.setdefault(meeting, MeetingTokens()).add(
+                    TokenUsage.from_dict(command["tokens"])
+                )
             if command.get("returncode", 0) == 0 and meeting != failed_meeting:
                 finished.add(meeting)
+        tokens.extend(run_tokens.values())
+        bundle = data.workspace_root / series_id / f"run-{run}" / "bundle"
         for meeting in meetings:
             expected += 1
             if meeting in finished:
-                complete += 1
                 per_meeting[meeting].append(seconds[meeting])
+                # Exit 0 is not enough: a failed extraction exits 0 and leaves a status behind.
+                status = read_extraction_status(bundle, meeting)
+                if status is None:
+                    complete += 1
+                else:
+                    statuses[status] = statuses.get(status, 0) + 1
     return _IngestProfile(
-        {m: statistics.fmean(v) for m, v in per_meeting.items()}, complete, expected
+        {m: statistics.fmean(v) for m, v in per_meeting.items()},
+        complete,
+        expected,
+        statuses,
+        tokens,
     )
 
 
@@ -472,9 +502,15 @@ def compare_to_baseline(
     similarity: SimilarityFn,
     spec: ComparisonSpec,
     n_models: int,
-    cost_usd: float | None = None,
+    price: ModelPrice | None = None,
+    dashboard_usd: float | None = None,
 ) -> dict[str, Any]:
-    """Compare ``candidate`` with ``baseline`` over the series the candidate covers."""
+    """Compare ``candidate`` with ``baseline`` over the series the candidate covers.
+
+    ``price`` (USD per million tokens) turns the candidate's token records into a cost; without
+    it the cost is pending. ``dashboard_usd`` is the optional hand-read provider figure, kept
+    only as a cross-check.
+    """
     series = _series_of(candidate)
     baseline_runs = _configured_runs(baseline)
     candidate_runs = _configured_runs(candidate)
@@ -529,6 +565,7 @@ def compare_to_baseline(
         }
     base_profile = _ingest_profile(baseline, series)
     cand_profile = _ingest_profile(candidate, series)
+    cost = summarize_cost(cand_profile.tokens, price)
     ok_candidate = _ok_runs(candidate)
     runs_per_series = {
         s: len({r.run for r in ok_candidate if r.record["series_id"] == s}) for s in series
@@ -567,11 +604,21 @@ def compare_to_baseline(
                 "baseline": _completeness(base_profile),
                 "candidate": _completeness(cand_profile),
             },
+            "extraction_status": {
+                "baseline": dict(base_profile.statuses),
+                "candidate": dict(cand_profile.statuses),
+            },
             "decisions_per_meeting": {
                 "baseline": _decisions_per_meeting(baseline, series),
                 "candidate": _decisions_per_meeting(candidate, series),
             },
-            "cost_usd": cost_usd,
+            "tokens": {
+                "baseline": summarize_tokens(base_profile.tokens),
+                "candidate": summarize_tokens(cand_profile.tokens),
+            },
+            "cost": cost,
+            "cost_usd": cost["total_usd"],
+            "dashboard_usd": dashboard_usd,
         },
     }
 
@@ -642,7 +689,7 @@ def bridge_check(
 
 
 BASELINE_CHOICES = ("formal", "local", "both")
-VERSION_EFFECT_LABEL = "qwen3:8b@0.7.2"
+VERSION_EFFECT_LABEL = "qwen3:8b@0.7.3"
 
 
 def build_comparison(
@@ -661,7 +708,7 @@ def build_comparison(
 
     Each candidate holds one comparison block per selected baseline: ``vs_formal`` (the frozen
     formal run, the primary baseline) and ``vs_local`` (the secondary baseline, ``qwen3:8b`` on
-    OpenKOS 0.7.2; ``sin corrida`` while its run is missing). The secondary baseline itself is
+    OpenKOS 0.7.3; ``sin corrida`` while its run is missing). The secondary baseline itself is
     compared with the formal one as ``version_effect`` (not part of the Bonferroni family).
     """
     if baseline not in BASELINE_CHOICES:
@@ -682,7 +729,12 @@ def build_comparison(
     local_name = config.local_baseline.run_name
     local = load(local_name)
 
-    def compare(base: RunData, data: RunData, cost: float | None) -> dict[str, Any]:
+    def compare(
+        base: RunData,
+        data: RunData,
+        price: ModelPrice | None = None,
+        dashboard: float | None = None,
+    ) -> dict[str, Any]:
         return {
             "status": "ok",
             **compare_to_baseline(
@@ -692,7 +744,8 @@ def build_comparison(
                 similarity=similarity,
                 spec=config.comparison,
                 n_models=len(config.models),
-                cost_usd=cost,
+                price=price,
+                dashboard_usd=dashboard,
             ),
         }
 
@@ -705,7 +758,8 @@ def build_comparison(
             continue
         spec = config.models[label]
         stored = data.manifest.get("openkos") or {}
-        cost = config.costs_usd.get(label)
+        price = config.prices.get(label)
+        dashboard = config.dashboard_usd.get(label)
         item: dict[str, Any] = {
             "label": label,
             "run_name": name,
@@ -715,12 +769,12 @@ def build_comparison(
             "status": "ok",
         }
         if baseline in ("formal", "both"):
-            item["vs_formal"] = compare(formal, data, cost)
+            item["vs_formal"] = compare(formal, data, price, dashboard)
         if baseline in ("local", "both"):
             item["vs_local"] = (
                 {"status": NO_RUN, "baseline_run_name": local_name}
                 if local is None
-                else compare(local, data, cost)
+                else compare(local, data, price, dashboard)
             )
         candidates.append(item)
     version_effect: dict[str, Any] | None = None
@@ -732,7 +786,7 @@ def build_comparison(
                 "label": VERSION_EFFECT_LABEL,
                 "model": config.local_baseline.model,
                 "run_name": local_name,
-                **compare(formal, local, None),
+                **compare(formal, local),
             }
         )
     payload: dict[str, Any] = {
@@ -776,7 +830,9 @@ CSV_COLUMNS = (
     "diff_f1", "diff_f1_low", "diff_f1_high",
     "verdict", "recall_up_precision_drop",
     "time_ratio", "time_ratio_low", "time_ratio_high", "time_verdict",
-    "complete_share", "decisions_per_meeting", "cost_usd",
+    "complete_share", "decisions_per_meeting",
+    "tokens_prompt", "tokens_total", "cost_status", "cost_usd", "cost_lower_bound",
+    "cost_median_per_meeting_usd", "dashboard_usd",
 )  # fmt: skip
 
 
@@ -784,6 +840,7 @@ def _block_rows(head: Mapping[str, Any], block: Mapping[str, Any]) -> list[dict[
     """The CSV rows (one per tau) of one comparison block."""
     operation = block["operation"]
     ratio = operation["time"]["ratio"] or {"estimate": None, "interval": [None, None]}
+    tokens = operation["tokens"]["candidate"]
     rows: list[dict[str, Any]] = []
     for entry in block["taus"].values():
         diff = entry["diff"]
@@ -800,7 +857,13 @@ def _block_rows(head: Mapping[str, Any], block: Mapping[str, Any]) -> list[dict[
             "time_verdict": operation["time"]["verdict"],
             "complete_share": operation["completeness"]["candidate"]["share"],
             "decisions_per_meeting": operation["decisions_per_meeting"]["candidate"]["mean"],
+            "tokens_prompt": (tokens or {}).get("prompt"),
+            "tokens_total": (tokens or {}).get("total"),
+            "cost_status": operation["cost"]["status"],
             "cost_usd": operation["cost_usd"],
+            "cost_lower_bound": operation["cost"]["lower_bound"],
+            "cost_median_per_meeting_usd": operation["cost"]["median_per_meeting_usd"],
+            "dashboard_usd": operation["dashboard_usd"],
         }
         for name in METRICS:
             row[f"baseline_{name}"] = entry["baseline"][name]
@@ -817,7 +880,7 @@ def comparison_rows(payload: Mapping[str, Any]) -> list[dict[str, Any]]:
 
     The ``baseline`` column is ``formal`` or ``local``. A candidate with a run but without the
     local baseline run gets one ``sin corrida`` row for ``local``. The version effect (local
-    baseline against formal) follows as a row labelled ``qwen3:8b@0.7.2``.
+    baseline against formal) follows as a row labelled ``qwen3:8b@0.7.3``.
     """
     rows: list[dict[str, Any]] = []
     for item in payload["candidates"]:

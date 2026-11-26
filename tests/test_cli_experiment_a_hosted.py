@@ -45,7 +45,7 @@ def fake(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> RecordingFactory:
         lambda: FakeProbe({"qwen3:8b": "d-gen", "bge-m3:latest": "d-emb"}),
     )
     monkeypatch.setattr(
-        afg_cli, "make_hosted_runner", lambda: FakeRunner(version_output="openkos 0.7.2\n")
+        afg_cli, "make_hosted_runner", lambda: FakeRunner(version_output="openkos 0.7.3\n")
     )
     monkeypatch.setattr(afg_cli, "_executable_exists", lambda _path: True)
     monkeypatch.setenv(API_KEY_ENV, "sk-test-never-printed")
@@ -80,7 +80,7 @@ def test_pilot_runs_one_series_and_one_repetition_under_the_pilot_name(
     assert manifest["openkos"]["reasoning_effort"] == "low"
     assert manifest["openkos"]["seed"] is None
     assert manifest["openkos"]["temperature"] is None
-    assert manifest["openkos"]["required_version"] == "0.7.2"
+    assert manifest["openkos"]["required_version"] == "0.7.3"
     assert all("seconds" in pair for pair in manifest["pairs"].values())
 
 
@@ -156,25 +156,14 @@ def test_model_xor_bridge_is_required(fake: RecordingFactory) -> None:
     assert fake.adapter.calls == []
 
 
-def test_bridge_uses_the_formal_settings_on_the_local_backend_and_needs_no_key(
-    tmp_path: Path, fake: RecordingFactory, monkeypatch: pytest.MonkeyPatch
+def test_the_bridge_is_historical_and_is_not_rerun_on_the_current_version(
+    fake: RecordingFactory,
 ) -> None:
-    monkeypatch.delenv(API_KEY_ENV)
-
     result = _run("--bridge")
 
-    assert result.exit_code == 0, result.output
-    assert fake.adapter.calls == [("ES2002", 0)]
-    used = fake.settings[0]
-    assert used.generative_model == "qwen3:8b"
-    assert (used.base_seed, used.temperature, used.backend) == (42, 0.1, "ollama")
-    manifest = json.loads(
-        (tmp_path / "out" / "experimento-a-puente-0-7-2" / "manifest.json").read_text()
-    )
-    assert manifest["bridge"] is True
-    assert manifest["openkos"]["seed"] == 42
-    assert manifest["openkos"]["temperature"] == 0.1
-    assert manifest["openkos"]["backend"] == "ollama"
+    assert result.exit_code == 2
+    assert "0.7.2" in result.output
+    assert fake.adapter.calls == []
 
 
 def test_bridge_refuses_series_and_runs_overrides(fake: RecordingFactory) -> None:
@@ -196,7 +185,7 @@ def test_local_baseline_runs_the_bridge_settings_on_every_evaluation_series(
     assert used.generative_model == "qwen3:8b"
     assert (used.base_seed, used.temperature, used.backend) == (42, 0.1, "ollama")
     manifest = json.loads(
-        (tmp_path / "out" / "experimento-a-base-0-7-2" / "manifest.json").read_text()
+        (tmp_path / "out" / "experimento-a-base-0-7-3" / "manifest.json").read_text()
     )
     assert manifest["extension"] == "hosted"
     assert manifest["local_baseline"] is True

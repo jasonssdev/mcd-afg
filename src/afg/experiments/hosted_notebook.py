@@ -302,6 +302,22 @@ def _seconds(value: float | None) -> str:
     return "sin datos" if value is None else f"{value:.0f}"
 
 
+def _thousands(value: int | float) -> str:
+    return f"{int(value):,}".replace(",", ".")
+
+
+def _cost_cell(cost: Mapping[str, Any], value: float | None) -> str:
+    """A dollar amount; ``≥`` marks a lower bound, a missing price or token record is named."""
+    if cost["status"] != "ok" or value is None:
+        return "sin datos de tokens" if cost["status"] == "sin datos" else cost["status"]
+    return ("≥ " if cost["lower_bound"] else "") + format_es(value)
+
+
+def _status_cell(counts: Mapping[str, int]) -> str:
+    shown = [f"{n} {name}" for name, n in counts.items() if n]
+    return "; ".join(shown) if shown else "ninguna"
+
+
 def operation_table(payload: Mapping[str, Any], baseline: str = "formal") -> pd.DataFrame:
     """Operation indicators (ADR 0026, decision 8) of every compared model against a baseline."""
     rows = []
@@ -310,7 +326,8 @@ def operation_table(payload: Mapping[str, Any], baseline: str = "formal") -> pd.
         time, done = operation["time"], operation["completeness"]["candidate"]
         ratio = time["ratio"]
         decisions = operation["decisions_per_meeting"]["candidate"]["mean"]
-        cost = operation["cost_usd"]
+        cost = operation["cost"]
+        tokens = operation["tokens"]["candidate"]
         rows.append(
             {
                 "Modelo": item["label"],
@@ -322,7 +339,7 @@ def operation_table(payload: Mapping[str, Any], baseline: str = "formal") -> pd.
                     else format_interval(ratio["estimate"], ratio["interval"])
                 ),
                 "Tiempo": time["verdict"],
-                "Extracciones completas": (
+                "Reuniones con extracción": (
                     "sin datos"
                     if done["share"] is None
                     else f"{done['complete']} de {done['expected']} "
@@ -331,7 +348,13 @@ def operation_table(payload: Mapping[str, Any], baseline: str = "formal") -> pd.
                 "Decisiones por reunión": (
                     "sin datos" if decisions is None else format_es(decisions, 1)
                 ),
-                "Costo (USD)": "sin registrar" if cost is None else format_es(cost),
+                "Sin extracción": _status_cell(operation["extraction_status"]["candidate"]),
+                "Tokens de entrada": "sin datos"
+                if tokens is None
+                else _thousands(tokens["prompt"]),
+                "Tokens totales": "sin datos" if tokens is None else _thousands(tokens["total"]),
+                "Costo (USD)": _cost_cell(cost, cost["total_usd"]),
+                "Costo mediano por reunión (USD)": _cost_cell(cost, cost["median_per_meeting_usd"]),
             }
         )
     return pd.DataFrame(rows, columns=_OPERATION_COLUMNS)
@@ -339,15 +362,16 @@ def operation_table(payload: Mapping[str, Any], baseline: str = "formal") -> pd.
 
 _OPERATION_COLUMNS = [
     "Modelo", "Mediana por reunión (s)", "Línea base (s)", "Razón de tiempos", "Tiempo",
-    "Extracciones completas", "Decisiones por reunión", "Costo (USD)",
+    "Reuniones con extracción", "Sin extracción", "Decisiones por reunión",
+    "Tokens de entrada", "Tokens totales", "Costo (USD)", "Costo mediano por reunión (USD)",
 ]  # fmt: skip
 
 
-VERSION_EFFECT_TEXT = "qwen3:8b en 0.7.2 contra qwen3:8b formal (efecto de versión)"
+VERSION_EFFECT_TEXT = "qwen3:8b en 0.7.3 contra qwen3:8b formal (efecto de versión)"
 
 
 def version_effect_table(payload: Mapping[str, Any], tau_key: str | None = None) -> pd.DataFrame:
-    """Local baseline (``qwen3:8b`` on OpenKOS 0.7.2) against the formal run, at one tau.
+    """Local baseline (``qwen3:8b`` on OpenKOS 0.7.3) against the formal run, at one tau.
 
     Empty while the local baseline run is missing. It is not a paid model and does not count in
     the Bonferroni family: it only shows how much of a difference the OpenKOS version makes.

@@ -34,6 +34,7 @@ __all__ = [
     "HostedConfigError",
     "HostedPreflightError",
     "LocalBaselineSpec",
+    "ModelPrice",
     "ModelSpec",
     "bridge_run_settings",
     "hosted_manifest",
@@ -71,12 +72,27 @@ class ModelSpec:
 
 
 @dataclass(frozen=True, slots=True)
+class ModelPrice:
+    """Public price of a model: USD per million tokens, with its date and source page."""
+
+    input_usd_per_mtok: float
+    output_usd_per_mtok: float
+    prices_date: str
+    pricing_url: str
+
+
+@dataclass(frozen=True, slots=True)
 class BridgeSpec:
-    """The continuity check: ``qwen3:8b`` on the 0.7.2 executable, local Ollama backend."""
+    """The continuity check: ``qwen3:8b`` on OpenKOS 0.7.2, local Ollama backend (historical).
+
+    ``openkos_version`` is the version the stored bridge run was made with; the bridge is only
+    re-run when it equals ``HostedConfig.required_version``.
+    """
 
     run_name: str
     series: tuple[str, ...]
     runs: int
+    openkos_version: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -120,7 +136,33 @@ class HostedConfig:
     local_baseline: LocalBaselineSpec
     comparison: ComparisonSpec
     models: Mapping[str, ModelSpec]
-    costs_usd: Mapping[str, float]
+    prices: Mapping[str, ModelPrice]
+    dashboard_usd: Mapping[str, float]
+
+
+def _load_prices(raw: Mapping[str, Any], models: Mapping[str, ModelSpec]) -> dict[str, ModelPrice]:
+    """The ``[prices.<label>]`` tables; an absent table means the price is still unset."""
+    prices: dict[str, ModelPrice] = {}
+    for label, entry in raw.items():
+        if label not in models:
+            raise HostedConfigError(f"[prices.{label}] names a model that is not in [models].")
+        missing = [
+            key
+            for key in ("input_usd_per_mtok", "output_usd_per_mtok", "prices_date", "pricing_url")
+            if key not in entry
+        ]
+        if missing:
+            raise HostedConfigError(f"[prices.{label}] lacks {', '.join(missing)}.")
+        price = ModelPrice(
+            input_usd_per_mtok=float(entry["input_usd_per_mtok"]),
+            output_usd_per_mtok=float(entry["output_usd_per_mtok"]),
+            prices_date=str(entry["prices_date"]),
+            pricing_url=str(entry["pricing_url"]),
+        )
+        if price.input_usd_per_mtok < 0 or price.output_usd_per_mtok < 0:
+            raise HostedConfigError(f"[prices.{label}] has a negative price.")
+        prices[label] = price
+    return prices
 
 
 def load_hosted_config(path: Path | None = None) -> HostedConfig:
@@ -155,6 +197,7 @@ def load_hosted_config(path: Path | None = None) -> HostedConfig:
             run_name=str(bridge["run_name"]),
             series=tuple(str(s) for s in bridge["series"]),
             runs=int(bridge["runs"]),
+            openkos_version=str(bridge["openkos_version"]),
         ),
         local_baseline=LocalBaselineSpec(
             run_name=str(local["run_name"]),
@@ -171,7 +214,8 @@ def load_hosted_config(path: Path | None = None) -> HostedConfig:
             precision_margin=float(comparison["precision_margin"]),
         ),
         models=models,
-        costs_usd={str(k): float(v) for k, v in raw.get("costs", {}).items()},
+        prices=_load_prices(raw.get("prices", {}), models),
+        dashboard_usd={str(k): float(v) for k, v in raw.get("dashboard_usd", {}).items()},
     )
 
 
@@ -181,7 +225,7 @@ def hosted_run_name(label: str, *, pilot: bool = False) -> str:
 
 
 def resolve_executable(config: HostedConfig, env: Mapping[str, str]) -> str:
-    """The 0.7.2 executable: ``AFG_HOSTED_OPENKOS_EXECUTABLE``, else the configured path."""
+    """The extension executable: ``AFG_HOSTED_OPENKOS_EXECUTABLE``, else the configured path."""
     override = env.get(EXECUTABLE_ENV)
     if override:
         return override
@@ -212,7 +256,7 @@ def hosted_run_settings(config: HostedConfig, label: str, *, executable: str) ->
 
 
 def bridge_run_settings(formal: OpenKosRunSettings, *, executable: str) -> OpenKosRunSettings:
-    """The formal settings (model, seed, temperature) on the 0.7.2 executable, Ollama backend."""
+    """The formal settings (model, seed, temperature) on ``executable``, Ollama backend."""
     return replace(formal, executable=executable, backend=BRIDGE_BACKEND)
 
 

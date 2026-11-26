@@ -37,7 +37,8 @@ def test_the_shipped_config_lists_six_models_and_the_adr_comparison_settings() -
         "google-small",
         "google-large",
     ]
-    assert CONFIG.required_version == "0.7.2"
+    assert CONFIG.required_version == "0.7.3"
+    assert CONFIG.executable.endswith("openkos-0.7.3/bin/openkos")
     assert CONFIG.runs_per_model == 3
     assert CONFIG.comparison.bootstrap_resamples == 10000
     assert CONFIG.comparison.bootstrap_seed == 42
@@ -86,13 +87,13 @@ def test_executable_override_wins_and_relative_paths_resolve_from_the_project_ro
     default = Path(resolve_executable(CONFIG, {}))
     assert default.is_absolute() and default.parts[-4:] == (
         "interim",
-        "openkos-0.7.2",
+        "openkos-0.7.3",
         "bin",
         "openkos",
     )
 
 
-def _runner(version: str = "openkos 0.7.2\n") -> FakeRunner:
+def _runner(version: str = "openkos 0.7.3\n") -> FakeRunner:
     return FakeRunner(version_output=version)
 
 
@@ -123,7 +124,7 @@ def test_preflight_names_the_missing_key_without_any_value() -> None:
 
 
 def test_preflight_rejects_a_wrong_openkos_version() -> None:
-    with pytest.raises(HostedPreflightError, match=r"0\.7\.0.*0\.7\.2|0\.7\.2.*0\.7\.0"):
+    with pytest.raises(HostedPreflightError, match=r"0\.7\.0.*0\.7\.3|0\.7\.3.*0\.7\.0"):
         preflight(
             CONFIG,
             label="openai-small",
@@ -136,11 +137,11 @@ def test_preflight_rejects_a_wrong_openkos_version() -> None:
 
 
 def test_preflight_rejects_a_missing_executable() -> None:
-    with pytest.raises(HostedPreflightError, match=r"openkos-0\.7\.2"):
+    with pytest.raises(HostedPreflightError, match=r"openkos-0\.7\.3"):
         preflight(
             CONFIG,
             label="openai-small",
-            executable="/nope/openkos-0.7.2/bin/openkos",
+            executable="/nope/openkos-0.7.3/bin/openkos",
             runner=_runner(),
             env={API_KEY_ENV: "k"},
             ollama_models=lambda: OLLAMA_OK,
@@ -200,7 +201,7 @@ def test_preflight_fails_when_ollama_is_unreachable() -> None:
 
 def test_the_shipped_config_declares_the_secondary_local_baseline() -> None:
     spec = CONFIG.local_baseline
-    assert spec.run_name == "experimento-a-base-0-7-2"
+    assert spec.run_name == "experimento-a-base-0-7-3"
     assert spec.model == "qwen3:8b"
     assert spec.series_partition == "evaluation"
     assert spec.runs == 3
@@ -228,3 +229,22 @@ def test_the_manifest_marks_the_local_baseline_as_the_secondary_baseline() -> No
     assert local["provider"] == "ollama"
     assert bridge["local_baseline"] is False
     assert bridge["bridge"] is True
+
+
+def test_the_bridge_stays_declared_as_historical_0_7_2_evidence() -> None:
+    assert CONFIG.bridge.run_name == "experimento-a-puente-0-7-2"
+    assert CONFIG.bridge.openkos_version == "0.7.2"
+    assert CONFIG.bridge.openkos_version != CONFIG.required_version
+
+
+def test_a_run_on_the_old_version_is_refused_by_the_preflight() -> None:
+    with pytest.raises(HostedPreflightError, match=r"needs 0\.7\.3"):
+        preflight(
+            CONFIG,
+            label="openai-small",
+            executable="openkos",
+            runner=_runner("openkos 0.7.2\n"),
+            env={API_KEY_ENV: "k"},
+            ollama_models=lambda: OLLAMA_OK,
+            executable_exists=lambda _path: True,
+        )

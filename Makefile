@@ -53,10 +53,10 @@ biblio: ## Bibliography coverage audit
 lab: ## Launch Jupyter Lab
 	uv run jupyter lab
 
-hosted-bridge: ## Hosted extension: continuity bridge (qwen3:8b on OpenKOS 0.7.2, local Ollama)
+hosted-bridge: ## Hosted extension: continuity bridge (historical, done on OpenKOS 0.7.2; refuses to re-run)
 	uv run afg experiment a-hosted --bridge
 
-hosted-local-baseline: ## Hosted extension: secondary baseline (qwen3:8b on OpenKOS 0.7.2, 11 series x 3 runs, local Ollama; resumable)
+hosted-local-baseline: ## Hosted extension: secondary baseline (qwen3:8b on OpenKOS 0.7.3, 11 series x 3 runs, local Ollama; resumable)
 	uv run afg experiment a-hosted --local-baseline
 
 hosted-pilot: ## Hosted extension: pilot of one model (ES2002 x 1): make hosted-pilot LABEL=<label>
