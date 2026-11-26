@@ -65,6 +65,16 @@ Las etiquetas salen de `config/hosted_extraction.toml`: `openai-small`, `openai-
 
 Los espacios de trabajo de OpenKOS quedan en `data/interim/openkos/<corrida>/`.
 
+La medición de respuestas (tercera enmienda) agrega estas carpetas:
+
+| Paso | Carpeta |
+|---|---|
+| Espacios de consulta derivados de un modelo | `data/interim/openkos-query/experimento-a-hosted-<etiqueta>-consulta/` |
+| Espacios de consulta derivados de la línea base 0.7.3 | `data/interim/openkos-query/experimento-a-base-0-7-3-consulta/` |
+| Respuestas de C2 de un modelo (Experimento B) | `reports/experiment-b/experimento-b-hosted-<etiqueta>/` |
+| Respuestas de C2 de la línea base 0.7.3 | `reports/experiment-b/experimento-b-base-0-7-3/` |
+| Comparación de respuestas | `reports/experiment-b/hosted-comparison/` (`respuestas-comparacion.json` y `.csv`) |
+
 ## Orden
 
 1. **Puente.** Ya está hecho (con la 0.7.2) y se conserva como evidencia; no se repite.
@@ -78,6 +88,9 @@ Los espacios de trabajo de OpenKOS quedan en `data/interim/openkos/<corrida>/`.
 7. **Fijar los precios** en las tablas `[prices.<etiqueta>]` de `config/hosted_extraction.toml`, **antes
    del piloto**.
 8. **Volver a ejecutar el notebook 33.**
+9. **Medir las respuestas de C2 con cada extractor** (tercera enmienda): derivar los espacios de
+   consulta, correr el Experimento B solo con C2 y comparar con C1 formal. Va después de las corridas
+   completas de extracción (paso 4) y no se superpone con otra corrida local.
 
 ## Comandos
 
@@ -209,6 +222,76 @@ El notebook se versiona con sus salidas (`CONTRIBUTING.md`, sección 7.3). Calcu
 corrida completa y después de fijar los precios. Antes de la corrida completa, sus secciones sin datos
 muestran el aviso «pendiente».
 
+### 9. Medir las respuestas de C2 con cada extractor (tercera enmienda del ADR 0026)
+
+La extracción mide si un modelo encuentra más decisiones; este paso mide si, con ese extractor, C2
+responde tan bien como C1 o mejor. Se hace para cada uno de los seis modelos y, además, para la línea
+base `qwen3:8b` con OpenKOS 0.7.3, que permite atribuir una mejora al modelo y no a la versión. Las
+respuestas, el modelo de suficiencia y el juez corren en el Ollama local, así que **este paso no tiene
+costo de proveedor ni usa ninguna clave**.
+
+**9.1. Derivar los espacios de consulta (no llama a ningún modelo).** Un espacio de trabajo de un modelo
+de pago se compiló con el *backend* del proveedor y sin semilla; consultarlo así llamaría al proveedor y
+no pasaría la verificación de reproducibilidad. `b-derive` copia los espacios de la corrida de extracción
+a una carpeta nueva, sin tocar los originales, y cambia solo la configuración de consulta de cada
+`openkos.yaml`: *backend* `ollama` (sin `base_url`, `embedding_base_url` ni `reasoning_effort`),
+`qwen3:8b`, temperatura 0,1, semilla `42 + r` y el `context_window` de la corrida formal (12288; el valor
+por omisión de OpenKOS 0.7.3 es mayor y cambiaría el presupuesto de contexto). Los objetos extraídos y los
+índices no cambian.
+
+```bash
+uv run afg experiment b-derive --source experimento-a-hosted-<etiqueta>   # make hosted-derive LABEL=<etiqueta>
+uv run afg experiment b-derive --source experimento-a-base-0-7-3          # make hosted-derive-baseline
+```
+
+- Cada carpeta derivada lleva `derived-manifest.json`, que registra el origen, el ejecutable de OpenKOS,
+  su versión, los ajustes de consulta y los pares (serie, repetición) copiados. Los pares sin terminar en
+  la corrida de origen se omiten y quedan listados ahí.
+- **Cada espacio se consulta con el ejecutable de la versión que lo compiló.** Los de los modelos de pago y
+  los de la línea base 0.7.3 se compilaron con la 0.7.3 (`data/interim/openkos-0.7.3/bin/openkos`, o el
+  que fije `AFG_HOSTED_OPENKOS_EXECUTABLE`); los de `experimento-a-formal`, con la 0.7.0 fijada. El
+  comando elige el ejecutable por la versión que dicen los manifiestos de la corrida de origen, comprueba
+  con `--version` que sea esa y lo deja escrito. Con `--openkos-executable` se indica otro.
+- Con `--no-sufficiency-check` se deriva la variante sin el chequeo de suficiencia (issue #337), en una
+  carpeta aparte (`...-consulta-sin-suficiencia`). Es un análisis con su propia decisión (#336) y no es
+  parte de esta medición, que deja el chequeo activo.
+- Para volver a derivar una carpeta existente se agrega `--overwrite`.
+
+**9.2. Correr el Experimento B solo con C2.** Una corrida por modelo, con el banco congelado, tres
+repeticiones y las semillas 42, 43 y 44.
+
+```bash
+uv run afg experiment b --questions data/processed/questions/banco-preguntas.csv --conditions c2 \
+  --c2-derived experimento-a-hosted-<etiqueta>-consulta --run-name experimento-b-hosted-<etiqueta>
+# make hosted-answers LABEL=<etiqueta>      (la línea base: make hosted-answers-baseline)
+```
+
+- Con `--c2-derived` solo se admite C2. C2 consulta con el ejecutable que registró la derivación y la
+  corrida deja en `manifest.json` la carpeta derivada, su origen, el ejecutable, la versión de OpenKOS y
+  `sufficiency_check`. **Reanudar una corrida con otros valores se rechaza**
+  (`ManifestMismatchError`); se usa otro `--run-name`.
+- El chequeo de suficiencia sigue activo, como en la corrida formal. `--no-sufficiency-check` solo se
+  admite con una derivación hecha sin él, y entonces el modelo de suficiencia deja de ser necesario.
+- Es reanudable: repetir el mismo comando continúa donde quedó.
+- **No se superpone con otra corrida local**: comparte el Ollama con la extracción local y con las demás
+  corridas del Experimento B.
+
+**9.3. Comparar con C1 formal.**
+
+```bash
+uv run afg experiment b-hosted-compare                                    # make hosted-answers-compare
+```
+
+Para cada modelo calcula la diferencia pareada de corrección en E3 entre «C2 con ese extractor» y «C1
+formal», con el *bootstrap* del criterio D16 (ADR 0010) y nivel Bonferroni `1 − 0,05/6`, y la informa como
+«supera a C1», «no se distingue de C1» o «queda bajo C1». Agrega la misma diferencia frente a C2 formal y
+frente a C2 de la línea base 0.7.3, y por estrato corrección, abstención, `evidence_supported`,
+`citation_correct`, respuestas desactualizadas entre las respondidas (H4) y tiempo de respuesta. Escribe
+`respuestas-comparacion.json` y `.csv` en `reports/experiment-b/hosted-comparison/`. Las corridas que aún
+no existen figuran como «pendiente». Con `--models <etiqueta>` (repetible) se limita a algunas sin cambiar
+el nivel de Bonferroni. La comparación es descriptiva (decisión 6): no reemplaza al criterio D16 de la
+corrida formal. La sección 8 del notebook 33 lee este resultado.
+
 ## Tiempos y costos esperados
 
 - **Línea base local:** una serie-repetición de `qwen3:8b` tarda unos 24 minutos; la corrida formal
@@ -219,6 +302,9 @@ muestran el aviso «pendiente».
 - **Puente (0.7.2, ya hecho):** una serie y una repetición, unos 24 minutos.
 - **Segunda línea base local (0.7.3):** 33 pares serie-repetición, unos 30 minutos cada uno, unas 16
   horas en total.
+- **Respuestas de C2 (paso 9):** sin costo de proveedor. La derivación tarda segundos y copia los
+  espacios; el tiempo de cada corrida del Experimento B de C2 se mide con la primera y se informa en el
+  notebook. Son siete corridas (seis modelos y la línea base 0.7.3), una tras otra.
 
 ## Si algo falla
 
@@ -249,6 +335,15 @@ muestran el aviso «pendiente».
 - **Una reunión con `extraction_status`.** Su `ingest` terminó con código 0 pero no produjo objetos. Cuenta
   como no extraída, aporta cero decisiones a precision y recall y se informa por estado. No se reintenta
   fuera de los reintentos que OpenKOS hace por su cuenta.
+- **`b-derive` dice que el ejecutable no es la versión de la corrida de origen.** Los espacios de los
+  modelos de pago y de la línea base 0.7.3 se consultan con la 0.7.3 y los formales con la 0.7.0. Se
+  indica el ejecutable correcto con `--openkos-executable` o se corrige `AFG_HOSTED_OPENKOS_EXECUTABLE`;
+  no se cambia la versión de la derivación a mano.
+- **`b-derive` dice que una clave no existe en esa versión.** La derivación se detiene sin escribir nada:
+  la versión de OpenKOS que compiló la corrida no conoce la clave que habría que escribir. No se agrega a
+  mano al `openkos.yaml`.
+- **`afg experiment b` rechaza reanudar con otra derivación o con otro `sufficiency_check`.** Es el
+  comportamiento esperado: una corrida no mezcla bases distintas. Se usa otro `--run-name`.
 - **Nunca se borra ni se sobrescribe** la carpeta de una corrida ni `experimento-a-formal`. Una corrida
   abandonada se declara en el notebook (nombre, motivo) y no se usa para elegir resultados.
 
