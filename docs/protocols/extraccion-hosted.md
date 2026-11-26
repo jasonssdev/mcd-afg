@@ -175,6 +175,20 @@ manifiesto del espacio de trabajo), no se lee del panel del proveedor:
   `config/hosted_extraction.toml` con `input_usd_per_mtok`, `output_usd_per_mtok`, `prices_date` (fecha en
   que se leyó el precio) y `pricing_url` (página de precios del proveedor). Los precios no se inventan ni
   se estiman: mientras falte la tabla, el costo del modelo figura como «pendiente», nunca como cero.
+- **Precios fijados.** Son los de lista estándar (no *batch*), leídos el 2026-11-26 en la página de
+  cada proveedor. Los de Google son introductorios: `gemini-4-argon` vale 2,00 / 10,00 hasta el
+  2026-11-30 y 4,00 / 20,00 desde el 2026-12-01, y `gemini-3.8-flash` vale 0,75 / 3,75 hasta el
+  2026-12-31. Por eso las corridas de Google terminan antes del 2026-12-01; si alguna se cobra después,
+  se actualiza su tabla antes de calcular el costo.
+- **Lo que la fórmula no ve.** La línea `tokens:` entrega totales por `ingest`, sin separar llamadas ni
+  entrada en caché. Hay dos efectos posibles:
+  - OpenAI y Google descuentan la entrada en caché de forma automática; si la hubo, el costo calculado
+    queda por encima de lo cobrado.
+  - `gpt-6-luna` cobra más sobre 272.000 tokens de entrada por solicitud y `claude-haiku-5-5` sobre
+    100.000; se usa el precio del tramo corto, porque la transcripción más larga del corpus tiene unos
+    100 KB (del orden de 30.000 tokens), así que ni entera en una sola llamada alcanza esos umbrales.
+
+  El panel del proveedor (`[dashboard_usd]`) sirve para contrastar ambos efectos.
 - **Cota inferior.** Si alguna llamada de una reunión no informó tokens, el costo de esa reunión es una
   cota inferior y la comparación y el notebook lo marcan con «≥».
 - **Resultado.** Por modelo, el total de la corrida y la mediana por reunión, además de los tokens.

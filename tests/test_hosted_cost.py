@@ -126,13 +126,34 @@ def test_one_partial_meeting_flags_the_whole_run_as_a_lower_bound() -> None:
 # --- the price table of the configuration ------------------------------------------------------
 
 
-def test_the_shipped_config_has_no_invented_prices() -> None:
+OFFICIAL_PRICING_HOSTS = (
+    "https://developers.openai.com/",
+    "https://platform.claude.com/",
+    "https://aistudio.google.com/",
+)
+
+
+def test_the_shipped_config_prices_every_model_with_a_date_and_an_official_source() -> None:
     config = load_hosted_config()
-    assert config.prices == {}
+    assert set(config.prices) == set(config.models)
+    for label, price in config.prices.items():
+        assert price.prices_date == "2026-11-26", label
+        assert price.pricing_url.startswith(OFFICIAL_PRICING_HOSTS), label
+
+
+def _without_price_tables(text: str) -> str:
+    kept: list[str] = []
+    skipping = False
+    for line in text.splitlines():
+        if line.startswith("["):
+            skipping = line.startswith("[prices.")
+        if not skipping:
+            kept.append(line)
+    return "\n".join(kept) + "\n"
 
 
 def _config_with(tmp_path: Path, extra: str) -> Path:
-    base = Path("config/hosted_extraction.toml").read_text(encoding="utf-8")
+    base = _without_price_tables(Path("config/hosted_extraction.toml").read_text(encoding="utf-8"))
     path = tmp_path / "hosted.toml"
     path.write_text(base + "\n" + textwrap.dedent(extra), encoding="utf-8")
     return path
