@@ -102,9 +102,43 @@ En el momento de esta enmienda, la segunda línea base `experimento-a-base-0-7-2
 
 Esta enmienda se decide antes de cualquier corrida con modelos de pago. No se vio ninguna cifra de esos modelos.
 
+## Tercera enmienda (2026-11-26, antes de cualquier corrida con modelos de pago)
+
+### Contexto
+
+Con la extracción sola, la extensión responde si un modelo más capaz encuentra más decisiones que `qwen3:8b`. No responde la pregunta que importa para la tesis: si C2, con un extractor mejor, responde tan bien como C1 o mejor. Esa es la comparación del criterio D16 (diferencia pareada C2 − C1 en E3, [ADR 0010](0010-adr-decisiones-del-analisis-del-experimento-b.md)). Además, `qwen3:8b` no sirve de referencia para las respuestas: C2 formal ya quedó por debajo de C1, así que superarlo no basta para decir que el sistema funciona.
+
+La alternativa «Medir C2 completo (respuestas + juez)» se había descartado por costo. Esa razón no se sostiene: el costo de proveedor está solo en la extracción. Las respuestas y el juez corren en el equipo local, con los modelos de la corrida formal.
+
+### Decisión
+
+1. **Se agrega la medición de respuestas.** Para cada modelo de pago se corre el Experimento B solo con C2 sobre los workspaces de su corrida completa (11 series × 3 repeticiones). Todo lo demás queda igual que en la corrida formal:
+   - el banco congelado de 99 preguntas;
+   - las semillas 42, 43 y 44;
+   - el generador `qwen3:8b` y el modelo de suficiencia `gemma4:26b-a4b`, ambos locales;
+   - el juez `gpt-oss:20b`.
+
+   Cada workspace se **deriva** sin tocar el original: se cambia solo la configuración de consulta, para que la respuesta salga del Ollama local y no del modelo de pago. Los objetos extraídos no cambian. Así, lo único que varía frente a C2 formal es el extractor.
+2. **Comparación principal: frente a C1, el control.** Para cada modelo se calcula la diferencia pareada «C2 con ese extractor − C1 formal» en la corrección de E3, con el mismo *bootstrap* del criterio D16 y Bonferroni por los seis modelos (nivel 1 − 0,05/6). Se informa así:
+   - **«Supera a C1»:** el intervalo queda entero sobre 0.
+   - **«No se distingue de C1»:** el intervalo contiene el 0.
+   - **«Queda bajo C1»:** el intervalo queda entero bajo 0.
+
+   C1 no se vuelve a correr, porque no depende del extractor: se usa la corrida formal.
+3. **Comparaciones secundarias.**
+   - **Por estrato y en total:** corrección, abstención, `evidence_supported`, `citation_correct`, `outdated_among_answered` (H4) y `answer_seconds`.
+   - **Frente a C2 formal:** la misma diferencia pareada, para saber cuánto mejora la respuesta con el extractor.
+   - **Frente a la línea base de la misma versión:** también se corre el Experimento B de C2 sobre `experimento-a-base-0-7-3`. Así, una mejora puede atribuirse al modelo y no a la versión de OpenKOS.
+4. **El chequeo de suficiencia sigue activo,** como en la corrida formal. Su variante relajada es un análisis aparte, con su propia decisión (#336).
+5. **La extracción sigue midiéndose,** con las métricas y las reglas de las decisiones 1 a 8, ahora como resultado secundario. La decisión 1 se modifica solo en su punto «Lo que no se mide»: las respuestas y el juez pasan a medirse. El Experimento B completo, con C0 y C3, sigue fuera.
+6. **Carácter descriptivo.** Las cifras de C1 y C2 formales ya se vieron en el preinforme. Por eso la comparación frente a C1 es descriptiva y no reemplaza al criterio D16 de la corrida formal.
+7. **Costo y calendario.** Esta medición no tiene costo de proveedor. Corre en el equipo local después de las extracciones, sin superponerse con otra corrida local.
+
+Esta enmienda se decide antes de cualquier corrida con modelos de pago. No se vio ninguna cifra de esos modelos.
+
 ## Alternativas descartadas
 
-- **Medir C2 completo (respuestas + juez).** Multiplica el costo y mezcla la extracción con la recuperación y la síntesis. La pregunta del avance 13 es sobre la extracción.
+- **Medir C2 completo (respuestas + juez).** Multiplica el costo y mezcla la extracción con la recuperación y la síntesis. La pregunta del avance 13 es sobre la extracción. *(Revertida por la tercera enmienda: el costo de proveedor está solo en la extracción, y la mezcla se controla dejando fijos la recuperación, el generador y el juez.)*
 - **Usar las series de desarrollo.** Son solo tres, y la línea base formal no las cubre. La comparación con la corrida publicada se perdería.
 - **Subir el pin del entorno congelado a 0.7.2.** Rompería la verificación de la corrida formal contra `config/freeze.json`. Instalar 0.7.2 aparte deja intacta la corrida formal.
 - **Activar `evidence_quote` en los modelos donde OpenKOS lo midió como beneficioso.** Afecta la evidencia de los conceptos, no la pasada de decisiones. Activarlo según el modelo agregaría una segunda variable.
