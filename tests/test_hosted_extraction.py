@@ -196,3 +196,35 @@ def test_preflight_fails_when_ollama_is_unreachable() -> None:
             ollama_models=lambda: None,
             executable_exists=lambda _path: True,
         )
+
+
+def test_the_shipped_config_declares_the_secondary_local_baseline() -> None:
+    spec = CONFIG.local_baseline
+    assert spec.run_name == "experimento-a-base-0-7-2"
+    assert spec.model == "qwen3:8b"
+    assert spec.series_partition == "evaluation"
+    assert spec.runs == 3
+
+
+def test_the_manifest_marks_the_local_baseline_as_the_secondary_baseline() -> None:
+    from afg.experiments.hosted_extraction import hosted_manifest
+
+    common = {
+        "series_ids": ["ES2002"],
+        "n_runs": 3,
+        "settings": BASE,
+        "pilot": False,
+        "git_commit": "abc",
+        "git_dirty": False,
+    }
+    local = hosted_manifest(
+        CONFIG, run_name=CONFIG.local_baseline.run_name, label=None, local_baseline=True, **common
+    )
+    bridge = hosted_manifest(CONFIG, run_name="b", label=None, **common)
+
+    assert local["extension"] == "hosted"
+    assert local["local_baseline"] is True
+    assert local["bridge"] is False
+    assert local["provider"] == "ollama"
+    assert bridge["local_baseline"] is False
+    assert bridge["bridge"] is True

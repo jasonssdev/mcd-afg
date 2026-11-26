@@ -15,12 +15,14 @@ from afg.experiments.hosted_notebook import (
     bridge_state,
     format_es,
     format_interval,
+    local_baseline_state,
     models_frame,
     operation_table,
     quality_table,
     recall_forest_rows,
     run_status,
     time_forest_rows,
+    version_effect_table,
 )
 
 SERIES = ["ES2002", "ES2003"]
@@ -37,23 +39,22 @@ def _informe() -> dict[str, Any]:
     return {"curve": [{"tau": 0.7, "origin_meetings": {"pooled": pooled}}]}
 
 
-def _candidate(label: str, *, ratio: dict[str, Any] | None, cost: float | None) -> dict[str, Any]:
+def _block(
+    *, ratio: dict[str, Any] | None, cost: float | None, shift: float = 0.0
+) -> dict[str, Any]:
     entry = {
         "tau": 0.7,
         "baseline": {"precision": 0.15, "recall": 0.30, "f1": 0.20},
         "candidate": {"precision": 0.30, "recall": 0.50, "f1": 0.375},
         "diff": {
             "precision": {"estimate": 0.15, "interval": [0.05, 0.25]},
-            "recall": {"estimate": 0.20, "interval": [0.10, 0.30]},
+            "recall": {"estimate": 0.20 + shift, "interval": [0.10, 0.30]},
             "f1": {"estimate": 0.175, "interval": [0.09, 0.26]},
         },
         "verdict": "mejora",
         "recall_up_precision_drop": False,
     }
     return {
-        "label": label,
-        "model": "m",
-        "run_name": f"experimento-a-hosted-{label}",
         "status": "ok",
         "series_covered": ["ES2002"],
         "n_series": 1,
@@ -81,9 +82,20 @@ def _candidate(label: str, *, ratio: dict[str, Any] | None, cost: float | None) 
     }
 
 
+def _candidate(label: str, *, ratio: dict[str, Any] | None, cost: float | None) -> dict[str, Any]:
+    return {
+        "label": label,
+        "model": "m",
+        "run_name": f"experimento-a-hosted-{label}",
+        "status": "ok",
+        "vs_formal": _block(ratio=ratio, cost=cost),
+        "vs_local": _block(ratio=ratio, cost=cost, shift=-0.05),
+    }
+
+
 def _payload() -> dict[str, Any]:
     flagged = _candidate("c", ratio=None, cost=None)
-    flagged["taus"]["0.70"]["recall_up_precision_drop"] = True
+    flagged["vs_formal"]["taus"]["0.70"]["recall_up_precision_drop"] = True
     return {
         "primary_tau": 0.7,
         "candidates": [
@@ -91,6 +103,12 @@ def _payload() -> dict[str, Any]:
             {"label": "b", "run_name": "experimento-a-hosted-b", "status": "sin corrida"},
             flagged,
         ],
+        "version_effect": {
+            "status": "ok",
+            "label": "qwen3:8b@0.7.2",
+            "run_name": "experimento-a-base-0-7-2",
+            **_block(ratio={"estimate": 1.1, "interval": [0.9, 1.3]}, cost=None, shift=-0.18),
+        },
         "bridge": None,
     }
 
@@ -253,7 +271,85 @@ def test_operation_table_shows_time_completeness_decisions_and_cost() -> None:
 
 
 def test_empty_payload_gives_empty_tables() -> None:
-    payload: dict[str, Any] = {"primary_tau": 0.7, "candidates": [], "bridge": None}
+    payload: dict[str, Any] = {
+        "primary_tau": 0.7,
+        "candidates": [],
+        "version_effect": None,
+        "bridge": None,
+    }
     assert quality_table(payload, "0.70").empty
+    assert version_effect_table(payload).empty
     assert operation_table(payload).empty
     assert recall_forest_rows(payload) == []
+
+
+def test_tables_accept_a_baseline_selector() -> None:
+    formal = recall_forest_rows(_payload(), baseline="formal")
+    local = recall_forest_rows(_payload(), baseline="local")
+    assert formal[0]["estimate"] == pytest.approx(0.20)
+    assert local[0]["estimate"] == pytest.approx(0.15)
+    assert quality_table(_payload(), "0.70", baseline="local").iloc[0]["Δ Recall"] == (
+        "+0,15 [+0,10; +0,30]"
+    )
+    assert [r["label"] for r in time_forest_rows(_payload(), baseline="local")] == ["a"]
+    assert list(operation_table(_payload(), baseline="local")["Modelo"]) == ["a", "c"]
+
+
+def test_a_baseline_block_without_a_run_is_skipped() -> None:
+    payload = _payload()
+    payload["candidates"][0]["vs_local"] = {"status": "sin corrida", "baseline_run_name": "x"}
+    assert [r["label"] for r in recall_forest_rows(payload, baseline="local")] == ["c"]
+    assert list(quality_table(payload, "0.70", baseline="local")["Modelo"]) == ["c"]
+    payload["candidates"][0].pop("vs_local")
+    assert [r["label"] for r in recall_forest_rows(payload, baseline="local")] == ["c"]
+
+
+def test_version_effect_table_shows_the_local_baseline_against_the_formal_run() -> None:
+    table = version_effect_table(_payload())
+
+    assert len(table) == 1
+    row = table.iloc[0]
+    assert row["Comparación"] == "qwen3:8b en 0.7.2 contra qwen3:8b formal (efecto de versión)"
+    assert row["Δ Recall"] == "+0,02 [+0,10; +0,30]"
+    assert row["Precision"] == "0,30"
+
+
+def test_version_effect_table_is_empty_while_the_local_run_is_missing() -> None:
+    payload = _payload()
+    payload["version_effect"] = {"status": "sin corrida", "run_name": "x"}
+    assert version_effect_table(payload).empty
+
+
+def test_local_baseline_state_reports_progress(tmp_path: Path) -> None:
+    config = load_hosted_config()
+    series = [f"ES{i:04d}" for i in range(11)]
+    assert (
+        local_baseline_state(config, runs_root=tmp_path, evaluation_series=series)["state"]
+        == "pendiente"
+    )
+
+    _write_manifest(
+        tmp_path,
+        config.local_baseline.run_name,
+        "running",
+        {"ES2002/0": "ok", "ES2002/1": "running"},
+    )
+    running = local_baseline_state(config, runs_root=tmp_path, evaluation_series=series)
+    assert running["state"] == "en curso"
+    assert "1 de 33" in running["detail"]
+
+    done = {f"ES{i:04d}/{r}": "ok" for i in range(11) for r in range(3)}
+    (tmp_path / config.local_baseline.run_name / "manifest.json").write_text(
+        json.dumps(
+            {
+                "status": "ok",
+                "pairs": {
+                    k: {"series": k.split("/")[0], "run": int(k.split("/")[1]), "status": v}
+                    for k, v in done.items()
+                },
+            }
+        )
+    )
+    (tmp_path / config.local_baseline.run_name / "extracciones.jsonl").write_text("{}\n")
+    ready = local_baseline_state(config, runs_root=tmp_path, evaluation_series=series)
+    assert ready["state"] == "lista"

@@ -33,6 +33,7 @@ __all__ = [
     "HostedConfig",
     "HostedConfigError",
     "HostedPreflightError",
+    "LocalBaselineSpec",
     "ModelSpec",
     "bridge_run_settings",
     "hosted_manifest",
@@ -79,6 +80,16 @@ class BridgeSpec:
 
 
 @dataclass(frozen=True, slots=True)
+class LocalBaselineSpec:
+    """The secondary baseline (ADR 0026 amendment): bridge settings, every evaluation series."""
+
+    run_name: str
+    model: str
+    series_partition: str
+    runs: int
+
+
+@dataclass(frozen=True, slots=True)
 class ComparisonSpec:
     """Parameters of the paired comparison (ADR 0026, decision 7)."""
 
@@ -106,6 +117,7 @@ class HostedConfig:
     baseline_run_name: str
     baseline_model: str
     bridge: BridgeSpec
+    local_baseline: LocalBaselineSpec
     comparison: ComparisonSpec
     models: Mapping[str, ModelSpec]
     costs_usd: Mapping[str, float]
@@ -116,6 +128,7 @@ def load_hosted_config(path: Path | None = None) -> HostedConfig:
     with (path or HOSTED_CONFIG_PATH).open("rb") as handle:
         raw: dict[str, Any] = tomllib.load(handle)
     shared, comparison, bridge = raw["shared"], raw["comparison"], raw["bridge"]
+    local = raw["local_baseline"]
     providers = raw["providers"]
     models = {
         label: ModelSpec(
@@ -142,6 +155,12 @@ def load_hosted_config(path: Path | None = None) -> HostedConfig:
             run_name=str(bridge["run_name"]),
             series=tuple(str(s) for s in bridge["series"]),
             runs=int(bridge["runs"]),
+        ),
+        local_baseline=LocalBaselineSpec(
+            run_name=str(local["run_name"]),
+            model=str(local["model"]),
+            series_partition=str(local["series_partition"]),
+            runs=int(local["runs"]),
         ),
         comparison=ComparisonSpec(
             tau=float(comparison["tau"]),
@@ -209,8 +228,9 @@ def hosted_manifest(
     git_commit: str | None,
     git_dirty: bool | None,
     local_model_digests: Mapping[str, str] | None = None,
+    local_baseline: bool = False,
 ) -> dict[str, Any]:
-    """The opening manifest of a hosted (or bridge) run directory.
+    """The opening manifest of a hosted (bridge or secondary-baseline) run directory.
 
     Same layout as an ``a-batch`` manifest, so ``a-report`` reads it unchanged, plus the ADR 0026
     markers: ``extension`` (which makes the report descriptive-only), provider, model, endpoint
@@ -229,7 +249,8 @@ def hosted_manifest(
         "extension": "hosted",
         "adr": HOSTED_ADR,
         "pilot": pilot,
-        "bridge": label is None,
+        "bridge": label is None and not local_baseline,
+        "local_baseline": local_baseline,
         "model_label": label,
         "provider": spec.provider if spec else "ollama",
         "baseline_run_name": config.baseline_run_name,

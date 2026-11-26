@@ -428,6 +428,7 @@ def _build(tmp_path: Path, **kw):  # type: ignore[no-untyped-def]
         labels=kw.pop("labels", ["openai-small", "google-large"]),
         include_bridge=kw.pop("include_bridge", False),
         pilot=kw.pop("pilot", False),
+        baseline=kw.pop("baseline", "both"),
         runs_root=tmp_path / "out",
         workspaces_root=tmp_path / "ws",
         reference_of=_reference_of,
@@ -448,7 +449,7 @@ def test_build_comparison_skips_labels_without_a_run(tmp_path: Path) -> None:
     by_label = {c["label"]: c for c in payload["candidates"]}
     assert by_label["openai-small"]["status"] == "ok"
     assert by_label["openai-small"]["provider"] == "openai"
-    assert by_label["openai-small"]["n_models"] == 6
+    assert by_label["openai-small"]["vs_formal"]["n_models"] == 6
     assert by_label["google-large"] == {
         "label": "google-large",
         "run_name": "experimento-a-hosted-google-large",
@@ -490,7 +491,7 @@ def test_costs_come_from_the_config_table(tmp_path: Path) -> None:
 
     payload = _build(tmp_path, config=config, labels=["openai-small"])
 
-    assert payload["candidates"][0]["operation"]["cost_usd"] == 3.25
+    assert payload["candidates"][0]["vs_formal"]["operation"]["cost_usd"] == 3.25
 
 
 def test_write_comparison_produces_json_and_a_csv_with_one_row_per_tau(tmp_path: Path) -> None:
@@ -654,3 +655,126 @@ def test_build_comparison_takes_model_and_provider_from_the_run_manifest(tmp_pat
         "other-provider",
         "https://stored/v1",
     )
+
+
+# --- the secondary baseline: qwen3:8b on OpenKOS 0.7.2 (ADR 0026 amendment) -------------------
+
+FORMAL = "experimento-a-formal"
+LOCAL = "experimento-a-base-0-7-2"
+CAND = "experimento-a-hosted-openai-small"
+
+
+def _three_runs(runs: int = 3) -> dict[tuple[str, int], list[str]]:
+    return _all({"ES2015": _meetings("ES2015", "a")}, runs)
+
+
+def test_each_candidate_carries_a_block_per_baseline(tmp_path: Path) -> None:
+    _write_run(tmp_path, FORMAL, _three_runs())
+    _write_run(tmp_path, LOCAL, _all({"ES2015": _meetings("ES2015", "ab")}, 3))
+    _write_run(tmp_path, CAND, _all({"ES2015": _meetings("ES2015", "abcd")}, 3))
+
+    payload = _build(tmp_path, labels=["openai-small"])
+
+    item = payload["candidates"][0]
+    assert item["vs_formal"]["baseline_run_name"] == FORMAL
+    assert item["vs_local"]["baseline_run_name"] == LOCAL
+    assert item["vs_formal"]["status"] == item["vs_local"]["status"] == "ok"
+    formal_recall = item["vs_formal"]["taus"]["0.70"]["baseline"]["recall"]
+    local_recall = item["vs_local"]["taus"]["0.70"]["baseline"]["recall"]
+    assert local_recall > formal_recall  # the two baselines are different systems
+    assert item["vs_formal"]["n_models"] == item["vs_local"]["n_models"] == 6
+    assert payload["local_baseline_run_name"] == LOCAL
+    assert payload["baseline"] == "both"
+
+
+def test_a_missing_local_baseline_is_reported_as_no_run(tmp_path: Path) -> None:
+    _write_run(tmp_path, FORMAL, _three_runs())
+    _write_run(tmp_path, CAND, _three_runs())
+
+    payload = _build(tmp_path, labels=["openai-small"])
+
+    item = payload["candidates"][0]
+    assert item["vs_formal"]["status"] == "ok"
+    assert item["vs_local"] == {"status": "sin corrida", "baseline_run_name": LOCAL}
+    assert payload["version_effect"] == {"status": "sin corrida", "run_name": LOCAL}
+
+
+def test_the_baseline_selector_limits_the_blocks(tmp_path: Path) -> None:
+    _write_run(tmp_path, FORMAL, _three_runs())
+    _write_run(tmp_path, LOCAL, _three_runs())
+    _write_run(tmp_path, CAND, _three_runs())
+
+    formal = _build(tmp_path, labels=["openai-small"], baseline="formal")
+    local = _build(tmp_path, labels=["openai-small"], baseline="local")
+
+    assert "vs_local" not in formal["candidates"][0]
+    assert formal["version_effect"] is None
+    assert "vs_formal" not in local["candidates"][0]
+    assert local["candidates"][0]["vs_local"]["status"] == "ok"
+    with pytest.raises(ValueError, match="baseline"):
+        _build(tmp_path, labels=["openai-small"], baseline="other")
+
+
+def test_the_local_baseline_is_restricted_to_the_series_of_the_candidate(tmp_path: Path) -> None:
+    _write_run(tmp_path, FORMAL, _all({"ES2015": _meetings("ES2015", "a"), "IS1004": ["IS1004a"]}))
+    _write_run(tmp_path, LOCAL, _all({"ES2015": _meetings("ES2015", "a"), "IS1004": ["IS1004a"]}))
+    _write_run(tmp_path, CAND, _all({"ES2015": _meetings("ES2015", "abcd")}))
+
+    block = _build(tmp_path, labels=["openai-small"])["candidates"][0]["vs_local"]
+
+    assert block["series_covered"] == ["ES2015"]
+    assert block["baseline"] == {"series": ["ES2015"]}
+
+
+def test_the_version_effect_compares_the_local_baseline_with_the_formal_one(
+    tmp_path: Path,
+) -> None:
+    _write_run(tmp_path, FORMAL, _three_runs())
+    _write_run(tmp_path, LOCAL, _all({"ES2015": _meetings("ES2015", "abcd")}, 3))
+
+    payload = _build(tmp_path, labels=["openai-small"])
+
+    effect = payload["version_effect"]
+    assert effect["status"] == "ok"
+    assert effect["label"] == "qwen3:8b@0.7.2"
+    assert effect["run_name"] == LOCAL
+    assert effect["baseline_run_name"] == FORMAL
+    assert effect["n_models"] == 6  # not counted in the family: same level as the models
+    assert effect["taus"]["0.70"]["diff"]["recall"]["estimate"] > 0
+
+
+def test_the_csv_has_a_baseline_column_and_a_version_effect_row(tmp_path: Path) -> None:
+    import csv
+
+    from afg.experiments.hosted_comparison import write_comparison
+
+    _write_run(tmp_path, FORMAL, _three_runs())
+    _write_run(tmp_path, LOCAL, _three_runs())
+    _write_run(tmp_path, CAND, _three_runs())
+
+    _, csv_path = write_comparison(_build(tmp_path, labels=["openai-small"]), tmp_path / "cmp")
+
+    rows = list(csv.DictReader(csv_path.open(encoding="utf-8")))
+    assert "baseline" in rows[0]
+    by_key = {(r["label"], r["baseline"]) for r in rows}
+    assert by_key == {
+        ("openai-small", "formal"),
+        ("openai-small", "local"),
+        ("qwen3:8b@0.7.2", "formal"),
+    }
+    assert len([r for r in rows if r["label"] == "openai-small" and r["baseline"] == "local"]) == 3
+
+
+def test_the_csv_marks_a_missing_local_baseline_per_candidate(tmp_path: Path) -> None:
+    import csv
+
+    from afg.experiments.hosted_comparison import write_comparison
+
+    _write_run(tmp_path, FORMAL, _three_runs())
+    _write_run(tmp_path, CAND, _three_runs())
+
+    _, csv_path = write_comparison(_build(tmp_path, labels=["openai-small"]), tmp_path / "cmp")
+
+    rows = list(csv.DictReader(csv_path.open(encoding="utf-8")))
+    local = [r for r in rows if r["baseline"] == "local"]
+    assert [r["status"] for r in local] == ["sin corrida"]

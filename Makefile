@@ -1,4 +1,4 @@
-.PHONY: help setup setup-full setup-deck skill-assets skill-link deck-render lint fmt typecheck test check corpus inventory biblio lab hosted-bridge hosted-pilot hosted-run hosted-compare hosted-notebook clean
+.PHONY: help setup setup-full setup-deck skill-assets skill-link deck-render lint fmt typecheck test check corpus inventory biblio lab hosted-bridge hosted-local-baseline hosted-pilot hosted-run hosted-compare hosted-notebook clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
@@ -56,6 +56,9 @@ lab: ## Launch Jupyter Lab
 hosted-bridge: ## Hosted extension: continuity bridge (qwen3:8b on OpenKOS 0.7.2, local Ollama)
 	uv run afg experiment a-hosted --bridge
 
+hosted-local-baseline: ## Hosted extension: secondary baseline (qwen3:8b on OpenKOS 0.7.2, 11 series x 3 runs, local Ollama; resumable)
+	uv run afg experiment a-hosted --local-baseline
+
 hosted-pilot: ## Hosted extension: pilot of one model (ES2002 x 1): make hosted-pilot LABEL=<label>
 	@test -n "$(LABEL)" || { echo "Usage: make hosted-pilot LABEL=<label> (see config/hosted_extraction.toml)"; exit 2; }
 	@test -n "$$OPENKOS_OPENAI_API_KEY" || { echo "OPENKOS_OPENAI_API_KEY is not set: export the key of the provider of $(LABEL) in your shell first (never in a file)."; exit 2; }
@@ -67,7 +70,7 @@ hosted-run: ## Hosted extension: full run of one model + descriptive report: mak
 	uv run afg experiment a-hosted --model "$(LABEL)"
 	uv run afg experiment a-report --c2-extraction "experimento-a-hosted-$(LABEL)" --descriptive
 
-hosted-compare: ## Hosted extension: paired comparison of every model with the baseline (+ bridge check)
+hosted-compare: ## Hosted extension: paired comparison of every model with both baselines (+ bridge check)
 	uv run afg experiment a-hosted-compare --include-bridge
 
 hosted-notebook: ## Hosted extension: re-execute notebook 33 in place

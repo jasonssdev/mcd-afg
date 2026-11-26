@@ -26,12 +26,14 @@ __all__ = [
     "bridge_state",
     "format_es",
     "format_interval",
+    "local_baseline_state",
     "models_frame",
     "operation_table",
     "quality_table",
     "recall_forest_rows",
     "run_status",
     "time_forest_rows",
+    "version_effect_table",
 ]
 
 LABELS = {"openai": "OpenAI", "anthropic": "Anthropic", "google": "Google"}
@@ -146,6 +148,30 @@ def bridge_state(config: HostedConfig, *, runs_root: Path) -> dict[str, str]:
     return {"state": "lista", "detail": "La corrida del puente terminó."}
 
 
+def local_baseline_state(
+    config: HostedConfig, *, runs_root: Path, evaluation_series: Sequence[str]
+) -> dict[str, str]:
+    """State of the secondary baseline run: ``pendiente``, ``en curso``, ``fallida`` or ``lista``.
+
+    ``en curso`` says how many of the ``series x runs`` pairs have finished.
+    """
+    spec = config.local_baseline
+    run_dir = runs_root / spec.run_name
+    manifest = _read_manifest(run_dir)
+    if manifest is None:
+        return {"state": "pendiente", "detail": "La segunda línea base todavía no existe."}
+    if manifest.get("status") == "failed":
+        return {"state": "fallida", "detail": "La segunda línea base terminó con error."}
+    if manifest.get("status") != "ok" or not (run_dir / "extracciones.jsonl").is_file():
+        done = sum(_ok_runs(manifest).values())
+        expected = len(evaluation_series) * spec.runs
+        return {
+            "state": "en curso",
+            "detail": f"La segunda línea base lleva {done} de {expected} pares terminados.",
+        }
+    return {"state": "lista", "detail": "La segunda línea base terminó."}
+
+
 # --- tables and figure data -------------------------------------------------------------------
 
 
@@ -178,23 +204,40 @@ def bridge_frame(bridge: Mapping[str, Any]) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def _ok_candidates(payload: Mapping[str, Any]) -> list[Mapping[str, Any]]:
-    return [c for c in payload["candidates"] if c["status"] == "ok"]
+def _ok_candidates(
+    payload: Mapping[str, Any], baseline: str = "formal"
+) -> list[tuple[Mapping[str, Any], Mapping[str, Any]]]:
+    """``(candidate, block)`` of every candidate whose comparison with ``baseline`` exists.
+
+    ``baseline`` is ``formal`` or ``local``; a candidate without a run, or without that
+    baseline's block (not requested or ``sin corrida``), is skipped.
+    """
+    pairs = []
+    for item in payload["candidates"]:
+        block = item.get(f"vs_{baseline}") if item["status"] == "ok" else None
+        if block is not None and block["status"] == "ok":
+            pairs.append((item, block))
+    return pairs
 
 
 def _tau_key(tau: float) -> str:
     return f"{tau:.2f}"
 
 
-def quality_table(payload: Mapping[str, Any], tau_key: str) -> pd.DataFrame:
-    """Extraction quality of every compared model at one tau; labels without a run are skipped."""
+def quality_table(
+    payload: Mapping[str, Any], tau_key: str, baseline: str = "formal"
+) -> pd.DataFrame:
+    """Extraction quality of every compared model at one tau, against one baseline.
+
+    Labels without a run, or without that baseline's comparison, are skipped.
+    """
     rows = []
-    for item in _ok_candidates(payload):
-        entry = item["taus"][tau_key]
+    for item, block in _ok_candidates(payload, baseline):
+        entry = block["taus"][tau_key]
         row: dict[str, str] = {
             "Modelo": item["label"],
-            "Series": str(item["n_series"]),
-            "Reuniones": str(item["n_meetings"]),
+            "Series": str(block["n_series"]),
+            "Reuniones": str(block["n_meetings"]),
             "Precision": format_es(entry["candidate"]["precision"]),
             "Recall": format_es(entry["candidate"]["recall"]),
             "F1": format_es(entry["candidate"]["f1"]),
@@ -215,12 +258,14 @@ _QUALITY_COLUMNS = [
 ]  # fmt: skip
 
 
-def recall_forest_rows(payload: Mapping[str, Any]) -> list[dict[str, Any]]:
+def recall_forest_rows(
+    payload: Mapping[str, Any], baseline: str = "formal"
+) -> list[dict[str, Any]]:
     """Data of the forest plot: recall difference and interval at the primary tau per model."""
     key = _tau_key(float(payload["primary_tau"]))
     rows = []
-    for item in _ok_candidates(payload):
-        entry = item["taus"][key]
+    for item, block in _ok_candidates(payload, baseline):
+        entry = block["taus"][key]
         diff = entry["diff"]["recall"]
         rows.append(
             {
@@ -234,11 +279,11 @@ def recall_forest_rows(payload: Mapping[str, Any]) -> list[dict[str, Any]]:
     return rows
 
 
-def time_forest_rows(payload: Mapping[str, Any]) -> list[dict[str, Any]]:
+def time_forest_rows(payload: Mapping[str, Any], baseline: str = "formal") -> list[dict[str, Any]]:
     """Data of the time-ratio plot: ratio and interval per model; models without a ratio skip."""
     rows = []
-    for item in _ok_candidates(payload):
-        time = item["operation"]["time"]
+    for item, block in _ok_candidates(payload, baseline):
+        time = block["operation"]["time"]
         if time["ratio"] is None:
             continue
         rows.append(
@@ -257,11 +302,11 @@ def _seconds(value: float | None) -> str:
     return "sin datos" if value is None else f"{value:.0f}"
 
 
-def operation_table(payload: Mapping[str, Any]) -> pd.DataFrame:
-    """Operation indicators (ADR 0026, decision 8) of every compared model."""
+def operation_table(payload: Mapping[str, Any], baseline: str = "formal") -> pd.DataFrame:
+    """Operation indicators (ADR 0026, decision 8) of every compared model against a baseline."""
     rows = []
-    for item in _ok_candidates(payload):
-        operation = item["operation"]
+    for item, block in _ok_candidates(payload, baseline):
+        operation = block["operation"]
         time, done = operation["time"], operation["completeness"]["candidate"]
         ratio = time["ratio"]
         decisions = operation["decisions_per_meeting"]["candidate"]["mean"]
@@ -295,4 +340,37 @@ def operation_table(payload: Mapping[str, Any]) -> pd.DataFrame:
 _OPERATION_COLUMNS = [
     "Modelo", "Mediana por reunión (s)", "Línea base (s)", "Razón de tiempos", "Tiempo",
     "Extracciones completas", "Decisiones por reunión", "Costo (USD)",
+]  # fmt: skip
+
+
+VERSION_EFFECT_TEXT = "qwen3:8b en 0.7.2 contra qwen3:8b formal (efecto de versión)"
+
+
+def version_effect_table(payload: Mapping[str, Any], tau_key: str | None = None) -> pd.DataFrame:
+    """Local baseline (``qwen3:8b`` on OpenKOS 0.7.2) against the formal run, at one tau.
+
+    Empty while the local baseline run is missing. It is not a paid model and does not count in
+    the Bonferroni family: it only shows how much of a difference the OpenKOS version makes.
+    """
+    effect = payload.get("version_effect")
+    if effect is None or effect["status"] != "ok":
+        return pd.DataFrame(columns=_VERSION_COLUMNS)
+    entry = effect["taus"][tau_key or _tau_key(float(payload["primary_tau"]))]
+    row: dict[str, str] = {
+        "Comparación": VERSION_EFFECT_TEXT,
+        "Series": str(effect["n_series"]),
+        "Reuniones": str(effect["n_meetings"]),
+        "Precision": format_es(entry["candidate"]["precision"]),
+        "Recall": format_es(entry["candidate"]["recall"]),
+        "F1": format_es(entry["candidate"]["f1"]),
+    }
+    for name, title in (("precision", "Precision"), ("recall", "Recall"), ("f1", "F1")):
+        diff = entry["diff"][name]
+        row[f"Δ {title}"] = format_interval(diff["estimate"], diff["interval"], signed=True)
+    return pd.DataFrame([row], columns=_VERSION_COLUMNS)
+
+
+_VERSION_COLUMNS = [
+    "Comparación", "Series", "Reuniones", "Precision", "Recall", "F1",
+    "Δ Precision", "Δ Recall", "Δ F1",
 ]  # fmt: skip

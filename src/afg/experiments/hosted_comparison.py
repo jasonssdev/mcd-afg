@@ -41,6 +41,8 @@ from afg.experiments.hosted_extraction import ComparisonSpec, HostedConfig, host
 from afg.extraction.openkos.event_dates import POSITION_LETTERS
 
 __all__ = [
+    "BASELINE_CHOICES",
+    "VERSION_EFFECT_LABEL",
     "DiffInterval",
     "MeetingCounts",
     "PairedResult",
@@ -639,6 +641,10 @@ def bridge_check(
 # --- orchestration and files ------------------------------------------------------------------
 
 
+BASELINE_CHOICES = ("formal", "local", "both")
+VERSION_EFFECT_LABEL = "qwen3:8b@0.7.2"
+
+
 def build_comparison(
     *,
     config: HostedConfig,
@@ -649,8 +655,19 @@ def build_comparison(
     workspaces_root: Path,
     reference_of: ReferenceOf,
     similarity: SimilarityFn,
+    baseline: str = "both",
 ) -> dict[str, Any]:
-    """The whole comparison: every label's candidate (``sin corrida`` if its folder is absent)."""
+    """The whole comparison: every label's candidate (``sin corrida`` if its folder is absent).
+
+    Each candidate holds one comparison block per selected baseline: ``vs_formal`` (the frozen
+    formal run, the primary baseline) and ``vs_local`` (the secondary baseline, ``qwen3:8b`` on
+    OpenKOS 0.7.2; ``sin corrida`` while its run is missing). The secondary baseline itself is
+    compared with the formal one as ``version_effect`` (not part of the Bonferroni family).
+    """
+    if baseline not in BASELINE_CHOICES:
+        raise ValueError(
+            f"baseline must be one of {', '.join(BASELINE_CHOICES)}; got {baseline!r}."
+        )
 
     def load(name: str) -> RunData | None:
         run_dir = runs_root / name
@@ -659,9 +676,26 @@ def build_comparison(
         ).is_file()
         return load_run_data(run_dir, workspaces_root / name) if complete else None
 
-    baseline = load(config.baseline_run_name)
-    if baseline is None:
+    formal = load(config.baseline_run_name)
+    if formal is None:
         raise FileNotFoundError(f"The baseline run {config.baseline_run_name} is not stored.")
+    local_name = config.local_baseline.run_name
+    local = load(local_name)
+
+    def compare(base: RunData, data: RunData, cost: float | None) -> dict[str, Any]:
+        return {
+            "status": "ok",
+            **compare_to_baseline(
+                base,
+                data,
+                reference_of=reference_of,
+                similarity=similarity,
+                spec=config.comparison,
+                n_models=len(config.models),
+                cost_usd=cost,
+            ),
+        }
+
     candidates: list[dict[str, Any]] = []
     for label in labels:
         name = hosted_run_name(label, pilot=pilot)
@@ -671,31 +705,46 @@ def build_comparison(
             continue
         spec = config.models[label]
         stored = data.manifest.get("openkos") or {}
-        candidates.append(
-            {
-                "label": label,
-                "provider": data.manifest.get("provider") or spec.provider,
-                "model": stored.get("generative_model") or spec.model,
-                "base_url": stored.get("base_url") or spec.base_url,
-                "status": "ok",
-                **compare_to_baseline(
-                    baseline,
-                    data,
-                    reference_of=reference_of,
-                    similarity=similarity,
-                    spec=config.comparison,
-                    n_models=len(config.models),
-                    cost_usd=config.costs_usd.get(label),
-                ),
+        cost = config.costs_usd.get(label)
+        item: dict[str, Any] = {
+            "label": label,
+            "run_name": name,
+            "provider": data.manifest.get("provider") or spec.provider,
+            "model": stored.get("generative_model") or spec.model,
+            "base_url": stored.get("base_url") or spec.base_url,
+            "status": "ok",
+        }
+        if baseline in ("formal", "both"):
+            item["vs_formal"] = compare(formal, data, cost)
+        if baseline in ("local", "both"):
+            item["vs_local"] = (
+                {"status": NO_RUN, "baseline_run_name": local_name}
+                if local is None
+                else compare(local, data, cost)
+            )
+        candidates.append(item)
+    version_effect: dict[str, Any] | None = None
+    if baseline != "formal":
+        version_effect = (
+            {"status": NO_RUN, "run_name": local_name}
+            if local is None
+            else {
+                "label": VERSION_EFFECT_LABEL,
+                "model": config.local_baseline.model,
+                "run_name": local_name,
+                **compare(formal, local, None),
             }
         )
     payload: dict[str, Any] = {
         "adr": "0026",
         "descriptive": True,
+        "baseline": baseline,
         "baseline_run_name": config.baseline_run_name,
+        "local_baseline_run_name": local_name,
         "primary_tau": config.comparison.tau,
         "n_models": len(config.models),
         "candidates": candidates,
+        "version_effect": version_effect,
         "bridge": None,
     }
     if include_bridge:
@@ -708,7 +757,7 @@ def build_comparison(
                 "status": "ok",
                 **bridge_check(
                     bridge=bridge,
-                    formal=baseline,
+                    formal=formal,
                     reference_of=reference_of,
                     similarity=similarity,
                     tau=config.comparison.tau,
@@ -719,7 +768,7 @@ def build_comparison(
 
 
 CSV_COLUMNS = (
-    "label", "model", "run_name", "status", "series", "n_meetings", "tau",
+    "label", "model", "run_name", "baseline", "status", "series", "n_meetings", "tau",
     "baseline_precision", "baseline_recall", "baseline_f1",
     "candidate_precision", "candidate_recall", "candidate_f1",
     "diff_precision", "diff_precision_low", "diff_precision_high",
@@ -731,8 +780,45 @@ CSV_COLUMNS = (
 )  # fmt: skip
 
 
+def _block_rows(head: Mapping[str, Any], block: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """The CSV rows (one per tau) of one comparison block."""
+    operation = block["operation"]
+    ratio = operation["time"]["ratio"] or {"estimate": None, "interval": [None, None]}
+    rows: list[dict[str, Any]] = []
+    for entry in block["taus"].values():
+        diff = entry["diff"]
+        row: dict[str, Any] = {
+            **head,
+            "series": ",".join(block["series_covered"]),
+            "n_meetings": block["n_meetings"],
+            "tau": entry["tau"],
+            "verdict": entry["verdict"],
+            "recall_up_precision_drop": entry.get("recall_up_precision_drop"),
+            "time_ratio": ratio["estimate"],
+            "time_ratio_low": ratio["interval"][0],
+            "time_ratio_high": ratio["interval"][1],
+            "time_verdict": operation["time"]["verdict"],
+            "complete_share": operation["completeness"]["candidate"]["share"],
+            "decisions_per_meeting": operation["decisions_per_meeting"]["candidate"]["mean"],
+            "cost_usd": operation["cost_usd"],
+        }
+        for name in METRICS:
+            row[f"baseline_{name}"] = entry["baseline"][name]
+            row[f"candidate_{name}"] = entry["candidate"][name]
+            row[f"diff_{name}"] = diff[name]["estimate"]
+            row[f"diff_{name}_low"] = diff[name]["interval"][0]
+            row[f"diff_{name}_high"] = diff[name]["interval"][1]
+        rows.append(row)
+    return rows
+
+
 def comparison_rows(payload: Mapping[str, Any]) -> list[dict[str, Any]]:
-    """One CSV row per candidate and tau; a candidate without a run gets a single row."""
+    """One CSV row per candidate, baseline and tau; a missing run gets a single row.
+
+    The ``baseline`` column is ``formal`` or ``local``. A candidate with a run but without the
+    local baseline run gets one ``sin corrida`` row for ``local``. The version effect (local
+    baseline against formal) follows as a row labelled ``qwen3:8b@0.7.2``.
+    """
     rows: list[dict[str, Any]] = []
     for item in payload["candidates"]:
         head = {
@@ -744,32 +830,25 @@ def comparison_rows(payload: Mapping[str, Any]) -> list[dict[str, Any]]:
         if item["status"] != "ok":
             rows.append(head)
             continue
-        operation = item["operation"]
-        ratio = operation["time"]["ratio"] or {"estimate": None, "interval": [None, None]}
-        for entry in item["taus"].values():
-            diff = entry["diff"]
-            row: dict[str, Any] = {
-                **head,
-                "series": ",".join(item["series_covered"]),
-                "n_meetings": item["n_meetings"],
-                "tau": entry["tau"],
-                "verdict": entry["verdict"],
-                "recall_up_precision_drop": entry.get("recall_up_precision_drop"),
-                "time_ratio": ratio["estimate"],
-                "time_ratio_low": ratio["interval"][0],
-                "time_ratio_high": ratio["interval"][1],
-                "time_verdict": operation["time"]["verdict"],
-                "complete_share": operation["completeness"]["candidate"]["share"],
-                "decisions_per_meeting": operation["decisions_per_meeting"]["candidate"]["mean"],
-                "cost_usd": operation["cost_usd"],
-            }
-            for name in METRICS:
-                row[f"baseline_{name}"] = entry["baseline"][name]
-                row[f"candidate_{name}"] = entry["candidate"][name]
-                row[f"diff_{name}"] = diff[name]["estimate"]
-                row[f"diff_{name}_low"] = diff[name]["interval"][0]
-                row[f"diff_{name}_high"] = diff[name]["interval"][1]
-            rows.append(row)
+        for name in ("formal", "local"):
+            block = item.get(f"vs_{name}")
+            if block is None:
+                continue
+            labelled = {**head, "baseline": name, "status": block["status"]}
+            if block["status"] != "ok":
+                rows.append(labelled)
+            else:
+                rows.extend(_block_rows(labelled, block))
+    effect = payload.get("version_effect")
+    if effect is not None:
+        head = {
+            "label": effect.get("label", VERSION_EFFECT_LABEL),
+            "model": effect.get("model"),
+            "run_name": effect["run_name"],
+            "baseline": "formal",
+            "status": effect["status"],
+        }
+        rows.extend(_block_rows(head, effect) if effect["status"] == "ok" else [head])
     return rows
 
 

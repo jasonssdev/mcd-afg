@@ -2913,6 +2913,14 @@ def experiment_a_hosted(
             help="Puente de continuidad: qwen3:8b con OpenKOS 0.7.2 en el Ollama local.",
         ),
     ] = False,
+    local_baseline: Annotated[
+        bool,
+        typer.Option(
+            "--local-baseline",
+            help="Segunda línea base: qwen3:8b con OpenKOS 0.7.2 en el Ollama local, "
+            "con los ajustes del puente, sobre las once series de evaluación.",
+        ),
+    ] = False,
     series: Annotated[
         list[str] | None,
         typer.Option("--series", help="Serie de evaluación; se repite para varias."),
@@ -2930,7 +2938,8 @@ def experiment_a_hosted(
 
     Corre `a-batch` con OpenKOS 0.7.2 y el *backend* `openai-compatible` sobre las series de
     evaluación, en `reports/experiment-a/experimento-a-hosted-<etiqueta>/` (piloto:
-    `experimento-a-piloto-<etiqueta>`; puente: `experimento-a-puente-0-7-2`). La clave del
+    `experimento-a-piloto-<etiqueta>`; puente: `experimento-a-puente-0-7-2`; segunda línea
+    base local: `experimento-a-base-0-7-2`). La clave del
     proveedor se lee de `OPENKOS_OPENAI_API_KEY`, nunca se escribe. Es descriptivo: no toca
     `config/experiments.toml` ni `config/freeze.json`, y su informe se pide con
     `afg experiment a-report --c2-extraction <carpeta> --descriptive`. Repetir el comando
@@ -2961,18 +2970,28 @@ def experiment_a_hosted(
         return typer.Exit(code=code)
 
     config = load_hosted_config()
-    if (model is None) == (not bridge):
-        raise refuse("Indica --model <etiqueta> o --bridge, pero no ambos.", 2)
+    if (model is not None) + bridge + local_baseline != 1:
+        raise refuse("Indica exactamente uno: --model <etiqueta>, --bridge o --local-baseline.", 2)
     if model is not None and model not in config.models:
         raise refuse(f"Etiqueta desconocida {model!r}; válidas: {', '.join(config.models)}.", 2)
-    if bridge and (series or runs is not None or pilot):
-        raise refuse("--bridge usa la serie y las corridas de la config; no admite otras.", 2)
+    local_mode = bridge or local_baseline
+    if local_mode and (series or runs is not None or pilot):
+        raise refuse(
+            "--bridge y --local-baseline usan las series y las corridas de la config; "
+            "no admiten otras.",
+            2,
+        )
 
     executable = resolve_executable(config, os.environ)
-    if bridge:
-        run_name = config.bridge.run_name
-        series_ids = list(config.bridge.series)
-        n_runs = config.bridge.runs
+    if local_mode:
+        if local_baseline:
+            run_name = config.local_baseline.run_name
+            series_ids = _evaluation_series()
+            n_runs = config.local_baseline.runs
+        else:
+            run_name = config.bridge.run_name
+            series_ids = list(config.bridge.series)
+            n_runs = config.bridge.runs
         settings = bridge_run_settings(openkos_run_settings(), executable=executable)
     else:
         assert model is not None
@@ -2995,27 +3014,28 @@ def experiment_a_hosted(
     try:
         preflight(
             config,
-            label=None if bridge else model,
+            label=None if local_mode else model,
             executable=executable,
             runner=make_hosted_runner(),
             env=os.environ,
             ollama_models=probe.model_digests,
             executable_exists=_executable_exists,
-            bridge_model=settings.generative_model if bridge else None,
+            bridge_model=settings.generative_model if local_mode else None,
         )
     except (HostedPreflightError, HostedConfigError) as exc:
         raise refuse(str(exc), 1) from exc
 
     digests = probe.model_digests() or {}
-    local_models = [settings.embedding_model, *([settings.generative_model] if bridge else [])]
+    local_models = [settings.embedding_model, *([settings.generative_model] if local_mode else [])]
     base_manifest = hosted_manifest(
         config,
         run_name=run_name,
-        label=None if bridge else model,
+        label=None if local_mode else model,
         series_ids=series_ids,
         n_runs=n_runs,
         settings=settings,
         pilot=pilot,
+        local_baseline=local_baseline,
         git_commit=current_git_commit(),
         git_dirty=probe.git_dirty(),
         local_model_digests={
@@ -3062,8 +3082,20 @@ def experiment_a_hosted_compare(
         bool,
         typer.Option("--pilot", help="Compara las corridas piloto en vez de las completas."),
     ] = False,
+    baseline: Annotated[
+        str,
+        typer.Option(
+            "--baseline",
+            help="Línea base: formal (corrida congelada), local (qwen3:8b con OpenKOS 0.7.2) "
+            "o both (ambas).",
+        ),
+    ] = "both",
 ) -> None:
     """Compara cada modelo de pago con la línea base `qwen3:8b` (ADR 0026, decisiones 7 y 8).
+
+    Hay dos líneas base: la formal (principal) y la local, `qwen3:8b` con OpenKOS 0.7.2
+    (secundaria, enmienda del ADR). Con la local presente se agrega el efecto de versión
+    (local contra formal), que no cuenta en el nivel Bonferroni.
 
     Bootstrap pareado por reunión de la diferencia (modelo - línea base) en precision, recall y
     F1, con nivel Bonferroni por los modelos de la config, solo sobre las series que cubre cada
@@ -3073,10 +3105,20 @@ def experiment_a_hosted_compare(
     """
     from rich.table import Table
 
-    from afg.experiments.hosted_comparison import build_comparison, write_comparison
+    from afg.experiments.hosted_comparison import (
+        BASELINE_CHOICES,
+        build_comparison,
+        write_comparison,
+    )
     from afg.experiments.hosted_extraction import load_hosted_config
 
     config = load_hosted_config()
+    if baseline not in BASELINE_CHOICES:
+        console.print(
+            f"[bold red]--baseline debe ser uno de: {escape(', '.join(BASELINE_CHOICES))}."
+            "[/bold red]"
+        )
+        raise typer.Exit(code=2)
     labels = list(dict.fromkeys(models)) if models else list(config.models)
     unknown = [label for label in labels if label not in config.models]
     if unknown:
@@ -3095,6 +3137,7 @@ def experiment_a_hosted_compare(
             labels=labels,
             include_bridge=include_bridge,
             pilot=pilot,
+            baseline=baseline,
             runs_root=EXPERIMENT_A_DIR,
             workspaces_root=OPENKOS_WORKSPACES_DIR,
             reference_of=reference_of,
@@ -3105,28 +3148,43 @@ def experiment_a_hosted_compare(
         raise typer.Exit(code=1) from exc
 
     table = Table(title="Extensión con modelos de pago: modelo - línea base (τ principal)")
-    for column in ("Modelo", "Series", "Δ Precision", "Δ Recall", "Δ F1", "Veredicto", "Tiempo"):
+    for column in (
+        "Modelo", "Línea base", "Series", "Δ Precision", "Δ Recall", "Δ F1", "Veredicto", "Tiempo",
+    ):  # fmt: skip
         table.add_column(column)
     primary = f"{float(payload['primary_tau']):.2f}"
-    for item in payload["candidates"]:
-        if item["status"] != "ok":
-            table.add_row(item["label"], "-", "-", "-", "-", item["status"], "-")
-            continue
-        diff = item["taus"][primary]["diff"]
 
-        def cell(name: str, diff: dict[str, Any] = diff) -> str:
+    def add_row(label: str, base: str, block: dict[str, Any]) -> None:
+        if block["status"] != "ok":
+            table.add_row(label, base, "-", "-", "-", "-", block["status"], "-")
+            return
+        diff = block["taus"][primary]["diff"]
+
+        def cell(name: str) -> str:
             low, high = diff[name]["interval"]
             return escape(f"{diff[name]['estimate']:+.3f} [{low:+.3f}, {high:+.3f}]")
 
         table.add_row(
-            item["label"],
-            str(item["n_series"]),
+            label,
+            base,
+            str(block["n_series"]),
             cell("precision"),
             cell("recall"),
             cell("f1"),
-            item["verdict"],
-            item["operation"]["time"]["verdict"],
+            block["verdict"],
+            block["operation"]["time"]["verdict"],
         )
+
+    for item in payload["candidates"]:
+        if item["status"] != "ok":
+            table.add_row(item["label"], "-", "-", "-", "-", "-", item["status"], "-")
+            continue
+        for name in ("formal", "local"):
+            if f"vs_{name}" in item:
+                add_row(item["label"], name, item[f"vs_{name}"])
+    effect = payload["version_effect"]
+    if effect is not None:
+        add_row(f"{effect.get('label', 'qwen3:8b@0.7.2')} (efecto de versión)", "formal", effect)
     console.print(table)
     bridge = payload["bridge"]
     if bridge is not None:

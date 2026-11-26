@@ -31,6 +31,15 @@ run_name = "experimento-a-puente-0-7-2"
 series = ["ES2002"]
 runs = 1
 
+[local_baseline]
+# ADR 0026 amendment: secondary baseline, decided after seeing the bridge (which came out slightly
+# above the range of the formal runs). Same settings as the bridge (OpenKOS 0.7.2, Ollama backend,
+# formal seed, temperature and transcript_decisions) over the whole evaluation partition.
+run_name = "experimento-a-base-0-7-2"
+model = "qwen3:8b"
+series_partition = "evaluation"
+runs = 3
+
 [comparison]
 tau = 0.70
 sensitivity_taus = [0.75, 0.80]

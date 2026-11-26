@@ -55,6 +55,7 @@ Las etiquetas salen de `config/hosted_extraction.toml`: `openai-small`, `openai-
 | Paso | Carpeta |
 |---|---|
 | Puente de continuidad | `experimento-a-puente-0-7-2` |
+| Segunda línea base (`qwen3:8b` con OpenKOS 0.7.2) | `experimento-a-base-0-7-2` |
 | Piloto de un modelo | `experimento-a-piloto-<etiqueta>` |
 | Corrida completa de un modelo | `experimento-a-hosted-<etiqueta>` |
 | Comparación | `hosted-comparison/` (`comparacion.json` y `comparacion.csv`) |
@@ -64,6 +65,7 @@ Los espacios de trabajo de OpenKOS quedan en `data/interim/openkos/<corrida>/`.
 ## Orden
 
 1. **Puente.** Una vez, antes de comparar.
+   Entre el puente y los pilotos (o en paralelo con ellos) va la **segunda línea base** (paso 1 bis).
 2. **Piloto por modelo.** La serie ES2002 con una repetición, para medir tiempo y costo y detectar
    identificadores o parámetros rechazados antes de gastar la corrida completa.
 3. **Revisar el piloto.** Informe descriptivo y comparación del piloto.
@@ -86,6 +88,25 @@ ningún proveedor.
 ```bash
 uv run afg experiment a-hosted --bridge        # make hosted-bridge
 ```
+
+### 1 bis. Segunda línea base (`qwen3:8b` con OpenKOS 0.7.2)
+
+El puente salió algo por encima del rango de las tres corridas formales con una sola corrida (enmienda
+del ADR 0026). Para quitar la versión de OpenKOS de la comparación, los modelos de pago se comparan
+también con `qwen3:8b` sobre la misma OpenKOS 0.7.2: el *backend* `ollama`, la semilla y la
+temperatura formales y `transcript_decisions`, sobre las once series de evaluación con tres corridas
+cada una. La corrida formal sigue siendo la línea base principal y los resultados se informan contra
+ambas. No usa clave de ningún proveedor.
+
+```bash
+uv run afg experiment a-hosted --local-baseline        # make hosted-local-baseline
+```
+
+- **Duración:** unos 30 minutos por serie-corrida en el equipo local, unas 16 horas en total (33
+  pares). Es reanudable: repetir el mismo comando omite los pares ya terminados.
+- **Cuándo correrla:** antes de las corridas de pago o en paralelo con ellas. Comparte el Ollama local
+  con los *embeddings* de las corridas de pago, así que correr ambas a la vez hace más lentas las dos.
+- Es descriptiva como el resto: `a-report` exige `--descriptive` para esta carpeta.
 
 ### 2. Piloto de un modelo
 
@@ -130,7 +151,11 @@ uv run afg experiment a-hosted-compare --include-bridge        # make hosted-com
 ```
 
 Compara cada modelo con la línea base (diferencia pareada en precision, recall y F1, con nivel
-Bonferroni por los seis modelos) y agrega tiempo, extracciones completas, decisiones por reunión y
+Bonferroni por los seis modelos) y, con `--baseline formal|local|both` (por defecto `both`), con la
+corrida formal, con la segunda línea base o con ambas. Si la segunda línea base existe, agrega el
+«efecto de versión» (`qwen3:8b` en OpenKOS 0.7.2 contra la corrida formal), que no cuenta en el nivel
+Bonferroni; si no existe, la columna `local` figura como «sin corrida». El CSV lleva una columna
+`baseline`. Agrega, además, tiempo, extracciones completas, decisiones por reunión y
 costo. Las etiquetas sin corrida se informan como «sin corrida». Con `--models <etiqueta>` (repetible) se
 limita a algunas.
 
@@ -161,6 +186,8 @@ muestran el aviso «pendiente».
   mide. Cada modelo hace 33 extracciones de cuatro reuniones (11 series por 3 repeticiones). El costo se
   proyecta con el piloto y se confirma con el panel del proveedor.
 - **Puente:** una serie y una repetición, unos 24 minutos.
+- **Segunda línea base local:** 33 pares serie-repetición, unos 30 minutos cada uno, unas 16 horas en
+  total.
 
 ## Si algo falla
 

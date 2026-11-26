@@ -183,6 +183,43 @@ def test_bridge_refuses_series_and_runs_overrides(fake: RecordingFactory) -> Non
     assert _run("--bridge", "--pilot").exit_code == 2
 
 
+def test_local_baseline_runs_the_bridge_settings_on_every_evaluation_series(
+    tmp_path: Path, fake: RecordingFactory, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.delenv(API_KEY_ENV)
+
+    result = _run("--local-baseline")
+
+    assert result.exit_code == 0, result.output
+    assert len(fake.adapter.calls) == 33
+    used = fake.settings[0]
+    assert used.generative_model == "qwen3:8b"
+    assert (used.base_seed, used.temperature, used.backend) == (42, 0.1, "ollama")
+    manifest = json.loads(
+        (tmp_path / "out" / "experimento-a-base-0-7-2" / "manifest.json").read_text()
+    )
+    assert manifest["extension"] == "hosted"
+    assert manifest["local_baseline"] is True
+    assert manifest["bridge"] is False
+    assert manifest["partition"] == "evaluation"
+    assert manifest["runs"] == 3
+
+
+def test_local_baseline_resumes_and_refuses_overrides_and_other_modes(
+    fake: RecordingFactory,
+) -> None:
+    assert _run("--local-baseline").exit_code == 0
+    first = list(fake.adapter.calls)
+    assert _run("--local-baseline").exit_code == 0
+    assert fake.adapter.calls == first  # resumed: nothing re-run
+
+    assert _run("--local-baseline", "--series", "ES2008").exit_code == 2
+    assert _run("--local-baseline", "--runs", "2").exit_code == 2
+    assert _run("--local-baseline", "--pilot").exit_code == 2
+    assert _run("--local-baseline", "--bridge").exit_code == 2
+    assert _run("--local-baseline", "--model", "openai-small").exit_code == 2
+
+
 def test_it_never_touches_the_frozen_configuration(fake: RecordingFactory) -> None:
     before = (Path("config/experiments.toml").read_bytes(), Path("config/freeze.json").read_bytes())
     _run("--model", "openai-small", "--pilot")
@@ -300,3 +337,55 @@ def test_compare_writes_json_and_csv_and_reports_missing_runs(
 def test_compare_with_an_unknown_label_exits_with_a_message(tmp_path: Path) -> None:
     result = CliRunner().invoke(afg_cli.app, ["experiment", "a-hosted-compare", "--models", "nope"])
     assert result.exit_code == 2
+
+
+def _compare_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from tests.relations_workspace import text_similarity
+    from tests.test_hosted_comparison import _all, _meetings, _reference_of, _write_run
+
+    _write_run(tmp_path, "experimento-a-formal", _all({"ES2015": _meetings("ES2015", "a")}))
+    _write_run(
+        tmp_path, "experimento-a-hosted-openai-small", _all({"ES2015": _meetings("ES2015", "abcd")})
+    )
+    monkeypatch.setattr(afg_cli, "EXPERIMENT_A_DIR", tmp_path / "out")
+    monkeypatch.setattr(afg_cli, "OPENKOS_WORKSPACES_DIR", tmp_path / "ws")
+    monkeypatch.setattr(afg_cli, "make_alignment_similarity", lambda: text_similarity)
+    monkeypatch.setattr(
+        afg_cli,
+        "load_series_reference",
+        lambda series, language="es": type("R", (), {"decisions": _reference_of(series)})(),
+    )
+
+
+def test_compare_reports_both_baselines_by_default_and_the_missing_local_run(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _compare_env(tmp_path, monkeypatch)
+
+    result = CliRunner().invoke(
+        afg_cli.app, ["experiment", "a-hosted-compare", "--models", "openai-small"]
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads((tmp_path / "out" / "hosted-comparison" / "comparacion.json").read_text())
+    assert payload["baseline"] == "both"
+    assert payload["candidates"][0]["vs_local"]["status"] == "sin corrida"
+    assert "formal" in result.output
+    assert "local" in result.output
+
+
+def test_compare_baseline_option_selects_one_baseline_and_rejects_others(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _compare_env(tmp_path, monkeypatch)
+
+    ok = CliRunner().invoke(
+        afg_cli.app,
+        ["experiment", "a-hosted-compare", "--models", "openai-small", "--baseline", "formal"],
+    )
+    bad = CliRunner().invoke(afg_cli.app, ["experiment", "a-hosted-compare", "--baseline", "x"])
+
+    assert ok.exit_code == 0, ok.output
+    payload = json.loads((tmp_path / "out" / "hosted-comparison" / "comparacion.json").read_text())
+    assert "vs_local" not in payload["candidates"][0]
+    assert bad.exit_code == 2
