@@ -1,0 +1,74 @@
+# Experiment A extension: C2 extraction with hosted models (ADR 0026).
+# Kept apart from config/experiments.toml on purpose: that file is hashed by config/freeze.json
+# and the formal run `experimento-a-formal` must keep verifying against it.
+#
+# Every model runs through OpenKOS's `backend: openai-compatible`. The API key is read ONLY from
+# the OPENKOS_OPENAI_API_KEY environment variable (one provider per run); it never goes in a file.
+
+[openkos]
+required_version = "0.7.2"            # installed apart from the frozen 0.7.0 (ADR 0026, decision 5)
+# Executable of the separate 0.7.2 install; override with AFG_HOSTED_OPENKOS_EXECUTABLE.
+executable = "data/interim/openkos-0.7.2/bin/openkos"
+
+[shared]
+series_partition = "evaluation"       # the eleven evaluation series of config/corpus.toml
+runs_per_model = 3                    # same as [shared_budget].runs_per_config
+reasoning_effort = "low"              # applied to all six models alike (ADR 0026, decision 5)
+max_generation_tokens = 8192          # same ceiling as the baseline
+evidence_quote = false                # baseline value; affects concepts, not the decision pass
+embedding_base_url = "http://127.0.0.1:11434"  # embeddings stay on the local Ollama
+embedding_model = "bge-m3"
+send_seed = false                     # hosted providers refuse or ignore seed/temperature
+send_temperature = false
+
+[baseline]
+run_name = "experimento-a-formal"     # frozen qwen3:8b run, never re-run
+model = "qwen3:8b"
+
+[bridge]
+# Continuity check: qwen3:8b on OpenKOS 0.7.2, local Ollama backend, baseline settings.
+run_name = "experimento-a-puente-0-7-2"
+series = ["ES2002"]
+runs = 1
+
+[comparison]
+tau = 0.70
+sensitivity_taus = [0.75, 0.80]
+bootstrap_resamples = 10000
+bootstrap_seed = 42
+family_alpha = 0.05                   # Bonferroni over the models listed below
+precision_margin = -0.05              # lower CI bound of the precision difference must not go below
+
+[providers.openai]
+base_url = "https://api.openai.com"
+
+[providers.anthropic]
+base_url = "https://api.anthropic.com"
+
+[providers.google]
+base_url = "https://generativelanguage.googleapis.com/v1beta/openai"
+
+# label -> provider + model id served by that API. Labels become run names: experimento-a-hosted-<label>.
+[models.openai-small]
+provider = "openai"
+model = "gpt-5-mini"
+
+[models.openai-large]
+provider = "openai"
+model = "gpt-6-luna"
+
+[models.anthropic-small]
+provider = "anthropic"
+model = "claude-haiku-5-5"
+
+[models.anthropic-large]
+provider = "anthropic"
+model = "claude-sonnet-5-5"
+
+[models.google-small]
+provider = "google"
+model = "gemini-3.8-flash"
+
+[models.google-large]
+provider = "google"
+model = "gemini-4-argon"
