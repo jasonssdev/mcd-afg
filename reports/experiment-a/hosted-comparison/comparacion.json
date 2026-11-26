@@ -1,0 +1,46 @@
+{
+  "adr": "0026",
+  "descriptive": true,
+  "baseline": "both",
+  "baseline_run_name": "experimento-a-formal",
+  "local_baseline_run_name": "experimento-a-base-0-7-2",
+  "primary_tau": 0.7,
+  "n_models": 6,
+  "candidates": [
+    {
+      "label": "openai-small",
+      "run_name": "experimento-a-hosted-openai-small",
+      "status": "sin corrida"
+    },
+    {
+      "label": "openai-large",
+      "run_name": "experimento-a-hosted-openai-large",
+      "status": "sin corrida"
+    },
+    {
+      "label": "anthropic-small",
+      "run_name": "experimento-a-hosted-anthropic-small",
+      "status": "sin corrida"
+    },
+    {
+      "label": "anthropic-large",
+      "run_name": "experimento-a-hosted-anthropic-large",
+      "status": "sin corrida"
+    },
+    {
+      "label": "google-small",
+      "run_name": "experimento-a-hosted-google-small",
+      "status": "sin corrida"
+    },
+    {
+      "label": "google-large",
+      "run_name": "experimento-a-hosted-google-large",
+      "status": "sin corrida"
+    }
+  ],
+  "version_effect": {
+    "status": "sin corrida",
+    "run_name": "experimento-a-base-0-7-2"
+  },
+  "bridge": null
+}

@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "run_name": "experimento-a-puente-0-7-2",
+  "created_at": "2026-11-26T05:38:35.876618+00:00",
+  "git_commit": "5fda3da9033c816bc5ed64727143f68b6da4092e",
+  "git_dirty": false,
+  "series": "ES2002",
+  "partition": "evaluation",
+  "runs": 1,
+  "extension": "hosted",
+  "adr": "0026",
+  "pilot": false,
+  "bridge": true,
+  "model_label": null,
+  "provider": "ollama",
+  "baseline_run_name": "experimento-a-formal",
+  "openkos": {
+    "executable": "/Users/jasonssdev/Dev/Learning/UC/mcd-afg/data/interim/openkos-0.7.2/bin/openkos",
+    "required_version": "0.7.2",
+    "generative_model": "qwen3:8b",
+    "embedding_model": "bge-m3",
+    "backend": "ollama",
+    "base_url": null,
+    "embedding_base_url": null,
+    "reasoning_effort": null,
+    "max_generation_tokens": null,
+    "evidence_quote": null,
+    "seed": 42,
+    "temperature": 0.1,
+    "versions": [
+      "0.7.2"
+    ],
+    "local_model_digests": {
+      "bge-m3:latest": "7907646426070047a77226ac3e684fbbe8410524f7b4a74d02837e43f2146bab",
+      "qwen3:8b": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41"
+    }
+  },
+  "freeze": null,
+  "status": "ok",
+  "kind": "batch",
+  "series_ids": [
+    "ES2002"
+  ],
+  "pairs": {
+    "ES2002/0": {
+      "series": "ES2002",
+      "run": 0,
+      "status": "ok",
+      "started_at": "2026-11-26T05:38:35.876905+00:00",
+      "error": null,
+      "openkos_version": "0.7.2",
+      "n_decisions": 52,
+      "n_unmapped": 0,
+      "quotes_total": 52,
+      "quotes_not_found": 0,
+      "finished_at": "2026-11-26T06:08:27.207436+00:00",
+      "seconds": 1791.323
+    }
+  },
+  "updated_at": "2026-11-26T06:08:27.207788+00:00"
+}

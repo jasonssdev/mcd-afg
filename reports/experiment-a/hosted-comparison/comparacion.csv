@@ -1,0 +1,8 @@
+label,model,run_name,baseline,status,series,n_meetings,tau,baseline_precision,baseline_recall,baseline_f1,candidate_precision,candidate_recall,candidate_f1,diff_precision,diff_precision_low,diff_precision_high,diff_recall,diff_recall_low,diff_recall_high,diff_f1,diff_f1_low,diff_f1_high,verdict,recall_up_precision_drop,time_ratio,time_ratio_low,time_ratio_high,time_verdict,complete_share,decisions_per_meeting,cost_usd
+openai-small,,experimento-a-hosted-openai-small,,sin corrida,,,,,,,,,,,,,,,,,,,,,,,,,,,
+openai-large,,experimento-a-hosted-openai-large,,sin corrida,,,,,,,,,,,,,,,,,,,,,,,,,,,
+anthropic-small,,experimento-a-hosted-anthropic-small,,sin corrida,,,,,,,,,,,,,,,,,,,,,,,,,,,
+anthropic-large,,experimento-a-hosted-anthropic-large,,sin corrida,,,,,,,,,,,,,,,,,,,,,,,,,,,
+google-small,,experimento-a-hosted-google-small,,sin corrida,,,,,,,,,,,,,,,,,,,,,,,,,,,
+google-large,,experimento-a-hosted-google-large,,sin corrida,,,,,,,,,,,,,,,,,,,,,,,,,,,
+qwen3:8b@0.7.2,,experimento-a-base-0-7-2,formal,sin corrida,,,,,,,,,,,,,,,,,,,,,,,,,,,
