@@ -12,8 +12,9 @@ that the variable is set; it never reads its value into a message, a file or a m
 from __future__ import annotations
 
 import tomllib
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, replace
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -34,6 +35,7 @@ __all__ = [
     "HostedPreflightError",
     "ModelSpec",
     "bridge_run_settings",
+    "hosted_manifest",
     "hosted_run_name",
     "hosted_run_settings",
     "load_hosted_config",
@@ -193,6 +195,63 @@ def hosted_run_settings(config: HostedConfig, label: str, *, executable: str) ->
 def bridge_run_settings(formal: OpenKosRunSettings, *, executable: str) -> OpenKosRunSettings:
     """The formal settings (model, seed, temperature) on the 0.7.2 executable, Ollama backend."""
     return replace(formal, executable=executable, backend=BRIDGE_BACKEND)
+
+
+def hosted_manifest(
+    config: HostedConfig,
+    *,
+    run_name: str,
+    label: str | None,
+    series_ids: Sequence[str],
+    n_runs: int,
+    settings: OpenKosRunSettings,
+    pilot: bool,
+    git_commit: str | None,
+    git_dirty: bool | None,
+    local_model_digests: Mapping[str, str] | None = None,
+) -> dict[str, Any]:
+    """The opening manifest of a hosted (or bridge) run directory.
+
+    Same layout as an ``a-batch`` manifest, so ``a-report`` reads it unchanged, plus the ADR 0026
+    markers: ``extension`` (which makes the report descriptive-only), provider, model, endpoint
+    and OpenKOS version. It never holds the API key and records no freeze (the run is not frozen).
+    """
+    spec = config.models[label] if label is not None else None
+    return {
+        "schema_version": 1,
+        "run_name": run_name,
+        "created_at": datetime.now(UTC).isoformat(),
+        "git_commit": git_commit,
+        "git_dirty": git_dirty,
+        "series": ",".join(series_ids),
+        "partition": config.series_partition,
+        "runs": n_runs,
+        "extension": "hosted",
+        "adr": HOSTED_ADR,
+        "pilot": pilot,
+        "bridge": label is None,
+        "model_label": label,
+        "provider": spec.provider if spec else "ollama",
+        "baseline_run_name": config.baseline_run_name,
+        "openkos": {
+            "executable": settings.executable,
+            "required_version": config.required_version,
+            "generative_model": settings.generative_model,
+            "embedding_model": settings.embedding_model,
+            "backend": settings.backend,
+            "base_url": settings.base_url,
+            "embedding_base_url": settings.embedding_base_url,
+            "reasoning_effort": settings.reasoning_effort,
+            "max_generation_tokens": settings.max_generation_tokens,
+            "evidence_quote": settings.evidence_quote,
+            "seed": settings.base_seed,
+            "temperature": settings.temperature,
+            "versions": [],
+            "local_model_digests": dict(local_model_digests or {}),
+        },
+        "freeze": None,
+        "status": "running",
+    }
 
 
 def _tagged(name: str) -> str:

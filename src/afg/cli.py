@@ -226,6 +226,7 @@ from afg.extraction.openkos.gold_bundle import (
     load_gold_relations,
 )
 from afg.extraction.openkos.settings import openkos_run_settings
+from afg.extraction.openkos.workspace import OpenKosRunSettings
 from afg.extraction.openkos_adapter import OpenKosAdapter
 from afg.shared.config import Settings, get_settings, load_corpus_config, load_experiments_config
 from afg.shared.csvio import CsvFormatError
@@ -2872,6 +2873,185 @@ def experiment_a_batch(
         raise typer.Exit(code=1)
 
 
+def make_hosted_runner() -> SubprocessRunner:
+    """The process runner of the hosted-extraction preflight (a seam for tests)."""
+    return SubprocessRunner()
+
+
+def _executable_exists(path: str) -> bool:
+    import shutil
+
+    return shutil.which(path) is not None
+
+
+def make_hosted_adapter(base_dir: Path, settings: OpenKosRunSettings) -> OpenKosAdapter:
+    """The adapter of a hosted/bridge run: the 0.7.2 ``settings`` instead of the frozen ones."""
+    meetings_xml = AMI_DIR / "corpusResources" / "meetings.xml"
+    return OpenKosAdapter(
+        runner=SubprocessRunner(),
+        settings=settings,
+        base_dir=base_dir,
+        transcripts_dir=TRANSCRIPTS_DIR,
+        meetings_xml=meetings_xml if meetings_xml.exists() else None,
+    )
+
+
+@experiment_app.command("a-hosted")
+def experiment_a_hosted(
+    model: Annotated[
+        str | None,
+        typer.Option(
+            "--model",
+            help="Etiqueta del modelo de pago de config/hosted_extraction.toml (por ejemplo "
+            "openai-small).",
+        ),
+    ] = None,
+    bridge: Annotated[
+        bool,
+        typer.Option(
+            "--bridge",
+            help="Puente de continuidad: qwen3:8b con OpenKOS 0.7.2 en el Ollama local.",
+        ),
+    ] = False,
+    series: Annotated[
+        list[str] | None,
+        typer.Option("--series", help="Serie de evaluación; se repite para varias."),
+    ] = None,
+    runs: Annotated[
+        int | None,
+        typer.Option("--runs", min=1, help="Corridas por serie (por defecto, las de la config)."),
+    ] = None,
+    pilot: Annotated[
+        bool,
+        typer.Option("--pilot", help="Piloto: una serie (ES2002) y una repetición por defecto."),
+    ] = False,
+) -> None:
+    """Extensión del Experimento A con modelos de pago (ADR 0026): extracción de C2.
+
+    Corre `a-batch` con OpenKOS 0.7.2 y el *backend* `openai-compatible` sobre las series de
+    evaluación, en `reports/experiment-a/experimento-a-hosted-<etiqueta>/` (piloto:
+    `experimento-a-piloto-<etiqueta>`; puente: `experimento-a-puente-0-7-2`). La clave del
+    proveedor se lee de `OPENKOS_OPENAI_API_KEY`, nunca se escribe. Es descriptivo: no toca
+    `config/experiments.toml` ni `config/freeze.json`, y su informe se pide con
+    `afg experiment a-report --c2-extraction <carpeta> --descriptive`. Repetir el comando
+    reanuda la corrida.
+    """
+    import os
+    import time
+
+    from afg.experiments.extraction_batch import (
+        BatchConflictError,
+        batch_summary_lines,
+        run_batch,
+    )
+    from afg.experiments.hosted_extraction import (
+        HostedConfigError,
+        HostedPreflightError,
+        bridge_run_settings,
+        hosted_manifest,
+        hosted_run_name,
+        hosted_run_settings,
+        load_hosted_config,
+        preflight,
+        resolve_executable,
+    )
+
+    def refuse(message: str, code: int) -> typer.Exit:
+        console.print(f"[bold red]{escape(message)}[/bold red]")
+        return typer.Exit(code=code)
+
+    config = load_hosted_config()
+    if (model is None) == (not bridge):
+        raise refuse("Indica --model <etiqueta> o --bridge, pero no ambos.", 2)
+    if model is not None and model not in config.models:
+        raise refuse(f"Etiqueta desconocida {model!r}; válidas: {', '.join(config.models)}.", 2)
+    if bridge and (series or runs is not None or pilot):
+        raise refuse("--bridge usa la serie y las corridas de la config; no admite otras.", 2)
+
+    executable = resolve_executable(config, os.environ)
+    if bridge:
+        run_name = config.bridge.run_name
+        series_ids = list(config.bridge.series)
+        n_runs = config.bridge.runs
+        settings = bridge_run_settings(openkos_run_settings(), executable=executable)
+    else:
+        assert model is not None
+        run_name = hosted_run_name(model, pilot=pilot)
+        series_ids = list(
+            dict.fromkeys(series or ([config.bridge.series[0]] if pilot else _evaluation_series()))
+        )
+        n_runs = runs if runs is not None else (1 if pilot else config.runs_per_model)
+        settings = hosted_run_settings(config, model, executable=executable)
+
+    partition_of = configured_partition_of()
+    not_evaluation = [s for s in series_ids if partition_of(s) != "evaluation"]
+    if not_evaluation:
+        raise refuse(
+            f"Esta extensión corre solo las series de evaluación; no lo son: "
+            f"{', '.join(not_evaluation)}. No se llamó a ningún modelo.",
+            1,
+        )
+    probe = make_provenance_probe()
+    try:
+        preflight(
+            config,
+            label=None if bridge else model,
+            executable=executable,
+            runner=make_hosted_runner(),
+            env=os.environ,
+            ollama_models=probe.model_digests,
+            executable_exists=_executable_exists,
+            bridge_model=settings.generative_model if bridge else None,
+        )
+    except (HostedPreflightError, HostedConfigError) as exc:
+        raise refuse(str(exc), 1) from exc
+
+    digests = probe.model_digests() or {}
+    local_models = [settings.embedding_model, *([settings.generative_model] if bridge else [])]
+    base_manifest = hosted_manifest(
+        config,
+        run_name=run_name,
+        label=None if bridge else model,
+        series_ids=series_ids,
+        n_runs=n_runs,
+        settings=settings,
+        pilot=pilot,
+        git_commit=current_git_commit(),
+        git_dirty=probe.git_dirty(),
+        local_model_digests={
+            name: digest
+            for name, digest in digests.items()
+            if name.removesuffix(":latest") in {m.removesuffix(":latest") for m in local_models}
+        },
+    )
+    run_dir = EXPERIMENT_A_DIR / run_name
+    console.print(
+        f"{run_name}: {', '.join(series_ids)}, {n_runs} corrida(s) por serie -> {_short(run_dir)}"
+    )
+    started = time.monotonic()
+    try:
+        manifest = run_batch(
+            make_hosted_adapter(OPENKOS_WORKSPACES_DIR / run_name, settings),
+            run_dir=run_dir,
+            workspace_root=OPENKOS_WORKSPACES_DIR / run_name,
+            series_ids=series_ids,
+            runs=n_runs,
+            base_manifest=base_manifest,
+            report=lambda line: console.print(escape(line)),
+        )
+    except BatchConflictError as exc:
+        raise refuse(str(exc), 1) from exc
+    for line in batch_summary_lines(manifest, elapsed_seconds=time.monotonic() - started):
+        console.print(escape(line))
+    console.print(f"Manifiesto en {_short(run_dir / 'manifest.json')}.")
+    if manifest["status"] != "ok":
+        raise typer.Exit(code=1)
+
+
+def _evaluation_series() -> list[str]:
+    return list(load_corpus_config()["oe1"]["evaluation_series"])
+
+
 def make_alignment_similarity() -> SimilarityFn:
     """Cosine similarity over the alignment embeddings (model from the config, cached per text)."""
     from afg.evaluation.alignment_analysis import embedding_similarity
@@ -3030,6 +3210,17 @@ def experiment_a_relations(
         raise typer.Exit(code=1)
 
 
+def _is_hosted_extension(run_dir: Path) -> bool:
+    """Whether the run's manifest marks it as the paid-model extension of ADR 0026."""
+    import json
+
+    try:
+        manifest = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8"))
+    except OSError, ValueError:
+        return False
+    return manifest.get("extension") == "hosted"
+
+
 def _interval_cell(figures: dict[str, Any], metric: str) -> str:
     low, high = figures["intervals"][metric]
     return escape(f"{figures[metric]:.2f} [{low:.2f}, {high:.2f}]")
@@ -3084,7 +3275,15 @@ def experiment_a_report(
             f"`afg experiment a-batch --run-name {escape(c2_extraction)}`.[/bold red]"
         )
         raise typer.Exit(code=1)
-    _require_run_frozen(run_dir, descriptive=descriptive, check_questions=False)
+    extension = _is_hosted_extension(run_dir)
+    if extension and not descriptive:
+        console.print(
+            f"[bold red]{_short(run_dir)} es una extensión con modelos de pago (ADR 0026): "
+            "solo tiene informe descriptivo. Usa --descriptive.[/bold red]"
+        )
+        raise typer.Exit(code=1)
+    if not extension:
+        _require_run_frozen(run_dir, descriptive=descriptive, check_questions=False)
     runs = load_extraction_runs([run_dir])
     relations_path = run_dir / "relaciones.json"
     relations = (
@@ -3121,6 +3320,9 @@ def experiment_a_report(
         console.print(f"[bold red]{escape(str(exc))}[/bold red]")
         raise typer.Exit(code=1) from exc
     report["reference_kinds"] = dict(reference_kinds)
+    if extension:
+        report["reportable"] = False  # descriptive extension: never replaces informe.json
+        report["extension"] = "hosted"
 
     label = (
         "reportable" if report["reportable"] else f"DESCRIPTIVO, partición {report['partition']}"
