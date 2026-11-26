@@ -50,6 +50,32 @@ OpenKOS 0.7.2 (2026-11-25) hace usable su *backend* `openai-compatible` con Open
    - **Lectura del tiempo:** la línea base corre en un equipo local (Apple M4 Pro, 48 GB) y los modelos de pago en la infraestructura del proveedor. La razón de tiempos mide la experiencia de uso de cada opción, no la eficiencia del modelo.
 9. **Carácter descriptivo.** Las series de evaluación ya se usaron en la corrida formal y quien mantiene el repositorio ya vio sus cifras. Por eso la extensión es descriptiva y no confirma hipótesis de la tesis. Sus informes se escriben con `--descriptive` (`informe-descriptivo.json`) y nunca reemplazan a `informe.json` de la corrida formal.
 
+## Enmienda (2026-11-26, después del puente y antes de cualquier corrida con modelos de pago)
+
+### Resultado del puente
+
+El puente (decisión 6) quedó **fuera** del rango de las tres corridas formales de ES2002, del lado favorable. Se midió con τ = 0,70 y una sola corrida:
+
+| Métrica | Puente | Rango formal |
+|---|---|---|
+| *precision* | 0,212 | 0,185–0,200 |
+| *recall* | 0,355 | 0,323–0,355 |
+| F1 | 0,265 | 0,235–0,256 |
+
+La diferencia equivale a pocas decisiones, y el rango de solo tres corridas es estrecho. Aun así, con la regla fijada no se puede descartar un efecto de la versión de OpenKOS.
+
+El tiempo del puente no es comparable. Mientras corría, el mismo equipo ejecutaba las pruebas del proyecto.
+
+### Decisión
+
+Se agrega una **segunda línea base**: `qwen3:8b` con OpenKOS 0.7.2, con la misma configuración del puente. Cubre las once series de evaluación con tres repeticiones (`experimento-a-base-0-7-2`). Tiene tres usos:
+
+- Cada modelo de pago se compara contra las dos líneas base, con la misma regla de la decisión 7 y los mismos indicadores de la decisión 8.
+- La línea base formal sigue siendo la principal. Si las dos comparaciones dan veredictos distintos, se informan ambos y la conclusión se apoya en la de la misma versión (0.7.2), porque solo esa aísla el modelo.
+- La comparación de la segunda línea base contra la formal se informa como «efecto de versión». No cuenta en el Bonferroni de los seis modelos.
+
+Esta enmienda se decide después de ver el puente (una serie, una repetición) y se declara como tal. No se vio ninguna cifra de modelos de pago.
+
 ## Alternativas descartadas
 
 - **Medir C2 completo (respuestas + juez).** Multiplica el costo y mezcla la extracción con la recuperación y la síntesis. La pregunta del avance 13 es sobre la extracción.
