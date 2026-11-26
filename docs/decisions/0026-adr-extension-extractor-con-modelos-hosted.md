@@ -136,6 +136,38 @@ La alternativa «Medir C2 completo (respuestas + juez)» se había descartado po
 
 Esta enmienda se decide antes de cualquier corrida con modelos de pago. No se vio ninguna cifra de esos modelos.
 
+## Cuarta enmienda (2026-11-26, antes de cualquier corrida con modelos de pago)
+
+### Contexto
+
+Las corridas formales usaron Ollama 0.32.9, fijado en `[pinned_environment]`. Desde el 2026-11-13 el equipo tiene instalado Ollama 0.40.16, que otros proyectos del equipo usan. Según el registro del servidor, que empieza el 2026-11-20, el servidor arrancó así:
+
+- el 2026-11-20, con contexto por defecto de 32.768 tokens, *flash attention* activada y caché de atención `q8_0`;
+- desde el 2026-11-21, con 65.536 tokens y lo demás igual.
+
+No queda registro de la configuración del servidor durante las corridas formales.
+
+Esos ajustes no afectan igual a todos los pasos:
+
+- **El contexto por defecto del servidor:** OpenKOS y C1 fijan el contexto en cada llamada, así que solo lo usa el juez (`src/afg/evaluation/judge.py`, que envía solo temperatura y semilla).
+- **La versión de Ollama:** cambia el motor que ejecuta los modelos, así que las salidas no son idénticas a las de 0.32.9, aunque los modelos tengan las mismas huellas.
+
+El harness de la extensión no verificaba ni registraba la versión de Ollama. Por el registro del servidor, el puente y los 16 pares de `experimento-a-base-0-7-2` (2026-11-26) corrieron con 0.40.16.
+
+### Decisión
+
+1. **Infraestructura de la extensión.** Todas las corridas locales de la extensión usan Ollama 0.40.16, con el servidor en contexto por defecto de 32.768 tokens, *flash attention* activada y caché `q8_0`, que es la configuración más antigua registrada. Esto incluye la línea base 0.7.3, los *embeddings* de las extracciones de pago y el Experimento B.
+   - La versión se fija en `config/hosted_extraction.toml`, no en `[pinned_environment]`, para no romper la verificación de las corridas formales contra `config/freeze.json`.
+   - El harness verifica la versión antes de cada corrida y la registra en cada manifiesto.
+   - La configuración del servidor queda documentada en el protocolo.
+2. **C1 de control con la infraestructura actual.** C1 se vuelve a correr con Ollama 0.40.16 y todo lo demás igual a la corrida formal: banco, semillas, generador, juez y contexto (`experimento-b-c1-ollama-0-40-16`).
+3. **Comparación principal (modifica la decisión 2 de la tercera enmienda).** Es la diferencia pareada «C2 con cada extractor de pago − C1 con la infraestructura actual» en la corrección de E3, con la misma regla, el mismo *bootstrap* y el mismo Bonferroni. La comparación frente a C1 formal pasa a ser secundaria.
+4. **Efecto de infraestructura.** La diferencia «C1 actual − C1 formal» se informa como efecto del cambio de Ollama y no cuenta en el Bonferroni. Si es grande, cualquier comparación contra corridas formales (C1 o C2 formal y la extracción formal) se lee con esa cautela.
+5. **Comparaciones de la misma infraestructura.** La comparación de cada modelo de pago contra la línea base `experimento-a-base-0-7-3` queda en la misma versión de OpenKOS y de Ollama, tanto en extracción como en respuestas. Si los veredictos frente a la línea base formal y frente a la de la misma versión difieren, decide esta última, como fija la primera enmienda.
+6. **El puente.** Mide juntos el cambio de OpenKOS (0.7.0 → 0.7.2) y el de Ollama (0.32.9 → 0.40.16), y así se declara en el notebook.
+
+Esta enmienda se decide antes de cualquier corrida con modelos de pago. No se vio ninguna cifra de esos modelos.
+
 ## Alternativas descartadas
 
 - **Medir C2 completo (respuestas + juez).** Multiplica el costo y mezcla la extracción con la recuperación y la síntesis. La pregunta del avance 13 es sobre la extracción. *(Revertida por la tercera enmienda: el costo de proveedor está solo en la extracción, y la mezcla se controla dejando fijos la recuperación, el generador y el juez.)*
