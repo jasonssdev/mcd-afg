@@ -48,6 +48,7 @@ def _candidate(label: str, *, ratio: dict[str, Any] | None, cost: float | None) 
             "f1": {"estimate": 0.175, "interval": [0.09, 0.26]},
         },
         "verdict": "mejora",
+        "recall_up_precision_drop": False,
     }
     return {
         "label": label,
@@ -81,12 +82,14 @@ def _candidate(label: str, *, ratio: dict[str, Any] | None, cost: float | None) 
 
 
 def _payload() -> dict[str, Any]:
+    flagged = _candidate("c", ratio=None, cost=None)
+    flagged["taus"]["0.70"]["recall_up_precision_drop"] = True
     return {
         "primary_tau": 0.7,
         "candidates": [
             _candidate("a", ratio={"estimate": 0.2, "interval": [0.1, 0.3]}, cost=1.5),
             {"label": "b", "run_name": "experimento-a-hosted-b", "status": "sin corrida"},
-            _candidate("c", ratio=None, cost=None),
+            flagged,
         ],
         "bridge": None,
     }
@@ -215,6 +218,8 @@ def test_quality_table_skips_labels_without_runs() -> None:
     assert row["Recall"] == "0,50"
     assert row["Δ Recall"] == "+0,20 [+0,10; +0,30]"
     assert row["Veredicto"] == "mejora"
+    assert row["Recall sube, precision cae"] == "no"
+    assert table.iloc[1]["Recall sube, precision cae"] == "sí"
 
 
 def test_forest_rows_hold_estimate_interval_and_skip_missing_data() -> None:

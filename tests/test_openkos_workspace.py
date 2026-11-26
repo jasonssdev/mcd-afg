@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from afg.extraction.openkos.capabilities import MissingCapabilitiesError
+from afg.extraction.openkos.commands import CommandResult
 from afg.extraction.openkos.workspace import (
     IngestDriftError,
     IngestRefusedError,
@@ -16,6 +17,7 @@ from afg.extraction.openkos.workspace import (
     OpenKosRunSettings,
     WorkspaceNotEmptyError,
     ensure_config_keys,
+    redact_secrets,
     run_series_workspace,
     stage_meeting_body,
 )
@@ -296,3 +298,38 @@ def test_baseline_settings_keep_the_manifest_block_without_provider_keys(tmp_pat
         "temperature",
         "transcript_decisions",
     }
+
+
+def test_the_api_key_is_redacted_from_stderr_tails_and_errors(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("OPENKOS_OPENAI_API_KEY", "sk-secret-123")
+    monkeypatch.setenv("OPENKOS_OPENAI_EMBEDDING_API_KEY", "sk-embed-456")
+
+    class Echo(FakeRunner):
+        def run(self, args, *, cwd=None):  # type: ignore[no-untyped-def]
+            result = super().run(args, cwd=cwd)
+            if result.returncode:
+                return CommandResult(
+                    returncode=result.returncode,
+                    stdout="",
+                    stderr="bad key sk-secret-123 / sk-embed-456 end",
+                    duration_s=0.01,
+                )
+            return result
+
+    runner = Echo(ingest_codes={"ES2015b.md": [1]})
+    with pytest.raises(IngestRefusedError) as caught:
+        _run(tmp_path, runner)
+
+    assert "sk-secret-123" not in str(caught.value)
+    assert "sk-embed-456" not in str(caught.value)
+    assert "***" in str(caught.value)
+    text = (tmp_path / "ws" / "ES2015" / "run-0.manifest.json").read_text()
+    assert "sk-secret-123" not in text and "sk-embed-456" not in text
+    assert "***" in text
+
+
+def test_redaction_ignores_an_empty_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("OPENKOS_OPENAI_API_KEY", "")
+    assert redact_secrets("plain text") == "plain text"

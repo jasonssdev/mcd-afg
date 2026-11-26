@@ -74,6 +74,9 @@ def _write_run(
     spurious: int = 0,
     ingest_seconds: dict[str, float] | None = None,
     failed: dict[tuple[str, int], str] | None = None,
+    configured: tuple[list[str], int] | None = None,
+    manifest_extra: dict[str, object] | None = None,
+    drop_workspace_manifest: tuple[str, int] | None = None,
 ) -> Path:
     """A run folder: ``found`` maps ``(series, run)`` to the meetings whose gold it extracts."""
     run_dir = root / "out" / name
@@ -126,8 +129,19 @@ def _write_run(
             )
         )
     (run_dir / "manifest.json").write_text(
-        json.dumps({"kind": "batch", "pairs": pairs, "openkos": {"seed": None}})
+        json.dumps(
+            {
+                "kind": "batch",
+                "pairs": pairs,
+                "openkos": {"seed": None},
+                **({"series_ids": configured[0], "runs": configured[1]} if configured else {}),
+                **(manifest_extra or {}),
+            }
+        )
     )
+    if drop_workspace_manifest:
+        series, run = drop_workspace_manifest
+        (workspace_root / series / f"run-{run}.manifest.json").unlink()
     (run_dir / "extracciones.jsonl").write_text("\n".join(lines) + "\n")
     return run_dir
 
@@ -515,3 +529,128 @@ def test_ingest_time_summary_gives_the_median_and_the_completeness(tmp_path: Pat
     assert summary["median_s"] == 25.0
     assert summary["n_meetings"] == 4
     assert summary["complete"] == 4 and summary["expected"] == 4
+
+
+# --- review fixes: configured runs, flags, errors ---------------------------------------------
+
+
+def test_a_failed_or_missing_run_counts_as_zero_extraction(tmp_path: Path) -> None:
+    both = ["ES2015"]
+    # run 0 finds everything, run 1 failed, run 2 never ran: recall is 1/3, not 1.
+    _write_run(
+        tmp_path,
+        "cand",
+        {("ES2015", 0): _meetings("ES2015", "abcd"), ("ES2015", 1): _meetings("ES2015", "abcd")},
+        failed={("ES2015", 1): "ES2015b"},
+        configured=(both, 3),
+    )
+    base = _all({"ES2015": _meetings("ES2015", "abcd")}, runs=3)
+    _write_run(tmp_path, "base2", base, configured=(both, 3))
+
+    result = compare_to_baseline(
+        _load(tmp_path, "base2"),
+        _load(tmp_path, "cand"),
+        reference_of=_reference_of,
+        similarity=text_similarity,
+        spec=SPEC,
+        n_models=6,
+    )
+
+    assert result["taus"]["0.70"]["candidate"]["recall"] == pytest.approx(1 / 3)
+    assert result["runs_expected"] == 3
+    assert result["runs_ok"] == 1
+    assert result["runs_failed"] == 2
+    assert result["series_with_failures"] == ["ES2015"]
+
+
+def test_a_series_whose_runs_all_failed_stays_in_the_comparison(tmp_path: Path) -> None:
+    configured = (["ES2015", "IS1004"], 2)
+    _write_run(
+        tmp_path, "base", _all({s: _meetings(s, "abcd") for s in SERIES}), configured=configured
+    )
+    _write_run(
+        tmp_path, "cand", _all({"ES2015": _meetings("ES2015", "abcd")}), configured=configured
+    )
+
+    result = _compare(tmp_path)
+
+    assert result["series_covered"] == ["ES2015", "IS1004"]
+    assert result["n_meetings"] == 8
+    assert result["taus"]["0.70"]["candidate"]["recall"] == pytest.approx(0.5)
+    assert result["series_with_failures"] == ["IS1004"]
+    assert result["runs_expected"] == 4 and result["runs_ok"] == 2 and result["runs_failed"] == 2
+
+
+def test_a_clean_candidate_reports_full_coverage(tmp_path: Path) -> None:
+    found = _all({"ES2015": _meetings("ES2015", "a")})
+    _write_run(tmp_path, "base", found)
+    _write_run(tmp_path, "cand", found)
+
+    result = _compare(tmp_path)
+
+    assert (result["runs_expected"], result["runs_ok"], result["runs_failed"]) == (2, 2, 0)
+    assert result["series_with_failures"] == []
+
+
+def test_a_missing_workspace_manifest_of_an_ok_pair_is_an_error(tmp_path: Path) -> None:
+    found = _all({"ES2015": _meetings("ES2015", "a")}, runs=1)
+    _write_run(tmp_path, "base", found)
+    _write_run(tmp_path, "cand", found, drop_workspace_manifest=("ES2015", 0))
+
+    with pytest.raises(FileNotFoundError, match=r"ES2015/run-0\.manifest\.json"):
+        _compare(tmp_path)
+
+
+def test_recall_up_precision_drop_flag(tmp_path: Path) -> None:
+    _write_run(tmp_path, "base", _all({s: _meetings(s, "a") for s in SERIES}))
+    _write_run(tmp_path, "cand", _all({s: _meetings(s, "abcd") for s in SERIES}), spurious=12)
+    flagged = _compare(tmp_path)["taus"]["0.70"]
+    assert flagged["recall_up_precision_drop"] is True
+    assert flagged["verdict"] == "sin diferencia demostrada"
+
+    _write_run(tmp_path, "good", _all({s: _meetings(s, "abcd") for s in SERIES}))
+    result = compare_to_baseline(
+        _load(tmp_path, "base"),
+        _load(tmp_path, "good"),
+        reference_of=_reference_of,
+        similarity=text_similarity,
+        spec=SPEC,
+        n_models=6,
+    )
+    assert result["taus"]["0.70"]["recall_up_precision_drop"] is False
+
+
+def test_the_csv_carries_the_recall_up_precision_drop_column(tmp_path: Path) -> None:
+    import csv
+
+    from afg.experiments.hosted_comparison import write_comparison
+
+    _write_run(tmp_path, "experimento-a-formal", _all({"ES2015": _meetings("ES2015", "a")}))
+    _write_run(
+        tmp_path, "experimento-a-hosted-openai-small", _all({"ES2015": _meetings("ES2015", "abcd")})
+    )
+    _, csv_path = write_comparison(_build(tmp_path), tmp_path / "cmp")
+
+    rows = [r for r in csv.DictReader(csv_path.open(encoding="utf-8")) if r["status"] == "ok"]
+    assert rows[0]["recall_up_precision_drop"] in {"True", "False"}
+
+
+def test_build_comparison_takes_model_and_provider_from_the_run_manifest(tmp_path: Path) -> None:
+    _write_run(tmp_path, "experimento-a-formal", _all({"ES2015": _meetings("ES2015", "a")}))
+    _write_run(
+        tmp_path,
+        "experimento-a-hosted-openai-small",
+        _all({"ES2015": _meetings("ES2015", "abcd")}),
+        manifest_extra={
+            "provider": "other-provider",
+            "openkos": {"generative_model": "stored-model", "base_url": "https://stored/v1"},
+        },
+    )
+
+    item = _build(tmp_path, labels=["openai-small"])["candidates"][0]
+
+    assert (item["model"], item["provider"], item["base_url"]) == (
+        "stored-model",
+        "other-provider",
+        "https://stored/v1",
+    )

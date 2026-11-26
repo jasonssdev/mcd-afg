@@ -24,6 +24,7 @@ Choices fixed here:
 from __future__ import annotations
 
 import json
+import os
 import re
 import time
 from collections.abc import Mapping, Sequence
@@ -46,6 +47,16 @@ EXIT_REFUSED = 1
 EXIT_DRIFT = 3
 DECISION_PASS_KEY = "transcript_decisions"
 _TAIL_CHARS = 2000
+_SECRET_ENV_VARS = ("OPENKOS_OPENAI_API_KEY", "OPENKOS_OPENAI_EMBEDDING_API_KEY")
+
+
+def redact_secrets(text: str) -> str:
+    """Replace every occurrence of a configured provider API key in ``text`` with ``***``."""
+    for name in _SECRET_ENV_VARS:
+        secret = os.environ.get(name, "")
+        if secret:
+            text = text.replace(secret, "***")
+    return text
 
 
 class WorkspaceNotEmptyError(OpenKosError):
@@ -144,7 +155,7 @@ class _Recorder:
             "duration_s": round(result.duration_s, 3),
         }
         if result.returncode != 0:
-            entry["stderr_tail"] = result.stderr[-_TAIL_CHARS:]
+            entry["stderr_tail"] = redact_secrets(result.stderr)[-_TAIL_CHARS:]
         self.log.append(entry)
         return result
 
@@ -216,12 +227,13 @@ def _ingest_one(
             raise IngestDriftError(f"Ingest of {source.meeting_id} drifted twice (exit 3).")
     if result.returncode == EXIT_REFUSED:
         raise IngestRefusedError(
-            f"OpenKOS refused {source.meeting_id} (exit 1): {result.stderr[-_TAIL_CHARS:]}"
+            f"OpenKOS refused {source.meeting_id} (exit 1): "
+            f"{redact_secrets(result.stderr)[-_TAIL_CHARS:]}"
         )
     if result.returncode != 0:
         raise OpenKosCommandError(
             f"ingest of {source.meeting_id} exited {result.returncode}: "
-            f"{result.stderr[-_TAIL_CHARS:]}"
+            f"{redact_secrets(result.stderr)[-_TAIL_CHARS:]}"
         )
 
 
@@ -294,7 +306,9 @@ def run_series_workspace(
 
     def write_manifest(status: str, error: BaseException | None = None) -> None:
         manifest["status"] = status
-        manifest["error"] = None if error is None else f"{type(error).__name__}: {error}"
+        manifest["error"] = (
+            None if error is None else redact_secrets(f"{type(error).__name__}: {error}")
+        )
         manifest["commands"] = recorder.log
         manifest["total_duration_s"] = round(time.monotonic() - started, 3)
         manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
@@ -316,7 +330,7 @@ def run_series_workspace(
         )
         if init.returncode != 0:
             raise OpenKosCommandError(
-                f"init exited {init.returncode}: {init.stderr[-_TAIL_CHARS:]}"
+                f"init exited {init.returncode}: {redact_secrets(init.stderr)[-_TAIL_CHARS:]}"
             )
         config_path = workspace / "openkos.yaml"
         template = config_path.read_text(encoding="utf-8")

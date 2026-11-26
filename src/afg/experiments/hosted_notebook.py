@@ -203,13 +203,15 @@ def quality_table(payload: Mapping[str, Any], tau_key: str) -> pd.DataFrame:
             diff = entry["diff"][name]
             row[f"Δ {title}"] = format_interval(diff["estimate"], diff["interval"], signed=True)
         row["Veredicto"] = entry["verdict"]
+        flag = entry.get("recall_up_precision_drop")
+        row["Recall sube, precision cae"] = "n/d" if flag is None else "sí" if flag else "no"
         rows.append(row)
     return pd.DataFrame(rows, columns=_QUALITY_COLUMNS)
 
 
 _QUALITY_COLUMNS = [
     "Modelo", "Series", "Reuniones", "Precision", "Recall", "F1",
-    "Δ Precision", "Δ Recall", "Δ F1", "Veredicto",
+    "Δ Precision", "Δ Recall", "Δ F1", "Veredicto", "Recall sube, precision cae",
 ]  # fmt: skip
 
 

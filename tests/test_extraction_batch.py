@@ -65,7 +65,9 @@ def _base() -> dict[str, object]:
     return {"schema_version": 1, "run_name": "lote", "openkos": {"versions": []}}
 
 
-def _go(adapter: FakeAdapter, dirs: tuple[Path, Path], series=("ES2015", "IS1004"), runs=2):  # type: ignore[no-untyped-def]
+def _go(
+    adapter: FakeAdapter, dirs: tuple[Path, Path], series=("ES2015", "IS1004"), runs=2, base=None
+):  # type: ignore[no-untyped-def]
     run_dir, workspace_root = dirs
     return run_batch(
         adapter,
@@ -73,7 +75,7 @@ def _go(adapter: FakeAdapter, dirs: tuple[Path, Path], series=("ES2015", "IS1004
         workspace_root=workspace_root,
         series_ids=list(series),
         runs=runs,
-        base_manifest=_base(),
+        base_manifest=base if base is not None else _base(),
     )
 
 
@@ -246,3 +248,86 @@ def test_every_pair_records_when_it_started_finished_and_how_long_it_took(
         assert started <= finished
         assert isinstance(entry["seconds"], float) and entry["seconds"] >= 0
     assert manifest["pairs"]["IS1004/1"]["status"] == "failed"
+
+
+def _hosted_base(**openkos: object) -> dict[str, object]:
+    settings = {
+        "versions": [],
+        "generative_model": "gpt-a",
+        "backend": "openai",
+        "base_url": "https://api.example/v1",
+        "reasoning_effort": "low",
+        **openkos,
+    }
+    return {"schema_version": 1, "run_name": "lote", "openkos": settings}
+
+
+@pytest.mark.parametrize(
+    ("key", "value"),
+    [
+        ("generative_model", "gpt-b"),
+        ("backend", "ollama"),
+        ("base_url", "https://other.example/v1"),
+        ("reasoning_effort", "high"),
+    ],
+)
+def test_resume_refuses_changed_openkos_settings(
+    dirs: tuple[Path, Path], key: str, value: str
+) -> None:
+    adapter = FakeAdapter(dirs[1])
+    _go(adapter, dirs, base=_hosted_base())
+    adapter.calls.clear()
+
+    with pytest.raises(BatchConflictError, match=key):
+        _go(adapter, dirs, base=_hosted_base(**{key: value}))
+    assert adapter.calls == []
+
+
+def test_resume_with_the_same_openkos_settings_is_accepted(dirs: tuple[Path, Path]) -> None:
+    adapter = FakeAdapter(dirs[1])
+    adapter.fail = {("ES2015", 1)}
+    _go(adapter, dirs, base=_hosted_base())
+    adapter.fail = set()
+    adapter.calls.clear()
+
+    assert _go(adapter, dirs, base=_hosted_base())["status"] == "ok"
+
+
+def test_resume_compares_only_the_keys_both_manifests_have(dirs: tuple[Path, Path]) -> None:
+    # A formal batch stored no backend/base_url/reasoning_effort: resuming it stays as before.
+    adapter = FakeAdapter(dirs[1])
+    adapter.fail = {("ES2015", 1)}
+    _go(adapter, dirs)
+    adapter.fail = set()
+
+    manifest = _go(adapter, dirs, base=_hosted_base(generative_model="qwen3:8b"))
+
+    assert manifest["status"] == "ok"
+
+
+def test_a_failed_pair_error_never_carries_the_api_key(
+    dirs: tuple[Path, Path], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("OPENKOS_OPENAI_API_KEY", "sk-secret-123")
+    adapter = FakeAdapter(dirs[1])
+    lines: list[str] = []
+
+    class Leaky(FakeAdapter):
+        def extract_series(self, series_id: str, run: int) -> SeriesExtraction:
+            raise OpenKosError("ingest failed: Authorization sk-secret-123 rejected")
+
+    run_batch(
+        Leaky(dirs[1]),
+        run_dir=dirs[0],
+        workspace_root=dirs[1],
+        series_ids=["ES2015"],
+        runs=1,
+        base_manifest=_base(),
+        report=lines.append,
+    )
+
+    stored = (dirs[0] / "manifest.json").read_text()
+    assert "sk-secret-123" not in stored
+    assert "sk-secret-123" not in "".join(lines)
+    assert "***" in stored
+    assert adapter.calls == []

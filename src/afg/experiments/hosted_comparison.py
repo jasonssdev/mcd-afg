@@ -111,8 +111,62 @@ def load_run_data(run_dir: Path, workspace_root: Path) -> RunData:
     return RunData(run_dir.name, tuple(runs), manifest, workspace_root)
 
 
+def _declared_pairs(data: RunData) -> dict[str, Mapping[str, Any]]:
+    return dict(data.manifest.get("pairs") or {})
+
+
+def _configured_runs(data: RunData) -> dict[str, int]:
+    """Series -> number of runs the batch was configured with (its manifest), else observed."""
+    observed: dict[str, int] = {}
+    for r in data.runs:
+        series_id = r.record["series_id"]
+        observed[series_id] = max(observed.get(series_id, 0), r.run + 1)
+    for pair in _declared_pairs(data).values():
+        series_id = str(pair["series"])
+        observed[series_id] = max(observed.get(series_id, 0), int(pair["run"]) + 1)
+    series_ids = data.manifest.get("series_ids")
+    runs = data.manifest.get("runs")
+    if series_ids and isinstance(runs, int):
+        return {str(s): runs for s in series_ids}
+    return observed
+
+
 def _series_of(data: RunData) -> list[str]:
-    return sorted({r.record["series_id"] for r in data.runs})
+    return sorted(_configured_runs(data))
+
+
+def _pair_status(data: RunData, series_id: str, run: int) -> str | None:
+    pair = _declared_pairs(data).get(f"{series_id}/{run}")
+    return None if pair is None else str(pair.get("status"))
+
+
+def _ok_runs(data: RunData) -> list[ExtractionRun]:
+    """The stored runs of pairs that finished: a failed or unconfigured pair is not extraction."""
+    configured = _configured_runs(data)
+    declared = _declared_pairs(data)
+    return [
+        r
+        for r in data.runs
+        if r.run < configured.get(r.record["series_id"], 0)
+        and (not declared or _pair_status(data, r.record["series_id"], r.run) == "ok")
+    ]
+
+
+def _coverage(data: RunData, series: Collection[str]) -> dict[str, Any]:
+    """Configured vs finished runs of ``series`` (a failed or missing run is a failure)."""
+    configured = _configured_runs(data)
+    ok_pairs = {(r.record["series_id"], r.run) for r in _ok_runs(data)}
+    expected = sum(configured.get(s, 0) for s in series)
+    ok = sum(1 for pair in ok_pairs if pair[0] in series)
+    with_failures = sorted(
+        s for s in series if sum(1 for pair in ok_pairs if pair[0] == s) < configured.get(s, 0)
+    )
+    return {
+        "runs_expected": expected,
+        "runs_ok": ok,
+        "runs_failed": expected - ok,
+        "series_with_failures": with_failures,
+    }
 
 
 # --- precision / recall / F1 -----------------------------------------------------------------
@@ -130,6 +184,17 @@ def _figures(totals: Sequence[float]) -> dict[str, float]:
     return {"precision": precision, "recall": recall, "f1": _f1(precision, recall)}
 
 
+def _tally(score: Any, sums: dict[str, list[float]], meetings: set[str]) -> None:
+    for meeting, hit in zip(score.predicted_meetings, score.predicted_hits, strict=True):
+        sums[meeting][0] += int(hit)
+        sums[meeting][1] += 1
+        meetings.add(meeting)
+    for meeting, hit in zip(score.reference_meetings, score.reference_hits, strict=True):
+        sums[meeting][2] += int(hit)
+        sums[meeting][3] += 1
+        meetings.add(meeting)
+
+
 def meeting_counts(
     runs: Sequence[ExtractionRun],
     *,
@@ -137,8 +202,13 @@ def meeting_counts(
     similarity: SimilarityFn,
     tau: float,
     series: Collection[str] | None = None,
+    expected_runs: Mapping[str, int] | None = None,
 ) -> dict[str, MeetingCounts]:
-    """Per-meeting counts at ``tau`` (scope ``origin_meetings``), averaged over the runs."""
+    """Per-meeting counts at ``tau`` (scope ``origin_meetings``), averaged over the runs.
+
+    With ``expected_runs`` (series -> configured runs) the average is over the configured runs:
+    a run that is absent counts as an empty extraction (every reference decision missed).
+    """
     selected = [r for r in runs if series is None or r.record["series_id"] in series]
     references: dict[str, Sequence[ReferenceDecision]] = {}
     sums: dict[str, list[float]] = defaultdict(lambda: [0.0, 0.0, 0.0, 0.0])
@@ -157,14 +227,23 @@ def meeting_counts(
             alignment_scope="origin_meetings",
         )
         runs_of[series_id] += 1
-        for meeting, hit in zip(score.predicted_meetings, score.predicted_hits, strict=True):
-            sums[meeting][0] += int(hit)
-            sums[meeting][1] += 1
-            meetings_of[series_id].add(meeting)
-        for meeting, hit in zip(score.reference_meetings, score.reference_hits, strict=True):
-            sums[meeting][2] += int(hit)
-            sums[meeting][3] += 1
-            meetings_of[series_id].add(meeting)
+        _tally(score, sums, meetings_of[series_id])
+    for series_id, expected in (expected_runs or {}).items():
+        if series is not None and series_id not in series:
+            continue
+        if series_id not in references:
+            references[series_id] = reference_of(series_id)
+        for _ in range(max(0, expected - runs_of[series_id])):
+            empty = score_series(
+                series_id,
+                references[series_id],
+                [],
+                similarity,
+                tau=tau,
+                alignment_scope="origin_meetings",
+            )
+            runs_of[series_id] += 1
+            _tally(empty, sums, meetings_of[series_id])
     divisor = {m: runs_of[s] for s, ms in meetings_of.items() for m in ms}
     return {m: MeetingCounts(*(v / divisor[m] for v in vals)) for m, vals in sums.items()}
 
@@ -254,12 +333,11 @@ def verdict_for(
 
 
 def _run_pairs(data: RunData, series: Collection[str]) -> list[tuple[str, int]]:
-    """Every ``(series, run)`` the run attempted, failed ones included."""
-    declared = data.manifest.get("pairs")
-    if declared:
-        found = {(str(p["series"]), int(p["run"])) for p in declared.values()}
-    else:
-        found = {(r.record["series_id"], r.run) for r in data.runs}
+    """Every ``(series, run)`` the run was configured with or attempted, failed ones included."""
+    found = {(str(p["series"]), int(p["run"])) for p in _declared_pairs(data).values()}
+    found |= {(r.record["series_id"], r.run) for r in data.runs}
+    for series_id, runs in _configured_runs(data).items():
+        found |= {(series_id, run) for run in range(runs)}
     return sorted(pair for pair in found if pair[0] in series)
 
 
@@ -281,6 +359,11 @@ def _ingest_profile(data: RunData, series: Collection[str]) -> _IngestProfile:
     complete = expected = 0
     for series_id, run in _run_pairs(data, series):
         path = data.workspace_root / series_id / f"run-{run}.manifest.json"
+        if not path.is_file() and _pair_status(data, series_id, run) == "ok":
+            raise FileNotFoundError(
+                f"The run {data.name} reports {series_id}/{run} as ok but its workspace "
+                f"manifest {path} is missing."
+            )
         manifest: dict[str, Any] = (
             json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
         )
@@ -391,7 +474,9 @@ def compare_to_baseline(
 ) -> dict[str, Any]:
     """Compare ``candidate`` with ``baseline`` over the series the candidate covers."""
     series = _series_of(candidate)
-    missing = [s for s in series if s not in set(_series_of(baseline))]
+    baseline_runs = _configured_runs(baseline)
+    candidate_runs = _configured_runs(candidate)
+    missing = [s for s in series if s not in baseline_runs]
     if missing:
         raise ValueError(f"The baseline run has no runs of {', '.join(missing)}.")
     level = 1 - spec.family_alpha / n_models
@@ -400,18 +485,20 @@ def compare_to_baseline(
     for tau in (spec.tau, *spec.sensitivity_taus):
         paired = paired_bootstrap(
             meeting_counts(
-                baseline.runs,
+                _ok_runs(baseline),
                 reference_of=reference_of,
                 similarity=similarity,
                 tau=tau,
                 series=series,
+                expected_runs=baseline_runs,
             ),
             meeting_counts(
-                candidate.runs,
+                _ok_runs(candidate),
                 reference_of=reference_of,
                 similarity=similarity,
                 tau=tau,
                 series=series,
+                expected_runs=candidate_runs,
             ),
             resamples=spec.bootstrap_resamples,
             seed=spec.bootstrap_seed,
@@ -435,11 +522,14 @@ def compare_to_baseline(
                 paired.precision.interval,
                 precision_margin=spec.precision_margin,
             ),
+            "recall_up_precision_drop": paired.recall.interval[0] > 0
+            and paired.precision.interval[0] < spec.precision_margin,
         }
     base_profile = _ingest_profile(baseline, series)
     cand_profile = _ingest_profile(candidate, series)
+    ok_candidate = _ok_runs(candidate)
     runs_per_series = {
-        s: len({r.run for r in candidate.runs if r.record["series_id"] == s}) for s in series
+        s: len({r.run for r in ok_candidate if r.record["series_id"] == s}) for s in series
     }
     return {
         "run_name": candidate.name,
@@ -448,6 +538,7 @@ def compare_to_baseline(
         "n_series": len(series),
         "n_meetings": n_meetings,
         "runs_per_series": runs_per_series,
+        **_coverage(candidate, series),
         "scope_note": (
             f"La comparación cubre solo las series de la corrida candidata ({', '.join(series)}); "
             "la línea base se restringe a esas mismas series."
@@ -579,11 +670,13 @@ def build_comparison(
             candidates.append({"label": label, "run_name": name, "status": NO_RUN})
             continue
         spec = config.models[label]
+        stored = data.manifest.get("openkos") or {}
         candidates.append(
             {
                 "label": label,
-                "provider": spec.provider,
-                "model": spec.model,
+                "provider": data.manifest.get("provider") or spec.provider,
+                "model": stored.get("generative_model") or spec.model,
+                "base_url": stored.get("base_url") or spec.base_url,
                 "status": "ok",
                 **compare_to_baseline(
                     baseline,
@@ -632,7 +725,8 @@ CSV_COLUMNS = (
     "diff_precision", "diff_precision_low", "diff_precision_high",
     "diff_recall", "diff_recall_low", "diff_recall_high",
     "diff_f1", "diff_f1_low", "diff_f1_high",
-    "verdict", "time_ratio", "time_ratio_low", "time_ratio_high", "time_verdict",
+    "verdict", "recall_up_precision_drop",
+    "time_ratio", "time_ratio_low", "time_ratio_high", "time_verdict",
     "complete_share", "decisions_per_meeting", "cost_usd",
 )  # fmt: skip
 
@@ -660,6 +754,7 @@ def comparison_rows(payload: Mapping[str, Any]) -> list[dict[str, Any]]:
                 "n_meetings": item["n_meetings"],
                 "tau": entry["tau"],
                 "verdict": entry["verdict"],
+                "recall_up_precision_drop": entry.get("recall_up_precision_drop"),
                 "time_ratio": ratio["estimate"],
                 "time_ratio_low": ratio["interval"][0],
                 "time_ratio_high": ratio["interval"][1],
