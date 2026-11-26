@@ -341,6 +341,42 @@ def test_resume_with_other_questions_or_extraction_is_refused(tmp_path: Path) ->
         )
 
 
+def test_resume_with_other_derived_workspaces_or_sufficiency_is_refused(tmp_path: Path) -> None:
+    derived = {
+        "questions_sha256": "aaa",
+        "c2_extraction": "d-1",
+        "c2_workspaces_dir": "data/interim/openkos-query",
+        "c2_derived_from": "a-1",
+        "c2_openkos_executable": "/x/openkos",
+        "sufficiency_check": False,
+    }
+    _run(tmp_path, [_question()], [FakeCondition()], provenance=derived)
+    _run(tmp_path, [_question()], [FakeCondition()], provenance=derived)
+    for key, other in (
+        ("sufficiency_check", True),
+        ("c2_workspaces_dir", "data/interim/openkos"),
+        ("c2_derived_from", "a-2"),
+        ("c2_openkos_executable", "/y/openkos"),
+    ):
+        with pytest.raises(ManifestMismatchError, match=key):
+            _run(tmp_path, [_question()], [FakeCondition()], provenance={**derived, key: other})
+
+
+def test_a_run_without_derivation_keys_cannot_resume_as_a_relaxed_one(tmp_path: Path) -> None:
+    formal = {"questions_sha256": "aaa", "c2_extraction": "a-1"}
+    _run(tmp_path, [_question()], [FakeCondition()], provenance=formal)
+    # absent keys read as the formal defaults, so a relaxed resume is a different identity
+    with pytest.raises(ManifestMismatchError, match="sufficiency_check"):
+        _run(
+            tmp_path,
+            [_question()],
+            [FakeCondition()],
+            provenance={**formal, "sufficiency_check": False},
+        )
+    manifest = json.loads((tmp_path / "run" / "manifest.json").read_text(encoding="utf-8"))
+    assert "sufficiency_check" not in manifest  # formal manifests keep their shape
+
+
 def test_resume_may_raise_the_number_of_runs(tmp_path: Path) -> None:
     _run(tmp_path, [_question()], [FakeCondition()], settings=_settings(runs=1))
     summary = _run(tmp_path, [_question()], [FakeCondition()], settings=_settings(runs=2))

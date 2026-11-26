@@ -200,6 +200,26 @@ def ensure_config_keys(text: str, values: Mapping[str, str]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def drop_config_keys(text: str, keys: Sequence[str]) -> str:
+    """Remove the active ``key:`` lines of ``keys`` from an ``openkos.yaml`` text.
+
+    Commented ``# key:`` lines (the template's documentation) stay, and a key that is not set
+    is ignored. Dropping a key returns OpenKOS to its packaged default for it.
+    """
+    patterns = [re.compile(rf"^{re.escape(key)}\s*:") for key in keys]
+    kept = [line for line in text.splitlines() if not any(p.match(line) for p in patterns)]
+    return "\n".join(kept) + "\n"
+
+
+def read_config_value(text: str, key: str) -> str | None:
+    """The value of the active ``key:`` line (trailing comment removed), or ``None``."""
+    match = re.search(rf"^{re.escape(key)}\s*:[ \t]*([^#\n]*)", text, re.MULTILINE)
+    if match is None:
+        return None
+    value = match.group(1).strip()
+    return value or None
+
+
 def require_config_key(text: str, key: str, *, executable: str, version: str | None) -> None:
     """Raise if the generated ``openkos.yaml`` never mentions ``key`` (active or commented).
 

@@ -7,6 +7,7 @@ paso cero (thesis section 5.0), and they say so instead of crashing with a stack
 
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Any
 
@@ -225,6 +226,15 @@ from afg.extraction.openkos.gold_bundle import (
     gold_relations_kind,
     load_gold_relations,
 )
+from afg.extraction.openkos.query_workspace import (
+    DerivedWorkspaceExistsError,
+    ExecutableVersionError,
+    QuerySideSettings,
+    derive_query_workspaces,
+    executable_for_version,
+    load_derived_manifest,
+    source_openkos_version,
+)
 from afg.extraction.openkos.settings import openkos_run_settings
 from afg.extraction.openkos.workspace import OpenKosRunSettings
 from afg.extraction.openkos_adapter import OpenKosAdapter
@@ -239,6 +249,7 @@ from afg.shared.paths import (
     GOLD_DECISIONS_DIR,
     GOLD_RELATIONS_DIR,
     OPENKOS_C3_WORKSPACES_DIR,
+    OPENKOS_QUERY_WORKSPACES_DIR,
     OPENKOS_WORKSPACES_DIR,
     PROJECT_ROOT,
     QUESTIONS_DIR,
@@ -3651,9 +3662,13 @@ def c3_build(
         raise typer.Exit(code=1)
 
 
-def make_provenance_probe() -> ProvenanceProbe:
-    """The probe that reads model digests and versions from the local machine."""
-    return LiveProbe(openkos_executable=get_settings().openkos_executable)
+def make_provenance_probe(openkos_executable: str | None = None) -> ProvenanceProbe:
+    """The probe that reads model digests and versions from the local machine.
+
+    ``openkos_executable`` is the OpenKOS to ask for its version; omitted, the configured one
+    (``AFG_OPENKOS_EXECUTABLE``, the pinned install).
+    """
+    return LiveProbe(openkos_executable=openkos_executable or get_settings().openkos_executable)
 
 
 def require_pinned_environment(models: Sequence[str], *, needs_openkos: bool) -> dict[str, Any]:
@@ -3737,6 +3752,39 @@ def make_c2_condition(extraction_run: str) -> CompiledAutoCondition:
         settings=openkos_run_settings(),
         extraction_run=extraction_run,
         base_dir=base_dir,
+        transcripts_dir=TRANSCRIPTS_DIR,
+    )
+
+
+def make_c2_derived_condition(derived_run: str) -> CompiledAutoCondition:
+    """C2 wired to the query workspaces ``afg experiment b-derive`` derived (ADR 0026, am. 3).
+
+    The condition queries with the OpenKOS executable recorded in the derivation, the version
+    that compiled the workspaces.
+
+    Raises:
+        ValueError: the derivation does not exist or was made with another base seed.
+    """
+    try:
+        derived = load_derived_manifest(OPENKOS_QUERY_WORKSPACES_DIR / derived_run)
+    except FileNotFoundError as exc:
+        raise ValueError(
+            f"No hay espacios de trabajo derivados {derived_run!r} en "
+            f"{_short(OPENKOS_QUERY_WORKSPACES_DIR)}. Derívalos antes con `afg experiment "
+            f"b-derive --source <corrida-de-extraccion> --name {derived_run}`."
+        ) from exc
+    settings = openkos_run_settings()
+    if derived.settings.get("base_seed") != settings.base_seed:
+        raise ValueError(
+            f"La derivación {derived_run!r} usa la semilla base {derived.settings.get('base_seed')}"
+            f" y [shared_budget] fija {settings.base_seed}: el seed de cada espacio no coincidiría "
+            "con el de la corrida. Deriva de nuevo con `--overwrite`."
+        )
+    return CompiledAutoCondition(
+        runner=SubprocessRunner(),
+        settings=replace(settings, executable=derived.executable),
+        extraction_run=derived_run,
+        base_dir=OPENKOS_QUERY_WORKSPACES_DIR,
         transcripts_dir=TRANSCRIPTS_DIR,
     )
 
@@ -3927,7 +3975,6 @@ def experiment_a_validacion_hoja(
     La clave queda en `data/interim/alignment-validation/` (fuera del repositorio) para que
     quien valida no la vea. Calcula embeddings, no llama al modelo generativo.
     """
-    from dataclasses import replace
 
     run_dir, series_ids = _validation_inputs(run_name, series)
     sheet_path, key_path = _validation_paths(run_name, hoja, clave)
@@ -4052,6 +4099,231 @@ def experiment_a_validacion_puntaje(
     console.print(f"Guardado en {_short(out_path)}.")
 
 
+@experiment_app.command("b-hosted-compare")
+def experiment_b_hosted_compare(
+    models: Annotated[
+        list[str] | None,
+        typer.Option("--models", help="Etiqueta a comparar; se repite. Por defecto, todas."),
+    ] = None,
+    formal_run: Annotated[
+        str,
+        typer.Option("--formal-run", help="Corrida formal del Experimento B (C1 y C2 formales)."),
+    ] = "experimento-b-formal",
+    base_run: Annotated[
+        str,
+        typer.Option(
+            "--base-run", help="Corrida de C2 sobre la línea base `qwen3:8b` con OpenKOS 0.7.3."
+        ),
+    ] = "experimento-b-base-0-7-3",
+) -> None:
+    """Compara las respuestas de C2 con cada extractor de pago frente a C1 (ADR 0026, enm. 3).
+
+    Para cada modelo toma `reports/experiment-b/experimento-b-hosted-<etiqueta>/` y calcula, con
+    el bootstrap pareado del criterio D16 y nivel Bonferroni `1 - alpha/6`, la diferencia de
+    corrección en E3 de «C2 con ese extractor - C1 formal»: «supera a C1», «no se distingue de
+    C1» o «queda bajo C1». Agrega la misma diferencia frente a C2 formal y frente a C2 de la
+    línea base 0.7.3, y por estrato corrección, abstención, `evidence_supported`,
+    `citation_correct`, H4 y tiempo de respuesta. Las corridas que no existen se informan como
+    «pendiente». Escribe `respuestas-comparacion.json` y `.csv` en
+    `reports/experiment-b/hosted-comparison/`. Es descriptivo y no llama a ningún modelo.
+    """
+    from rich.table import Table
+
+    from afg.evaluation.scoring import DevelopmentResultError, interval_settings_from_config
+    from afg.experiments.hosted_answers import (
+        AnswerComparisonSpec,
+        answer_run_name,
+        build_answer_comparison,
+        write_answer_comparison,
+    )
+    from afg.experiments.hosted_extraction import load_hosted_config
+    from afg.experiments.runner import RECORDS_FILE, load_records
+
+    config = load_hosted_config()
+    labels = list(dict.fromkeys(models)) if models else list(config.models)
+    unknown = [label for label in labels if label not in config.models]
+    if unknown:
+        console.print(
+            f"[bold red]Etiqueta(s) desconocida(s): {escape(', '.join(unknown))}; "
+            f"válidas: {escape(', '.join(config.models))}.[/bold red]"
+        )
+        raise typer.Exit(code=2)
+    spec = AnswerComparisonSpec(
+        models=tuple(config.models),
+        family_alpha=config.comparison.family_alpha,
+        interval=interval_settings_from_config(),
+        min_questions=configured_minimums(
+            int(load_experiments_config()["question_bank"]["min_questions"])
+        ),
+        formal_run=formal_run,
+        base_run=base_run,
+    )
+    runs = {formal_run, base_run, *(answer_run_name(label) for label in labels)}
+    records = {
+        name: load_records(EXPERIMENT_B_DIR / name / RECORDS_FILE, latest_only=True) or None
+        for name in runs
+    }
+    try:
+        payload = build_answer_comparison(records, spec, only=labels)
+    except DevelopmentResultError as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    json_path, csv_path = write_answer_comparison(payload, EXPERIMENT_B_DIR / "hosted-comparison")
+
+    table = Table(
+        title=f"C2 con cada extractor frente a C1 formal, E3 (nivel {spec.level:.4f}, descriptivo)"
+    )
+    for column in ("Modelo", "Corrida", "Diferencia", "IC", "Veredicto"):
+        table.add_column(column)
+    entries = {**payload["models"], "línea base 0.7.3": payload["baseline_0_7_3"]}
+    for label, entry in entries.items():
+        primary = entry.get("primary", {})
+        if entry["status"] != "ok" or primary.get("status") != "ok":
+            reason = entry.get("reason") or primary.get("reason", "")
+            table.add_row(label, entry["run"], "pendiente", "", escape(str(reason)))
+            continue
+        table.add_row(
+            label,
+            entry["run"],
+            f"{primary['difference']:+.3f}",
+            f"[{primary['lower']:+.3f}, {primary['upper']:+.3f}]",
+            primary["verdict"],
+        )
+    console.print(table)
+    for label, entry in entries.items():
+        for warning in entry.get("warnings", []):
+            console.print(f"[yellow]{escape(label)}: {escape(warning)}[/yellow]")
+    console.print(f"Guardado en {_short(json_path)} y {_short(csv_path)}.")
+
+
+@experiment_app.command("b-derive")
+def experiment_b_derive(
+    source: Annotated[
+        str,
+        typer.Option(
+            "--source",
+            help="`--run-name` de la corrida de extracción cuyos espacios de trabajo se derivan "
+            "(en `data/interim/openkos/`): un modelo de pago, la línea base 0.7.3 o la formal.",
+        ),
+    ],
+    name: Annotated[
+        str | None,
+        typer.Option(
+            "--name",
+            help="Nombre de la carpeta derivada en `data/interim/openkos-query/` (por defecto "
+            "`<corrida>-consulta`, o `<corrida>-consulta-sin-suficiencia`).",
+        ),
+    ] = None,
+    sufficiency_check: Annotated[
+        bool,
+        typer.Option(
+            "--sufficiency-check/--no-sufficiency-check",
+            help="Deja activo (por defecto) o relaja el chequeo de suficiencia de `openkos query` "
+            "en los espacios derivados.",
+        ),
+    ] = True,
+    openkos_executable: Annotated[
+        str | None,
+        typer.Option(
+            "--openkos-executable",
+            help="Ejecutable de la versión de OpenKOS que compiló la corrida. Por defecto se "
+            "elige por la versión de sus manifiestos: la fijada (formal) o la de la extensión "
+            "(0.7.3, `AFG_HOSTED_OPENKOS_EXECUTABLE`).",
+        ),
+    ] = None,
+    context_window: Annotated[
+        int | None,
+        typer.Option(
+            "--context-window",
+            min=1,
+            help="`context_window` de la consulta (por defecto `[shared_budget] "
+            "context_window_tokens`, el de la corrida formal).",
+        ),
+    ] = None,
+    series: Annotated[
+        list[str] | None,
+        typer.Option("--series", help="Solo esta serie; se repite. Por defecto, todas."),
+    ] = None,
+    overwrite: Annotated[
+        bool, typer.Option("--overwrite", help="Reemplaza una carpeta derivada que ya existe.")
+    ] = False,
+) -> None:
+    """Deriva espacios de trabajo de consulta desde una corrida de extracción (ADR 0026, enm. 3).
+
+    Copia los espacios de la corrida a `data/interim/openkos-query/<nombre>/` sin tocar el
+    original y cambia solo la configuración de consulta de cada `openkos.yaml`: backend
+    `ollama` (sin `base_url`, `embedding_base_url` ni `reasoning_effort`, así no se llama a
+    ningún proveedor), `qwen3:8b`, la temperatura y la semilla `seed + r` de la corrida formal y
+    el `context_window` de C2 formal. Los objetos extraídos y los índices no cambian. Con
+    `--no-sufficiency-check` además relaja el chequeo de suficiencia (issue #337). Registra en
+    `derived-manifest.json` el ejecutable y la versión de OpenKOS con que debe consultarse, que
+    `afg experiment b --c2-derived` lee de ahí. No llama a ningún modelo.
+    """
+    import os
+
+    from afg.experiments.hosted_extraction import load_hosted_config, resolve_executable
+    from afg.experiments.pinned_environment import load_pinned_environment
+
+    source_root = OPENKOS_WORKSPACES_DIR / source
+    target_name = name or f"{source}-consulta" + ("" if sufficiency_check else "-sin-suficiencia")
+    try:
+        executable = openkos_executable
+        if executable is None:
+            hosted = load_hosted_config()
+            executable = executable_for_version(
+                source_openkos_version(source_root, series),
+                pinned_version=load_pinned_environment().openkos_version,
+                pinned_executable=get_settings().openkos_executable,
+                hosted_version=hosted.required_version,
+                hosted_executable=resolve_executable(hosted, os.environ),
+            )
+        base = openkos_run_settings()
+        assert base.base_seed is not None and base.temperature is not None
+        window = (
+            context_window
+            if context_window is not None
+            else int(load_experiments_config()["shared_budget"]["context_window_tokens"])
+        )
+        result = derive_query_workspaces(
+            source_root=source_root,
+            target_root=OPENKOS_QUERY_WORKSPACES_DIR / target_name,
+            settings=QuerySideSettings(
+                generative_model=base.generative_model,
+                base_seed=base.base_seed,
+                temperature=base.temperature,
+                context_window=window,
+                sufficiency_check=sufficiency_check,
+            ),
+            executable=executable,
+            runner=SubprocessRunner(),
+            series=tuple(series) if series else None,
+            overwrite=overwrite,
+        )
+    except (
+        FileNotFoundError,
+        DerivedWorkspaceExistsError,
+        ExecutableVersionError,
+        OpenKosError,
+    ) as exc:
+        console.print(f"[bold red]{escape(str(exc))}[/bold red]")
+        raise typer.Exit(code=1) from exc
+    console.print(
+        f"{len(result.pairs)} espacios de trabajo derivados de {escape(source)} "
+        f"(OpenKOS {result.openkos_version}, "
+        f"chequeo de suficiencia {'activo' if sufficiency_check else 'relajado'}) -> "
+        f"{_short(result.target_root)}."
+    )
+    if result.skipped:
+        console.print(
+            f"[yellow]Sin terminar en la corrida de origen y omitidos: "
+            f"{escape(', '.join(result.skipped))}.[/yellow]"
+        )
+    console.print(
+        f"Úsalos con `afg experiment b --conditions c2 --c2-derived {escape(target_name)}"
+        f"{'' if sufficiency_check else ' --no-sufficiency-check'}`."
+    )
+
+
 @experiment_app.command("b")
 def experiment_b(
     questions: Annotated[
@@ -4082,6 +4354,24 @@ def experiment_b(
             "usa `run-r` de cada serie.",
         ),
     ] = None,
+    c2_derived: Annotated[
+        str | None,
+        typer.Option(
+            "--c2-derived",
+            help="Solo con `--conditions c2`: carpeta derivada por `afg experiment b-derive` "
+            "(ADR 0026, enmienda 3) cuyos espacios consulta C2, en vez de `--c2-extraction`. "
+            "Consulta con el ejecutable de OpenKOS registrado en la derivación.",
+        ),
+    ] = None,
+    sufficiency_check: Annotated[
+        bool,
+        typer.Option(
+            "--sufficiency-check/--no-sufficiency-check",
+            help="Debe coincidir con la derivación (`--c2-derived`): con "
+            "`--no-sufficiency-check` los espacios se derivaron sin el chequeo de suficiencia "
+            "y el modelo de suficiencia deja de ser necesario. Se registra en el manifiesto.",
+        ),
+    ] = True,
     runs: Annotated[
         int | None,
         typer.Option("--runs", min=1, help="Corridas por pregunta (por defecto runs_per_config)."),
@@ -4108,6 +4398,11 @@ def experiment_b(
     mismo modo la base que `afg c3 build` derivó de esa corrida, con las decisiones de oro. C0
     responde sin ningún contexto recuperado, con el mismo generador, ajustes, semillas y juez
     (ADR 0019): es la referencia sin recuperación y no necesita `--c2-extraction`.
+
+    Con `--c2-derived` C2 consulta los espacios que derivó `afg experiment b-derive` (la medición
+    de respuestas de la tercera enmienda del ADR 0026): solo se admite C2, se consulta con el
+    ejecutable de OpenKOS de la derivación y la corrida registra la derivación, su origen, el
+    ejecutable y `sufficiency_check`; reanudar con otros valores se rechaza.
     """
     from datetime import UTC, datetime
 
@@ -4126,11 +4421,50 @@ def experiment_b(
             "agrégalas a `--conditions` o quita la opción.[/bold red]"
         )
         raise typer.Exit(code=1)
+    derived = None
+    if c2_derived is not None:
+        if c2_extraction is not None or set(wanted) != {"c2"}:
+            console.print(
+                "[bold red]`--c2-derived` es una alternativa a `--c2-extraction` y solo se "
+                "admite con `--conditions c2`: C1 y C3 no consultan los espacios derivados."
+                "[/bold red]"
+            )
+            raise typer.Exit(code=1)
+        try:
+            derived = load_derived_manifest(OPENKOS_QUERY_WORKSPACES_DIR / c2_derived)
+        except FileNotFoundError:
+            console.print(
+                f"[bold red]No hay espacios de trabajo derivados {escape(c2_derived)!r} en "
+                f"{escape(_short(OPENKOS_QUERY_WORKSPACES_DIR))}. Derívalos antes con `afg "
+                f"experiment b-derive --source <corrida-de-extraccion> --name "
+                f"{escape(c2_derived)}`.[/bold red]"
+            )
+            raise typer.Exit(code=1) from None
+        if derived.sufficiency_check != sufficiency_check:
+            state = "sin" if not derived.sufficiency_check else "con"
+            flag = "--sufficiency-check" if derived.sufficiency_check else "--no-sufficiency-check"
+            console.print(
+                f"[bold red]La derivación {escape(c2_derived)!r} se hizo {state} el chequeo de "
+                f"suficiencia y la corrida pide lo contrario: usa "
+                f"`{flag}` o deriva otra vez.[/bold red]"
+            )
+            raise typer.Exit(code=1)
+    elif not sufficiency_check:
+        console.print(
+            "[bold red]`--no-sufficiency-check` solo se admite con `--c2-derived`: el chequeo "
+            "se relaja en la configuración de los espacios, que solo `afg experiment b-derive` "
+            "escribe sin tocar la corrida formal.[/bold red]"
+        )
+        raise typer.Exit(code=1)
     try:
-        built = {
-            c.upper(): make_experiment_b_condition(c, c2_extraction=c2_extraction)
-            for c in dict.fromkeys(wanted)
-        }
+        built = (
+            {"C2": make_c2_derived_condition(c2_derived)}
+            if c2_derived is not None
+            else {
+                c.upper(): make_experiment_b_condition(c, c2_extraction=c2_extraction)
+                for c in dict.fromkeys(wanted)
+            }
+        )
         if questions.exists() and is_question_bank(questions):
             bank_report = load_configured_question_bank(questions, strict=True)
             if not bank_report.has_errors:
@@ -4153,11 +4487,13 @@ def experiment_b(
     config = load_experiments_config()
     settings = experiment_b_settings(runs)
     sufficiency_model = str(config["shared_budget"]["sufficiency_model"])
+    # The sufficiency model is only called by C2 and C3, and only while the check is on.
+    uses_sufficiency = bool({"c2", "c3"} & set(wanted)) and sufficiency_check
     try:
         needed = [
             settings.generative_model,
             settings.judge_model,
-            *([sufficiency_model] if {"c2", "c3"} & set(wanted) else []),
+            *([sufficiency_model] if uses_sufficiency else []),
             configured_embedding_model(),
         ]
         absent = missing_models(needed, list_installed_models())
@@ -4177,29 +4513,52 @@ def experiment_b(
     # OpenKOS is checked for every condition: C1 also records its version and copies its context
     # budget (ADR 0007), so a different OpenKOS invalidates C1 runs too. The sufficiency model
     # is only called by C2 and C3.
+    # Derived workspaces are queried with the executable that compiled them (0.7.3 for the hosted
+    # runs), not the pinned one on PATH: the pin guard then checks the models and Ollama only, and
+    # the version the derived executable reports must be the one the derivation recorded.
+    probe = make_provenance_probe(derived.executable) if derived is not None else None
     pinned = require_pinned_environment(
         [
             settings.generative_model,
             settings.judge_model,
-            *([sufficiency_model] if {"c2", "c3"} & set(wanted) else []),
+            *([sufficiency_model] if uses_sufficiency else []),
             configured_embedding_model(),
         ],
-        needs_openkos=True,
+        needs_openkos=derived is None,
     )
+    if (
+        derived is not None
+        and probe is not None
+        and probe.openkos_version() != derived.openkos_version
+    ):
+        console.print(
+            f"[bold red]{escape(derived.executable)} reporta OpenKOS "
+            f"{escape(str(probe.openkos_version()))} y la derivación se hizo para la versión "
+            f"{escape(derived.openkos_version)}; no se llamó a ningún modelo.[/bold red]"
+        )
+        raise typer.Exit(code=1)
     name = run_name or datetime.now(UTC).strftime("b-%Y%m%d-%H%M%S")
     run_dir = EXPERIMENT_B_DIR / name
     provenance = collect_provenance(
-        make_provenance_probe(),
+        probe or make_provenance_probe(),
         generative_model=settings.generative_model,
         judge_model=settings.judge_model,
         sufficiency_model=sufficiency_model,
         embedding_model=configured_embedding_model(),
         c1_params=config["retrieval"]["c1"],
         questions_path=questions,
-        c2_extraction=c2_extraction,
+        c2_extraction=c2_derived if c2_derived is not None else c2_extraction,
         c3_workspaces=_short(OPENKOS_C3_WORKSPACES_DIR) if "c3" in wanted else None,
     )
     provenance.update(pinned)
+    if derived is not None:
+        # Written only for derived runs, so the manifests of the formal setup keep their shape.
+        provenance.update(
+            c2_workspaces_dir=_short(OPENKOS_QUERY_WORKSPACES_DIR),
+            c2_derived_from=derived.source_run,
+            c2_openkos_executable=derived.executable,
+            sufficiency_check=derived.sufficiency_check,
+        )
     provenance["freeze"] = freeze_provenance(FREEZE_PATH)
 
     def report(done: int, total: int) -> None:

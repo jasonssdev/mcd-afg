@@ -37,7 +37,7 @@ from afg.experiments.c2_context import (
     reference_term_coverage,
 )
 from afg.shared.csvio import open_csv_writer, read_rows
-from afg.shared.paths import OPENKOS_WORKSPACES_DIR
+from afg.shared.paths import OPENKOS_WORKSPACES_DIR, PROJECT_ROOT
 
 BUNDLE_NAMESPACES = ("decisions", "concepts", "events", "people", "projects", "sources")
 ETAPA_VALUES = ("extraccion", "recuperacion", "sintesis")
@@ -155,9 +155,13 @@ def bundle_dir_for(
 
 
 def bundle_resolver(
-    manifest: Mapping[str, Any], *, base_dir: Path = OPENKOS_WORKSPACES_DIR
+    manifest: Mapping[str, Any], *, base_dir: Path | None = None
 ) -> Callable[[str, int], Path]:
     """A ``(series_id, run) -> bundle`` lookup from the ``c2_extraction`` of a manifest.
+
+    The workspaces live in ``base_dir``; omitted, in the ``c2_workspaces_dir`` the manifest
+    records (a run over derived query workspaces, ADR 0026 amendment 3) or else in the
+    extraction workspaces.
 
     A manifest may list several series (the formal run covers all of them); each record reads the
     bundle of its own series.
@@ -169,6 +173,9 @@ def bundle_resolver(
     if not extraction:
         raise ValueError("The manifest needs a c2_extraction.")
     series = {str(s) for s in manifest.get("series") or []}
+    if base_dir is None:
+        recorded = manifest.get("c2_workspaces_dir")
+        base_dir = PROJECT_ROOT / str(recorded) if recorded else OPENKOS_WORKSPACES_DIR
 
     def resolve(series_id: str, run: int) -> Path:
         if series and series_id not in series:

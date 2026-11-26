@@ -21,6 +21,8 @@ from afg.experiments.hosted_comparison import METRICS, NO_RUN
 from afg.experiments.hosted_extraction import HostedConfig, hosted_run_name
 
 __all__ = [
+    "answers_frame",
+    "answers_state",
     "baseline_figures",
     "bridge_frame",
     "bridge_state",
@@ -398,3 +400,52 @@ _VERSION_COLUMNS = [
     "Comparación", "Series", "Reuniones", "Precision", "Recall", "F1",
     "Δ Precision", "Δ Recall", "Δ F1",
 ]  # fmt: skip
+
+
+PENDING = "pendiente"
+
+
+def answers_state(path: Path) -> dict[str, Any] | None:
+    """The stored answer comparison (``respuestas-comparacion.json``), or ``None`` if absent."""
+    if not path.is_file():
+        return None
+    payload: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
+    return payload
+
+
+def _difference_cell(comparison: Mapping[str, Any]) -> str:
+    if comparison.get("status") != "ok":
+        return PENDING
+    return format_interval(
+        comparison["difference"],
+        (comparison["lower"], comparison["upper"]),
+        signed=True,
+    )
+
+
+def answers_frame(payload: Mapping[str, Any]) -> pd.DataFrame:
+    """One row per model (and the 0.7.3 baseline): E3 difference with C1, verdict and secondaries.
+
+    Missing runs read ``pendiente`` in every figure column, so the table can be shown before any
+    run of the answer measurement exists.
+    """
+    entries = {**payload["models"], "línea base 0.7.3": payload["baseline_0_7_3"]}
+    rows = []
+    for label, entry in entries.items():
+        done = entry["status"] == "ok" and entry["primary"].get("status") == "ok"
+        primary = entry["primary"] if done else {}
+        secondary = entry.get("secondary", {}) if done else {}
+        rows.append(
+            {
+                "Modelo": label,
+                "Corrida": entry["run"],
+                "Diferencia con C1 formal en E3": _difference_cell(primary),
+                "Veredicto": primary.get("verdict", PENDING),
+                "Preguntas pareadas": str(primary["n_pairs"]) if done else PENDING,
+                "Frente a C2 formal": _difference_cell(secondary.get("vs_c2_formal", {})),
+                "Frente a C2 de la línea base 0.7.3": _difference_cell(
+                    secondary.get("vs_c2_base_0_7_3", {})
+                ),
+            }
+        )
+    return pd.DataFrame(rows)
