@@ -122,6 +122,8 @@ class HostedConfig:
     """``config/hosted_extraction.toml`` as typed values."""
 
     required_version: str
+    ollama_version: str
+    """Ollama server version of every local run of the extension (ADR 0026, fourth amendment)."""
     executable: str
     series_partition: str
     runs_per_model: int
@@ -183,6 +185,7 @@ def load_hosted_config(path: Path | None = None) -> HostedConfig:
     }
     return HostedConfig(
         required_version=str(raw["openkos"]["required_version"]),
+        ollama_version=str(raw["ollama"]["required_version"]),
         executable=str(raw["openkos"]["executable"]),
         series_partition=str(shared["series_partition"]),
         runs_per_model=int(shared["runs_per_model"]),
@@ -271,6 +274,7 @@ def hosted_manifest(
     pilot: bool,
     git_commit: str | None,
     git_dirty: bool | None,
+    ollama_version: str | None,
     local_model_digests: Mapping[str, str] | None = None,
     local_baseline: bool = False,
 ) -> dict[str, Any]:
@@ -296,6 +300,7 @@ def hosted_manifest(
         "bridge": label is None and not local_baseline,
         "local_baseline": local_baseline,
         "model_label": label,
+        "ollama_version": ollama_version,
         "provider": spec.provider if spec else "ollama",
         "baseline_run_name": config.baseline_run_name,
         "openkos": {
@@ -332,6 +337,7 @@ def preflight(
     runner: CommandRunner,
     env: Mapping[str, str],
     ollama_models: Callable[[], Mapping[str, str] | None],
+    ollama_version: Callable[[], str | None],
     executable_exists: Callable[[str], bool],
     bridge_model: str | None = None,
 ) -> None:
@@ -364,6 +370,12 @@ def preflight(
         raise HostedPreflightError(
             f"The environment variable {API_KEY_ENV} is not set. Export the key of the provider "
             f"of {label!r} before the run; it is never written to a file."
+        )
+    served = ollama_version()
+    if served != config.ollama_version:
+        raise HostedPreflightError(
+            f"The local server reports Ollama {served or 'unknown'}; this extension needs "
+            f"{config.ollama_version} (ADR {HOSTED_ADR}, fourth amendment)."
         )
     installed = ollama_models()
     if installed is None:

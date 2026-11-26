@@ -105,6 +105,7 @@ def test_preflight_passes_for_a_hosted_label_with_key_version_and_embeddings() -
         runner=_runner(),
         env={API_KEY_ENV: "sk-x"},
         ollama_models=lambda: OLLAMA_OK,
+        ollama_version=lambda: "0.40.16",
         executable_exists=lambda _path: True,
     )
 
@@ -118,6 +119,7 @@ def test_preflight_names_the_missing_key_without_any_value() -> None:
             runner=_runner(),
             env={},
             ollama_models=lambda: OLLAMA_OK,
+            ollama_version=lambda: "0.40.16",
             executable_exists=lambda _path: True,
         )
     assert API_KEY_ENV in str(error.value)
@@ -132,6 +134,7 @@ def test_preflight_rejects_a_wrong_openkos_version() -> None:
             runner=_runner("openkos 0.7.0\n"),
             env={API_KEY_ENV: "k"},
             ollama_models=lambda: OLLAMA_OK,
+            ollama_version=lambda: "0.40.16",
             executable_exists=lambda _path: True,
         )
 
@@ -145,6 +148,7 @@ def test_preflight_rejects_a_missing_executable() -> None:
             runner=_runner(),
             env={API_KEY_ENV: "k"},
             ollama_models=lambda: OLLAMA_OK,
+            ollama_version=lambda: "0.40.16",
             executable_exists=lambda _path: False,
         )
 
@@ -158,6 +162,7 @@ def test_preflight_requires_the_embedding_model_in_local_ollama() -> None:
             runner=_runner(),
             env={API_KEY_ENV: "k"},
             ollama_models=lambda: {"qwen3:8b": "d"},
+            ollama_version=lambda: "0.40.16",
             executable_exists=lambda _path: True,
         )
 
@@ -170,6 +175,7 @@ def test_bridge_preflight_needs_no_key_but_needs_the_local_generative_model() ->
         runner=_runner(),
         env={},
         ollama_models=lambda: OLLAMA_OK,
+        ollama_version=lambda: "0.40.16",
         executable_exists=lambda _path: True,
         bridge_model="qwen3:8b",
     )
@@ -181,6 +187,7 @@ def test_bridge_preflight_needs_no_key_but_needs_the_local_generative_model() ->
             runner=_runner(),
             env={},
             ollama_models=lambda: {"bge-m3:latest": "d"},
+            ollama_version=lambda: "0.40.16",
             executable_exists=lambda _path: True,
             bridge_model="qwen3:8b",
         )
@@ -195,6 +202,7 @@ def test_preflight_fails_when_ollama_is_unreachable() -> None:
             runner=_runner(),
             env={API_KEY_ENV: "k"},
             ollama_models=lambda: None,
+            ollama_version=lambda: "0.40.16",
             executable_exists=lambda _path: True,
         )
 
@@ -217,6 +225,7 @@ def test_the_manifest_marks_the_local_baseline_as_the_secondary_baseline() -> No
         "pilot": False,
         "git_commit": "abc",
         "git_dirty": False,
+        "ollama_version": "0.40.16",
     }
     local = hosted_manifest(
         CONFIG, run_name=CONFIG.local_baseline.run_name, label=None, local_baseline=True, **common
@@ -246,5 +255,74 @@ def test_a_run_on_the_old_version_is_refused_by_the_preflight() -> None:
             runner=_runner("openkos 0.7.2\n"),
             env={API_KEY_ENV: "k"},
             ollama_models=lambda: OLLAMA_OK,
+            ollama_version=lambda: "0.40.16",
             executable_exists=lambda _path: True,
         )
+
+
+def test_the_shipped_config_pins_the_extension_ollama_version() -> None:
+    assert CONFIG.ollama_version == "0.40.16"
+
+
+def _preflight_with(version: str | None, *, label: str | None = "openai-small") -> None:
+    preflight(
+        CONFIG,
+        label=label,
+        executable="openkos",
+        runner=_runner(),
+        env={API_KEY_ENV: "k"},
+        ollama_models=lambda: OLLAMA_OK,
+        ollama_version=lambda: version,
+        executable_exists=lambda _path: True,
+        bridge_model="qwen3:8b" if label is None else None,
+    )
+
+
+@pytest.mark.parametrize("label", ["openai-small", None])
+def test_preflight_refuses_another_ollama_version_in_every_mode(label: str | None) -> None:
+    with pytest.raises(HostedPreflightError, match=r"Ollama 0\.32\.9.*needs 0\.40\.16"):
+        _preflight_with("0.32.9", label=label)
+
+
+def test_preflight_refuses_an_unreadable_ollama_version() -> None:
+    with pytest.raises(HostedPreflightError, match=r"unknown.*needs 0\.40\.16"):
+        _preflight_with(None)
+
+
+def test_preflight_accepts_the_pinned_ollama_version() -> None:
+    _preflight_with("0.40.16")
+
+
+def test_the_version_is_checked_before_the_model_list_is_read() -> None:
+    def forbidden() -> dict[str, str]:
+        raise AssertionError("Ollama model list read before the version check")
+
+    with pytest.raises(HostedPreflightError, match="Ollama"):
+        preflight(
+            CONFIG,
+            label="openai-small",
+            executable="openkos",
+            runner=_runner(),
+            env={API_KEY_ENV: "k"},
+            ollama_models=forbidden,
+            ollama_version=lambda: "0.32.9",
+            executable_exists=lambda _path: True,
+        )
+
+
+def test_the_manifest_records_the_ollama_version() -> None:
+    from afg.experiments.hosted_extraction import hosted_manifest
+
+    manifest = hosted_manifest(
+        CONFIG,
+        run_name="r",
+        label="openai-small",
+        series_ids=["ES2002"],
+        n_runs=1,
+        settings=BASE,
+        pilot=False,
+        git_commit=None,
+        git_dirty=None,
+        ollama_version="0.40.16",
+    )
+    assert manifest["ollama_version"] == "0.40.16"

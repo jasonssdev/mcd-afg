@@ -17,6 +17,7 @@ from afg.experiments.hosted_notebook import (
     bridge_state,
     format_es,
     format_interval,
+    infrastructure_effect_frame,
     local_baseline_state,
     models_frame,
     operation_table,
@@ -426,10 +427,11 @@ def _answers_payload() -> dict[str, Any]:
         "difference": -0.12,
         "lower": -0.31,
         "upper": 0.05,
-        "verdict": "no se distingue de C1 formal",
+        "verdict": "no se distingue de C1 actual",
         "sample_sufficient": True,
     }
     secondary = {
+        "vs_c1_formal": {**primary, "reference": "C1 formal", "difference": -0.3, "verdict": "x"},
         "vs_c2_formal": {**primary, "reference": "C2 formal", "difference": 0.2, "verdict": "x"},
         "vs_c2_base_0_7_3": {"status": "pendiente", "reason": "sin corrida"},
     }
@@ -455,6 +457,7 @@ def _answers_payload() -> dict[str, Any]:
             "status": "pendiente",
             "reason": "sin corrida",
         },
+        "infrastructure_effect": {"status": "pendiente", "reason": "sin C1", "level": 0.95},
     }
 
 
@@ -469,11 +472,52 @@ def test_answers_frame_shows_the_verdict_and_marks_missing_runs_pendiente() -> N
     frame = answers_frame(_answers_payload())
     rows = {row["Modelo"]: row for _, row in frame.iterrows()}
     done = rows["openai-small"]
-    assert done["Diferencia con C1 formal en E3"] == "-0,12 [-0,31; +0,05]"
-    assert done["Veredicto"] == "no se distingue de C1 formal"
+    assert done["Diferencia con C1 actual en E3"] == "-0,12 [-0,31; +0,05]"
+    assert done["Veredicto"] == "no se distingue de C1 actual"
+    assert done["Frente a C1 formal (secundaria)"] == "-0,30 [-0,31; +0,05]"
     assert done["Frente a C2 formal"] == "+0,20 [-0,31; +0,05]"
     assert done["Frente a C2 de la línea base 0.7.3"] == "pendiente"
     assert done["Preguntas pareadas"] == "25"
     assert rows["google-large"]["Veredicto"] == "pendiente"
-    assert rows["google-large"]["Diferencia con C1 formal en E3"] == "pendiente"
+    assert rows["google-large"]["Diferencia con C1 actual en E3"] == "pendiente"
     assert rows["línea base 0.7.3"]["Veredicto"] == "pendiente"
+
+
+def _effect_payload() -> dict[str, Any]:
+    def side(point: float) -> dict[str, Any]:
+        return {"correct": {"point": point}}
+
+    def row(stratum: str, now: float, formal: float) -> dict[str, Any]:
+        difference = {"difference": now - formal, "lower": -0.2, "upper": 0.05, "verdict": "x"}
+        return {
+            "stratum": stratum,
+            "subject": side(now),
+            "reference": side(formal),
+            "differences": {"correct": difference},
+        }
+
+    return {
+        "infrastructure_effect": {
+            "status": "ok",
+            "level": 0.95,
+            "runs": {"current": "c1-now", "formal": "formal"},
+            "comparison": {"status": "ok", "stratum": "E3"},
+            "strata": [row("E1", 0.8, 0.9), row("E3", 0.5, 0.6), row("ALL", 0.7, 0.8)],
+        }
+    }
+
+
+def test_infrastructure_effect_frame_shows_each_stratum_with_both_c1_runs() -> None:
+    frame = infrastructure_effect_frame(_effect_payload())
+    rows = {row["Estrato"]: row for _, row in frame.iterrows()}
+    assert list(rows) == ["E1", "E3", "Total"]
+    assert rows["E3"]["C1 actual"] == "0,50"
+    assert rows["E3"]["C1 formal"] == "0,60"
+    assert rows["E3"]["Diferencia (IC 95 %)"] == "-0,10 [-0,20; +0,05]"
+
+
+def test_infrastructure_effect_frame_reads_pendiente_without_the_runs() -> None:
+    frame = infrastructure_effect_frame(_answers_payload())
+    assert frame.shape[0] == 1
+    assert set(frame.iloc[0]) == {"pendiente"}
+    assert list(infrastructure_effect_frame({}).iloc[0]) == ["pendiente"] * 4

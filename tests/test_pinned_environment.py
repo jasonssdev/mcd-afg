@@ -127,3 +127,29 @@ def test_the_shipped_config_pins_every_model_it_names() -> None:
 def test_a_malformed_section_is_rejected() -> None:
     with pytest.raises(ValueError, match="pinned_environment"):
         load_pinned_environment({"pinned_environment": {"ollama_version": "1"}})
+
+
+def test_an_ollama_override_replaces_only_the_version_and_keeps_the_digests() -> None:
+    record = check_pinned_environment(
+        Probe(ollama="0.40.16"),
+        models=["qwen3:8b"],
+        needs_openkos=False,
+        pins=PINS,
+        ollama_version="0.40.16",
+    )
+
+    assert record["pinned_environment"]["ollama_version"] == "0.40.16"
+    assert record["pinned_environment"]["model_digests"] == {"qwen3:8b": "aaa"}
+
+
+def test_with_an_override_the_formal_version_no_longer_passes_and_digests_still_count() -> None:
+    probe = Probe(digests={"qwen3:8b": "zzz", "bge-m3:latest": "ccc"}, ollama="0.32.9")
+
+    with pytest.raises(PinnedEnvironmentError) as caught:
+        check_pinned_environment(
+            probe, models=["qwen3:8b"], needs_openkos=False, pins=PINS, ollama_version="0.40.16"
+        )
+
+    message = str(caught.value)
+    assert "0.32.9" in message and "0.40.16" in message  # installed vs the extension pin
+    assert "zzz" in message  # the digest is still checked against [pinned_environment]

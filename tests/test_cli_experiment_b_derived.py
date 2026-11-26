@@ -214,7 +214,9 @@ def test_sufficiency_model_is_not_required_when_the_check_is_off(
     _make_derived(derived_env["dirs"], sufficiency=False)
     models: list[list[str]] = []
 
-    def guard(names: Sequence[str], *, needs_openkos: bool) -> dict[str, Any]:
+    def guard(
+        names: Sequence[str], *, needs_openkos: bool, ollama_version: str | None = None
+    ) -> dict[str, Any]:
         models.append(list(names))
         return {"pinned_environment_ok": True, "pinned_environment": {"openkos_version": None}}
 
@@ -242,7 +244,9 @@ def test_pin_check_skips_the_path_openkos_for_derived_runs(derived_env: dict[str
     _make_derived(derived_env["dirs"])
     calls: list[tuple[list[str], bool]] = []
 
-    def guard(names: Sequence[str], *, needs_openkos: bool) -> dict[str, Any]:
+    def guard(
+        names: Sequence[str], *, needs_openkos: bool, ollama_version: str | None = None
+    ) -> dict[str, Any]:
         calls.append((list(names), needs_openkos))
         return {"pinned_environment_ok": True, "pinned_environment": {"openkos_version": None}}
 

@@ -41,3 +41,22 @@ def test_guard_prints_every_mismatch_and_exits(
     assert caught.value.exit_code == 1
     out = " ".join(capsys.readouterr().out.split())
     assert "qwen3:8b" in out and "zzz" in out and "gpt-oss:20b" in out and "1.0" in out
+
+
+def test_guard_forwards_the_extension_ollama_pin(
+    monkeypatch: pytest.MonkeyPatch, fixed_pins: None
+) -> None:
+    monkeypatch.setattr(afg_cli, "make_provenance_probe", lambda: Probe(ollama="0.40.16"))
+
+    record = REAL_GUARD(["qwen3:8b"], needs_openkos=False, ollama_version="0.40.16")
+
+    assert record["pinned_environment"]["ollama_version"] == "0.40.16"
+
+
+def test_guard_without_override_still_demands_the_formal_version(
+    monkeypatch: pytest.MonkeyPatch, fixed_pins: None
+) -> None:
+    monkeypatch.setattr(afg_cli, "make_provenance_probe", lambda: Probe(ollama="0.40.16"))
+
+    with pytest.raises(typer.Exit):
+        REAL_GUARD(["qwen3:8b"], needs_openkos=False)
