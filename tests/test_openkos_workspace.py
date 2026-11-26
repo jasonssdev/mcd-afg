@@ -333,3 +333,67 @@ def test_the_api_key_is_redacted_from_stderr_tails_and_errors(
 def test_redaction_ignores_an_empty_key(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("OPENKOS_OPENAI_API_KEY", "")
     assert redact_secrets("plain text") == "plain text"
+
+
+# --- token capture (OpenKOS 0.7.3) ----------------------------------------------------------
+
+
+def _ingest_entries(manifest: dict) -> list[dict]:  # type: ignore[type-arg]
+    return [
+        c
+        for c in manifest["commands"]
+        if c["argv"][1] == "ingest" and not c["argv"][2].startswith("-")
+    ]
+
+
+def test_ingest_commands_store_the_parsed_token_record(tmp_path: Path) -> None:
+    runner = FakeRunner(
+        ingest_stdout={
+            "ES2015a.md": "  tokens: 14 calls, prompt 52310, completion 9120, total 61430\n",
+            "ES2015b.md": "  tokens: 12 of 14 calls reported, prompt 1, completion 2, total 3\n",
+            "ES2015c.md": "  tokens: not reported by the backend (5 calls)\n",
+        }
+    )
+    manifest = json.loads(_run(tmp_path, runner).manifest_path.read_text())
+    entries = _ingest_entries(manifest)
+    assert entries[0]["tokens"] == {
+        "calls": 14,
+        "reported_calls": 14,
+        "prompt": 52310,
+        "completion": 9120,
+        "total": 61430,
+    }
+    assert entries[1]["tokens"]["reported_calls"] == 12
+    assert entries[2]["tokens"] == {
+        "calls": 5,
+        "reported_calls": 0,
+        "prompt": None,
+        "completion": None,
+        "total": None,
+    }
+    assert "tokens" not in entries[3]  # no line: no chat call, no key
+
+
+def test_non_ingest_commands_and_full_stdout_are_never_stored(tmp_path: Path) -> None:
+    runner = FakeRunner(
+        ingest_stdout={
+            "ES2015a.md": "secret body\n  tokens: 1 call, prompt 1, completion 1, total 2\n"
+        }
+    )
+    text = _run(tmp_path, runner).manifest_path.read_text()
+    assert "secret body" not in text
+    manifest = json.loads(text)
+    assert all(
+        "tokens" not in c for c in manifest["commands"] if c not in _ingest_entries(manifest)
+    )
+
+
+def test_a_drift_retry_logs_one_token_record_per_ingest_command(tmp_path: Path) -> None:
+    runner = FakeRunner(
+        ingest_codes={"ES2015b.md": [3, 0]},
+        ingest_stdout={"ES2015b.md": "  tokens: 2 calls, prompt 4, completion 2, total 6\n"},
+    )
+    manifest = json.loads(_run(tmp_path, runner).manifest_path.read_text())
+    b_entries = [c for c in _ingest_entries(manifest) if c["argv"][2].endswith("ES2015b.md")]
+    assert [e["returncode"] for e in b_entries] == [3, 0]
+    assert all(e["tokens"]["total"] == 6 for e in b_entries)

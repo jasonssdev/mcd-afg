@@ -39,6 +39,7 @@ from afg.extraction.openkos.capabilities import (
     require_capabilities,
 )
 from afg.extraction.openkos.commands import CommandResult, CommandRunner, OpenKosError
+from afg.extraction.openkos.tokens import parse_token_usage
 from afg.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -142,7 +143,10 @@ class SeriesRunResult:
 
 @dataclass(slots=True)
 class _Recorder:
-    """Wraps a runner and keeps an auditable log of every command."""
+    """Wraps a runner and keeps an auditable log of every command.
+
+    The log entry of an ``ingest`` also carries its token record when the command printed one.
+    """
 
     inner: CommandRunner
     log: list[dict[str, Any]] = field(default_factory=list)
@@ -156,6 +160,11 @@ class _Recorder:
         }
         if result.returncode != 0:
             entry["stderr_tail"] = redact_secrets(result.stderr)[-_TAIL_CHARS:]
+        if len(args) > 2 and args[1] == "ingest" and not args[2].startswith("-"):
+            # Only the parsed numbers are kept, never the stdout itself (OpenKOS 0.7.3 line).
+            usage = parse_token_usage(result.stdout)
+            if usage is not None:
+                entry["tokens"] = usage.as_dict()
         self.log.append(entry)
         return result
 
