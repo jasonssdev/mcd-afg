@@ -28,8 +28,9 @@ hacer cuando algo falla**. La extensión es descriptiva: no toca `config/experim
    Otro ejecutable se indica con la variable `AFG_HOSTED_OPENKOS_EXECUTABLE`. El comando se niega a
    correr si la versión no es exactamente 0.7.3. La instalación 0.7.2 anterior (`data/interim/openkos-0.7.2`)
    ya no se usa.
-2. **Ollama en marcha con `bge-m3`.** Los *embeddings* siguen siendo locales, también en los modelos de
-   pago. La segunda línea base necesita además `qwen3:8b`.
+2. **Ollama 0.40.16 en marcha con `bge-m3`**, con la configuración del servidor descrita en la sección
+   «Infraestructura local». Los *embeddings* siguen siendo locales, también en los modelos de pago. La
+   segunda línea base necesita además `qwen3:8b`.
 3. **Facturación activa en cada proveedor.** El nivel gratuito de Google (unas 20 solicitudes por día y
    por modelo) no alcanza: la corrida falla con el error 429. Se habilita la facturación de OpenAI,
    Anthropic y Google antes de empezar.
@@ -47,6 +48,47 @@ hacer cuando algo falla**. La extensión es descriptiva: no toca `config/experim
    intérprete. El código solo comprueba que la variable exista; nunca muestra su valor.
 5. **Árbol de trabajo limpio** y en la rama de la extensión: el manifiesto de cada corrida registra el
    commit.
+
+## Infraestructura local (cuarta enmienda del ADR 0026)
+
+Las corridas formales usaron Ollama 0.32.9, fijado en `[pinned_environment]` de `config/experiments.toml`
+(verificado contra `config/freeze.json`, que no se modifica). Todas las corridas locales de la extensión
+usan **Ollama 0.40.16**, fijado en la tabla `[ollama]` de `config/hosted_extraction.toml`. Incluye la
+segunda línea base 0.7.3, los *embeddings* de las extracciones de pago y el Experimento B (C1 de control y
+C2 con cada extractor).
+
+El servidor se arranca con estos tres ajustes, que son los más antiguos registrados en el servidor del
+equipo y que no cambia ningún comando del proyecto:
+
+| Ajuste | Valor | Dónde importa |
+|---|---|---|
+| Contexto por defecto (`OLLAMA_CONTEXT_LENGTH`) | 32768 | Solo el juez lo usa: OpenKOS y C1 fijan el contexto en cada llamada |
+| *Flash attention* (`OLLAMA_FLASH_ATTENTION`) | activada | Motor de atención de todos los modelos |
+| Caché de atención (`OLLAMA_KV_CACHE_TYPE`) | `q8_0` | Memoria de la caché de todos los modelos |
+
+**Verificación antes de cada tanda de corridas.**
+
+1. La versión: el programa la comprueba solo. Cada comando de la extensión (`a-hosted` en todos sus modos
+   y `afg experiment b --environment hosted`) consulta la versión del servidor y se niega, antes de llamar
+   a ningún modelo, si no es 0.40.16. La versión leída queda en `ollama_version` de cada manifiesto.
+2. La configuración: se revisa a mano en la línea `server config` del registro del servidor, que muestra
+   los valores con que arrancó. La ubicación del registro depende de cómo se inicia el servidor; en el
+   equipo de las corridas, el servicio de arranque lo escribe en `~/Library/Logs/ollama.log`:
+
+   ```bash
+   grep "server config" ~/Library/Logs/ollama.log | tail -1
+   # deben figurar OLLAMA_CONTEXT_LENGTH:32768, OLLAMA_FLASH_ATTENTION:true y OLLAMA_KV_CACHE_TYPE:q8_0
+   ```
+
+   Si alguno difiere, se reinicia el servidor con los valores de la tabla antes de correr. El programa no
+   puede comprobarlos, por eso la revisión es manual.
+
+Al terminar las corridas de la extensión, el equipo puede restablecer su propia configuración del
+servidor. Las corridas ya hechas conservan en su manifiesto la versión con que se hicieron.
+
+**Qué mide el puente.** El puente de continuidad (OpenKOS 0.7.2, Ollama 0.40.16 según el registro del
+servidor) cambia dos cosas a la vez frente a la corrida formal: la versión de OpenKOS (0.7.0 → 0.7.2) y la
+de Ollama (0.32.9 → 0.40.16). No las separa, y el notebook 33 así lo declara.
 
 ## Etiquetas y carpetas
 
@@ -73,6 +115,7 @@ La medición de respuestas (tercera enmienda) agrega estas carpetas:
 | Espacios de consulta derivados de la línea base 0.7.3 | `data/interim/openkos-query/experimento-a-base-0-7-3-consulta/` |
 | Respuestas de C2 de un modelo (Experimento B) | `reports/experiment-b/experimento-b-hosted-<etiqueta>/` |
 | Respuestas de C2 de la línea base 0.7.3 | `reports/experiment-b/experimento-b-base-0-7-3/` |
+| C1 de control con la infraestructura actual (Ollama 0.40.16) | `reports/experiment-b/experimento-b-c1-ollama-0-40-16/` |
 | Comparación de respuestas | `reports/experiment-b/hosted-comparison/` (`respuestas-comparacion.json` y `.csv`) |
 
 ## Orden
@@ -88,9 +131,10 @@ La medición de respuestas (tercera enmienda) agrega estas carpetas:
 7. **Fijar los precios** en las tablas `[prices.<etiqueta>]` de `config/hosted_extraction.toml`, **antes
    del piloto**.
 8. **Volver a ejecutar el notebook 33.**
-9. **Medir las respuestas de C2 con cada extractor** (tercera enmienda): derivar los espacios de
-   consulta, correr el Experimento B solo con C2 y comparar con C1 formal. Va después de las corridas
-   completas de extracción (paso 4) y no se superpone con otra corrida local.
+9. **Medir las respuestas de C2 con cada extractor** (tercera y cuarta enmiendas): correr C1 de control
+   con la infraestructura actual, derivar los espacios de consulta, correr el Experimento B solo con C2 y
+   comparar con ese C1. Va después de las corridas completas de extracción (paso 4) y no se superpone con
+   otra corrida local.
 
 ## Comandos
 
@@ -222,13 +266,32 @@ El notebook se versiona con sus salidas (`CONTRIBUTING.md`, sección 7.3). Calcu
 corrida completa y después de fijar los precios. Antes de la corrida completa, sus secciones sin datos
 muestran el aviso «pendiente».
 
-### 9. Medir las respuestas de C2 con cada extractor (tercera enmienda del ADR 0026)
+### 9. Medir las respuestas de C2 con cada extractor (tercera y cuarta enmiendas del ADR 0026)
 
 La extracción mide si un modelo encuentra más decisiones; este paso mide si, con ese extractor, C2
 responde tan bien como C1 o mejor. Se hace para cada uno de los seis modelos y, además, para la línea
 base `qwen3:8b` con OpenKOS 0.7.3, que permite atribuir una mejora al modelo y no a la versión. Las
 respuestas, el modelo de suficiencia y el juez corren en el Ollama local, así que **este paso no tiene
 costo de proveedor ni usa ninguna clave**.
+
+**9.0. C1 de control con la infraestructura actual.** C1 formal se corrió con Ollama 0.32.9 y el resto de
+la medición, con 0.40.16: comparar C2 contra C1 formal mezclaría el efecto del extractor con el del
+servidor. Por eso C1 se vuelve a correr con 0.40.16 y todo lo demás igual a la corrida formal (banco
+congelado, semillas, generador, juez y contexto). Se hace una vez, antes de la comparación:
+
+```bash
+uv run afg experiment b --questions data/processed/questions/banco-preguntas.csv --conditions c1 \
+  --environment hosted --run-name experimento-b-c1-ollama-0-40-16   # make hosted-answers-c1
+```
+
+- `--environment hosted` verifica la versión de Ollama contra la de la extensión en vez de la de
+  `[pinned_environment]`; las huellas de los modelos se siguen verificando contra `[pinned_environment]`.
+  Deja `environment: hosted` en el manifiesto.
+- **Se niega con las corridas formales** (`--run-name` que empiece por `experimento-b-formal`): la corrida
+  formal nunca se mezcla con la infraestructura de la extensión. Reanudar una corrida con otro entorno se
+  rechaza (`ManifestMismatchError`).
+- Es reanudable y no se superpone con otra corrida local. Sin `--environment`, el comando se comporta
+  exactamente como en la corrida formal.
 
 **9.1. Derivar los espacios de consulta (no llama a ningún modelo).** Un espacio de trabajo de un modelo
 de pago se compiló con el *backend* del proveedor y sin semilla; consultarlo así llamaría al proveedor y
@@ -266,7 +329,9 @@ uv run afg experiment b --questions data/processed/questions/banco-preguntas.csv
 # make hosted-answers LABEL=<etiqueta>      (la línea base: make hosted-answers-baseline)
 ```
 
-- Con `--c2-derived` solo se admite C2. C2 consulta con el ejecutable que registró la derivación y la
+- Con `--c2-derived` solo se admite C2, y el comando corre siempre en el entorno de la extensión
+  (`--environment hosted` queda implícito; `--environment formal` se rechaza), porque los espacios
+  derivados solo existen para la extensión. C2 consulta con el ejecutable que registró la derivación y la
   corrida deja en `manifest.json` la carpeta derivada, su origen, el ejecutable, la versión de OpenKOS y
   `sufficiency_check`. **Reanudar una corrida con otros valores se rechaza**
   (`ManifestMismatchError`); se usa otro `--run-name`.
@@ -276,21 +341,30 @@ uv run afg experiment b --questions data/processed/questions/banco-preguntas.csv
 - **No se superpone con otra corrida local**: comparte el Ollama con la extracción local y con las demás
   corridas del Experimento B.
 
-**9.3. Comparar con C1 formal.**
+**9.3. Comparar con C1 actual.**
 
 ```bash
 uv run afg experiment b-hosted-compare                                    # make hosted-answers-compare
 ```
 
-Para cada modelo calcula la diferencia pareada de corrección en E3 entre «C2 con ese extractor» y «C1
-formal», con el *bootstrap* del criterio D16 (ADR 0010) y nivel Bonferroni `1 − 0,05/6`, y la informa como
-«supera a C1», «no se distingue de C1» o «queda bajo C1». Agrega la misma diferencia frente a C2 formal y
-frente a C2 de la línea base 0.7.3, y por estrato corrección, abstención, `evidence_supported`,
-`citation_correct`, respuestas desactualizadas entre las respondidas (H4) y tiempo de respuesta. Escribe
-`respuestas-comparacion.json` y `.csv` en `reports/experiment-b/hosted-comparison/`. Las corridas que aún
-no existen figuran como «pendiente». Con `--models <etiqueta>` (repetible) se limita a algunas sin cambiar
-el nivel de Bonferroni. La comparación es descriptiva (decisión 6): no reemplaza al criterio D16 de la
-corrida formal. La sección 8 del notebook 33 lee este resultado.
+La **comparación principal** es la diferencia pareada de corrección en E3 entre «C2 con ese extractor» y
+«C1 con la infraestructura actual» (`experimento-b-c1-ollama-0-40-16`, o la que indique `--c1-run`), con
+el *bootstrap* del criterio D16 (ADR 0010) y nivel Bonferroni `1 − 0,05/6`. Se informa como «supera a C1»,
+«no se distingue de C1» o «queda bajo C1». Las comparaciones secundarias son la misma diferencia frente a
+C1 formal, frente a C2 formal y frente a C2 de la línea base 0.7.3, y por estrato corrección, abstención,
+`evidence_supported`, `citation_correct`, respuestas desactualizadas entre las respondidas (H4) y tiempo
+de respuesta.
+
+Además informa el **efecto de infraestructura**: «C1 actual − C1 formal» por estrato y en E3, con
+intervalo del 95 % nominal y fuera del Bonferroni. Si es grande, toda comparación contra las corridas
+formales (C1 o C2 formal y la extracción formal) se lee con esa cautela. Si los veredictos frente a la
+línea base formal y frente a la de la misma versión difieren, decide esta última (primera enmienda).
+
+Escribe `respuestas-comparacion.json` y `.csv` en `reports/experiment-b/hosted-comparison/`, sin texto de
+respuestas. Las corridas que aún no existen figuran como «pendiente». Con `--models <etiqueta>`
+(repetible) se limita a algunas sin cambiar el nivel de Bonferroni. La comparación es descriptiva
+(decisión 6 de la tercera enmienda): no reemplaza al criterio D16 de la corrida formal. La sección 8 del
+notebook 33 lee este resultado.
 
 ## Tiempos y costos esperados
 
@@ -302,9 +376,9 @@ corrida formal. La sección 8 del notebook 33 lee este resultado.
 - **Puente (0.7.2, ya hecho):** una serie y una repetición, unos 24 minutos.
 - **Segunda línea base local (0.7.3):** 33 pares serie-repetición, unos 30 minutos cada uno, unas 16
   horas en total.
-- **Respuestas de C2 (paso 9):** sin costo de proveedor. La derivación tarda segundos y copia los
-  espacios; el tiempo de cada corrida del Experimento B de C2 se mide con la primera y se informa en el
-  notebook. Son siete corridas (seis modelos y la línea base 0.7.3), una tras otra.
+- **Respuestas de C2 y C1 de control (paso 9):** sin costo de proveedor. La derivación tarda segundos y
+  copia los espacios; el tiempo de cada corrida del Experimento B se mide con la primera y se informa en
+  el notebook. Son ocho corridas (C1 de control, seis modelos y la línea base 0.7.3), una tras otra.
 
 ## Si algo falla
 
@@ -329,6 +403,13 @@ corrida formal. La sección 8 del notebook 33 lee este resultado.
 - **La clave es de otro proveedor.** La corrida falla con un error de autenticación. Se detiene, se
   fija la clave correcta y se repite el comando.
 - **Ollama no responde o falta `bge-m3`.** El comando se niega antes de empezar y dice qué falta.
+- **El comando dice que el servidor reporta otra versión de Ollama.** La extensión necesita la 0.40.16. Se
+  instala o se arranca esa versión; no se cambia el valor de `config/hosted_extraction.toml` por cuenta
+  propia (sería una enmienda al ADR). En el Experimento B de la corrida formal, la versión exigida sigue
+  siendo la de `[pinned_environment]`.
+- **`afg experiment b --environment hosted` se niega con el nombre de la corrida.** Los nombres que empiezan
+  por `experimento-b-formal` son de la corrida formal. El C1 de control usa
+  `experimento-b-c1-ollama-0-40-16`.
 - **El puente quedó fuera del rango formal.** No se repite: el notebook lo declara y la comparación con los
   modelos de pago se lee también contra la segunda línea base en la misma versión (ADR 0026, decisión 6 y
   enmiendas).
@@ -342,8 +423,9 @@ corrida formal. La sección 8 del notebook 33 lee este resultado.
 - **`b-derive` dice que una clave no existe en esa versión.** La derivación se detiene sin escribir nada:
   la versión de OpenKOS que compiló la corrida no conoce la clave que habría que escribir. No se agrega a
   mano al `openkos.yaml`.
-- **`afg experiment b` rechaza reanudar con otra derivación o con otro `sufficiency_check`.** Es el
-  comportamiento esperado: una corrida no mezcla bases distintas. Se usa otro `--run-name`.
+- **`afg experiment b` rechaza reanudar con otra derivación, otro `sufficiency_check` u otro `environment`.**
+  Es el comportamiento esperado: una corrida no mezcla bases ni infraestructuras distintas. Se usa otro
+  `--run-name`.
 - **Nunca se borra ni se sobrescribe** la carpeta de una corrida ni `experimento-a-formal`. Una corrida
   abandonada se declara en el notebook (nombre, motivo) y no se usa para elegir resultados.
 
@@ -351,4 +433,6 @@ corrida formal. La sección 8 del notebook 33 lee este resultado.
 
 - No se corre nada de esta extensión con series de desarrollo: el comando solo acepta las de evaluación.
 - No se escribe una clave en ningún archivo ni se pega en un issue, un PR o un registro.
+- No se mezclan las corridas formales con la infraestructura de la extensión: `--environment hosted` no
+  se usa con `experimento-b-formal`, y la versión de Ollama de `[pinned_environment]` no se edita.
 - No se reportan los resultados como confirmatorios: la extensión es descriptiva (ADR 0026, decisión 9).
