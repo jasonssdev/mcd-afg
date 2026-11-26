@@ -42,7 +42,13 @@ OpenKOS 0.7.2 (2026-11-25) hace usable su *backend* `openai-compatible` con Open
    - **Corrección por multiplicidad:** los intervalos se corrigen con Bonferroni por los seis modelos (nivel 1 − 0,05/6).
    - **Cuándo se dice que un modelo mejora la extracción:** el intervalo de la diferencia de *recall* queda entero sobre 0 y el límite inferior de la diferencia de *precision* no baja de −0,05.
    - **Empate y empeora:** si el intervalo de *recall* contiene el 0, se informa como «sin diferencia demostrada». Si queda entero bajo 0, se informa como «empeora».
-8. **Carácter descriptivo.** Las series de evaluación ya se usaron en la corrida formal y quien mantiene el repositorio ya vio sus cifras. Por eso la extensión es descriptiva y no confirma hipótesis de la tesis. Sus informes se escriben con `--descriptive` (`informe-descriptivo.json`) y nunca reemplazan a `informe.json` de la corrida formal.
+8. **Indicadores secundarios de operación, también fijados antes de ver datos.** Responden a si los modelos de pago son más rápidos o más confiables, además de si extraen mejor.
+   - **Tiempo de extracción por reunión:** la suma de `duration_s` de los `ingest` de cada reunión, registrada en el manifiesto de cada corrida (la línea base ya la tiene). Se informa la mediana por modelo y la razón de tiempos frente a `qwen3:8b`, con un intervalo *bootstrap* pareado por reunión sobre el logaritmo de la razón (mismo nivel Bonferroni). Un modelo es «más rápido» si el intervalo de la razón queda entero bajo 1, y «más lento» si queda entero sobre 1.
+   - **Extracciones completas:** la proporción de reuniones cuyo `ingest` terminó con extracción, es decir, sin quedarse solo con la fuente.
+   - **Decisiones extraídas por reunión:** se informan de forma descriptiva y ayudan a leer la *precision*.
+   - **Costo en dólares por modelo:** se toma del panel de cada proveedor después de la corrida y se registra en el manifiesto de la comparación. Es descriptivo.
+   - **Lectura del tiempo:** la línea base corre en un equipo local (Apple M4 Pro, 48 GB) y los modelos de pago en la infraestructura del proveedor. La razón de tiempos mide la experiencia de uso de cada opción, no la eficiencia del modelo.
+9. **Carácter descriptivo.** Las series de evaluación ya se usaron en la corrida formal y quien mantiene el repositorio ya vio sus cifras. Por eso la extensión es descriptiva y no confirma hipótesis de la tesis. Sus informes se escriben con `--descriptive` (`informe-descriptivo.json`) y nunca reemplazan a `informe.json` de la corrida formal.
 
 ## Alternativas descartadas
 
