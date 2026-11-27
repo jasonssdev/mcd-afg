@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "run_name": "experimento-a-piloto-google-large",
+  "created_at": "2026-11-27T12:17:54.098710+00:00",
+  "git_commit": "51b954fea9239b0923222c2552e7e85d7205f8d5",
+  "git_dirty": false,
+  "series": "ES2002",
+  "partition": "evaluation",
+  "runs": 1,
+  "extension": "hosted",
+  "adr": "0026",
+  "pilot": true,
+  "bridge": false,
+  "local_baseline": false,
+  "model_label": "google-large",
+  "ollama_version": "0.40.16",
+  "provider": "google",
+  "baseline_run_name": "experimento-a-formal",
+  "openkos": {
+    "executable": "/Users/jasonssdev/Dev/Learning/UC/mcd-afg/data/interim/openkos-0.7.3/bin/openkos",
+    "required_version": "0.7.3",
+    "generative_model": "gemini-4-argon",
+    "embedding_model": "bge-m3",
+    "backend": "openai-compatible",
+    "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+    "embedding_base_url": "http://127.0.0.1:11434",
+    "reasoning_effort": "low",
+    "max_generation_tokens": 8192,
+    "evidence_quote": false,
+    "seed": null,
+    "temperature": null,
+    "versions": [
+      "0.7.3"
+    ],
+    "local_model_digests": {
+      "bge-m3:latest": "7907646426070047a77226ac3e684fbbe8410524f7b4a74d02837e43f2146bab"
+    }
+  },
+  "freeze": null,
+  "status": "ok",
+  "kind": "batch",
+  "series_ids": [
+    "ES2002"
+  ],
+  "pairs": {
+    "ES2002/0": {
+      "series": "ES2002",
+      "run": 0,
+      "status": "ok",
+      "started_at": "2026-11-27T12:17:54.098967+00:00",
+      "error": null,
+      "openkos_version": "0.7.3",
+      "n_decisions": 82,
+      "n_unmapped": 0,
+      "quotes_total": 82,
+      "quotes_not_found": 0,
+      "finished_at": "2026-11-27T12:32:35.688142+00:00",
+      "seconds": 881.586
+    }
+  },
+  "updated_at": "2026-11-27T12:32:35.688421+00:00"
+}
