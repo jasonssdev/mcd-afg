@@ -24,6 +24,7 @@ modelos y los resultados con sus conclusiones.
 | [`11-jss-resultados-experimento-a.md`](11-jss-resultados-experimento-a.md) | Resultados del Experimento A (OE2): precisión, recall y F1 de decisiones, relaciones, validación manual de la alineación, límites y costo en tiempo |
 | [`12-jss-resultados-experimento-b.md`](12-jss-resultados-experimento-b.md) | Resultados del Experimento B (OE3 y OE4): corrección por condición y estrato, D16, H2, C0 como referencia, validez del juez, etapa del fallo de C2, citas y abstención, límites |
 | [`13-jss-conclusiones.md`](13-jss-conclusiones.md) | Conclusiones del proyecto: la respuesta a cada objetivo (OE1 a OE4) y a cada hipótesis (D16 y H1 a H4), qué significan los resultados, costos y punto de equilibrio, implicación práctica, límites y trabajo futuro |
+| [`14-jss-linea-base-openkos-0-7-3.md`](14-jss-linea-base-openkos-0-7-3.md) | Línea base de OpenKOS 0.7.3: comprobación de que el cambio de versión no altera la extracción de `qwen3:8b` (11 series, 3 repeticiones; sin diferencia demostrada frente a la corrida formal), previa a la extensión con modelos de pago |
 | [`informes/`](informes/) | Los informes del curso como documentos vivos (pre-informe de AFG2 y, después, informe final de AFG3), armados a partir de estos avances |
 
 ## De dónde sale el contenido
