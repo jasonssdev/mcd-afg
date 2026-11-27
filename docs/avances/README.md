@@ -25,7 +25,14 @@ modelos y los resultados con sus conclusiones.
 | [`12-jss-resultados-experimento-b.md`](12-jss-resultados-experimento-b.md) | Resultados del Experimento B (OE3 y OE4): corrección por condición y estrato, D16, H2, C0 como referencia, validez del juez, etapa del fallo de C2, citas y abstención, límites |
 | [`13-jss-conclusiones.md`](13-jss-conclusiones.md) | Conclusiones del proyecto: la respuesta a cada objetivo (OE1 a OE4) y a cada hipótesis (D16 y H1 a H4), qué significan los resultados, costos y punto de equilibrio, implicación práctica, límites y trabajo futuro |
 | [`14-jss-linea-base-openkos-0-7-3.md`](14-jss-linea-base-openkos-0-7-3.md) | Línea base de OpenKOS 0.7.3: comprobación de que el cambio de versión no altera la extracción de `qwen3:8b` (11 series, 3 repeticiones; sin diferencia demostrada frente a la corrida formal), previa a la extensión con modelos de pago |
+| [`15-jss-extraccion-google.md`](15-jss-extraccion-google.md) | Extracción con los dos modelos de Google (`gemini-3.8-flash` y `gemini-4-argon`) como extractor de C2, frente a la corrida formal y a la línea base de OpenKOS 0.7.3 (11 series, 3 repeticiones; Argon mejora el recall de 0,308 a 0,705 con menor precisión y Flash no muestra diferencia demostrada de recall), con tiempo y costo (USD 28,55 en total con los pilotos) |
 | [`informes/`](informes/) | Los informes del curso como documentos vivos (pre-informe de AFG2 y, después, informe final de AFG3), armados a partir de estos avances |
+
+## Plantilla
+
+| Documento | Para qué sirve |
+|---|---|
+| [`plantilla-avance-proveedor.md`](plantilla-avance-proveedor.md) | Esqueleto del avance por laboratorio de la extensión con modelos de pago ([ADR 0026](../decisions/0026-adr-extension-extractor-con-modelos-hosted.md)): se copia como `NN-jss-extraccion-<proveedor>.md` y se llena con las cifras del notebook del laboratorio. No es un avance ni se numera |
 
 ## De dónde sale el contenido
 
