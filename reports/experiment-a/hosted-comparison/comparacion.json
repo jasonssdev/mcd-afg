@@ -1776,6 +1776,1776 @@
           "dashboard_usd": null
         }
       }
+    },
+    {
+      "label": "openai-small",
+      "run_name": "experimento-a-hosted-openai-small",
+      "provider": "openai",
+      "model": "gpt-5-mini",
+      "base_url": "https://api.openai.com",
+      "status": "ok",
+      "vs_formal": {
+        "status": "ok",
+        "run_name": "experimento-a-hosted-openai-small",
+        "baseline_run_name": "experimento-a-formal",
+        "series_covered": [
+          "ES2002",
+          "ES2008",
+          "ES2014",
+          "ES2016",
+          "IS1003",
+          "IS1006",
+          "IS1008",
+          "IS1009",
+          "TS3003",
+          "TS3005",
+          "TS3011"
+        ],
+        "n_series": 11,
+        "n_meetings": 44,
+        "runs_per_series": {
+          "ES2002": 3,
+          "ES2008": 3,
+          "ES2014": 3,
+          "ES2016": 3,
+          "IS1003": 3,
+          "IS1006": 3,
+          "IS1008": 3,
+          "IS1009": 3,
+          "TS3003": 3,
+          "TS3005": 3,
+          "TS3011": 3
+        },
+        "runs_expected": 33,
+        "runs_ok": 33,
+        "runs_failed": 0,
+        "series_with_failures": [],
+        "scope_note": "La comparación cubre solo las series de la corrida candidata (ES2002, ES2008, ES2014, ES2016, IS1003, IS1006, IS1008, IS1009, TS3003, TS3005, TS3011); la línea base se restringe a esas mismas series.",
+        "baseline": {
+          "series": [
+            "ES2002",
+            "ES2008",
+            "ES2014",
+            "ES2016",
+            "IS1003",
+            "IS1006",
+            "IS1008",
+            "IS1009",
+            "TS3003",
+            "TS3005",
+            "TS3011"
+          ]
+        },
+        "n_models": 6,
+        "family_alpha": 0.05,
+        "interval_level": 0.9916666666666667,
+        "resamples": 10000,
+        "seed": 42,
+        "primary_tau": 0.7,
+        "precision_margin": -0.05,
+        "taus": {
+          "0.70": {
+            "tau": 0.7,
+            "baseline": {
+              "precision": 0.14872685185185186,
+              "recall": 0.30815347721822545,
+              "f1": 0.20062451209992196
+            },
+            "candidate": {
+              "precision": 0.13438216978039985,
+              "recall": 0.4916067146282973,
+              "f1": 0.21106821106821105
+            },
+            "diff": {
+              "precision": {
+                "estimate": -0.014344682071452008,
+                "interval": [
+                  -0.0638533938433814,
+                  0.03366564383513543
+                ]
+              },
+              "recall": {
+                "estimate": 0.18345323741007186,
+                "interval": [
+                  0.04744069912609228,
+                  0.3406432748538012
+                ]
+              },
+              "f1": {
+                "estimate": 0.010443698968289089,
+                "interval": [
+                  -0.05660850766706488,
+                  0.08437650748831721
+                ]
+              }
+            },
+            "verdict": "sin diferencia demostrada",
+            "recall_up_precision_drop": true
+          },
+          "0.75": {
+            "tau": 0.75,
+            "baseline": {
+              "precision": 0.09953703703703703,
+              "recall": 0.2062350119904077,
+              "f1": 0.13427010148321625
+            },
+            "candidate": {
+              "precision": 0.09111766633890524,
+              "recall": 0.3333333333333332,
+              "f1": 0.14311454311454305
+            },
+            "diff": {
+              "precision": {
+                "estimate": -0.008419370698131798,
+                "interval": [
+                  -0.05014854144938531,
+                  0.03347919780589356
+                ]
+              },
+              "recall": {
+                "estimate": 0.1270983213429255,
+                "interval": [
+                  0.01901140684410646,
+                  0.2606310013717421
+                ]
+              },
+              "f1": {
+                "estimate": 0.008844441631326805,
+                "interval": [
+                  -0.04976194179455262,
+                  0.07184821162863649
+                ]
+              }
+            },
+            "verdict": "sin diferencia demostrada",
+            "recall_up_precision_drop": true
+          },
+          "0.80": {
+            "tau": 0.8,
+            "baseline": {
+              "precision": 0.05034722222222223,
+              "recall": 0.10431654676258995,
+              "f1": 0.06791569086651054
+            },
+            "candidate": {
+              "precision": 0.05244182235332678,
+              "recall": 0.19184652278177455,
+              "f1": 0.08236808236808237
+            },
+            "diff": {
+              "precision": {
+                "estimate": 0.002094600131104546,
+                "interval": [
+                  -0.028526010391591035,
+                  0.03733174199093618
+                ]
+              },
+              "recall": {
+                "estimate": 0.08752997601918461,
+                "interval": [
+                  -0.004545454545454519,
+                  0.1973995271867612
+                ]
+              },
+              "f1": {
+                "estimate": 0.01445239150157182,
+                "interval": [
+                  -0.030079508074349497,
+                  0.06699415617002155
+                ]
+              }
+            },
+            "verdict": "sin diferencia demostrada",
+            "recall_up_precision_drop": false
+          }
+        },
+        "verdict": "sin diferencia demostrada",
+        "operation": {
+          "time": {
+            "baseline_median_s": 307.1385,
+            "candidate_median_s": 142.91316666666665,
+            "n_meetings": 44,
+            "per_meeting_s": {
+              "ES2002a": {
+                "baseline": 153.53733333333332,
+                "candidate": 68.25866666666667
+              },
+              "ES2002b": {
+                "baseline": 417.85566666666665,
+                "candidate": 179.015
+              },
+              "ES2002c": {
+                "baseline": 434.39733333333334,
+                "candidate": 207.34233333333336
+              },
+              "ES2002d": {
+                "baseline": 450.38633333333337,
+                "candidate": 205.76
+              },
+              "ES2008a": {
+                "baseline": 172.83399999999997,
+                "candidate": 86.31666666666668
+              },
+              "ES2008b": {
+                "baseline": 329.0453333333333,
+                "candidate": 166.83033333333333
+              },
+              "ES2008c": {
+                "baseline": 556.013,
+                "candidate": 181.0906666666667
+              },
+              "ES2008d": {
+                "baseline": 459.86400000000003,
+                "candidate": 242.79999999999998
+              },
+              "ES2014a": {
+                "baseline": 127.354,
+                "candidate": 76.19266666666665
+              },
+              "ES2014b": {
+                "baseline": 296.7093333333333,
+                "candidate": 175.54966666666667
+              },
+              "ES2014c": {
+                "baseline": 308.33666666666664,
+                "candidate": 181.479
+              },
+              "ES2014d": {
+                "baseline": 480.45533333333333,
+                "candidate": 200.75966666666667
+              },
+              "ES2016a": {
+                "baseline": 181.37266666666665,
+                "candidate": 100.06066666666668
+              },
+              "ES2016b": {
+                "baseline": 415.74499999999995,
+                "candidate": 155.26266666666666
+              },
+              "ES2016c": {
+                "baseline": 372.32,
+                "candidate": 152.744
+              },
+              "ES2016d": {
+                "baseline": 784.2323333333334,
+                "candidate": 132.58666666666667
+              },
+              "IS1003a": {
+                "baseline": 201.602,
+                "candidate": 49.18333333333334
+              },
+              "IS1003b": {
+                "baseline": 212.22433333333333,
+                "candidate": 120.156
+              },
+              "IS1003c": {
+                "baseline": 241.41233333333332,
+                "candidate": 145.25566666666666
+              },
+              "IS1003d": {
+                "baseline": 345.7296666666667,
+                "candidate": 187.827
+              },
+              "IS1006a": {
+                "baseline": 44.61033333333333,
+                "candidate": 48.26500000000001
+              },
+              "IS1006b": {
+                "baseline": 453.97766666666666,
+                "candidate": 172.60066666666668
+              },
+              "IS1006c": {
+                "baseline": 251.89133333333334,
+                "candidate": 140.57066666666665
+              },
+              "IS1006d": {
+                "baseline": 209.383,
+                "candidate": 171.88833333333332
+              },
+              "IS1008a": {
+                "baseline": 150.57666666666668,
+                "candidate": 87.294
+              },
+              "IS1008b": {
+                "baseline": 206.20333333333335,
+                "candidate": 130.046
+              },
+              "IS1008c": {
+                "baseline": 181.1436666666667,
+                "candidate": 128.10933333333332
+              },
+              "IS1008d": {
+                "baseline": 284.74,
+                "candidate": 133.47433333333333
+              },
+              "IS1009a": {
+                "baseline": 304.74333333333334,
+                "candidate": 44.43833333333333
+              },
+              "IS1009b": {
+                "baseline": 310.7753333333333,
+                "candidate": 154.14966666666666
+              },
+              "IS1009c": {
+                "baseline": 183.34166666666667,
+                "candidate": 133.96466666666666
+              },
+              "IS1009d": {
+                "baseline": 305.94033333333334,
+                "candidate": 151.446
+              },
+              "TS3003a": {
+                "baseline": 161.64433333333332,
+                "candidate": 66.85066666666667
+              },
+              "TS3003b": {
+                "baseline": 381.05400000000003,
+                "candidate": 111.51233333333333
+              },
+              "TS3003c": {
+                "baseline": 324.41066666666666,
+                "candidate": 118.16033333333333
+              },
+              "TS3003d": {
+                "baseline": 339.012,
+                "candidate": 130.60866666666666
+              },
+              "TS3005a": {
+                "baseline": 170.36066666666667,
+                "candidate": 85.95633333333335
+              },
+              "TS3005b": {
+                "baseline": 450.7146666666667,
+                "candidate": 201.63066666666668
+              },
+              "TS3005c": {
+                "baseline": 292.934,
+                "candidate": 162.314
+              },
+              "TS3005d": {
+                "baseline": 703.5799999999999,
+                "candidate": 242.61933333333334
+              },
+              "TS3011a": {
+                "baseline": 185.69933333333333,
+                "candidate": 116.51166666666666
+              },
+              "TS3011b": {
+                "baseline": 576.2669999999999,
+                "candidate": 185.87199999999999
+              },
+              "TS3011c": {
+                "baseline": 428.66633333333334,
+                "candidate": 195.34066666666664
+              },
+              "TS3011d": {
+                "baseline": 319.462,
+                "candidate": 133.93533333333335
+              }
+            },
+            "ratio": {
+              "estimate": 0.46178293715878965,
+              "interval": [
+                0.39904439017831134,
+                0.5273936667032628
+              ]
+            },
+            "verdict": "más rápido"
+          },
+          "completeness": {
+            "baseline": {
+              "complete": 132,
+              "expected": 132,
+              "share": 1.0
+            },
+            "candidate": {
+              "complete": 132,
+              "expected": 132,
+              "share": 1.0
+            }
+          },
+          "extraction_status": {
+            "baseline": {
+              "failed": 0,
+              "no-concepts-found": 0,
+              "no-extractable-text": 0,
+              "blocked-by-sensitivity": 0
+            },
+            "candidate": {
+              "failed": 0,
+              "no-concepts-found": 0,
+              "no-extractable-text": 0,
+              "blocked-by-sensitivity": 0
+            }
+          },
+          "decisions_per_meeting": {
+            "baseline": {
+              "mean": 13.090909090909092,
+              "median": 12.666666666666666
+            },
+            "candidate": {
+              "mean": 23.113636363636363,
+              "median": 25.0
+            }
+          },
+          "tokens": {
+            "baseline": null,
+            "candidate": {
+              "n_meetings": 132,
+              "calls": 2215,
+              "reported_calls": 2215,
+              "prompt": 5829202,
+              "completion": 1693657,
+              "total": 7522859,
+              "median_total_per_meeting": 56163.0,
+              "lower_bound": false
+            }
+          },
+          "cost": {
+            "status": "ok",
+            "total_usd": 4.8446145000000005,
+            "median_per_meeting_usd": 0.0380325,
+            "lower_bound": false,
+            "n_lower_bound_meetings": 0,
+            "prices": {
+              "input_usd_per_mtok": 0.25,
+              "output_usd_per_mtok": 2.0,
+              "prices_date": "2026-11-26",
+              "pricing_url": "https://developers.openai.com/api/docs/pricing"
+            }
+          },
+          "cost_usd": 4.8446145000000005,
+          "dashboard_usd": null
+        }
+      },
+      "vs_local": {
+        "status": "ok",
+        "run_name": "experimento-a-hosted-openai-small",
+        "baseline_run_name": "experimento-a-base-0-7-3",
+        "series_covered": [
+          "ES2002",
+          "ES2008",
+          "ES2014",
+          "ES2016",
+          "IS1003",
+          "IS1006",
+          "IS1008",
+          "IS1009",
+          "TS3003",
+          "TS3005",
+          "TS3011"
+        ],
+        "n_series": 11,
+        "n_meetings": 44,
+        "runs_per_series": {
+          "ES2002": 3,
+          "ES2008": 3,
+          "ES2014": 3,
+          "ES2016": 3,
+          "IS1003": 3,
+          "IS1006": 3,
+          "IS1008": 3,
+          "IS1009": 3,
+          "TS3003": 3,
+          "TS3005": 3,
+          "TS3011": 3
+        },
+        "runs_expected": 33,
+        "runs_ok": 33,
+        "runs_failed": 0,
+        "series_with_failures": [],
+        "scope_note": "La comparación cubre solo las series de la corrida candidata (ES2002, ES2008, ES2014, ES2016, IS1003, IS1006, IS1008, IS1009, TS3003, TS3005, TS3011); la línea base se restringe a esas mismas series.",
+        "baseline": {
+          "series": [
+            "ES2002",
+            "ES2008",
+            "ES2014",
+            "ES2016",
+            "IS1003",
+            "IS1006",
+            "IS1008",
+            "IS1009",
+            "TS3003",
+            "TS3005",
+            "TS3011"
+          ]
+        },
+        "n_models": 6,
+        "family_alpha": 0.05,
+        "interval_level": 0.9916666666666667,
+        "resamples": 10000,
+        "seed": 42,
+        "primary_tau": 0.7,
+        "precision_margin": -0.05,
+        "taus": {
+          "0.70": {
+            "tau": 0.7,
+            "baseline": {
+              "precision": 0.14672036823935564,
+              "recall": 0.3057553956834532,
+              "f1": 0.19828926905132196
+            },
+            "candidate": {
+              "precision": 0.13438216978039985,
+              "recall": 0.4916067146282973,
+              "f1": 0.21106821106821105
+            },
+            "diff": {
+              "precision": {
+                "estimate": -0.012338198458955785,
+                "interval": [
+                  -0.061100864779438255,
+                  0.034260184260184234
+                ]
+              },
+              "recall": {
+                "estimate": 0.18585131894484408,
+                "interval": [
+                  0.051373954599761074,
+                  0.3410256410256409
+                ]
+              },
+              "f1": {
+                "estimate": 0.012778942016889089,
+                "interval": [
+                  -0.05289456454119901,
+                  0.08388630622598656
+                ]
+              }
+            },
+            "verdict": "sin diferencia demostrada",
+            "recall_up_precision_drop": true
+          },
+          "0.75": {
+            "tau": 0.75,
+            "baseline": {
+              "precision": 0.09148446490218647,
+              "recall": 0.19064748201438853,
+              "f1": 0.12363919129082432
+            },
+            "candidate": {
+              "precision": 0.09111766633890524,
+              "recall": 0.3333333333333332,
+              "f1": 0.14311454311454305
+            },
+            "diff": {
+              "precision": {
+                "estimate": -0.00036679856328122873,
+                "interval": [
+                  -0.04055166057733456,
+                  0.042354697372844176
+                ]
+              },
+              "recall": {
+                "estimate": 0.14268585131894468,
+                "interval": [
+                  0.03660130718954238,
+                  0.2759103641456584
+                ]
+              },
+              "f1": {
+                "estimate": 0.019475351823718734,
+                "interval": [
+                  -0.03609204388611213,
+                  0.08286830293616891
+                ]
+              }
+            },
+            "verdict": "mejora",
+            "recall_up_precision_drop": false
+          },
+          "0.80": {
+            "tau": 0.8,
+            "baseline": {
+              "precision": 0.044303797468354444,
+              "recall": 0.09232613908872903,
+              "f1": 0.05987558320373251
+            },
+            "candidate": {
+              "precision": 0.05244182235332678,
+              "recall": 0.19184652278177455,
+              "f1": 0.08236808236808237
+            },
+            "diff": {
+              "precision": {
+                "estimate": 0.008138024884972332,
+                "interval": [
+                  -0.022083389007227838,
+                  0.043794782412016925
+                ]
+              },
+              "recall": {
+                "estimate": 0.09952038369304553,
+                "interval": [
+                  0.0071428571428571175,
+                  0.20924574209245744
+                ]
+              },
+              "f1": {
+                "estimate": 0.022492499164349852,
+                "interval": [
+                  -0.022679096337547833,
+                  0.07601716752992688
+                ]
+              }
+            },
+            "verdict": "mejora",
+            "recall_up_precision_drop": false
+          }
+        },
+        "verdict": "sin diferencia demostrada",
+        "operation": {
+          "time": {
+            "baseline_median_s": 327.5398333333334,
+            "candidate_median_s": 142.91316666666665,
+            "n_meetings": 44,
+            "per_meeting_s": {
+              "ES2002a": {
+                "baseline": 159.93766666666667,
+                "candidate": 68.25866666666667
+              },
+              "ES2002b": {
+                "baseline": 460.935,
+                "candidate": 179.015
+              },
+              "ES2002c": {
+                "baseline": 480.9376666666667,
+                "candidate": 207.34233333333336
+              },
+              "ES2002d": {
+                "baseline": 772.1349999999999,
+                "candidate": 205.76
+              },
+              "ES2008a": {
+                "baseline": 140.37,
+                "candidate": 86.31666666666668
+              },
+              "ES2008b": {
+                "baseline": 355.4633333333333,
+                "candidate": 166.83033333333333
+              },
+              "ES2008c": {
+                "baseline": 321.62466666666666,
+                "candidate": 181.0906666666667
+              },
+              "ES2008d": {
+                "baseline": 654.8283333333333,
+                "candidate": 242.79999999999998
+              },
+              "ES2014a": {
+                "baseline": 215.94366666666664,
+                "candidate": 76.19266666666665
+              },
+              "ES2014b": {
+                "baseline": 326.6516666666667,
+                "candidate": 175.54966666666667
+              },
+              "ES2014c": {
+                "baseline": 342.11066666666665,
+                "candidate": 181.479
+              },
+              "ES2014d": {
+                "baseline": 514.4630000000001,
+                "candidate": 200.75966666666667
+              },
+              "ES2016a": {
+                "baseline": 188.09699999999998,
+                "candidate": 100.06066666666668
+              },
+              "ES2016b": {
+                "baseline": 350.74600000000004,
+                "candidate": 155.26266666666666
+              },
+              "ES2016c": {
+                "baseline": 294.71166666666664,
+                "candidate": 152.744
+              },
+              "ES2016d": {
+                "baseline": 738.6323333333333,
+                "candidate": 132.58666666666667
+              },
+              "IS1003a": {
+                "baseline": 194.052,
+                "candidate": 49.18333333333334
+              },
+              "IS1003b": {
+                "baseline": 237.561,
+                "candidate": 120.156
+              },
+              "IS1003c": {
+                "baseline": 258.024,
+                "candidate": 145.25566666666666
+              },
+              "IS1003d": {
+                "baseline": 378.62733333333335,
+                "candidate": 187.827
+              },
+              "IS1006a": {
+                "baseline": 64.84633333333333,
+                "candidate": 48.26500000000001
+              },
+              "IS1006b": {
+                "baseline": 325.84233333333333,
+                "candidate": 172.60066666666668
+              },
+              "IS1006c": {
+                "baseline": 287.191,
+                "candidate": 140.57066666666665
+              },
+              "IS1006d": {
+                "baseline": 270.5606666666667,
+                "candidate": 171.88833333333332
+              },
+              "IS1008a": {
+                "baseline": 166.333,
+                "candidate": 87.294
+              },
+              "IS1008b": {
+                "baseline": 248.38466666666667,
+                "candidate": 130.046
+              },
+              "IS1008c": {
+                "baseline": 202.42966666666666,
+                "candidate": 128.10933333333332
+              },
+              "IS1008d": {
+                "baseline": 411.28866666666664,
+                "candidate": 133.47433333333333
+              },
+              "IS1009a": {
+                "baseline": 317.72433333333333,
+                "candidate": 44.43833333333333
+              },
+              "IS1009b": {
+                "baseline": 328.428,
+                "candidate": 154.14966666666666
+              },
+              "IS1009c": {
+                "baseline": 189.47733333333335,
+                "candidate": 133.96466666666666
+              },
+              "IS1009d": {
+                "baseline": 335.287,
+                "candidate": 151.446
+              },
+              "TS3003a": {
+                "baseline": 168.26966666666667,
+                "candidate": 66.85066666666667
+              },
+              "TS3003b": {
+                "baseline": 349.52400000000006,
+                "candidate": 111.51233333333333
+              },
+              "TS3003c": {
+                "baseline": 345.3776666666667,
+                "candidate": 118.16033333333333
+              },
+              "TS3003d": {
+                "baseline": 372.3256666666667,
+                "candidate": 130.60866666666666
+              },
+              "TS3005a": {
+                "baseline": 172.70166666666668,
+                "candidate": 85.95633333333335
+              },
+              "TS3005b": {
+                "baseline": 732.544,
+                "candidate": 201.63066666666668
+              },
+              "TS3005c": {
+                "baseline": 517.042,
+                "candidate": 162.314
+              },
+              "TS3005d": {
+                "baseline": 786.0943333333333,
+                "candidate": 242.61933333333334
+              },
+              "TS3011a": {
+                "baseline": 191.30133333333333,
+                "candidate": 116.51166666666666
+              },
+              "TS3011b": {
+                "baseline": 590.8193333333334,
+                "candidate": 185.87199999999999
+              },
+              "TS3011c": {
+                "baseline": 432.906,
+                "candidate": 195.34066666666664
+              },
+              "TS3011d": {
+                "baseline": 329.813,
+                "candidate": 133.93533333333335
+              }
+            },
+            "ratio": {
+              "estimate": 0.423025921705589,
+              "interval": [
+                0.36669532872264554,
+                0.4793707623775479
+              ]
+            },
+            "verdict": "más rápido"
+          },
+          "completeness": {
+            "baseline": {
+              "complete": 132,
+              "expected": 132,
+              "share": 1.0
+            },
+            "candidate": {
+              "complete": 132,
+              "expected": 132,
+              "share": 1.0
+            }
+          },
+          "extraction_status": {
+            "baseline": {
+              "failed": 0,
+              "no-concepts-found": 0,
+              "no-extractable-text": 0,
+              "blocked-by-sensitivity": 0
+            },
+            "candidate": {
+              "failed": 0,
+              "no-concepts-found": 0,
+              "no-extractable-text": 0,
+              "blocked-by-sensitivity": 0
+            }
+          },
+          "decisions_per_meeting": {
+            "baseline": {
+              "mean": 13.166666666666668,
+              "median": 12.5
+            },
+            "candidate": {
+              "mean": 23.113636363636363,
+              "median": 25.0
+            }
+          },
+          "tokens": {
+            "baseline": {
+              "n_meetings": 132,
+              "calls": 2240,
+              "reported_calls": 2240,
+              "prompt": 6006161,
+              "completion": 1353183,
+              "total": 7359344,
+              "median_total_per_meeting": 55706.5,
+              "lower_bound": false
+            },
+            "candidate": {
+              "n_meetings": 132,
+              "calls": 2215,
+              "reported_calls": 2215,
+              "prompt": 5829202,
+              "completion": 1693657,
+              "total": 7522859,
+              "median_total_per_meeting": 56163.0,
+              "lower_bound": false
+            }
+          },
+          "cost": {
+            "status": "ok",
+            "total_usd": 4.8446145000000005,
+            "median_per_meeting_usd": 0.0380325,
+            "lower_bound": false,
+            "n_lower_bound_meetings": 0,
+            "prices": {
+              "input_usd_per_mtok": 0.25,
+              "output_usd_per_mtok": 2.0,
+              "prices_date": "2026-11-26",
+              "pricing_url": "https://developers.openai.com/api/docs/pricing"
+            }
+          },
+          "cost_usd": 4.8446145000000005,
+          "dashboard_usd": null
+        }
+      }
+    },
+    {
+      "label": "openai-large",
+      "run_name": "experimento-a-hosted-openai-large",
+      "provider": "openai",
+      "model": "gpt-6-luna",
+      "base_url": "https://api.openai.com",
+      "status": "ok",
+      "vs_formal": {
+        "status": "ok",
+        "run_name": "experimento-a-hosted-openai-large",
+        "baseline_run_name": "experimento-a-formal",
+        "series_covered": [
+          "ES2002",
+          "ES2008",
+          "ES2014",
+          "ES2016",
+          "IS1003",
+          "IS1006",
+          "IS1008",
+          "IS1009",
+          "TS3003",
+          "TS3005",
+          "TS3011"
+        ],
+        "n_series": 11,
+        "n_meetings": 44,
+        "runs_per_series": {
+          "ES2002": 3,
+          "ES2008": 3,
+          "ES2014": 3,
+          "ES2016": 3,
+          "IS1003": 3,
+          "IS1006": 3,
+          "IS1008": 3,
+          "IS1009": 3,
+          "TS3003": 3,
+          "TS3005": 3,
+          "TS3011": 3
+        },
+        "runs_expected": 33,
+        "runs_ok": 33,
+        "runs_failed": 0,
+        "series_with_failures": [],
+        "scope_note": "La comparación cubre solo las series de la corrida candidata (ES2002, ES2008, ES2014, ES2016, IS1003, IS1006, IS1008, IS1009, TS3003, TS3005, TS3011); la línea base se restringe a esas mismas series.",
+        "baseline": {
+          "series": [
+            "ES2002",
+            "ES2008",
+            "ES2014",
+            "ES2016",
+            "IS1003",
+            "IS1006",
+            "IS1008",
+            "IS1009",
+            "TS3003",
+            "TS3005",
+            "TS3011"
+          ]
+        },
+        "n_models": 6,
+        "family_alpha": 0.05,
+        "interval_level": 0.9916666666666667,
+        "resamples": 10000,
+        "seed": 42,
+        "primary_tau": 0.7,
+        "precision_margin": -0.05,
+        "taus": {
+          "0.70": {
+            "tau": 0.7,
+            "baseline": {
+              "precision": 0.14872685185185186,
+              "recall": 0.30815347721822545,
+              "f1": 0.20062451209992196
+            },
+            "candidate": {
+              "precision": 0.24469111969111962,
+              "recall": 0.6079136690647482,
+              "f1": 0.34893324156916716
+            },
+            "diff": {
+              "precision": {
+                "estimate": 0.09596426783926776,
+                "interval": [
+                  0.053487189631308246,
+                  0.14331714497279827
+                ]
+              },
+              "recall": {
+                "estimate": 0.29976019184652275,
+                "interval": [
+                  0.1923497267759563,
+                  0.41880341880341887
+                ]
+              },
+              "f1": {
+                "estimate": 0.1483087294692452,
+                "interval": [
+                  0.08941359471224603,
+                  0.21561297786441322
+                ]
+              }
+            },
+            "verdict": "mejora",
+            "recall_up_precision_drop": false
+          },
+          "0.75": {
+            "tau": 0.75,
+            "baseline": {
+              "precision": 0.09953703703703703,
+              "recall": 0.2062350119904077,
+              "f1": 0.13427010148321625
+            },
+            "candidate": {
+              "precision": 0.18339768339768334,
+              "recall": 0.45563549160671457,
+              "f1": 0.26152787336545075
+            },
+            "diff": {
+              "precision": {
+                "estimate": 0.0838606463606463,
+                "interval": [
+                  0.0415849488024929,
+                  0.13451308965615227
+                ]
+              },
+              "recall": {
+                "estimate": 0.24940047961630687,
+                "interval": [
+                  0.14901960784313723,
+                  0.3602693602693603
+                ]
+              },
+              "f1": {
+                "estimate": 0.1272577718822345,
+                "interval": [
+                  0.0670622275633643,
+                  0.19640982724813721
+                ]
+              }
+            },
+            "verdict": "mejora",
+            "recall_up_precision_drop": false
+          },
+          "0.80": {
+            "tau": 0.8,
+            "baseline": {
+              "precision": 0.05034722222222223,
+              "recall": 0.10431654676258995,
+              "f1": 0.06791569086651054
+            },
+            "candidate": {
+              "precision": 0.11389961389961385,
+              "recall": 0.28297362110311747,
+              "f1": 0.16242257398485888
+            },
+            "diff": {
+              "precision": {
+                "estimate": 0.06355239167739163,
+                "interval": [
+                  0.022455532010531055,
+                  0.11219041548070838
+                ]
+              },
+              "recall": {
+                "estimate": 0.17865707434052752,
+                "interval": [
+                  0.07916666666666661,
+                  0.2839999999999999
+                ]
+              },
+              "f1": {
+                "estimate": 0.09450688311834833,
+                "interval": [
+                  0.03583224144405067,
+                  0.1614557158886919
+                ]
+              }
+            },
+            "verdict": "mejora",
+            "recall_up_precision_drop": false
+          }
+        },
+        "verdict": "mejora",
+        "operation": {
+          "time": {
+            "baseline_median_s": 307.1385,
+            "candidate_median_s": 70.37733333333333,
+            "n_meetings": 44,
+            "per_meeting_s": {
+              "ES2002a": {
+                "baseline": 153.53733333333332,
+                "candidate": 31.033666666666665
+              },
+              "ES2002b": {
+                "baseline": 417.85566666666665,
+                "candidate": 88.70299999999999
+              },
+              "ES2002c": {
+                "baseline": 434.39733333333334,
+                "candidate": 93.065
+              },
+              "ES2002d": {
+                "baseline": 450.38633333333337,
+                "candidate": 101.83333333333333
+              },
+              "ES2008a": {
+                "baseline": 172.83399999999997,
+                "candidate": 33.226333333333336
+              },
+              "ES2008b": {
+                "baseline": 329.0453333333333,
+                "candidate": 83.531
+              },
+              "ES2008c": {
+                "baseline": 556.013,
+                "candidate": 69.73333333333333
+              },
+              "ES2008d": {
+                "baseline": 459.86400000000003,
+                "candidate": 106.69233333333334
+              },
+              "ES2014a": {
+                "baseline": 127.354,
+                "candidate": 33.126333333333335
+              },
+              "ES2014b": {
+                "baseline": 296.7093333333333,
+                "candidate": 81.14999999999999
+              },
+              "ES2014c": {
+                "baseline": 308.33666666666664,
+                "candidate": 81.29166666666667
+              },
+              "ES2014d": {
+                "baseline": 480.45533333333333,
+                "candidate": 98.35733333333333
+              },
+              "ES2016a": {
+                "baseline": 181.37266666666665,
+                "candidate": 38.924
+              },
+              "ES2016b": {
+                "baseline": 415.74499999999995,
+                "candidate": 70.34366666666666
+              },
+              "ES2016c": {
+                "baseline": 372.32,
+                "candidate": 70.411
+              },
+              "ES2016d": {
+                "baseline": 784.2323333333334,
+                "candidate": 57.02433333333334
+              },
+              "IS1003a": {
+                "baseline": 201.602,
+                "candidate": 15.476666666666667
+              },
+              "IS1003b": {
+                "baseline": 212.22433333333333,
+                "candidate": 48.981
+              },
+              "IS1003c": {
+                "baseline": 241.41233333333332,
+                "candidate": 73.49733333333334
+              },
+              "IS1003d": {
+                "baseline": 345.7296666666667,
+                "candidate": 92.83233333333334
+              },
+              "IS1006a": {
+                "baseline": 44.61033333333333,
+                "candidate": 18.156666666666666
+              },
+              "IS1006b": {
+                "baseline": 453.97766666666666,
+                "candidate": 78.582
+              },
+              "IS1006c": {
+                "baseline": 251.89133333333334,
+                "candidate": 62.01333333333334
+              },
+              "IS1006d": {
+                "baseline": 209.383,
+                "candidate": 70.17733333333332
+              },
+              "IS1008a": {
+                "baseline": 150.57666666666668,
+                "candidate": 42.751
+              },
+              "IS1008b": {
+                "baseline": 206.20333333333335,
+                "candidate": 60.82033333333334
+              },
+              "IS1008c": {
+                "baseline": 181.1436666666667,
+                "candidate": 58.053
+              },
+              "IS1008d": {
+                "baseline": 284.74,
+                "candidate": 59.139
+              },
+              "IS1009a": {
+                "baseline": 304.74333333333334,
+                "candidate": 22.74
+              },
+              "IS1009b": {
+                "baseline": 310.7753333333333,
+                "candidate": 85.121
+              },
+              "IS1009c": {
+                "baseline": 183.34166666666667,
+                "candidate": 62.522
+              },
+              "IS1009d": {
+                "baseline": 305.94033333333334,
+                "candidate": 79.77833333333334
+              },
+              "TS3003a": {
+                "baseline": 161.64433333333332,
+                "candidate": 37.958
+              },
+              "TS3003b": {
+                "baseline": 381.05400000000003,
+                "candidate": 75.873
+              },
+              "TS3003c": {
+                "baseline": 324.41066666666666,
+                "candidate": 76.04166666666667
+              },
+              "TS3003d": {
+                "baseline": 339.012,
+                "candidate": 71.73033333333333
+              },
+              "TS3005a": {
+                "baseline": 170.36066666666667,
+                "candidate": 48.095666666666666
+              },
+              "TS3005b": {
+                "baseline": 450.7146666666667,
+                "candidate": 115.217
+              },
+              "TS3005c": {
+                "baseline": 292.934,
+                "candidate": 95.766
+              },
+              "TS3005d": {
+                "baseline": 703.5799999999999,
+                "candidate": 139.14466666666667
+              },
+              "TS3011a": {
+                "baseline": 185.69933333333333,
+                "candidate": 51.31733333333333
+              },
+              "TS3011b": {
+                "baseline": 576.2669999999999,
+                "candidate": 92.121
+              },
+              "TS3011c": {
+                "baseline": 428.66633333333334,
+                "candidate": 84.21233333333333
+              },
+              "TS3011d": {
+                "baseline": 319.462,
+                "candidate": 67.46133333333333
+              }
+            },
+            "ratio": {
+              "estimate": 0.2190163943835382,
+              "interval": [
+                0.18865148775998064,
+                0.2496688655903744
+              ]
+            },
+            "verdict": "más rápido"
+          },
+          "completeness": {
+            "baseline": {
+              "complete": 132,
+              "expected": 132,
+              "share": 1.0
+            },
+            "candidate": {
+              "complete": 132,
+              "expected": 132,
+              "share": 1.0
+            }
+          },
+          "extraction_status": {
+            "baseline": {
+              "failed": 0,
+              "no-concepts-found": 0,
+              "no-extractable-text": 0,
+              "blocked-by-sensitivity": 0
+            },
+            "candidate": {
+              "failed": 0,
+              "no-concepts-found": 0,
+              "no-extractable-text": 0,
+              "blocked-by-sensitivity": 0
+            }
+          },
+          "decisions_per_meeting": {
+            "baseline": {
+              "mean": 13.090909090909092,
+              "median": 12.666666666666666
+            },
+            "candidate": {
+              "mean": 15.696969696969695,
+              "median": 17.166666666666664
+            }
+          },
+          "tokens": {
+            "baseline": null,
+            "candidate": {
+              "n_meetings": 132,
+              "calls": 2220,
+              "reported_calls": 2220,
+              "prompt": 5817627,
+              "completion": 981794,
+              "total": 6799421,
+              "median_total_per_meeting": 51402.0,
+              "lower_bound": false
+            }
+          },
+          "cost": {
+            "status": "ok",
+            "total_usd": 1.0726597,
+            "median_per_meeting_usd": 0.008279700000000001,
+            "lower_bound": false,
+            "n_lower_bound_meetings": 0,
+            "prices": {
+              "input_usd_per_mtok": 0.1,
+              "output_usd_per_mtok": 0.5,
+              "prices_date": "2026-11-26",
+              "pricing_url": "https://developers.openai.com/api/docs/pricing"
+            }
+          },
+          "cost_usd": 1.0726597,
+          "dashboard_usd": null
+        }
+      },
+      "vs_local": {
+        "status": "ok",
+        "run_name": "experimento-a-hosted-openai-large",
+        "baseline_run_name": "experimento-a-base-0-7-3",
+        "series_covered": [
+          "ES2002",
+          "ES2008",
+          "ES2014",
+          "ES2016",
+          "IS1003",
+          "IS1006",
+          "IS1008",
+          "IS1009",
+          "TS3003",
+          "TS3005",
+          "TS3011"
+        ],
+        "n_series": 11,
+        "n_meetings": 44,
+        "runs_per_series": {
+          "ES2002": 3,
+          "ES2008": 3,
+          "ES2014": 3,
+          "ES2016": 3,
+          "IS1003": 3,
+          "IS1006": 3,
+          "IS1008": 3,
+          "IS1009": 3,
+          "TS3003": 3,
+          "TS3005": 3,
+          "TS3011": 3
+        },
+        "runs_expected": 33,
+        "runs_ok": 33,
+        "runs_failed": 0,
+        "series_with_failures": [],
+        "scope_note": "La comparación cubre solo las series de la corrida candidata (ES2002, ES2008, ES2014, ES2016, IS1003, IS1006, IS1008, IS1009, TS3003, TS3005, TS3011); la línea base se restringe a esas mismas series.",
+        "baseline": {
+          "series": [
+            "ES2002",
+            "ES2008",
+            "ES2014",
+            "ES2016",
+            "IS1003",
+            "IS1006",
+            "IS1008",
+            "IS1009",
+            "TS3003",
+            "TS3005",
+            "TS3011"
+          ]
+        },
+        "n_models": 6,
+        "family_alpha": 0.05,
+        "interval_level": 0.9916666666666667,
+        "resamples": 10000,
+        "seed": 42,
+        "primary_tau": 0.7,
+        "precision_margin": -0.05,
+        "taus": {
+          "0.70": {
+            "tau": 0.7,
+            "baseline": {
+              "precision": 0.14672036823935564,
+              "recall": 0.3057553956834532,
+              "f1": 0.19828926905132196
+            },
+            "candidate": {
+              "precision": 0.24469111969111962,
+              "recall": 0.6079136690647482,
+              "f1": 0.34893324156916716
+            },
+            "diff": {
+              "precision": {
+                "estimate": 0.09797075145176398,
+                "interval": [
+                  0.05922892597152285,
+                  0.14354898540188402
+                ]
+              },
+              "recall": {
+                "estimate": 0.302158273381295,
+                "interval": [
+                  0.1971830985915493,
+                  0.4195011337868481
+                ]
+              },
+              "f1": {
+                "estimate": 0.1506439725178452,
+                "interval": [
+                  0.09510665195790291,
+                  0.21559584236500093
+                ]
+              }
+            },
+            "verdict": "mejora",
+            "recall_up_precision_drop": false
+          },
+          "0.75": {
+            "tau": 0.75,
+            "baseline": {
+              "precision": 0.09148446490218647,
+              "recall": 0.19064748201438853,
+              "f1": 0.12363919129082432
+            },
+            "candidate": {
+              "precision": 0.18339768339768334,
+              "recall": 0.45563549160671457,
+              "f1": 0.26152787336545075
+            },
+            "diff": {
+              "precision": {
+                "estimate": 0.09191321849549687,
+                "interval": [
+                  0.049288526149800976,
+                  0.14400900148386886
+                ]
+              },
+              "recall": {
+                "estimate": 0.26498800959232605,
+                "interval": [
+                  0.16666666666666657,
+                  0.3760000000000001
+                ]
+              },
+              "f1": {
+                "estimate": 0.13788868207462643,
+                "interval": [
+                  0.07767061965627506,
+                  0.20750635884536645
+                ]
+              }
+            },
+            "verdict": "mejora",
+            "recall_up_precision_drop": false
+          },
+          "0.80": {
+            "tau": 0.8,
+            "baseline": {
+              "precision": 0.044303797468354444,
+              "recall": 0.09232613908872903,
+              "f1": 0.05987558320373251
+            },
+            "candidate": {
+              "precision": 0.11389961389961385,
+              "recall": 0.28297362110311747,
+              "f1": 0.16242257398485888
+            },
+            "diff": {
+              "precision": {
+                "estimate": 0.06959581643125941,
+                "interval": [
+                  0.02745832642503957,
+                  0.11910195916837554
+                ]
+              },
+              "recall": {
+                "estimate": 0.19064748201438844,
+                "interval": [
+                  0.09064327485380118,
+                  0.29478458049886613
+                ]
+              },
+              "f1": {
+                "estimate": 0.10254699078112636,
+                "interval": [
+                  0.04289920732662629,
+                  0.17025407151290733
+                ]
+              }
+            },
+            "verdict": "mejora",
+            "recall_up_precision_drop": false
+          }
+        },
+        "verdict": "mejora",
+        "operation": {
+          "time": {
+            "baseline_median_s": 327.5398333333334,
+            "candidate_median_s": 70.37733333333333,
+            "n_meetings": 44,
+            "per_meeting_s": {
+              "ES2002a": {
+                "baseline": 159.93766666666667,
+                "candidate": 31.033666666666665
+              },
+              "ES2002b": {
+                "baseline": 460.935,
+                "candidate": 88.70299999999999
+              },
+              "ES2002c": {
+                "baseline": 480.9376666666667,
+                "candidate": 93.065
+              },
+              "ES2002d": {
+                "baseline": 772.1349999999999,
+                "candidate": 101.83333333333333
+              },
+              "ES2008a": {
+                "baseline": 140.37,
+                "candidate": 33.226333333333336
+              },
+              "ES2008b": {
+                "baseline": 355.4633333333333,
+                "candidate": 83.531
+              },
+              "ES2008c": {
+                "baseline": 321.62466666666666,
+                "candidate": 69.73333333333333
+              },
+              "ES2008d": {
+                "baseline": 654.8283333333333,
+                "candidate": 106.69233333333334
+              },
+              "ES2014a": {
+                "baseline": 215.94366666666664,
+                "candidate": 33.126333333333335
+              },
+              "ES2014b": {
+                "baseline": 326.6516666666667,
+                "candidate": 81.14999999999999
+              },
+              "ES2014c": {
+                "baseline": 342.11066666666665,
+                "candidate": 81.29166666666667
+              },
+              "ES2014d": {
+                "baseline": 514.4630000000001,
+                "candidate": 98.35733333333333
+              },
+              "ES2016a": {
+                "baseline": 188.09699999999998,
+                "candidate": 38.924
+              },
+              "ES2016b": {
+                "baseline": 350.74600000000004,
+                "candidate": 70.34366666666666
+              },
+              "ES2016c": {
+                "baseline": 294.71166666666664,
+                "candidate": 70.411
+              },
+              "ES2016d": {
+                "baseline": 738.6323333333333,
+                "candidate": 57.02433333333334
+              },
+              "IS1003a": {
+                "baseline": 194.052,
+                "candidate": 15.476666666666667
+              },
+              "IS1003b": {
+                "baseline": 237.561,
+                "candidate": 48.981
+              },
+              "IS1003c": {
+                "baseline": 258.024,
+                "candidate": 73.49733333333334
+              },
+              "IS1003d": {
+                "baseline": 378.62733333333335,
+                "candidate": 92.83233333333334
+              },
+              "IS1006a": {
+                "baseline": 64.84633333333333,
+                "candidate": 18.156666666666666
+              },
+              "IS1006b": {
+                "baseline": 325.84233333333333,
+                "candidate": 78.582
+              },
+              "IS1006c": {
+                "baseline": 287.191,
+                "candidate": 62.01333333333334
+              },
+              "IS1006d": {
+                "baseline": 270.5606666666667,
+                "candidate": 70.17733333333332
+              },
+              "IS1008a": {
+                "baseline": 166.333,
+                "candidate": 42.751
+              },
+              "IS1008b": {
+                "baseline": 248.38466666666667,
+                "candidate": 60.82033333333334
+              },
+              "IS1008c": {
+                "baseline": 202.42966666666666,
+                "candidate": 58.053
+              },
+              "IS1008d": {
+                "baseline": 411.28866666666664,
+                "candidate": 59.139
+              },
+              "IS1009a": {
+                "baseline": 317.72433333333333,
+                "candidate": 22.74
+              },
+              "IS1009b": {
+                "baseline": 328.428,
+                "candidate": 85.121
+              },
+              "IS1009c": {
+                "baseline": 189.47733333333335,
+                "candidate": 62.522
+              },
+              "IS1009d": {
+                "baseline": 335.287,
+                "candidate": 79.77833333333334
+              },
+              "TS3003a": {
+                "baseline": 168.26966666666667,
+                "candidate": 37.958
+              },
+              "TS3003b": {
+                "baseline": 349.52400000000006,
+                "candidate": 75.873
+              },
+              "TS3003c": {
+                "baseline": 345.3776666666667,
+                "candidate": 76.04166666666667
+              },
+              "TS3003d": {
+                "baseline": 372.3256666666667,
+                "candidate": 71.73033333333333
+              },
+              "TS3005a": {
+                "baseline": 172.70166666666668,
+                "candidate": 48.095666666666666
+              },
+              "TS3005b": {
+                "baseline": 732.544,
+                "candidate": 115.217
+              },
+              "TS3005c": {
+                "baseline": 517.042,
+                "candidate": 95.766
+              },
+              "TS3005d": {
+                "baseline": 786.0943333333333,
+                "candidate": 139.14466666666667
+              },
+              "TS3011a": {
+                "baseline": 191.30133333333333,
+                "candidate": 51.31733333333333
+              },
+              "TS3011b": {
+                "baseline": 590.8193333333334,
+                "candidate": 92.121
+              },
+              "TS3011c": {
+                "baseline": 432.906,
+                "candidate": 84.21233333333333
+              },
+              "TS3011d": {
+                "baseline": 329.813,
+                "candidate": 67.46133333333333
+              }
+            },
+            "ratio": {
+              "estimate": 0.20063455066741093,
+              "interval": [
+                0.173204815219416,
+                0.22508173498014494
+              ]
+            },
+            "verdict": "más rápido"
+          },
+          "completeness": {
+            "baseline": {
+              "complete": 132,
+              "expected": 132,
+              "share": 1.0
+            },
+            "candidate": {
+              "complete": 132,
+              "expected": 132,
+              "share": 1.0
+            }
+          },
+          "extraction_status": {
+            "baseline": {
+              "failed": 0,
+              "no-concepts-found": 0,
+              "no-extractable-text": 0,
+              "blocked-by-sensitivity": 0
+            },
+            "candidate": {
+              "failed": 0,
+              "no-concepts-found": 0,
+              "no-extractable-text": 0,
+              "blocked-by-sensitivity": 0
+            }
+          },
+          "decisions_per_meeting": {
+            "baseline": {
+              "mean": 13.166666666666668,
+              "median": 12.5
+            },
+            "candidate": {
+              "mean": 15.696969696969695,
+              "median": 17.166666666666664
+            }
+          },
+          "tokens": {
+            "baseline": {
+              "n_meetings": 132,
+              "calls": 2240,
+              "reported_calls": 2240,
+              "prompt": 6006161,
+              "completion": 1353183,
+              "total": 7359344,
+              "median_total_per_meeting": 55706.5,
+              "lower_bound": false
+            },
+            "candidate": {
+              "n_meetings": 132,
+              "calls": 2220,
+              "reported_calls": 2220,
+              "prompt": 5817627,
+              "completion": 981794,
+              "total": 6799421,
+              "median_total_per_meeting": 51402.0,
+              "lower_bound": false
+            }
+          },
+          "cost": {
+            "status": "ok",
+            "total_usd": 1.0726597,
+            "median_per_meeting_usd": 0.008279700000000001,
+            "lower_bound": false,
+            "n_lower_bound_meetings": 0,
+            "prices": {
+              "input_usd_per_mtok": 0.1,
+              "output_usd_per_mtok": 0.5,
+              "prices_date": "2026-11-26",
+              "pricing_url": "https://developers.openai.com/api/docs/pricing"
+            }
+          },
+          "cost_usd": 1.0726597,
+          "dashboard_usd": null
+        }
+      }
     }
   ],
   "version_effect": {
